@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.133 0.021 306.099);
+  --foreground: oklch(0.991 0.002 306.408);
+  --muted: oklch(0.156 0.025 304.345);
+  --muted-foreground: oklch(0.789 0.026 306.002);
+  --popover: oklch(0.133 0.021 306.099);
+  --popover-foreground: oklch(0.991 0.002 306.408);
+  --card: oklch(0.144 0.024 304.733);
+  --card-foreground: oklch(1 0 180);
+  --border: oklch(0.225 0.002 306.3);
+  --input: oklch(0.225 0.002 306.3);
+  --primary: oklch(0.564 0.148 302.704);
+  --primary-foreground: oklch(1 0 180);
+  --secondary: oklch(0.219 0.013 305.696);
+  --secondary-foreground: oklch(0.758 0.024 306.019);
+  --accent: oklch(0.264 0.028 305.04);
+  --accent-foreground: oklch(0.794 0.033 305.905);
+  --destructive: oklch(0.666 0.175 41.58);
+  --destructive-foreground: oklch(0 0 0);
+  --ring: oklch(0.564 0.148 302.704);
+  --chart-1: oklch(0.564 0.148 302.704);
+  --chart-2: oklch(0.219 0.013 305.696);
+  --chart-3: oklch(0.264 0.028 305.04);
+  --chart-4: oklch(0.25 0.015 305.638);
+  --chart-5: oklch(0.56 0.158 302.359);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
