@@ -97,7 +97,10 @@ export default function Home() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <GuitarIcon className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">Tunora</span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold leading-tight">Tunora</span>
+              <span className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">Stay tuned</span>
+            </div>
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -279,11 +282,14 @@ export default function Home() {
       <footer className="border-t border-border py-12">
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <GuitarIcon className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="font-semibold">Tunora</span>
+              <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                <span className="font-semibold">Tunora</span>
+                <span className="text-xs text-muted-foreground italic">stay tuned</span>
+              </div>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <Link href="#" className="transition-colors hover:text-foreground">À propos</Link>

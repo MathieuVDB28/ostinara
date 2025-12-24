@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { CreateSongInput, UpdateSongInput, Song } from "@/types";
+import { createActivity } from "./activities";
+import type { CreateSongInput, UpdateSongInput, Song, SongStatus } from "@/types";
 
 export async function getSongs(): Promise<Song[]> {
   const supabase = await createClient();
@@ -92,7 +93,15 @@ export async function createSong(input: CreateSongInput): Promise<{ success: boo
     return { success: false, error: "Erreur lors de l'ajout du morceau" };
   }
 
+  // Créer une activité pour le feed
+  await createActivity({
+    type: "song_added",
+    reference_id: data.id,
+    metadata: { title: data.title, artist: data.artist },
+  });
+
   revalidatePath("/library");
+  revalidatePath("/feed");
   return { success: true, song: data as Song };
 }
 
@@ -107,15 +116,42 @@ export async function updateSong(
     return { success: false, error: "Non authentifié" };
   }
 
-  const { error } = await supabase
+  // Récupérer le statut actuel si on change le statut vers mastered
+  let previousStatus: SongStatus | null = null;
+  if (input.status === "mastered") {
+    const { data: currentSong } = await supabase
+      .from("songs")
+      .select("status, title, artist")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (currentSong) {
+      previousStatus = currentSong.status as SongStatus;
+    }
+  }
+
+  const { data: updatedSong, error } = await supabase
     .from("songs")
     .update(input)
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select()
+    .single();
 
   if (error) {
     console.error("Error updating song:", error);
     return { success: false, error: "Erreur lors de la mise à jour" };
+  }
+
+  // Créer une activité si le morceau vient d'être maîtrisé
+  if (input.status === "mastered" && previousStatus !== "mastered" && updatedSong) {
+    await createActivity({
+      type: "song_mastered",
+      reference_id: id,
+      metadata: { title: updatedSong.title, artist: updatedSong.artist },
+    });
+    revalidatePath("/feed");
   }
 
   revalidatePath("/library");

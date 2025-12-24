@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/lib/actions/auth";
+import { getPendingRequestsCount } from "@/lib/actions/friends";
 
 function GuitarIcon({ className }: { className?: string }) {
   return (
@@ -77,12 +78,15 @@ export default async function MainLayout({
     redirect("/login");
   }
 
-  // Récupérer le profil
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username, display_name, avatar_url")
-    .eq("id", user.id)
-    .single();
+  // Récupérer le profil et le nombre de demandes d'amis en attente
+  const [{ data: profile }, pendingRequestsCount] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("username, display_name, avatar_url")
+      .eq("id", user.id)
+      .single(),
+    getPendingRequestsCount(),
+  ]);
 
   return (
     <div className="flex min-h-screen">
@@ -106,6 +110,11 @@ export default async function MainLayout({
             >
               <NavIcon icon={item.icon} className="h-5 w-5" />
               <span>{item.label}</span>
+              {item.href === "/friends" && pendingRequestsCount > 0 && (
+                <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
+                  {pendingRequestsCount}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

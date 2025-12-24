@@ -30,11 +30,11 @@ async function getAccessToken(): Promise<string> {
   }
 
   const data = await response.json();
-  accessToken = data.access_token;
+  accessToken = data.access_token as string;
   // Expire 1 minute avant pour être sûr
   tokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
 
-  return accessToken;
+  return accessToken!;
 }
 
 export async function searchTracks(query: string, limit: number = 10): Promise<SpotifyTrack[]> {
