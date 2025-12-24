@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sendPushNotificationToMultipleUsers } from "@/lib/notifications";
+import type { NotificationPayload, NotificationType } from "@/lib/notifications";
 import type {
   ActivityWithDetails,
   CreateActivityInput,
@@ -9,6 +11,45 @@ import type {
   CoverWithSong,
   Profile,
 } from "@/types";
+
+// Mapper les types d'activités vers les types de notifications
+function getNotificationForActivity(
+  type: CreateActivityInput["type"],
+  userName: string,
+  metadata?: Record<string, unknown>
+): { payload: NotificationPayload; notificationType: NotificationType } | null {
+  switch (type) {
+    case "song_added":
+      return {
+        payload: {
+          title: "Nouveau morceau",
+          body: `${userName} a ajouté "${metadata?.title}" à sa bibliothèque`,
+          data: { url: "/feed" },
+        },
+        notificationType: "song_added",
+      };
+    case "song_mastered":
+      return {
+        payload: {
+          title: "Morceau maîtrisé !",
+          body: `${userName} a maîtrisé "${metadata?.title}" - ${metadata?.artist}`,
+          data: { url: "/feed" },
+        },
+        notificationType: "song_mastered",
+      };
+    case "cover_posted":
+      return {
+        payload: {
+          title: "Nouvelle cover",
+          body: `${userName} a publié une nouvelle cover !`,
+          data: { url: "/feed" },
+        },
+        notificationType: "cover_posted",
+      };
+    default:
+      return null;
+  }
+}
 
 // === Créer une activité ===
 export async function createActivity(
@@ -35,8 +76,63 @@ export async function createActivity(
     return { success: false, error: "Erreur lors de la création de l'activité" };
   }
 
+  // Envoyer des notifications push aux amis (en arrière-plan)
+  notifyFriendsOfActivity(user.id, input).catch(console.error);
+
   revalidatePath("/feed");
   return { success: true };
+}
+
+// === Notifier les amis d'une activité ===
+async function notifyFriendsOfActivity(
+  userId: string,
+  input: CreateActivityInput
+): Promise<void> {
+  try {
+    const supabase = await createClient();
+
+    // Récupérer le profil de l'utilisateur
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username, display_name")
+      .eq("id", userId)
+      .single();
+
+    const userName = profile?.display_name || profile?.username || "Un ami";
+
+    // Récupérer tous les amis
+    const { data: friendships } = await supabase
+      .from("friendships")
+      .select("requester_id, addressee_id")
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
+
+    if (!friendships || friendships.length === 0) {
+      return;
+    }
+
+    // Extraire les IDs des amis
+    const friendIds = friendships.map((f) =>
+      f.requester_id === userId ? f.addressee_id : f.requester_id
+    );
+
+    // Construire la notification
+    const notification = getNotificationForActivity(input.type, userName, input.metadata);
+    if (!notification) {
+      return;
+    }
+
+    // Envoyer les notifications à tous les amis
+    const notifications = friendIds.map((friendId) => ({
+      userId: friendId,
+      payload: notification.payload,
+      notificationType: notification.notificationType,
+    }));
+
+    await sendPushNotificationToMultipleUsers(notifications);
+  } catch (error) {
+    console.error("Error notifying friends of activity:", error);
+  }
 }
 
 // === Récupérer le feed d'activités des amis ===

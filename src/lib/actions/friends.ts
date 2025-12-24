@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
+import { sendPushNotification } from "@/lib/notifications";
 import type {
   Friend,
   FriendRequest,
@@ -150,6 +151,13 @@ export async function sendFriendRequest(
     }
   }
 
+  // Récupérer le profil de l'utilisateur qui envoie la demande
+  const { data: requesterProfile } = await supabase
+    .from("profiles")
+    .select("username, display_name")
+    .eq("id", user.id)
+    .single();
+
   // Créer la demande
   const { error } = await supabase.from("friendships").insert({
     requester_id: user.id,
@@ -161,6 +169,18 @@ export async function sendFriendRequest(
     console.error("Error sending friend request:", error);
     return { success: false, error: "Erreur lors de l'envoi de la demande" };
   }
+
+  // Envoyer une notification push au destinataire
+  const senderName = requesterProfile?.display_name || requesterProfile?.username || "Quelqu'un";
+  await sendPushNotification(
+    addresseeId,
+    {
+      title: "Nouvelle demande d'ami",
+      body: `${senderName} veut devenir ton ami !`,
+      data: { url: "/friends" },
+    },
+    "friend_request"
+  );
 
   revalidatePath("/friends");
   return { success: true };
@@ -219,6 +239,25 @@ export async function acceptFriendRequest(
       friend_username: (friendship.requester as Profile).username,
     },
   });
+
+  // Récupérer le profil de l'utilisateur qui accepte
+  const { data: accepterProfile } = await supabase
+    .from("profiles")
+    .select("username, display_name")
+    .eq("id", user.id)
+    .single();
+
+  // Notifier le demandeur que sa demande a été acceptée
+  const accepterName = accepterProfile?.display_name || accepterProfile?.username || "Quelqu'un";
+  await sendPushNotification(
+    friendship.requester_id,
+    {
+      title: "Demande acceptée !",
+      body: `${accepterName} a accepté ta demande d'ami`,
+      data: { url: "/friends" },
+    },
+    "friend_accepted"
+  );
 
   revalidatePath("/friends");
   revalidatePath("/feed");

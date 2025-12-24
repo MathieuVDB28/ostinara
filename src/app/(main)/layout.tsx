@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/lib/actions/auth";
 import { getPendingRequestsCount } from "@/lib/actions/friends";
+import { PushNotificationManager } from "@/components/pwa";
 
 function GuitarIcon({ className }: { className?: string }) {
   return (
@@ -149,6 +150,9 @@ export default async function MainLayout({
       <main className="ml-64 flex-1 p-8">
         {children}
       </main>
+
+      {/* Push notifications */}
+      <PushNotificationManager userId={user.id} />
     </div>
   );
 }
