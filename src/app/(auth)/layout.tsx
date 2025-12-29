@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 function GuitarIcon({ className }: { className?: string }) {
   return (
@@ -20,8 +21,14 @@ export default function AuthLayout({
       {/* Header simple */}
       <header className="flex h-16 items-center justify-center border-b border-border/50">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <GuitarIcon className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-9 w-9 items-center justify-center">
+            <Image
+              src="/logo.png"
+              alt="Tunora"
+              width={36}
+              height={36}
+              className="rounded-lg"
+            />
           </div>
           <span className="text-xl font-bold">Tunora</span>
         </Link>
