@@ -97,7 +97,7 @@ export async function createSong(input: CreateSongInput): Promise<{ success: boo
   await createActivity({
     type: "song_added",
     reference_id: data.id,
-    metadata: { title: data.title, artist: data.artist },
+    metadata: { title: data.title, artist: data.artist, cover_url: data.cover_url },
   });
 
   revalidatePath("/library");
@@ -149,7 +149,7 @@ export async function updateSong(
     await createActivity({
       type: "song_mastered",
       reference_id: id,
-      metadata: { title: updatedSong.title, artist: updatedSong.artist },
+      metadata: { title: updatedSong.title, artist: updatedSong.artist, cover_url: updatedSong.cover_url },
     });
     revalidatePath("/feed");
   }

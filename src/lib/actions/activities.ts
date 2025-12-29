@@ -181,57 +181,102 @@ export async function getFeedActivities(
     return [];
   }
 
-  // Enrichir les activités avec les détails
-  const enrichedActivities: ActivityWithDetails[] = [];
+  if (!activities || activities.length === 0) {
+    return [];
+  }
 
-  for (const activity of activities) {
+  // Extraire les IDs par type pour récupérer les détails en batch
+  const songIds = activities
+    .filter((a) => (a.type === "song_added" || a.type === "song_mastered") && a.reference_id)
+    .map((a) => a.reference_id);
+
+  const coverIds = activities
+    .filter((a) => a.type === "cover_posted" && a.reference_id)
+    .map((a) => a.reference_id);
+
+  const friendProfileIds = activities
+    .filter((a) => a.type === "friend_added" && a.reference_id)
+    .map((a) => a.reference_id);
+
+  // Récupérer tous les morceaux en une seule requête
+  const songsMap = new Map<string, Song>();
+  if (songIds.length > 0) {
+    const { data: songs } = await supabase
+      .from("songs")
+      .select("*")
+      .in("id", songIds);
+
+    if (songs) {
+      songs.forEach((song) => songsMap.set(song.id, song as Song));
+    }
+  }
+
+  // Récupérer tous les covers en une seule requête
+  const coversMap = new Map<string, CoverWithSong>();
+  if (coverIds.length > 0) {
+    const { data: covers } = await supabase
+      .from("covers")
+      .select(`*, song:songs(*)`)
+      .in("id", coverIds)
+      .in("visibility", ["friends", "public"]);
+
+    if (covers) {
+      covers.forEach((cover) => coversMap.set(cover.id, cover as CoverWithSong));
+    }
+  }
+
+  // Récupérer tous les profils d'amis en une seule requête
+  const friendsMap = new Map<string, Profile>();
+  if (friendProfileIds.length > 0) {
+    const { data: friends } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("id", friendProfileIds);
+
+    if (friends) {
+      friends.forEach((friend) => friendsMap.set(friend.id, friend as Profile));
+    }
+  }
+
+  // Enrichir les activités avec les détails récupérés
+  const enrichedActivities: ActivityWithDetails[] = activities.map((activity) => {
     const enriched: ActivityWithDetails = {
       ...activity,
       user: activity.user as Profile,
     };
 
     if (activity.reference_id) {
-      switch (activity.type) {
-        case "song_added":
-        case "song_mastered": {
-          const { data: song } = await supabase
-            .from("songs")
-            .select("*")
-            .eq("id", activity.reference_id)
-            .single();
-          if (song) {
-            enriched.song = song as Song;
-          }
-          break;
+      if (activity.type === "song_added" || activity.type === "song_mastered") {
+        const song = songsMap.get(activity.reference_id);
+        // Si le morceau n'est pas trouvé (RLS), utiliser les métadonnées comme fallback
+        if (song) {
+          enriched.song = song;
+        } else if (activity.metadata?.title) {
+          // Créer un objet Song minimal à partir des métadonnées
+          enriched.song = {
+            id: activity.reference_id,
+            title: activity.metadata.title as string,
+            artist: activity.metadata.artist as string,
+            cover_url: (activity.metadata.cover_url as string) || null,
+            tuning: null,
+            capo: null,
+            notes: null,
+            status: "learning",
+            difficulty: null,
+            user_id: activity.user_id,
+            created_at: activity.created_at,
+            updated_at: activity.created_at,
+          } as Song;
         }
-        case "cover_posted": {
-          const { data: cover } = await supabase
-            .from("covers")
-            .select(`*, song:songs(*)`)
-            .eq("id", activity.reference_id)
-            .in("visibility", ["friends", "public"])
-            .single();
-          if (cover) {
-            enriched.cover = cover as CoverWithSong;
-          }
-          break;
-        }
-        case "friend_added": {
-          const { data: friend } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", activity.reference_id)
-            .single();
-          if (friend) {
-            enriched.friend = friend as Profile;
-          }
-          break;
-        }
+      } else if (activity.type === "cover_posted") {
+        enriched.cover = coversMap.get(activity.reference_id);
+      } else if (activity.type === "friend_added") {
+        enriched.friend = friendsMap.get(activity.reference_id);
       }
     }
 
-    enrichedActivities.push(enriched);
-  }
+    return enriched;
+  });
 
   return enrichedActivities;
 }
