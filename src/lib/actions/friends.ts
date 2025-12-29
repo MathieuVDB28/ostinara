@@ -468,6 +468,31 @@ export async function getPendingRequestsCount(): Promise<number> {
   return count || 0;
 }
 
+// === Compter le nombre total d'amis acceptés ===
+export async function getFriendsCount(): Promise<number> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return 0;
+  }
+
+  const { count, error } = await supabase
+    .from("friendships")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "accepted")
+    .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+
+  if (error) {
+    console.error("Error counting friends:", error);
+    return 0;
+  }
+
+  return count || 0;
+}
+
 // === Récupérer le profil complet d'un ami ===
 export async function getFriendProfile(
   friendId: string

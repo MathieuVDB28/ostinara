@@ -26,7 +26,7 @@ export default withPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  disable: process.env.NODE_ENV === 'development', // Disable in dev, enable in production
   importScripts: ['/sw-push-handler.js'],
   buildExcludes: [/app-build-manifest\.json$/],
   publicExcludes: ['!robots.txt', '!sitemap.xml'],

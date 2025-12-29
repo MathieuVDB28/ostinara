@@ -84,10 +84,10 @@ export function FriendsView({
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex w-fit gap-1 rounded-lg bg-muted p-1">
+      <div className="mb-6 flex gap-1 overflow-x-auto rounded-lg bg-muted p-1">
         <button
           onClick={() => setActiveTab("friends")}
-          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+          className={`whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
             activeTab === "friends"
               ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"
@@ -97,7 +97,7 @@ export function FriendsView({
         </button>
         <button
           onClick={() => setActiveTab("requests")}
-          className={`relative rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+          className={`relative whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
             activeTab === "requests"
               ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"

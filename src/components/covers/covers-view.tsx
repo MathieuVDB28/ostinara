@@ -63,14 +63,14 @@ export function CoversView({ initialCovers, canUpload, coverLimit, coverCount }:
       {covers.length > 0 ? (
         <>
           {/* Filtres */}
-          <div className="mb-6 flex gap-1 rounded-lg bg-muted p-1 w-fit">
+          <div className="mb-6 flex gap-1 overflow-x-auto rounded-lg bg-muted p-1">
             {filters.map((filter) => {
               const count = filter.value === "all" ? stats.total : stats[filter.value];
               return (
                 <button
                   key={filter.value}
                   onClick={() => setActiveFilter(filter.value)}
-                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                     activeFilter === filter.value
                       ? "bg-background text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"

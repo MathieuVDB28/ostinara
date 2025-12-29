@@ -7,6 +7,7 @@ interface PushNotificationManagerProps {
 }
 
 export function PushNotificationManager({ userId }: PushNotificationManagerProps) {
+  const [mounted, setMounted] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,9 +25,20 @@ export function PushNotificationManager({ userId }: PushNotificationManagerProps
   }, []);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setPermission(Notification.permission);
       checkSubscription();
+
+      // Debug: Check service worker status
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          console.log('🔧 Service worker registrations:', registrations.length);
+          registrations.forEach((reg, i) => {
+            console.log(`🔧 SW ${i}:`, reg.active?.scriptURL, 'State:', reg.active?.state);
+          });
+        });
+      }
     }
   }, [checkSubscription]);
 
@@ -91,46 +103,62 @@ export function PushNotificationManager({ userId }: PushNotificationManagerProps
 
   async function subscribe() {
     if (!('serviceWorker' in navigator)) {
-      console.error('Service worker not supported');
-      return;
-    }
-
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
-
-    if (isIOS && !isStandalone) {
-      alert("Sur iOS, les notifications ne fonctionnent que si vous installez l'application sur votre ecran d'accueil.\n\n1. Appuyez sur le bouton Partager\n2. Selectionnez \"Sur l'ecran d'accueil\"\n3. Relancez l'app depuis l'icone");
+      console.error('❌ Cannot subscribe: service worker not supported');
       return;
     }
 
     setLoading(true);
 
     try {
-      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      if (!vapidPublicKey) {
-        console.error('VAPID public key not configured');
-        alert('Erreur de configuration: VAPID public key manquante');
+      console.log('🔔 Starting subscription process...');
+
+      // iOS detection
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+      console.log('📱 Device info:', { isIOS, isStandalone });
+
+      if (isIOS && !isStandalone) {
+        alert("Sur iOS, les notifications ne fonctionnent que si vous installez l'application sur votre ecran d'accueil.\n\n1. Appuyez sur le bouton Partager\n2. Selectionnez \"Sur l'ecran d'accueil\"\n3. Relancez l'app depuis l'icone");
         return;
       }
 
+      // Check for VAPID public key
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidPublicKey) {
+        console.error('❌ VAPID public key not configured!');
+        alert('Erreur de configuration: VAPID public key manquante');
+        return;
+      }
+      console.log('✅ VAPID public key found');
+
+      // iOS needs more time to initialize service worker
       const timeout = isIOS ? 30000 : 10000;
+      console.log(`⏳ Waiting for service worker (timeout: ${timeout}ms)...`);
+
       const registration = await Promise.race([
         navigator.serviceWorker.ready,
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Service worker timeout')), timeout)
         )
       ]) as ServiceWorkerRegistration;
+      console.log('✅ Service worker ready:', registration);
+      console.log('🔧 Service worker state:', registration.active?.state);
 
+      // Check if already subscribed
       let subscription = await registration.pushManager.getSubscription();
+      console.log('🔍 Existing subscription:', subscription ? subscription.endpoint : 'none');
 
       if (!subscription) {
+        console.log('📝 Creating new push subscription...');
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
         });
+        console.log('✅ Push subscription created:', subscription.endpoint);
       }
 
       // Send subscription to server
+      console.log('📤 Sending subscription to server...');
       const response = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -145,16 +173,21 @@ export function PushNotificationManager({ userId }: PushNotificationManagerProps
         }),
       });
 
+      console.log('📥 Server response:', response.status, response.statusText);
+
       if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Subscription saved:', data);
         setIsSubscribed(true);
         localStorage.setItem('tunora_push_enabled', 'true');
-        console.log('Subscribed to push notifications');
+        console.log('🎉 Successfully subscribed to push notifications!');
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Server error');
+        console.error('❌ Failed to save subscription:', errorData);
+        throw new Error(`Server error: ${errorData.error || response.statusText}`);
       }
     } catch (error) {
-      console.error('Error subscribing to push notifications:', error);
+      console.error('❌ Error subscribing to push notifications:', error);
 
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
@@ -199,8 +232,13 @@ export function PushNotificationManager({ userId }: PushNotificationManagerProps
     }
   }
 
+  // Don't render anything until mounted on client
+  if (!mounted) {
+    return null;
+  }
+
   // Don't render anything if notifications aren't supported
-  if (typeof window === 'undefined' || !('Notification' in window)) {
+  if (!('Notification' in window)) {
     return null;
   }
 

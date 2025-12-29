@@ -77,12 +77,12 @@ export function LibraryView({ initialSongs }: LibraryViewProps) {
           {/* Filters and search */}
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             {/* Filter tabs */}
-            <div className="flex gap-1 rounded-lg bg-muted p-1">
+            <div className="flex gap-1 overflow-x-auto rounded-lg bg-muted p-1">
               {filters.map((filter) => (
                 <button
                   key={filter.value}
                   onClick={() => setActiveFilter(filter.value)}
-                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                     activeFilter === filter.value
                       ? "bg-background text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"

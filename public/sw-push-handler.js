@@ -17,8 +17,8 @@ self.addEventListener('push', function (event) {
     const title = data.title || 'Tunora';
     const options = {
       body: data.body || '',
-      icon: data.icon || '/icons/icon-192x192.png',
-      badge: data.badge || '/icons/icon-96x96.png',
+      icon: data.icon || '/icons/android/android-launchericon-192-192.png',
+      badge: data.badge || '/icons/android/android-launchericon-96-96.png',
       tag: data.tag || 'notification',
       data: data.data || {},
       vibrate: [200, 100, 200],
