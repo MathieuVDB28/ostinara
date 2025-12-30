@@ -10,6 +10,7 @@ export async function signup(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const username = formData.get("username") as string;
+  const isPrivate = formData.get("is_private") === "true";
 
   // Vérifier que le username n'existe pas déjà
   const { data: existingUser } = await supabase
@@ -29,6 +30,7 @@ export async function signup(formData: FormData) {
       data: {
         username,
         display_name: username,
+        is_private: isPrivate,
       },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
     },

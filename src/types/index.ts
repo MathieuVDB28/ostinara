@@ -73,6 +73,25 @@ export interface SpotifySearchResult {
   };
 }
 
+export interface SpotifyAlbum {
+  id: string;
+  name: string;
+  artists: { name: string }[];
+  images: { url: string; width: number; height: number }[];
+  external_urls: {
+    spotify: string;
+  };
+  release_date: string;
+  total_tracks: number;
+}
+
+export interface SpotifyAlbumSearchResult {
+  albums: {
+    items: SpotifyAlbum[];
+    total: number;
+  };
+}
+
 // Types pour le profil
 export type UserPlan = 'free' | 'pro' | 'band';
 
@@ -83,6 +102,96 @@ export interface Profile {
   avatar_url?: string;
   plan: UserPlan;
   created_at: string;
+  bio?: string;
+  instagram_url?: string;
+  tiktok_url?: string;
+  twitter_url?: string;
+  facebook_url?: string;
+  is_private: boolean;
+  updated_at?: string;
+}
+
+// Types pour les liens sociaux
+export interface SocialLinks {
+  instagram?: string;
+  tiktok?: string;
+  twitter?: string;
+  facebook?: string;
+}
+
+// Types pour les favoris
+export interface FavoriteSong {
+  id: string;
+  user_id: string;
+  song_id: string;
+  position: number;
+  created_at: string;
+  song: Song;
+}
+
+export interface FavoriteAlbum {
+  id: string;
+  user_id: string;
+  album_name: string;
+  artist_name: string;
+  cover_url?: string;
+  spotify_id?: string;
+  position: number;
+  created_at: string;
+}
+
+// Type pour le profil utilisateur complet (propre profil)
+export interface UserProfile extends Profile {
+  favorite_songs: FavoriteSong[];
+  favorite_albums: FavoriteAlbum[];
+  stats: {
+    totalSongs: number;
+    masteredSongs: number;
+    totalCovers: number;
+    friendsCount: number;
+  };
+}
+
+// Type pour un profil public (profil d'autres utilisateurs)
+export interface PublicProfile {
+  profile: Profile;
+  favorite_songs: FavoriteSong[] | null;
+  favorite_albums: FavoriteAlbum[] | null;
+  recent_songs: Song[] | null;
+  recent_covers: CoverWithSong[];
+  stats: {
+    totalSongs: number | null;
+    masteredSongs: number | null;
+    totalCovers: number;
+  };
+  friendship_status: FriendshipStatus | 'none' | 'self';
+  is_friend: boolean;
+}
+
+// Inputs pour mise à jour du profil
+export interface UpdateProfileInput {
+  display_name?: string;
+  bio?: string;
+  instagram_url?: string;
+  tiktok_url?: string;
+  twitter_url?: string;
+  facebook_url?: string;
+  is_private?: boolean;
+  avatar_url?: string;
+}
+
+// Inputs pour gestion des favoris
+export interface SetFavoriteSongInput {
+  song_id: string;
+  position: number; // 1-4
+}
+
+export interface SetFavoriteAlbumInput {
+  album_name: string;
+  artist_name: string;
+  cover_url?: string;
+  spotify_id?: string;
+  position: number; // 1-4
 }
 
 // Types pour les covers

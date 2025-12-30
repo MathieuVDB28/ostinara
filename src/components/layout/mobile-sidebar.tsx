@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { UserProfileModal } from "@/components/profile/user-profile-modal";
 
 interface NavItem {
   href: string;
@@ -18,6 +19,7 @@ interface MobileSidebarProps {
     displayName: string;
     initial: string;
     email: string;
+    avatarUrl?: string;
   };
   onLogout: () => void;
 }
@@ -78,6 +80,7 @@ function NavIcon({ icon, className }: { icon: string; className?: string }) {
 
 export function MobileSidebar({ navItems, userInfo, onLogout }: MobileSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const pathname = usePathname();
 
   const closeSidebar = () => setIsOpen(false);
@@ -176,10 +179,21 @@ export function MobileSidebar({ navItems, userInfo, onLogout }: MobileSidebarPro
 
         {/* User section */}
         <div className="border-t border-border p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              {userInfo.initial}
-            </div>
+          <button
+            onClick={() => setIsProfileOpen(true)}
+            className="mb-3 flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-accent"
+          >
+            {userInfo.avatarUrl ? (
+              <img
+                src={userInfo.avatarUrl}
+                alt={userInfo.displayName}
+                className="h-10 w-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                {userInfo.initial}
+              </div>
+            )}
             <div className="flex-1 truncate">
               <div className="truncate text-sm font-medium">
                 {userInfo.displayName}
@@ -188,15 +202,20 @@ export function MobileSidebar({ navItems, userInfo, onLogout }: MobileSidebarPro
                 {userInfo.email}
               </div>
             </div>
-          </div>
+            <svg className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
           <button
             onClick={onLogout}
-            className="mt-3 w-full rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             Déconnexion
           </button>
         </div>
       </aside>
+
+      <UserProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
     </>
   );
 }

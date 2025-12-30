@@ -44,6 +44,7 @@ export default async function MainLayout({
     displayName: profile?.display_name || profile?.username || "User",
     initial: profile?.display_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U",
     email: user.email || "",
+    avatarUrl: profile?.avatar_url,
   };
 
   return (

@@ -10,6 +10,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -102,6 +103,37 @@ export default function RegisterPage() {
             className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Visibilité du compte</label>
+          <div className="flex items-center justify-between rounded-lg border border-input bg-background p-4">
+            <div className="flex-1">
+              <div className="font-medium text-sm">
+                {isPrivate ? "Compte privé" : "Compte public"}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {isPrivate
+                  ? "Seuls tes amis voient tes morceaux et favoris"
+                  : "Tout le monde peut voir ton profil"
+                }
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPrivate(!isPrivate)}
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                isPrivate ? "bg-primary" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isPrivate ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+          <input type="hidden" name="is_private" value={isPrivate.toString()} />
         </div>
 
         {error && (

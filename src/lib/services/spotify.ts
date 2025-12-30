@@ -1,4 +1,4 @@
-import type { SpotifySearchResult, SpotifyTrack } from '@/types';
+import type { SpotifySearchResult, SpotifyTrack, SpotifyAlbumSearchResult, SpotifyAlbum } from '@/types';
 
 let accessToken: string | null = null;
 let tokenExpiry: number = 0;
@@ -63,11 +63,45 @@ export async function searchTracks(query: string, limit: number = 10): Promise<S
 
 export function formatTrackForSong(track: SpotifyTrack) {
   return {
+    id: track.id, // ID Spotify pour l'utiliser comme clé React
     title: track.name,
     artist: track.artists.map((a) => a.name).join(', '),
     album: track.album.name,
     cover_url: track.album.images[0]?.url,
     spotify_id: track.id,
     preview_url: track.preview_url,
+  };
+}
+
+export async function searchAlbums(query: string, limit: number = 10): Promise<SpotifyAlbum[]> {
+  if (!query.trim()) {
+    return [];
+  }
+
+  const token = await getAccessToken();
+
+  const response = await fetch(
+    `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=album&limit=${limit}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('Failed to search Spotify albums');
+  }
+
+  const data: SpotifyAlbumSearchResult = await response.json();
+  return data.albums.items;
+}
+
+export function formatAlbumForFavorite(album: SpotifyAlbum) {
+  return {
+    id: album.id,
+    name: album.name,
+    artists: album.artists,
+    images: album.images,
   };
 }

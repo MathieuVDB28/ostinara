@@ -17,6 +17,7 @@ interface SidebarWrapperProps {
     displayName: string;
     initial: string;
     email: string;
+    avatarUrl?: string;
   };
 }
 

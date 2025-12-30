@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { FriendCard } from "./friend-card";
 import { FriendRequestCard } from "./friend-request-card";
 import { AddFriendModal } from "./add-friend-modal";
-import { FriendProfileModal } from "./friend-profile-modal";
-import type { Friend, FriendRequest, FriendProfile } from "@/types";
-import { getFriendProfile } from "@/lib/actions/friends";
+import { PublicProfileModal } from "@/components/profile/public-profile-modal";
+import type { Friend, FriendRequest } from "@/types";
 
 interface FriendsViewProps {
   initialFriends: Friend[];
@@ -31,8 +30,7 @@ export function FriendsView({
   const [requests, setRequests] = useState(initialRequests);
   const [activeTab, setActiveTab] = useState<Tab>("friends");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedFriendProfile, setSelectedFriendProfile] = useState<FriendProfile | null>(null);
-  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
@@ -44,17 +42,19 @@ export function FriendsView({
     router.refresh();
   };
 
-  const handleViewProfile = async (friendId: string) => {
-    setLoadingProfile(true);
+  const handleViewProfile = (friendId: string) => {
+    setSelectedFriendId(friendId);
     setIsProfileModalOpen(true);
-    const profile = await getFriendProfile(friendId);
-    setSelectedFriendProfile(profile);
-    setLoadingProfile(false);
+  };
+
+  const handleCloseProfile = () => {
+    setIsProfileModalOpen(false);
+    setSelectedFriendId(null);
   };
 
   const handleCloseProfileModal = () => {
     setIsProfileModalOpen(false);
-    setSelectedFriendProfile(null);
+    setSelectedFriendId(null);
   };
 
   return (
@@ -152,11 +152,10 @@ export function FriendsView({
         onSuccess={handleRefresh}
       />
 
-      <FriendProfileModal
-        friendProfile={selectedFriendProfile}
+      <PublicProfileModal
+        userId={selectedFriendId || ""}
         isOpen={isProfileModalOpen}
-        onClose={handleCloseProfileModal}
-        loading={loadingProfile}
+        onClose={handleCloseProfile}
       />
     </div>
   );
