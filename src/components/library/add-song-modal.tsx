@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createSong } from "@/lib/actions/songs";
 import type { CreateSongInput, SongDifficulty } from "@/types";
 
-interface SpotifyResult {
+export interface SpotifyResult {
   title: string;
   artist: string;
   album: string;
@@ -17,14 +17,15 @@ interface AddSongModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  prefillTrack?: SpotifyResult;
 }
 
-export function AddSongModal({ isOpen, onClose, onSuccess }: AddSongModalProps) {
-  const [step, setStep] = useState<"search" | "details">("search");
+export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSongModalProps) {
+  const [step, setStep] = useState<"search" | "details">(prefillTrack ? "details" : "search");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SpotifyResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedTrack, setSelectedTrack] = useState<SpotifyResult | null>(null);
+  const [selectedTrack, setSelectedTrack] = useState<SpotifyResult | null>(prefillTrack || null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,6 +35,14 @@ export function AddSongModal({ isOpen, onClose, onSuccess }: AddSongModalProps) 
   const [capo, setCapo] = useState(0);
   const [tabsUrl, setTabsUrl] = useState("");
   const [notes, setNotes] = useState("");
+
+  // Synchroniser avec prefillTrack quand il change
+  useEffect(() => {
+    if (prefillTrack) {
+      setSelectedTrack(prefillTrack);
+      setStep("details");
+    }
+  }, [prefillTrack]);
 
   // Debounce search
   useEffect(() => {
@@ -98,10 +107,10 @@ export function AddSongModal({ isOpen, onClose, onSuccess }: AddSongModalProps) 
   };
 
   const handleClose = useCallback(() => {
-    setStep("search");
+    setStep(prefillTrack ? "details" : "search");
     setQuery("");
     setResults([]);
-    setSelectedTrack(null);
+    setSelectedTrack(prefillTrack || null);
     setDifficulty("");
     setTuning("Standard");
     setCapo(0);
@@ -109,7 +118,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess }: AddSongModalProps) 
     setNotes("");
     setError(null);
     onClose();
-  }, [onClose]);
+  }, [onClose, prefillTrack]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -140,7 +149,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess }: AddSongModalProps) 
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold">
-            {step === "search" ? "Ajouter un morceau" : "Détails du morceau"}
+            {step === "search" ? "Ajouter un morceau" : prefillTrack ? "Ajouter à la bibliothèque" : "Détails du morceau"}
           </h2>
           <button
             onClick={handleClose}
@@ -240,12 +249,14 @@ export function AddSongModal({ isOpen, onClose, onSuccess }: AddSongModalProps) 
                     {selectedTrack.artist}
                   </div>
                 </div>
-                <button
-                  onClick={() => setStep("search")}
-                  className="text-sm text-primary hover:underline"
-                >
-                  Changer
-                </button>
+{!prefillTrack && (
+                  <button
+                    onClick={() => setStep("search")}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Changer
+                  </button>
+                )}
               </div>
             )}
 
@@ -326,10 +337,10 @@ export function AddSongModal({ isOpen, onClose, onSuccess }: AddSongModalProps) 
 
               <div className="flex gap-3 pt-2">
                 <button
-                  onClick={() => setStep("search")}
+                  onClick={() => prefillTrack ? handleClose() : setStep("search")}
                   className="flex-1 rounded-lg border border-border py-2.5 font-medium transition-colors hover:bg-accent"
                 >
-                  Retour
+                  {prefillTrack ? "Annuler" : "Retour"}
                 </button>
                 <button
                   onClick={handleSave}

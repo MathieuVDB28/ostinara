@@ -1,8 +1,12 @@
 import { getSongs } from "@/lib/actions/songs";
+import { getWishlistSongs } from "@/lib/actions/wishlist";
 import { LibraryView } from "@/components/library/library-view";
 
 export default async function LibraryPage() {
-  const songs = await getSongs();
+  const [songs, wishlistSongs] = await Promise.all([
+    getSongs(),
+    getWishlistSongs(),
+  ]);
 
-  return <LibraryView initialSongs={songs} />;
+  return <LibraryView initialSongs={songs} initialWishlistSongs={wishlistSongs} />;
 }

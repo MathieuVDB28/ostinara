@@ -10,6 +10,7 @@ import type {
   Song,
   CoverWithSong,
   Profile,
+  WishlistSong,
 } from "@/types";
 
 // Mapper les types d'activités vers les types de notifications
@@ -45,6 +46,15 @@ function getNotificationForActivity(
           data: { url: "/feed" },
         },
         notificationType: "cover_posted",
+      };
+    case "song_wishlisted":
+      return {
+        payload: {
+          title: "Wishlist",
+          body: `${userName} veut apprendre "${metadata?.title}"`,
+          data: { url: "/feed" },
+        },
+        notificationType: "song_wishlisted",
       };
     default:
       return null;
@@ -198,6 +208,10 @@ export async function getFeedActivities(
     .filter((a) => a.type === "friend_added" && a.reference_id)
     .map((a) => a.reference_id);
 
+  const wishlistSongIds = activities
+    .filter((a) => a.type === "song_wishlisted" && a.reference_id)
+    .map((a) => a.reference_id);
+
   // Récupérer tous les morceaux en une seule requête
   const songsMap = new Map<string, Song>();
   if (songIds.length > 0) {
@@ -238,6 +252,19 @@ export async function getFeedActivities(
     }
   }
 
+  // Récupérer tous les wishlist songs en une seule requête
+  const wishlistSongsMap = new Map<string, WishlistSong>();
+  if (wishlistSongIds.length > 0) {
+    const { data: wishlistSongs } = await supabase
+      .from("wishlist_songs")
+      .select("*")
+      .in("id", wishlistSongIds);
+
+    if (wishlistSongs) {
+      wishlistSongs.forEach((song) => wishlistSongsMap.set(song.id, song as WishlistSong));
+    }
+  }
+
   // Enrichir les activités avec les détails récupérés
   const enrichedActivities: ActivityWithDetails[] = activities.map((activity) => {
     const enriched: ActivityWithDetails = {
@@ -273,6 +300,21 @@ export async function getFeedActivities(
         enriched.cover = coversMap.get(activity.reference_id);
       } else if (activity.type === "friend_added") {
         enriched.friend = friendsMap.get(activity.reference_id);
+      } else if (activity.type === "song_wishlisted") {
+        const wishlistSong = wishlistSongsMap.get(activity.reference_id);
+        if (wishlistSong) {
+          enriched.wishlistSong = wishlistSong;
+        } else if (activity.metadata?.title) {
+          // Créer un objet minimal à partir des métadonnées (fallback RLS)
+          enriched.wishlistSong = {
+            id: activity.reference_id,
+            title: activity.metadata.title as string,
+            artist: activity.metadata.artist as string,
+            cover_url: (activity.metadata.cover_url as string) || undefined,
+            user_id: activity.user_id,
+            created_at: activity.created_at,
+          } as WishlistSong;
+        }
       }
     }
 

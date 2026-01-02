@@ -32,7 +32,8 @@ export type NotificationType =
   | 'friend_accepted'
   | 'song_added'
   | 'song_mastered'
-  | 'cover_posted';
+  | 'cover_posted'
+  | 'song_wishlisted';
 
 export async function sendPushNotification(
   userId: string,

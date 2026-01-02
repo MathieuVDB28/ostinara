@@ -51,6 +51,28 @@ export interface UpdateSongInput {
   notes?: string;
 }
 
+// Types pour la wishlist
+export interface WishlistSong {
+  id: string;
+  user_id: string;
+  title: string;
+  artist: string;
+  album?: string;
+  cover_url?: string;
+  spotify_id?: string;
+  preview_url?: string;
+  created_at: string;
+}
+
+export interface CreateWishlistSongInput {
+  title: string;
+  artist: string;
+  album?: string;
+  cover_url?: string;
+  spotify_id?: string;
+  preview_url?: string;
+}
+
 // Types Spotify
 export interface SpotifyTrack {
   id: string;
@@ -264,7 +286,7 @@ export interface FriendRequest {
 }
 
 // Types pour les activités
-export type ActivityType = 'song_added' | 'song_mastered' | 'cover_posted' | 'friend_added';
+export type ActivityType = 'song_added' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted';
 
 export interface Activity {
   id: string;
@@ -283,6 +305,7 @@ export interface ActivityWithDetails extends ActivityWithProfile {
   song?: Song;
   cover?: CoverWithSong;
   friend?: Profile;
+  wishlistSong?: WishlistSong;
 }
 
 // Type pour le profil d'un ami avec ses données

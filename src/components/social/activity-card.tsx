@@ -7,10 +7,11 @@ interface ActivityCardProps {
 }
 
 const activityMessages: Record<string, string> = {
-  song_added: "a ajoute un nouveau morceau",
-  song_mastered: "a maitrise un morceau",
-  cover_posted: "a poste un cover",
+  song_added: "a ajouté un nouveau morceau",
+  song_mastered: "a maîtrisé un morceau",
+  cover_posted: "a posté une cover",
   friend_added: "a un nouvel ami",
+  song_wishlisted: "veut apprendre",
 };
 
 function ActivityIcon({ type }: { type: string }) {
@@ -37,6 +38,12 @@ function ActivityIcon({ type }: { type: string }) {
       return (
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+        </svg>
+      );
+    case "song_wishlisted":
+      return (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
         </svg>
       );
     default:
@@ -185,6 +192,33 @@ export function ActivityCard({ activity }: ActivityCardProps) {
               {activity.friend.display_name || activity.friend.username}
             </div>
             <div className="truncate text-sm text-muted-foreground">@{activity.friend.username}</div>
+          </div>
+        </div>
+      )}
+
+      {activity.type === "song_wishlisted" && activity.wishlistSong && (
+        <div className="flex items-center gap-3 rounded-lg bg-amber-500/10 p-3">
+          {activity.wishlistSong.cover_url ? (
+            <img
+              src={activity.wishlistSong.cover_url}
+              alt={activity.wishlistSong.title}
+              className="h-12 w-12 rounded object-cover"
+            />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded bg-muted">
+              <svg className="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+              </svg>
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-medium">{activity.wishlistSong.title}</div>
+            <div className="truncate text-sm text-muted-foreground">{activity.wishlistSong.artist}</div>
+          </div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-500">
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
           </div>
         </div>
       )}
