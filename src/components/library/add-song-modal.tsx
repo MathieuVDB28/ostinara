@@ -279,6 +279,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess }: AddSongModalProps) 
                     <option value="Open G">Open G</option>
                     <option value="Open D">Open D</option>
                     <option value="DADGAD">DADGAD</option>
+                    <option value="Open C">Open C</option>
                   </select>
                 </div>
               </div>

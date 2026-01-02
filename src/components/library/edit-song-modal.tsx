@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { updateSong, deleteSong } from "@/lib/actions/songs";
 import { getCoversBySong, canUploadCover } from "@/lib/actions/covers";
 import { AddCoverModal } from "@/components/covers/add-cover-modal";
 import { CoverDetailModal } from "@/components/covers/cover-detail-modal";
+import { SongSessionsPanel } from "@/components/progress/song-sessions-panel";
+import { AddSessionModal } from "@/components/progress/add-session-modal";
 import type { Song, SongDifficulty, SongStatus, Cover, CoverWithSong } from "@/types";
 
 interface EditSongModalProps {
@@ -40,10 +43,11 @@ const tuningOptions = [
 ];
 
 export function EditSongModal({ song, isOpen, onClose, onUpdate }: EditSongModalProps) {
+  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"details" | "covers">("details");
+  const [activeTab, setActiveTab] = useState<"details" | "covers" | "sessions">("details");
 
   // Covers state
   const [covers, setCovers] = useState<Cover[]>([]);
@@ -51,6 +55,10 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate }: EditSongModal
   const [showAddCover, setShowAddCover] = useState(false);
   const [selectedCover, setSelectedCover] = useState<CoverWithSong | null>(null);
   const [canUpload, setCanUpload] = useState<{ allowed: boolean; limit?: number; current?: number }>({ allowed: true });
+
+  // Sessions state
+  const [showAddSession, setShowAddSession] = useState(false);
+  const [sessionsPanelKey, setSessionsPanelKey] = useState(0);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -251,6 +259,16 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate }: EditSongModal
                 {covers.length}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab("sessions")}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === "sessions"
+                ? "border-b-2 border-primary text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Sessions
           </button>
         </div>
 
@@ -532,6 +550,17 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate }: EditSongModal
             )}
           </div>
         )}
+
+        {/* Sessions Tab */}
+        {activeTab === "sessions" && (
+          <div className="p-6">
+            <SongSessionsPanel
+              key={sessionsPanelKey}
+              songId={song.id}
+              onAddSession={() => setShowAddSession(true)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Add Cover Modal */}
@@ -554,6 +583,20 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate }: EditSongModal
           loadCovers();
           onUpdate();
         }}
+      />
+
+      {/* Add Session Modal */}
+      <AddSessionModal
+        isOpen={showAddSession}
+        onClose={() => setShowAddSession(false)}
+        onSuccess={() => {
+          setSessionsPanelKey(prev => prev + 1);
+          router.refresh();
+          onUpdate();
+        }}
+        songs={[song]}
+        timerSong={song}
+        mode="manual"
       />
     </div>
   );

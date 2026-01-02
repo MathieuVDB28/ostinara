@@ -313,3 +313,155 @@ export interface CreateActivityInput {
   reference_id?: string;
   metadata?: Record<string, unknown>;
 }
+
+// Types pour les sessions de pratique
+export type SessionMood = 'frustrated' | 'neutral' | 'good' | 'great' | 'on_fire';
+export type EnergyLevel = 'low' | 'medium' | 'high';
+export type SongSection = 'intro' | 'verse' | 'chorus' | 'bridge' | 'solo' | 'outro' | 'full_song';
+
+export interface PracticeSession {
+  id: string;
+  user_id: string;
+  song_id: string | null;
+  duration_minutes: number;
+  practiced_at: string;
+  bpm_achieved: number | null;
+  mood: SessionMood | null;
+  energy_level: EnergyLevel | null;
+  sections_worked: SongSection[];
+  session_goals: string | null;
+  goals_achieved: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PracticeSessionWithSong extends PracticeSession {
+  song: Song | null;
+}
+
+export interface CreatePracticeSessionInput {
+  song_id?: string;
+  duration_minutes: number;
+  practiced_at?: string;
+  bpm_achieved?: number;
+  mood?: SessionMood;
+  energy_level?: EnergyLevel;
+  sections_worked?: SongSection[];
+  session_goals?: string;
+  goals_achieved?: boolean;
+  notes?: string;
+}
+
+export interface UpdatePracticeSessionInput {
+  song_id?: string | null;
+  duration_minutes?: number;
+  practiced_at?: string;
+  bpm_achieved?: number | null;
+  mood?: SessionMood | null;
+  energy_level?: EnergyLevel | null;
+  sections_worked?: SongSection[];
+  session_goals?: string | null;
+  goals_achieved?: boolean;
+  notes?: string | null;
+}
+
+export interface PracticeStats {
+  totalSessions: number;
+  totalMinutes: number;
+  averageSessionLength: number;
+  sessionsThisWeek: number;
+  minutesThisWeek: number;
+  currentStreak: number;
+  longestStreak: number;
+  mostPracticedSong: { song: Song; count: number } | null;
+}
+
+export interface PracticeSessionFilters {
+  songId?: string;
+  startDate?: string;
+  endDate?: string;
+  mood?: SessionMood;
+}
+
+export interface SongPracticeStats {
+  totalSessions: number;
+  totalMinutes: number;
+  lastPracticed: string | null;
+  averageBpm: number | null;
+  bestBpm: number | null;
+}
+
+// Types pour les graphiques de progression
+export interface HeatmapDay {
+  date: string; // Format YYYY-MM-DD
+  minutes: number;
+  sessions: number;
+  level: 0 | 1 | 2 | 3 | 4; // Intensité 0 = rien, 4 = max
+}
+
+export interface HeatmapData {
+  days: HeatmapDay[];
+  maxMinutes: number;
+  totalDays: number;
+  activeDays: number;
+}
+
+export interface BpmProgressPoint {
+  date: string;
+  bpm: number;
+  songTitle: string;
+}
+
+export interface BpmProgressData {
+  songId: string;
+  songTitle: string;
+  songArtist: string;
+  coverUrl?: string;
+  points: BpmProgressPoint[];
+  bestBpm: number;
+  latestBpm: number;
+  improvement: number; // % d'amélioration
+}
+
+export interface MoodDistribution {
+  mood: SessionMood;
+  count: number;
+  percentage: number;
+  label: string;
+  emoji: string;
+  color: string;
+}
+
+export interface SongPracticeDistribution {
+  songId: string;
+  songTitle: string;
+  songArtist: string;
+  coverUrl?: string;
+  totalMinutes: number;
+  totalSessions: number;
+  percentage: number;
+}
+
+export interface ChartData {
+  heatmap: HeatmapData;
+  bpmProgress: BpmProgressData[];
+  moodDistribution: MoodDistribution[];
+  songDistribution: SongPracticeDistribution[];
+}
+
+// Types pour les filtres et tri de la bibliothèque
+export type SortOption =
+  | 'date_desc'
+  | 'date_asc'
+  | 'title_asc'
+  | 'title_desc'
+  | 'progress_desc'
+  | 'difficulty_asc'
+  | 'difficulty_desc';
+
+export interface FilterState {
+  difficulties: SongDifficulty[];
+  tunings: string[];
+  hasCapo: boolean | null;
+}
