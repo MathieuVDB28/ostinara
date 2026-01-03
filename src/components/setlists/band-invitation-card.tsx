@@ -53,10 +53,10 @@ export function BandInvitationCard({
       <div className="flex-1 min-w-0">
         <p className="font-medium">
           <span className="text-primary">
-            {invitation.inviter.display_name || invitation.inviter.username}
+            {invitation.inviter?.display_name || invitation.inviter?.username || "Quelqu'un"}
           </span>{" "}
           t&apos;invite a rejoindre{" "}
-          <span className="font-semibold">{invitation.band.name}</span>
+          <span className="font-semibold">{invitation.band?.name || "un groupe"}</span>
         </p>
         <p className="mt-0.5 text-sm text-muted-foreground">
           {new Date(invitation.created_at).toLocaleDateString("fr-FR", {

@@ -431,7 +431,12 @@ export async function getPendingBandInvitations(): Promise<
     return [];
   }
 
-  return data as BandInvitationWithDetails[];
+  // Filter out invitations where band or inviter couldn't be loaded (RLS)
+  const validInvitations = (data || []).filter(
+    (inv) => inv.band !== null && inv.inviter !== null
+  );
+
+  return validInvitations as BandInvitationWithDetails[];
 }
 
 // === Leave band ===
