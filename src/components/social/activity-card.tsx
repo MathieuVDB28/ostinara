@@ -12,6 +12,9 @@ const activityMessages: Record<string, string> = {
   cover_posted: "a posté une cover",
   friend_added: "a un nouvel ami",
   song_wishlisted: "veut apprendre",
+  setlist_created: "a créé une setlist",
+  band_created: "a créé un groupe",
+  band_joined: "a rejoint un groupe",
 };
 
 function ActivityIcon({ type }: { type: string }) {
@@ -44,6 +47,21 @@ function ActivityIcon({ type }: { type: string }) {
       return (
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+        </svg>
+      );
+    case "setlist_created":
+      return (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="1"/>
+          <path strokeLinecap="round" d="M9 12h6M9 16h4"/>
+        </svg>
+      );
+    case "band_created":
+    case "band_joined":
+      return (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       );
     default:
@@ -219,6 +237,40 @@ export function ActivityCard({ activity }: ActivityCardProps) {
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
             </svg>
+          </div>
+        </div>
+      )}
+
+      {activity.type === "setlist_created" && activity.metadata && (
+        <div className="flex items-center gap-3 rounded-lg bg-primary/10 p-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/20 text-primary">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+              <rect x="9" y="3" width="6" height="4" rx="1"/>
+              <path strokeLinecap="round" d="M9 12h6M9 16h4"/>
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-medium">{activity.metadata.name as string}</div>
+            <div className="truncate text-sm text-muted-foreground">
+              {activity.metadata.is_band ? "Setlist de groupe" : "Setlist personnelle"}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(activity.type === "band_created" || activity.type === "band_joined") && activity.metadata && (
+        <div className="flex items-center gap-3 rounded-lg bg-purple-500/10 p-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/20 text-purple-400">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-medium">{activity.metadata.band_name as string}</div>
+            <div className="truncate text-sm text-muted-foreground">
+              {activity.type === "band_created" ? "Nouveau groupe" : "A rejoint le groupe"}
+            </div>
           </div>
         </div>
       )}

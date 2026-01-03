@@ -286,7 +286,7 @@ export interface FriendRequest {
 }
 
 // Types pour les activités
-export type ActivityType = 'song_added' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted';
+export type ActivityType = 'song_added' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined';
 
 export interface Activity {
   id: string;
@@ -488,3 +488,173 @@ export interface FilterState {
   tunings: string[];
   hasCapo: boolean | null;
 }
+
+// =============================================
+// Types pour les groupes (Bands)
+// =============================================
+export type BandMemberRole = 'owner' | 'admin' | 'member';
+export type BandInvitationStatus = 'pending' | 'accepted' | 'declined';
+
+export interface Band {
+  id: string;
+  name: string;
+  description?: string;
+  cover_url?: string;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BandMember {
+  id: string;
+  band_id: string;
+  user_id: string;
+  role: BandMemberRole;
+  joined_at: string;
+}
+
+export interface BandMemberWithProfile extends BandMember {
+  profile: Profile;
+}
+
+export interface BandWithMembers extends Band {
+  members: BandMemberWithProfile[];
+  owner: Profile;
+}
+
+export interface BandInvitation {
+  id: string;
+  band_id: string;
+  inviter_id: string;
+  invitee_id: string;
+  status: BandInvitationStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BandInvitationWithDetails extends BandInvitation {
+  band: Band;
+  inviter: Profile;
+}
+
+export interface CreateBandInput {
+  name: string;
+  description?: string;
+  cover_url?: string;
+}
+
+export interface UpdateBandInput {
+  name?: string;
+  description?: string;
+  cover_url?: string;
+}
+
+// =============================================
+// Types pour les Setlists
+// =============================================
+export type SetlistItemType = 'song' | 'section';
+
+export interface Setlist {
+  id: string;
+  name: string;
+  description?: string;
+  concert_date?: string;
+  venue?: string;
+  band_id?: string;
+  user_id: string;
+  is_personal: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SetlistItem {
+  id: string;
+  setlist_id: string;
+  position: number;
+  item_type: SetlistItemType;
+
+  // Song fields
+  song_id?: string;
+  song_title?: string;
+  song_artist?: string;
+  song_cover_url?: string;
+  song_owner_id?: string;
+
+  // Section fields
+  section_name?: string;
+
+  // Common fields
+  notes?: string;
+  transition_seconds: number;
+  duration_seconds?: number;
+
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SetlistItemWithSongOwner extends SetlistItem {
+  song_owner?: Profile;
+}
+
+export interface SetlistWithDetails extends Setlist {
+  band?: Band;
+  items: SetlistItemWithSongOwner[];
+  total_duration_seconds: number;
+  song_count: number;
+}
+
+export interface CreateSetlistInput {
+  name: string;
+  description?: string;
+  concert_date?: string;
+  venue?: string;
+  band_id?: string;
+  is_personal?: boolean;
+}
+
+export interface UpdateSetlistInput {
+  name?: string;
+  description?: string;
+  concert_date?: string;
+  venue?: string;
+}
+
+export interface CreateSetlistItemInput {
+  setlist_id: string;
+  position: number;
+  item_type: SetlistItemType;
+
+  // For songs
+  song_id?: string;
+  song_title?: string;
+  song_artist?: string;
+  song_cover_url?: string;
+  song_owner_id?: string;
+
+  // For sections
+  section_name?: string;
+
+  notes?: string;
+  transition_seconds?: number;
+  duration_seconds?: number;
+}
+
+export interface UpdateSetlistItemInput {
+  position?: number;
+  notes?: string;
+  transition_seconds?: number;
+  duration_seconds?: number;
+  section_name?: string;
+}
+
+// Predefined section types for setlists
+export const SECTION_PRESETS = [
+  { name: 'Intro', icon: 'play', color: 'bg-blue-500/20 text-blue-400' },
+  { name: 'Pause', icon: 'pause', color: 'bg-yellow-500/20 text-yellow-400' },
+  { name: 'Rappel', icon: 'repeat', color: 'bg-purple-500/20 text-purple-400' },
+  { name: 'Outro', icon: 'stop', color: 'bg-red-500/20 text-red-400' },
+  { name: 'Medley', icon: 'layers', color: 'bg-green-500/20 text-green-400' },
+  { name: 'Acoustique', icon: 'guitar', color: 'bg-amber-500/20 text-amber-400' },
+] as const;
+
+export type SectionPresetName = typeof SECTION_PRESETS[number]['name'];

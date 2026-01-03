@@ -56,6 +56,33 @@ function getNotificationForActivity(
         },
         notificationType: "song_wishlisted",
       };
+    case "setlist_created":
+      return {
+        payload: {
+          title: "Nouvelle setlist",
+          body: `${userName} a cree la setlist "${metadata?.name}"`,
+          data: { url: "/feed" },
+        },
+        notificationType: "setlist_created",
+      };
+    case "band_created":
+      return {
+        payload: {
+          title: "Nouveau groupe",
+          body: `${userName} a cree le groupe "${metadata?.band_name}"`,
+          data: { url: "/feed" },
+        },
+        notificationType: "band_created",
+      };
+    case "band_joined":
+      return {
+        payload: {
+          title: "Nouveau membre",
+          body: `${userName} a rejoint ${metadata?.band_name}`,
+          data: { url: "/feed" },
+        },
+        notificationType: "band_joined",
+      };
     default:
       return null;
   }

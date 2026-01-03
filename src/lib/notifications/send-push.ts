@@ -33,7 +33,11 @@ export type NotificationType =
   | 'song_added'
   | 'song_mastered'
   | 'cover_posted'
-  | 'song_wishlisted';
+  | 'song_wishlisted'
+  | 'setlist_created'
+  | 'band_created'
+  | 'band_joined'
+  | 'band_invitation';
 
 export async function sendPushNotification(
   userId: string,
