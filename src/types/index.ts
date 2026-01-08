@@ -286,7 +286,7 @@ export interface FriendRequest {
 }
 
 // Types pour les activités
-export type ActivityType = 'song_added' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined';
+export type ActivityType = 'song_added' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won';
 
 export interface Activity {
   id: string;
@@ -658,3 +658,67 @@ export const SECTION_PRESETS = [
 ] as const;
 
 export type SectionPresetName = typeof SECTION_PRESETS[number]['name'];
+
+// =============================================
+// Types pour les Challenges
+// =============================================
+export type ChallengeType = 'practice_time' | 'streak' | 'song_mastery';
+export type ChallengeStatus = 'pending' | 'active' | 'completed' | 'cancelled' | 'declined';
+
+export interface Challenge {
+  id: string;
+  creator_id: string;
+  challenger_id: string;
+  challenge_type: ChallengeType;
+  status: ChallengeStatus;
+  duration_days: number;
+  starts_at: string | null;
+  ends_at: string | null;
+  song_id: string | null;
+  song_title: string | null;
+  song_artist: string | null;
+  song_cover_url: string | null;
+  winner_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChallengeProgress {
+  id: string;
+  challenge_id: string;
+  user_id: string;
+  practice_minutes: number;
+  streak_days: number;
+  streak_last_date: string | null;
+  song_mastered_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChallengeWithDetails extends Challenge {
+  creator: Profile;
+  challenger: Profile;
+  creator_progress: ChallengeProgress | null;
+  challenger_progress: ChallengeProgress | null;
+  song?: Song | null;
+}
+
+export interface CreateChallengeInput {
+  challenger_id: string;
+  challenge_type: ChallengeType;
+  duration_days: number;
+  song_id?: string;
+}
+
+// Types pour les Leaderboards
+export type LeaderboardPeriod = 'week' | 'month';
+
+export interface LeaderboardEntry {
+  user_id: string;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  total_minutes: number;
+  sessions_count: number;
+  rank: number;
+}

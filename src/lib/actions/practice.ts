@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { updateChallengeProgress } from "./challenges";
 import type {
   PracticeSession,
   PracticeSessionWithSong,
@@ -151,6 +152,9 @@ export async function createPracticeSession(
     console.error("Error creating practice session:", error);
     return { success: false, error: "Erreur lors de l'enregistrement de la session" };
   }
+
+  // Mettre à jour la progression des challenges actifs
+  updateChallengeProgress(input.duration_minutes).catch(console.error);
 
   revalidatePath("/progress");
   revalidatePath("/library");

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
+import { updateChallengeProgress } from "./challenges";
 import type { CreateSongInput, UpdateSongInput, Song, SongStatus } from "@/types";
 
 export async function getSongs(): Promise<Song[]> {
@@ -151,6 +152,10 @@ export async function updateSong(
       reference_id: id,
       metadata: { title: updatedSong.title, artist: updatedSong.artist, cover_url: updatedSong.cover_url },
     });
+
+    // Vérifier les challenges de maîtrise de morceau
+    updateChallengeProgress(undefined, id).catch(console.error);
+
     revalidatePath("/feed");
   }
 

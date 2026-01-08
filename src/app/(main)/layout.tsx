@@ -10,6 +10,7 @@ const navItems = [
   { href: "/progress", label: "Progression", icon: "chart" },
   { href: "/covers", label: "Covers", icon: "video" },
   { href: "/setlists", label: "Setlists", icon: "setlist" },
+  { href: "/challenges", label: "Défis", icon: "trophy" },
   { href: "/friends", label: "Amis", icon: "users" },
   { href: "/feed", label: "Feed", icon: "feed" },
 ];

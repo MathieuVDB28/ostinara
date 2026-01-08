@@ -37,7 +37,11 @@ export type NotificationType =
   | 'setlist_created'
   | 'band_created'
   | 'band_joined'
-  | 'band_invitation';
+  | 'band_invitation'
+  | 'challenge_created'
+  | 'challenge_accepted'
+  | 'challenge_completed'
+  | 'challenge_won';
 
 export async function sendPushNotification(
   userId: string,

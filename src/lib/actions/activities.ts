@@ -83,6 +83,42 @@ function getNotificationForActivity(
         },
         notificationType: "band_joined",
       };
+    case "challenge_created":
+      return {
+        payload: {
+          title: "Nouveau defi !",
+          body: `${userName} te lance un defi !`,
+          data: { url: "/challenges" },
+        },
+        notificationType: "challenge_created",
+      };
+    case "challenge_accepted":
+      return {
+        payload: {
+          title: "Defi accepte !",
+          body: `${userName} a accepte ton defi. C'est parti !`,
+          data: { url: "/challenges" },
+        },
+        notificationType: "challenge_accepted",
+      };
+    case "challenge_completed":
+      return {
+        payload: {
+          title: "Defi termine",
+          body: `Un defi avec ${userName} vient de se terminer`,
+          data: { url: "/challenges" },
+        },
+        notificationType: "challenge_completed",
+      };
+    case "challenge_won":
+      return {
+        payload: {
+          title: "Victoire !",
+          body: `${userName} a remporte un defi !`,
+          data: { url: "/challenges" },
+        },
+        notificationType: "challenge_won",
+      };
     default:
       return null;
   }

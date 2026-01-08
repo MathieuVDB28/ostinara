@@ -81,6 +81,17 @@ function NavIcon({ icon, className }: { icon: string; className?: string }) {
           <path strokeLinecap="round" d="M9 12h6M9 16h4"/>
         </svg>
       );
+    case "trophy":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12v2a6 6 0 01-12 0V4z"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 6H4a1 1 0 00-1 1v1a3 3 0 003 3h.5"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M18 6h2a1 1 0 011 1v1a3 3 0 01-3 3h-.5"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 16h6v4H9z"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 12v4"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M7 20h10"/>
+        </svg>
+      );
     default:
       return null;
   }

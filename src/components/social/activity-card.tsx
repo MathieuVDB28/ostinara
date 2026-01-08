@@ -15,6 +15,10 @@ const activityMessages: Record<string, string> = {
   setlist_created: "a créé une setlist",
   band_created: "a créé un groupe",
   band_joined: "a rejoint un groupe",
+  challenge_created: "a lancé un défi",
+  challenge_accepted: "a accepté un défi",
+  challenge_completed: "a terminé un défi",
+  challenge_won: "a remporté un défi !",
 };
 
 function ActivityIcon({ type }: { type: string }) {
@@ -62,6 +66,20 @@ function ActivityIcon({ type }: { type: string }) {
       return (
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      );
+    case "challenge_created":
+    case "challenge_accepted":
+    case "challenge_completed":
+    case "challenge_won":
+      return (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12v2a6 6 0 01-12 0V4z"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 6H4a1 1 0 00-1 1v1a3 3 0 003 3h.5"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M18 6h2a1 1 0 011 1v1a3 3 0 01-3 3h-.5"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 16h6v4H9z"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 12v4"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M7 20h10"/>
         </svg>
       );
     default:
@@ -272,6 +290,40 @@ export function ActivityCard({ activity }: ActivityCardProps) {
               {activity.type === "band_created" ? "Nouveau groupe" : "A rejoint le groupe"}
             </div>
           </div>
+        </div>
+      )}
+
+      {activity.type.startsWith("challenge_") && activity.metadata && (
+        <div className={`flex items-center gap-3 rounded-lg p-3 ${
+          activity.type === "challenge_won"
+            ? "bg-yellow-500/10"
+            : "bg-primary/10"
+        }`}>
+          <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${
+            activity.type === "challenge_won"
+              ? "bg-yellow-500/20 text-yellow-500"
+              : "bg-primary/20 text-primary"
+          }`}>
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12v2a6 6 0 01-12 0V4z"/>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 16h6v4H9z"/>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 12v4"/>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 20h10"/>
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-medium">
+              {activity.metadata.challenge_type === "practice_time" && "Defi temps de pratique"}
+              {activity.metadata.challenge_type === "streak" && "Defi streak"}
+              {activity.metadata.challenge_type === "song_mastery" && "Defi maitrise"}
+            </div>
+            <div className="truncate text-sm text-muted-foreground">
+              {activity.metadata.opponent_name ? `Contre ${String(activity.metadata.opponent_name)}` : null}
+            </div>
+          </div>
+          {activity.type === "challenge_won" && (
+            <span className="text-2xl">🏆</span>
+          )}
         </div>
       )}
     </div>
