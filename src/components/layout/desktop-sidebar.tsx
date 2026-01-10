@@ -92,6 +92,16 @@ function NavIcon({ icon, className }: { icon: string; className?: string }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M7 20h10"/>
         </svg>
       );
+    case "metronome":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v4"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 21l2-14h4l2 14H8z"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18l-4-10" strokeWidth="2"/>
+          <circle cx="12" cy="7" r="1" fill="currentColor"/>
+          <path strokeLinecap="round" d="M6 21h12"/>
+        </svg>
+      );
     default:
       return null;
   }

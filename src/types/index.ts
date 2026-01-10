@@ -18,6 +18,7 @@ export interface Song {
   capo_position: number;
   tabs_url?: string;
   notes?: string;
+  target_bpm?: number;
   created_at: string;
   updated_at: string;
 }
@@ -49,6 +50,7 @@ export interface UpdateSongInput {
   capo_position?: number;
   tabs_url?: string;
   notes?: string;
+  target_bpm?: number;
 }
 
 // Types pour la wishlist
@@ -722,3 +724,124 @@ export interface LeaderboardEntry {
   sessions_count: number;
   rank: number;
 }
+
+// =============================================
+// Types pour le Mode Practice et Métronome
+// =============================================
+
+// Catégories d'exercices
+export type ExerciseCategory =
+  | 'scales'        // Gammes
+  | 'arpeggios'     // Arpèges
+  | 'picking'       // Picking/Strumming
+  | 'chord_changes' // Changements d'accords
+  | 'fingerstyle'   // Fingerpicking
+  | 'technique'     // Technique générale
+  | 'rhythm';       // Exercices rythmiques
+
+export type ExerciseDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+
+export interface Exercise {
+  id: string;
+  name: string;
+  description?: string;
+  category: ExerciseCategory;
+  difficulty: ExerciseDifficulty;
+  starting_bpm: number;
+  target_bpm: number;
+  bpm_increment: number;
+  time_signature: string;
+  instructions: string[];
+  tips: string[];
+  video_url?: string;
+  duration_minutes: number;
+  is_system: boolean;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserExercise {
+  id: string;
+  user_id: string;
+  exercise_id: string;
+  current_bpm: number;
+  best_bpm: number;
+  total_practice_minutes: number;
+  sessions_count: number;
+  last_practiced_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserExerciseWithExercise extends UserExercise {
+  exercise: Exercise;
+}
+
+export interface ExerciseWithProgress extends Exercise {
+  user_progress?: UserExercise;
+}
+
+export interface PracticeSessionExercise {
+  id: string;
+  practice_session_id: string;
+  exercise_id: string;
+  duration_minutes: number;
+  bpm_achieved?: number;
+  created_at: string;
+}
+
+export interface CreateUserExerciseProgressInput {
+  exercise_id: string;
+  current_bpm: number;
+  duration_minutes: number;
+  bpm_achieved?: number;
+}
+
+// Types pour le Métronome
+export interface TimeSignature {
+  beats: number;      // Numérateur (ex: 4)
+  noteValue: number;  // Dénominateur (ex: 4)
+}
+
+export type Subdivision = 'none' | 'eighth' | 'triplet' | 'sixteenth';
+
+export interface MetronomeConfig {
+  bpm: number;
+  timeSignature: TimeSignature;
+  subdivision: Subdivision;
+  accentPattern: number[];  // Ex: [1, 0, 0, 0] accent sur beat 1
+  volume: number;           // 0-1
+  silentMode: boolean;
+  silentBeats: number[];    // Index des beats silencieux
+}
+
+// Signatures temporelles disponibles
+export const TIME_SIGNATURES: TimeSignature[] = [
+  { beats: 4, noteValue: 4 },   // 4/4 - Standard
+  { beats: 3, noteValue: 4 },   // 3/4 - Valse
+  { beats: 6, noteValue: 8 },   // 6/8 - Compound duple
+  { beats: 2, noteValue: 4 },   // 2/4 - March
+  { beats: 5, noteValue: 4 },   // 5/4 - Odd meter
+  { beats: 7, noteValue: 8 },   // 7/8 - Balkans
+  { beats: 12, noteValue: 8 },  // 12/8 - Blues shuffle
+];
+
+// Labels pour les catégories d'exercices
+export const EXERCISE_CATEGORY_LABELS: Record<ExerciseCategory, string> = {
+  scales: 'Gammes',
+  arpeggios: 'Arpèges',
+  picking: 'Picking',
+  chord_changes: 'Accords',
+  fingerstyle: 'Fingerstyle',
+  technique: 'Technique',
+  rhythm: 'Rythme',
+};
+
+// Labels pour les subdivisions
+export const SUBDIVISION_LABELS: Record<Subdivision, string> = {
+  none: 'Aucune',
+  eighth: 'Croches',
+  triplet: 'Triolets',
+  sixteenth: 'Doubles croches',
+};

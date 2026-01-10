@@ -8,6 +8,7 @@ import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
 const navItems = [
   { href: "/library", label: "Bibliothèque", icon: "library" },
   { href: "/progress", label: "Progression", icon: "chart" },
+  { href: "/practice", label: "Practice", icon: "metronome" },
   { href: "/covers", label: "Covers", icon: "video" },
   { href: "/setlists", label: "Setlists", icon: "setlist" },
   { href: "/challenges", label: "Défis", icon: "trophy" },
