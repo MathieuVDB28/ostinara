@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { leaveBand, deleteBand, removeBandMember } from "@/lib/actions/bands";
+import { getActiveJamSession } from "@/lib/actions/jam-sessions";
 import { InviteMemberModal } from "./invite-member-modal";
-import type { BandWithMembers } from "@/types";
+import { StartJamModal } from "@/components/jam/start-jam-modal";
+import type { BandWithMembers, JamSession } from "@/types";
 
 interface BandCardProps {
   band: BandWithMembers;
@@ -14,11 +17,22 @@ interface BandCardProps {
 export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showJamModal, setShowJamModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [activeJam, setActiveJam] = useState<JamSession | null>(null);
 
   const isOwner = band.owner_id === currentUserId;
   const memberCount = band.members.length;
+
+  // Check for active jam session
+  useEffect(() => {
+    async function checkActiveJam() {
+      const session = await getActiveJamSession(band.id);
+      setActiveJam(session);
+    }
+    checkActiveJam();
+  }, [band.id]);
 
   const handleLeave = async () => {
     if (!confirm("Es-tu sur de vouloir quitter ce groupe ?")) return;
@@ -183,6 +197,37 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
 
             {/* Actions */}
             <div className="flex flex-wrap gap-2">
+              {/* Jam Session button */}
+              {activeJam ? (
+                <Link
+                  href={`/jam/${activeJam.id}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-green-500 px-3 py-1.5 text-sm font-medium text-white transition-all hover:bg-green-600"
+                >
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
+                  Rejoindre la Jam
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setShowJamModal(true)}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-all hover:bg-amber-600"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                    />
+                  </svg>
+                  Demarrer Jam
+                </button>
+              )}
+
               <button
                 onClick={() => setShowInviteModal(true)}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
@@ -250,6 +295,13 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
         onSuccess={onUpdate}
         bandId={band.id}
         bandName={band.name}
+      />
+
+      {/* Start Jam modal */}
+      <StartJamModal
+        isOpen={showJamModal}
+        onClose={() => setShowJamModal(false)}
+        band={band}
       />
     </>
   );

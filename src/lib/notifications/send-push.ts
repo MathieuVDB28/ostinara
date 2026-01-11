@@ -41,7 +41,8 @@ export type NotificationType =
   | 'challenge_created'
   | 'challenge_accepted'
   | 'challenge_completed'
-  | 'challenge_won';
+  | 'challenge_won'
+  | 'jam_session_started';
 
 export async function sendPushNotification(
   userId: string,

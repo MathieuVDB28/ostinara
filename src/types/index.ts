@@ -853,3 +853,97 @@ export const SUBDIVISION_LABELS: Record<Subdivision, string> = {
   triplet: 'Triolets',
   sixteenth: 'Doubles croches',
 };
+
+// =============================================
+// Types pour les Jam Sessions
+// =============================================
+export type JamSessionStatus = 'waiting' | 'active' | 'paused' | 'ended';
+
+export interface JamSession {
+  id: string;
+  band_id: string;
+  host_id: string;
+  setlist_id: string | null;
+  status: JamSessionStatus;
+
+  // Metronome state
+  bpm: number;
+  time_signature_beats: number;
+  time_signature_value: number;
+  is_metronome_playing: boolean;
+
+  // Current song
+  current_song_index: number | null;
+  current_song_id: string | null;
+  current_song_title: string | null;
+  current_song_artist: string | null;
+
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JamSessionWithDetails extends JamSession {
+  band: BandWithMembers;
+  host: Profile;
+  setlist?: SetlistWithDetails | null;
+  participants: JamSessionParticipantWithProfile[];
+}
+
+export interface JamSessionParticipant {
+  id: string;
+  session_id: string;
+  user_id: string;
+  joined_at: string;
+  left_at: string | null;
+  is_active: boolean;
+}
+
+export interface JamSessionParticipantWithProfile extends JamSessionParticipant {
+  profile: Profile;
+}
+
+export interface JamSessionMessage {
+  id: string;
+  session_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+}
+
+export interface JamSessionMessageWithProfile extends JamSessionMessage {
+  profile: Profile;
+}
+
+// Realtime Presence state for Jam Session
+export interface JamPresenceState {
+  user_id: string;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  online_at: string;
+}
+
+// Realtime Broadcast Events
+export interface JamMetronomeSyncEvent {
+  type: 'metronome_sync';
+  bpm: number;
+  time_signature_beats: number;
+  time_signature_value: number;
+  is_playing: boolean;
+  start_time?: number;
+}
+
+export interface JamSongChangeEvent {
+  type: 'song_change';
+  song_index: number | null;
+  song_id: string | null;
+  song_title: string | null;
+  song_artist: string | null;
+}
+
+export interface CreateJamSessionInput {
+  band_id: string;
+  setlist_id?: string;
+}
