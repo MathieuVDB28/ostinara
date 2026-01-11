@@ -7,8 +7,11 @@ import { createSong } from "@/lib/actions/songs";
 import type { UserProfile, UpdateProfileInput, Song } from "@/types";
 import { FavoritesGrid } from "@/components/profile/favorites-grid";
 import { FavoriteSelectorModal } from "@/components/profile/favorite-selector-modal";
+import { SubscriptionStatusBadge } from "@/components/subscription";
+import { PLANS } from "@/lib/stripe/config";
+import Link from "next/link";
 
-type Tab = "profile" | "favorites" | "privacy";
+type Tab = "profile" | "favorites" | "privacy" | "subscription";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -302,6 +305,19 @@ export default function EditProfilePage() {
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
             )}
           </button>
+          <button
+            onClick={() => setActiveTab("subscription")}
+            className={`relative pb-3 text-sm font-medium transition-colors ${
+              activeTab === "subscription"
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Abonnement
+            {activeTab === "subscription" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -588,6 +604,77 @@ export default function EditProfilePage() {
                   </>
                 )}
               </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Tab Abonnement */}
+        {activeTab === "subscription" && (
+          <div className="space-y-6">
+            {/* Plan actuel */}
+            <div className="rounded-xl border border-border bg-card p-6">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h3 className="mb-2 text-lg font-semibold">Mon plan</h3>
+                  <SubscriptionStatusBadge
+                    plan={profile.plan}
+                    status={profile.subscription_status}
+                    periodEnd={profile.subscription_period_end}
+                  />
+                </div>
+                <Link
+                  href="/account/subscription"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {profile.plan === "free" ? "Passer Pro" : "Gérer"}
+                </Link>
+              </div>
+            </div>
+
+            {/* Résumé du plan */}
+            <div className="rounded-xl border border-border bg-card/50 p-6">
+              <h3 className="mb-4 text-lg font-semibold">
+                Fonctionnalités de ton plan
+              </h3>
+              <ul className="space-y-3">
+                {PLANS[profile.plan].features.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm">
+                    <svg
+                      className="mt-0.5 h-4 w-4 shrink-0 text-green-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span className="text-muted-foreground">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {profile.plan === "free" && (
+                <div className="mt-6 rounded-lg bg-primary/10 p-4">
+                  <p className="text-sm text-primary">
+                    <strong>Passe Pro</strong> pour débloquer morceaux illimités,
+                    covers illimités, et bien plus encore !
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Comparaison des plans */}
+            <div className="text-center">
+              <Link
+                href="/pricing"
+                className="text-sm text-primary hover:underline"
+              >
+                Comparer tous les plans →
+              </Link>
             </div>
           </div>
         )}

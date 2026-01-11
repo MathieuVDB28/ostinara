@@ -119,6 +119,9 @@ export interface SpotifyAlbumSearchResult {
 // Types pour le profil
 export type UserPlan = 'free' | 'pro' | 'band';
 
+// Types pour les abonnements Stripe
+export type SubscriptionStatus = 'none' | 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete' | 'incomplete_expired' | 'unpaid' | 'paused';
+
 export interface Profile {
   id: string;
   username: string;
@@ -133,6 +136,11 @@ export interface Profile {
   facebook_url?: string;
   is_private: boolean;
   updated_at?: string;
+  // Stripe subscription fields
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
+  subscription_status?: SubscriptionStatus;
+  subscription_period_end?: string;
 }
 
 // Types pour les liens sociaux
