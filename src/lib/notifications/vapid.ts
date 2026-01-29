@@ -1,6 +1,6 @@
 export const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
 export const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
-export const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:contact@tunora.app';
+export const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:contact@ostinara.app';
 
 if (typeof window === 'undefined') {
   // Server-side check

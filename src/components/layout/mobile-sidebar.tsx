@@ -153,13 +153,13 @@ export function MobileSidebar({ navItems, userInfo, onLogout }: MobileSidebarPro
           <div className="flex h-9 w-9 items-center justify-center">
             <Image
               src="/logo.png"
-              alt="Tunora"
+              alt="Ostinara"
               width={36}
               height={36}
               className="rounded-lg"
             />
           </div>
-          <span className="text-xl font-bold">Tunora</span>
+          <span className="text-xl font-bold">Ostinara</span>
         </div>
       </header>
 

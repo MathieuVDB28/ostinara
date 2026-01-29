@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Starting Tunora with ngrok tunnel..."
+echo "🚀 Starting Ostinara with ngrok tunnel..."
 echo ""
 
 # Start Next.js in background

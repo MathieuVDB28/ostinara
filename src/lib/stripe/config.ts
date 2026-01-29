@@ -23,7 +23,7 @@ export interface PlanConfig {
 export const PLANS: Record<UserPlan, PlanConfig> = {
   free: {
     name: 'Free',
-    description: 'Pour découvrir Tunora',
+    description: 'Pour découvrir Ostinara',
     features: [
       '10 morceaux max',
       '3 covers max',

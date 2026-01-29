@@ -8,6 +8,7 @@ import { AddCoverModal } from "@/components/covers/add-cover-modal";
 import { CoverDetailModal } from "@/components/covers/cover-detail-modal";
 import { SongSessionsPanel } from "@/components/progress/song-sessions-panel";
 import { AddSessionModal } from "@/components/progress/add-session-modal";
+import { AddToPlaylistModal } from "./add-to-playlist-modal";
 import type { Song, SongDifficulty, SongStatus, Cover, CoverWithSong } from "@/types";
 
 interface EditSongModalProps {
@@ -15,6 +16,7 @@ interface EditSongModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: () => void;
+  onDelete?: (songId: string) => void;
 }
 
 const statusOptions: { value: SongStatus; label: string }[] = [
@@ -42,7 +44,7 @@ const tuningOptions = [
   "Open C",
 ];
 
-export function EditSongModal({ song, isOpen, onClose, onUpdate }: EditSongModalProps) {
+export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete }: EditSongModalProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -59,6 +61,9 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate }: EditSongModal
   // Sessions state
   const [showAddSession, setShowAddSession] = useState(false);
   const [sessionsPanelKey, setSessionsPanelKey] = useState(0);
+
+  // Playlist state
+  const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -148,8 +153,12 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate }: EditSongModal
     const result = await deleteSong(song.id);
 
     if (result.success) {
-      onUpdate();
-      onClose();
+      if (onDelete) {
+        onDelete(song.id);
+      } else {
+        onUpdate();
+        onClose();
+      }
     } else {
       setError(result.error || "Erreur lors de la suppression");
       setDeleting(false);
@@ -409,6 +418,17 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate }: EditSongModal
             />
           </div>
 
+          {/* Add to playlist */}
+          <button
+            onClick={() => setShowAddToPlaylist(true)}
+            className="flex w-full items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm transition-colors hover:bg-accent"
+          >
+            <svg className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span className="font-medium">Ajouter à une playlist</span>
+          </button>
+
           {error && (
             <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {error}
@@ -597,6 +617,17 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate }: EditSongModal
         songs={[song]}
         timerSong={song}
         mode="manual"
+      />
+
+      {/* Add to Playlist Modal */}
+      <AddToPlaylistModal
+        songId={song.id}
+        isOpen={showAddToPlaylist}
+        onClose={() => setShowAddToPlaylist(false)}
+        onSuccess={() => {
+          router.refresh();
+          onUpdate();
+        }}
       />
     </div>
   );

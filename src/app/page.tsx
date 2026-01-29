@@ -98,14 +98,14 @@ export default function Home() {
             <div className="flex h-9 w-9 items-center justify-center">
               <Image
                 src="/logo.png"
-                alt="Tunora"
+                alt="Ostinara"
                 width={36}
                 height={36}
                 className="rounded-lg"
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-bold leading-tight">Tunora</span>
+              <span className="text-xl font-bold leading-tight">Ostinara</span>
               <span className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">Stay tuned</span>
             </div>
           </Link>
@@ -241,7 +241,7 @@ export default function Home() {
             </svg>
           </div>
           <blockquote className="text-2xl font-medium leading-relaxed sm:text-3xl">
-            &ldquo;Depuis que j&apos;utilise Tunora, je vois enfin ma progression.
+            &ldquo;Depuis que j&apos;utilise Ostinara, je vois enfin ma progression.
             Ça me motive à pratiquer tous les jours.&rdquo;
           </blockquote>
           <div className="mt-6">
@@ -264,7 +264,7 @@ export default function Home() {
                 Prêt à tracker ta progression ?
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-                Rejoins des milliers de guitaristes qui utilisent Tunora pour progresser chaque jour.
+                Rejoins des milliers de guitaristes qui utilisent Ostinara pour progresser chaque jour.
               </p>
               <div className="mt-8">
                 <Link
@@ -293,14 +293,14 @@ export default function Home() {
               <div className="flex h-8 w-8 items-center justify-center">
                 <Image
                   src="/logo.png"
-                  alt="Tunora"
+                  alt="Ostinara"
                   width={32}
                   height={32}
                   className="rounded-lg"
                 />
               </div>
               <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-                <span className="font-semibold">Tunora</span>
+                <span className="font-semibold">Ostinara</span>
                 <span className="text-xs text-muted-foreground italic">stay tuned</span>
               </div>
             </div>
@@ -310,7 +310,7 @@ export default function Home() {
               <Link href="#" className="transition-colors hover:text-foreground">Mentions légales</Link>
             </div>
             <div className="text-sm text-muted-foreground">
-              © 2025 Tunora. Tous droits réservés.
+              © 2025 Ostinara. Tous droits réservés.
             </div>
           </div>
         </div>

@@ -9,8 +9,12 @@ import { FilterPopover } from "./filter-popover";
 import { SortDropdown } from "./sort-dropdown";
 import { WishlistCard } from "@/components/wishlist/wishlist-card";
 import { AddToWishlistModal } from "@/components/wishlist/add-to-wishlist-modal";
+import { PlaylistCard } from "./playlist-card";
+import { CreatePlaylistModal } from "./create-playlist-modal";
+import { EditPlaylistModal } from "./edit-playlist-modal";
+import { PlaylistDetailView } from "./playlist-detail-view";
 import { removeFromWishlist } from "@/lib/actions/wishlist";
-import type { Song, SongStatus, SongDifficulty, FilterState, SortOption, WishlistSong } from "@/types";
+import type { Song, SongStatus, SongDifficulty, FilterState, SortOption, WishlistSong, PlaylistWithSongs } from "@/types";
 
 // Helper pour ordonner les difficultés
 function difficultyOrder(difficulty: SongDifficulty | undefined): number {
@@ -35,9 +39,10 @@ function countActiveFilters(filters: FilterState): number {
 interface LibraryViewProps {
   initialSongs: Song[];
   initialWishlistSongs: WishlistSong[];
+  initialPlaylists: PlaylistWithSongs[];
 }
 
-type MainTab = "library" | "wishlist";
+type MainTab = "library" | "wishlist" | "playlists";
 
 const mainTabs: { value: MainTab; label: string; icon: React.ReactNode }[] = [
   {
@@ -46,6 +51,15 @@ const mainTabs: { value: MainTab; label: string; icon: React.ReactNode }[] = [
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+      </svg>
+    ),
+  },
+  {
+    value: "playlists",
+    label: "Playlists",
+    icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
       </svg>
     ),
   },
@@ -67,13 +81,17 @@ const statusTabs: { value: SongStatus | "all"; label: string }[] = [
   { value: "mastered", label: "Maîtrisés" },
 ];
 
-export function LibraryView({ initialSongs, initialWishlistSongs }: LibraryViewProps) {
+export function LibraryView({ initialSongs, initialWishlistSongs, initialPlaylists }: LibraryViewProps) {
   const router = useRouter();
   const [songs, setSongs] = useState(initialSongs);
   const [wishlistSongs, setWishlistSongs] = useState(initialWishlistSongs);
+  const [playlists, setPlaylists] = useState(initialPlaylists);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false);
+  const [isCreatePlaylistModalOpen, setIsCreatePlaylistModalOpen] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<PlaylistWithSongs | null>(null);
+  const [editingPlaylist, setEditingPlaylist] = useState<PlaylistWithSongs | null>(null);
   const [mainTab, setMainTab] = useState<MainTab>("library");
   const [activeFilter, setActiveFilter] = useState<SongStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,6 +114,10 @@ export function LibraryView({ initialSongs, initialWishlistSongs }: LibraryViewP
   useEffect(() => {
     setWishlistSongs(initialWishlistSongs);
   }, [initialWishlistSongs]);
+
+  useEffect(() => {
+    setPlaylists(initialPlaylists);
+  }, [initialPlaylists]);
 
   // Extraire les tunings uniques disponibles
   const availableTunings = useMemo(() => {
@@ -223,28 +245,36 @@ export function LibraryView({ initialSongs, initialWishlistSongs }: LibraryViewP
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">
-            {mainTab === "library" ? "Ma bibliothèque" : "Ma wishlist"}
+            {mainTab === "library" ? "Ma bibliothèque" : mainTab === "wishlist" ? "Ma wishlist" : "Mes playlists"}
           </h1>
           <p className="mt-1 text-muted-foreground">
             {mainTab === "library" ? (
               <>
                 {stats.total} morceau{stats.total > 1 ? "x" : ""} • {stats.learning} en cours • {stats.mastered} maîtrisé{stats.mastered > 1 ? "s" : ""}
               </>
-            ) : (
+            ) : mainTab === "wishlist" ? (
               <>
                 {wishlistSongs.length} morceau{wishlistSongs.length > 1 ? "x" : ""} à apprendre un jour
+              </>
+            ) : (
+              <>
+                {playlists.length} playlist{playlists.length > 1 ? "s" : ""}
               </>
             )}
           </p>
         </div>
         <button
-          onClick={() => mainTab === "library" ? setIsAddModalOpen(true) : setIsWishlistModalOpen(true)}
+          onClick={() => {
+            if (mainTab === "library") setIsAddModalOpen(true);
+            else if (mainTab === "wishlist") setIsWishlistModalOpen(true);
+            else setIsCreatePlaylistModalOpen(true);
+          }}
           className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          {mainTab === "library" ? "Ajouter un morceau" : "Ajouter à la wishlist"}
+          {mainTab === "library" ? "Ajouter un morceau" : mainTab === "wishlist" ? "Ajouter à la wishlist" : "Créer une playlist"}
         </button>
       </div>
 
@@ -268,7 +298,7 @@ export function LibraryView({ initialSongs, initialWishlistSongs }: LibraryViewP
             <span className={`ml-1 rounded-full px-2 py-0.5 text-xs ${
               mainTab === tab.value ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
             }`}>
-              {tab.value === "library" ? songs.length : wishlistSongs.length}
+              {tab.value === "library" ? songs.length : tab.value === "wishlist" ? wishlistSongs.length : playlists.length}
             </span>
           </button>
         ))}
@@ -473,6 +503,53 @@ export function LibraryView({ initialSongs, initialWishlistSongs }: LibraryViewP
         </>
       )}
 
+      {/* Playlists Tab Content */}
+      {mainTab === "playlists" && (
+        <>
+          {selectedPlaylist ? (
+            <PlaylistDetailView
+              playlist={selectedPlaylist}
+              onBack={() => setSelectedPlaylist(null)}
+              onEdit={() => setEditingPlaylist(selectedPlaylist)}
+              onSongClick={(song) => setSelectedSong(song)}
+            />
+          ) : playlists.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {playlists.map((playlist) => (
+                <PlaylistCard
+                  key={playlist.id}
+                  playlist={playlist}
+                  onClick={() => setSelectedPlaylist(playlist)}
+                  onEdit={() => setEditingPlaylist(playlist)}
+                  onRefresh={handleRefresh}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <h3 className="mb-2 text-lg font-semibold">Aucune playlist</h3>
+              <p className="mb-6 max-w-sm text-center text-muted-foreground">
+                Crée des playlists pour organiser tes morceaux par thème, humeur ou projet
+              </p>
+              <button
+                onClick={() => setIsCreatePlaylistModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Créer une playlist
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
       {/* Add song modal */}
       <AddSongModal
         isOpen={isAddModalOpen}
@@ -486,6 +563,11 @@ export function LibraryView({ initialSongs, initialWishlistSongs }: LibraryViewP
         isOpen={!!selectedSong}
         onClose={() => setSelectedSong(null)}
         onUpdate={handleRefresh}
+        onDelete={(songId) => {
+          setSongs((prev) => prev.filter((s) => s.id !== songId));
+          setSelectedSong(null);
+          handleRefresh();
+        }}
       />
 
       {/* Add to wishlist modal */}
@@ -504,6 +586,27 @@ export function LibraryView({ initialSongs, initialWishlistSongs }: LibraryViewP
           prefillTrack={wishlistToSpotifyResult(wishlistToLearn)}
         />
       )}
+
+      {/* Create playlist modal */}
+      <CreatePlaylistModal
+        isOpen={isCreatePlaylistModalOpen}
+        onClose={() => setIsCreatePlaylistModalOpen(false)}
+        onSuccess={handleRefresh}
+      />
+
+      {/* Edit playlist modal */}
+      <EditPlaylistModal
+        playlist={editingPlaylist}
+        isOpen={!!editingPlaylist}
+        onClose={() => {
+          setEditingPlaylist(null);
+          // Refresh the selected playlist if it was being edited
+          if (selectedPlaylist && editingPlaylist?.id === selectedPlaylist.id) {
+            setSelectedPlaylist(null);
+          }
+        }}
+        onSuccess={handleRefresh}
+      />
     </div>
   );
 }

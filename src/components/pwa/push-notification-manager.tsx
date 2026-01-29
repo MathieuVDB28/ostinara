@@ -50,7 +50,7 @@ export function PushNotificationManager({ userId }: PushNotificationManagerProps
       try {
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.getSubscription();
-        const wasSubscribed = localStorage.getItem('tunora_push_enabled') === 'true';
+        const wasSubscribed = localStorage.getItem('ostinara_push_enabled') === 'true';
 
         if (!subscription && wasSubscribed) {
           console.log('Subscription lost, resubscribing automatically...');
@@ -58,7 +58,7 @@ export function PushNotificationManager({ userId }: PushNotificationManagerProps
         } else if (subscription) {
           setIsSubscribed(true);
           if (!wasSubscribed) {
-            localStorage.setItem('tunora_push_enabled', 'true');
+            localStorage.setItem('ostinara_push_enabled', 'true');
           }
         }
       } catch (error) {
@@ -179,7 +179,7 @@ export function PushNotificationManager({ userId }: PushNotificationManagerProps
         const data = await response.json();
         console.log('✅ Subscription saved:', data);
         setIsSubscribed(true);
-        localStorage.setItem('tunora_push_enabled', 'true');
+        localStorage.setItem('ostinara_push_enabled', 'true');
         console.log('🎉 Successfully subscribed to push notifications!');
       } else {
         const errorData = await response.json();
@@ -223,7 +223,7 @@ export function PushNotificationManager({ userId }: PushNotificationManagerProps
         });
 
         setIsSubscribed(false);
-        localStorage.removeItem('tunora_push_enabled');
+        localStorage.removeItem('ostinara_push_enabled');
       }
     } catch (error) {
       console.error('Error unsubscribing:', error);

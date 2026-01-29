@@ -348,7 +348,7 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
               year: "numeric",
             })}
           </Text>
-          <Text style={styles.footerText}>Tunora - Setlist Builder</Text>
+          <Text style={styles.footerText}>Ostinara - Setlist Builder</Text>
         </View>
       </Page>
     </Document>

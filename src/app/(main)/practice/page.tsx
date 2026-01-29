@@ -6,7 +6,7 @@ import { PracticeView } from "@/components/practice/practice-view";
 import type { SongPracticeStats } from "@/types";
 
 export const metadata = {
-  title: "Practice | Tunora",
+  title: "Practice | Ostinara",
   description: "Mode Practice avec métronome intégré et exercices structurés",
 };
 

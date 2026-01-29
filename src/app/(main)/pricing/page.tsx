@@ -58,7 +58,7 @@ export default function PricingPage() {
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold md:text-4xl">Choisissez votre plan</h1>
         <p className="mt-3 text-muted-foreground">
-          Débloquez tout le potentiel de Tunora pour progresser plus vite
+          Débloquez tout le potentiel d'Ostinara pour progresser plus vite
         </p>
       </div>
 

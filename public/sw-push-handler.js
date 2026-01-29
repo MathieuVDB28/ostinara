@@ -14,7 +14,7 @@ self.addEventListener('push', function (event) {
     const data = event.data.json();
     console.log('Push notification data:', data);
 
-    const title = data.title || 'Tunora';
+    const title = data.title || 'Ostinara';
     const options = {
       body: data.body || '',
       icon: data.icon || '/icons/android/android-launchericon-192-192.png',
@@ -59,4 +59,4 @@ self.addEventListener('notificationclick', function (event) {
   );
 });
 
-console.log('Tunora push notification handler loaded');
+console.log('Ostinara push notification handler loaded');

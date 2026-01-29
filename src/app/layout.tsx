@@ -14,14 +14,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tunora - Track your guitar journey",
+  title: "Ostinara - Track your guitar journey",
   description: "Track your progress, manage your repertoire, and share your covers with friends. The ultimate app for guitarists.",
   keywords: ["guitar", "music", "practice", "covers", "learning", "progress tracker"],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Tunora",
+    title: "Ostinara",
   },
   formatDetection: {
     telephone: false,

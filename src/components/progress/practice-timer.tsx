@@ -12,7 +12,7 @@ interface TimerState {
   songId: string | null;
 }
 
-const TIMER_STORAGE_KEY = "tunora_practice_timer";
+const TIMER_STORAGE_KEY = "ostinara_practice_timer";
 
 interface PracticeTimerProps {
   songs: Song[];
