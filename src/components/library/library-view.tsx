@@ -13,8 +13,10 @@ import { PlaylistCard } from "./playlist-card";
 import { CreatePlaylistModal } from "./create-playlist-modal";
 import { EditPlaylistModal } from "./edit-playlist-modal";
 import { PlaylistDetailView } from "./playlist-detail-view";
+import { SpotifySuggestions } from "./spotify-suggestions";
+import { ImportPlaylistModal } from "./import-playlist-modal";
 import { removeFromWishlist } from "@/lib/actions/wishlist";
-import type { Song, SongStatus, SongDifficulty, FilterState, SortOption, WishlistSong, PlaylistWithSongs } from "@/types";
+import type { Song, SongStatus, SongDifficulty, FilterState, SortOption, WishlistSong, PlaylistWithSongs, UserPlan } from "@/types";
 
 // Helper pour ordonner les difficultés
 function difficultyOrder(difficulty: SongDifficulty | undefined): number {
@@ -40,6 +42,8 @@ interface LibraryViewProps {
   initialSongs: Song[];
   initialWishlistSongs: WishlistSong[];
   initialPlaylists: PlaylistWithSongs[];
+  userPlan?: UserPlan;
+  spotifyConnected?: boolean;
 }
 
 type MainTab = "library" | "wishlist" | "playlists";
@@ -81,7 +85,7 @@ const statusTabs: { value: SongStatus | "all"; label: string }[] = [
   { value: "mastered", label: "Maîtrisés" },
 ];
 
-export function LibraryView({ initialSongs, initialWishlistSongs, initialPlaylists }: LibraryViewProps) {
+export function LibraryView({ initialSongs, initialWishlistSongs, initialPlaylists, userPlan = "free", spotifyConnected = false }: LibraryViewProps) {
   const router = useRouter();
   const [songs, setSongs] = useState(initialSongs);
   const [wishlistSongs, setWishlistSongs] = useState(initialWishlistSongs);
@@ -101,6 +105,9 @@ export function LibraryView({ initialSongs, initialWishlistSongs, initialPlaylis
     hasCapo: null,
   });
   const [sortBy, setSortBy] = useState<SortOption>("date_desc");
+
+  // Import Spotify state
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Pour le modal "Apprendre" depuis la wishlist
   const [wishlistToLearn, setWishlistToLearn] = useState<WishlistSong | null>(null);
@@ -263,23 +270,36 @@ export function LibraryView({ initialSongs, initialWishlistSongs, initialPlaylis
             )}
           </p>
         </div>
-        <button
-          onClick={() => {
-            if (mainTab === "library") setIsAddModalOpen(true);
-            else if (mainTab === "wishlist") setIsWishlistModalOpen(true);
-            else setIsCreatePlaylistModalOpen(true);
-          }}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          {mainTab === "library" ? "Ajouter un morceau" : mainTab === "wishlist" ? "Ajouter à la wishlist" : "Créer une playlist"}
-        </button>
+        <div className="flex items-center gap-2">
+          {mainTab === "library" && spotifyConnected && userPlan !== "free" && (
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 font-medium transition-colors hover:bg-accent"
+            >
+              <svg className="h-5 w-5 text-green-500" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+              </svg>
+              Importer
+            </button>
+          )}
+          <button
+            onClick={() => {
+              if (mainTab === "library") setIsAddModalOpen(true);
+              else if (mainTab === "wishlist") setIsWishlistModalOpen(true);
+              else setIsCreatePlaylistModalOpen(true);
+            }}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            {mainTab === "library" ? "Ajouter un morceau" : mainTab === "wishlist" ? "Ajouter à la wishlist" : "Créer une playlist"}
+          </button>
+        </div>
       </div>
 
-      {/* Main tabs (Library / Wishlist) */}
-      <div className="mb-6 flex gap-2 border-b border-border">
+      {/* Main tabs (Library / Playlists / Wishlist) */}
+      <div className="mb-6 flex gap-2 overflow-x-auto border-b border-border [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {mainTabs.map((tab) => (
           <button
             key={tab.value}
@@ -287,7 +307,7 @@ export function LibraryView({ initialSongs, initialWishlistSongs, initialPlaylis
               setMainTab(tab.value);
               setSearchQuery("");
             }}
-            className={`flex items-center gap-2 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
               mainTab === tab.value
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -307,6 +327,16 @@ export function LibraryView({ initialSongs, initialWishlistSongs, initialPlaylis
       {/* Library Tab Content */}
       {mainTab === "library" && (
         <>
+          {/* Spotify suggestions */}
+          <SpotifySuggestions
+            userPlan={userPlan}
+            spotifyConnected={spotifyConnected}
+            existingSpotifyIds={songs.filter(s => s.spotify_id).map(s => s.spotify_id!)}
+            onAddSong={(track) => {
+              setIsAddModalOpen(true);
+            }}
+          />
+
           {songs.length > 0 ? (
             <>
               {/* Filters and search */}
@@ -568,6 +598,7 @@ export function LibraryView({ initialSongs, initialWishlistSongs, initialPlaylis
           setSelectedSong(null);
           handleRefresh();
         }}
+        userPlan={userPlan}
       />
 
       {/* Add to wishlist modal */}
@@ -605,6 +636,13 @@ export function LibraryView({ initialSongs, initialWishlistSongs, initialPlaylis
             setSelectedPlaylist(null);
           }
         }}
+        onSuccess={handleRefresh}
+      />
+
+      {/* Import from Spotify modal */}
+      <ImportPlaylistModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
         onSuccess={handleRefresh}
       />
     </div>

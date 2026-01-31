@@ -19,6 +19,10 @@ export interface Song {
   tabs_url?: string;
   notes?: string;
   target_bpm?: number;
+  spotify_bpm?: number;
+  spotify_key?: number;
+  spotify_energy?: number;
+  spotify_audio_fetched_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -141,6 +145,9 @@ export interface Profile {
   stripe_subscription_id?: string;
   subscription_status?: SubscriptionStatus;
   subscription_period_end?: string;
+  // Spotify fields
+  spotify_user_id?: string;
+  spotify_connected_at?: string;
 }
 
 // Types pour les liens sociaux
@@ -985,4 +992,77 @@ export interface UpdatePlaylistInput {
   name?: string;
   description?: string;
   cover_url?: string;
+}
+
+// =============================================
+// Types pour les intégrations Spotify OAuth
+// =============================================
+
+export interface SpotifyConnectionStatus {
+  connected: boolean;
+  spotify_user_id?: string;
+  connected_at?: string;
+}
+
+export interface SpotifyPlaylist {
+  id: string;
+  name: string;
+  description: string | null;
+  images: { url: string; width: number | null; height: number | null }[];
+  tracks: { total: number; href: string };
+  owner: { display_name: string; id: string };
+}
+
+export interface SpotifyPlaylistsResponse {
+  items: SpotifyPlaylist[];
+  total: number;
+  next: string | null;
+}
+
+export interface SpotifyPlaylistTracksResponse {
+  items: { track: SpotifyTrack; added_at: string }[];
+  total: number;
+  next: string | null;
+}
+
+export interface SpotifyRecentTrack {
+  track: SpotifyTrack;
+  played_at: string;
+}
+
+export interface SpotifyAudioFeatures {
+  id: string;
+  tempo: number;
+  key: number;
+  energy: number;
+  mode: number;
+  time_signature: number;
+}
+
+export interface SongAudioFeatures {
+  bpm: number;
+  key: string;
+  energy: number;
+  fetched_at: string;
+}
+
+// =============================================
+// Types pour la recherche de tablatures
+// =============================================
+
+export type TabSourceType = 'songsterr' | 'ultimate_guitar';
+
+export interface TabSource {
+  source: TabSourceType;
+  title: string;
+  artist: string;
+  url: string;
+  type?: string;
+  rating?: number;
+}
+
+export interface SongsterrSong {
+  id: number;
+  title: string;
+  artist: { name: string };
 }

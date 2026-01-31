@@ -109,6 +109,11 @@ export function SongCard({ song, onClick }: SongCardProps) {
               Capo {song.capo_position}
             </span>
           )}
+          {song.spotify_bpm && (
+            <span className="rounded-md bg-accent px-2 py-0.5 text-xs">
+              {Math.round(song.spotify_bpm)} BPM
+            </span>
+          )}
           {song.tabs_url && (
             <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs text-primary">
               Tab

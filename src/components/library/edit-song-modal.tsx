@@ -9,7 +9,9 @@ import { CoverDetailModal } from "@/components/covers/cover-detail-modal";
 import { SongSessionsPanel } from "@/components/progress/song-sessions-panel";
 import { AddSessionModal } from "@/components/progress/add-session-modal";
 import { AddToPlaylistModal } from "./add-to-playlist-modal";
-import type { Song, SongDifficulty, SongStatus, Cover, CoverWithSong } from "@/types";
+import { AudioFeaturesBadge } from "./audio-features-badge";
+import { TabsSearchPanel } from "./tabs-search-panel";
+import type { Song, SongDifficulty, SongStatus, Cover, CoverWithSong, UserPlan } from "@/types";
 
 interface EditSongModalProps {
   song: Song | null;
@@ -17,6 +19,7 @@ interface EditSongModalProps {
   onClose: () => void;
   onUpdate: () => void;
   onDelete?: (songId: string) => void;
+  userPlan?: UserPlan;
 }
 
 const statusOptions: { value: SongStatus; label: string }[] = [
@@ -44,12 +47,12 @@ const tuningOptions = [
   "Open C",
 ];
 
-export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete }: EditSongModalProps) {
+export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userPlan = "free" }: EditSongModalProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"details" | "covers" | "sessions">("details");
+  const [activeTab, setActiveTab] = useState<"details" | "tablatures" | "covers" | "sessions">("details");
 
   // Covers state
   const [covers, setCovers] = useState<Cover[]>([]);
@@ -242,11 +245,25 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete }: Edi
           </div>
         </div>
 
+        {/* Spotify embed player */}
+        {song.spotify_id && userPlan !== "free" && (
+          <div className="mx-6 mt-4">
+            <iframe
+              src={`https://open.spotify.com/embed/track/${song.spotify_id}?theme=0`}
+              width="100%"
+              height="80"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+              className="rounded-xl border-0"
+            />
+          </div>
+        )}
+
         {/* Tabs */}
-        <div className="mt-4 flex gap-1 border-b border-border px-6">
+        <div className="mt-4 flex gap-1 overflow-x-auto border-b border-border px-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => setActiveTab("details")}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
+            className={`shrink-0 px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === "details"
                 ? "border-b-2 border-primary text-foreground"
                 : "text-muted-foreground hover:text-foreground"
@@ -255,8 +272,18 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete }: Edi
             Détails
           </button>
           <button
+            onClick={() => setActiveTab("tablatures")}
+            className={`shrink-0 px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === "tablatures"
+                ? "border-b-2 border-primary text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Tablatures
+          </button>
+          <button
             onClick={() => setActiveTab("covers")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === "covers"
                 ? "border-b-2 border-primary text-foreground"
                 : "text-muted-foreground hover:text-foreground"
@@ -271,7 +298,7 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete }: Edi
           </button>
           <button
             onClick={() => setActiveTab("sessions")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === "sessions"
                 ? "border-b-2 border-primary text-foreground"
                 : "text-muted-foreground hover:text-foreground"
@@ -394,17 +421,16 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete }: Edi
             </div>
           </div>
 
-          {/* Tabs URL */}
-          <div>
-            <label className="mb-1 block text-sm font-medium">Lien tablature</label>
-            <input
-              type="url"
-              value={tabsUrl}
-              onChange={(e) => setTabsUrl(e.target.value)}
-              placeholder="https://ultimate-guitar.com/..."
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-            />
-          </div>
+          {/* Audio Features */}
+          <AudioFeaturesBadge
+            bpm={song.spotify_bpm}
+            musicalKey={song.spotify_key != null ? undefined : undefined}
+            energy={song.spotify_energy}
+            spotifyId={song.spotify_id}
+            songId={song.id}
+            userPlan={userPlan}
+            onFetched={() => onUpdate()}
+          />
 
           {/* Notes */}
           <div>
@@ -460,6 +486,19 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete }: Edi
             </button>
           </div>
         </div>
+        )}
+
+        {/* Tablatures Tab */}
+        {activeTab === "tablatures" && (
+          <div className="p-6">
+            <TabsSearchPanel
+              title={title}
+              artist={artist}
+              currentTabsUrl={tabsUrl}
+              onSelectTab={(url) => setTabsUrl(url)}
+              userPlan={userPlan}
+            />
+          </div>
         )}
 
         {/* Covers Tab */}

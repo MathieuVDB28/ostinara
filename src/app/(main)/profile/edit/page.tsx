@@ -7,11 +7,13 @@ import { createSong } from "@/lib/actions/songs";
 import type { UserProfile, UpdateProfileInput, Song } from "@/types";
 import { FavoritesGrid } from "@/components/profile/favorites-grid";
 import { FavoriteSelectorModal } from "@/components/profile/favorite-selector-modal";
+import { SpotifyConnectSection } from "@/components/profile/spotify-connect-section";
 import { SubscriptionStatusBadge } from "@/components/subscription";
 import { PLANS } from "@/lib/stripe/config";
+import { getSpotifyConnectionStatus } from "@/lib/actions/spotify";
 import Link from "next/link";
 
-type Tab = "profile" | "favorites" | "privacy" | "subscription";
+type Tab = "profile" | "favorites" | "privacy" | "integrations" | "subscription";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -40,9 +42,15 @@ export default function EditProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Charger le profil
+  // Spotify connection state
+  const [spotifyConnected, setSpotifyConnected] = useState(false);
+  const [spotifyUserId, setSpotifyUserId] = useState<string | undefined>();
+  const [spotifyConnectedAt, setSpotifyConnectedAt] = useState<string | undefined>();
+  const [spotifyMessage, setSpotifyMessage] = useState<string | null>(null);
+
+  // Charger le profil et le statut Spotify
   useEffect(() => {
-    getMyProfile().then((data) => {
+    Promise.all([getMyProfile(), getSpotifyConnectionStatus()]).then(([data, spotifyStatus]) => {
       if (data) {
         setProfile(data);
         setDisplayName(data.display_name || "");
@@ -53,8 +61,25 @@ export default function EditProfilePage() {
         setFacebookUrl(data.facebook_url || "");
         setIsPrivate(data.is_private);
       }
+      setSpotifyConnected(spotifyStatus.connected);
+      setSpotifyUserId(spotifyStatus.spotify_user_id);
+      setSpotifyConnectedAt(spotifyStatus.connected_at);
       setLoading(false);
     });
+
+    // Handle ?spotify=connected query param
+    const params = new URLSearchParams(window.location.search);
+    const spotifyParam = params.get("spotify");
+    if (spotifyParam === "connected") {
+      setSpotifyMessage("Spotify connecté avec succès !");
+      setActiveTab("integrations");
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (spotifyParam === "error") {
+      const reason = params.get("reason") || "unknown";
+      setSpotifyMessage(`Erreur lors de la connexion Spotify (${reason}). Réessaie.`);
+      setActiveTab("integrations");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }, []);
 
   const handleSave = async () => {
@@ -302,6 +327,19 @@ export default function EditProfilePage() {
           >
             Confidentialité
             {activeTab === "privacy" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("integrations")}
+            className={`relative pb-3 text-sm font-medium transition-colors ${
+              activeTab === "integrations"
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Intégrations
+            {activeTab === "integrations" && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
             )}
           </button>
@@ -604,6 +642,30 @@ export default function EditProfilePage() {
                   </>
                 )}
               </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Tab Intégrations */}
+        {activeTab === "integrations" && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="mb-4 text-lg font-semibold">Spotify</h3>
+              {spotifyMessage && (
+                <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${
+                  spotifyMessage.includes("Erreur")
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-green-500/10 text-green-500"
+                }`}>
+                  {spotifyMessage}
+                </div>
+              )}
+              <SpotifyConnectSection
+                connected={spotifyConnected}
+                spotifyUserId={spotifyUserId}
+                connectedAt={spotifyConnectedAt}
+                userPlan={profile.plan}
+              />
             </div>
           </div>
         )}
