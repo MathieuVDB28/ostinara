@@ -304,10 +304,11 @@ export default function Home() {
                 <span className="text-xs text-muted-foreground italic">stay tuned</span>
               </div>
             </div>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link href="#" className="transition-colors hover:text-foreground">À propos</Link>
-              <Link href="#" className="transition-colors hover:text-foreground">Contact</Link>
-              <Link href="#" className="transition-colors hover:text-foreground">Mentions légales</Link>
+            <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
+              <Link href="/mentions-legales" className="transition-colors hover:text-foreground">Mentions légales</Link>
+              <Link href="/cgu" className="transition-colors hover:text-foreground">CGU</Link>
+              <Link href="/politique-confidentialite" className="transition-colors hover:text-foreground">Confidentialité</Link>
+              <Link href="mailto:contact@ostinara.app" className="transition-colors hover:text-foreground">Contact</Link>
             </div>
             <div className="text-sm text-muted-foreground">
               © 2025 Ostinara. Tous droits réservés.

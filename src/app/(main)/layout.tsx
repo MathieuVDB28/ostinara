@@ -14,6 +14,7 @@ const navItems = [
   { href: "/challenges", label: "Défis", icon: "trophy" },
   { href: "/friends", label: "Amis", icon: "users" },
   { href: "/feed", label: "Feed", icon: "feed" },
+  { href: "/audio", label: "Audio", icon: "audio" },
 ];
 
 export default async function MainLayout({
@@ -59,7 +60,7 @@ export default async function MainLayout({
       <DesktopSidebar navItems={navItemsWithBadge} userInfo={userInfo} />
 
       {/* Main content */}
-      <main className="w-full flex-1 p-4 pt-20 lg:ml-64 lg:p-8 lg:pt-8">
+      <main className="w-full min-w-0 flex-1 overflow-x-hidden p-4 pt-20 lg:ml-64 lg:p-8 lg:pt-8">
         {children}
       </main>
 

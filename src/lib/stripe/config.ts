@@ -47,6 +47,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
       'Wishlist illimitée',
       'Stats avancées',
       'Intégrations Spotify & tablatures',
+      'Reconnaissance audio',
       'Badge Pro',
     ],
     monthly: {
@@ -62,6 +63,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
     features: [
       'Tout ce qui est dans Pro',
       'Intégrations Spotify & tablatures',
+      'Reconnaissance audio',
       'Espaces groupe',
       'Setlists partagées',
       'Badge Band',

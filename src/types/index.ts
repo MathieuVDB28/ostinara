@@ -1066,3 +1066,30 @@ export interface SongsterrSong {
   title: string;
   artist: { name: string };
 }
+
+// =============================================
+// Types pour la reconnaissance audio
+// =============================================
+
+export interface AudioIdentificationResult {
+  title: string;
+  artist: string;
+  album?: string;
+  release_date?: string;
+  cover_url?: string;
+  spotify_id?: string;
+  preview_url?: string;
+}
+
+export interface TuningPreset {
+  name: string;
+  notes: string[];
+  frequencies: number[];
+}
+
+export interface PitchDetectionResult {
+  frequency: number;
+  note: string;
+  octave: number;
+  cents: number;
+}
