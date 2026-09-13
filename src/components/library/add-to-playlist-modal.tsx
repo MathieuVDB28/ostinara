@@ -137,7 +137,7 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
       <div className="relative z-10 max-h-[80vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-border bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border p-4">
           <h2 className="text-base font-semibold">Ajouter à une playlist</h2>
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-1.5 transition-colors hover:bg-accent"
           >

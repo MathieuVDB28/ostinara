@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import type { ActivityWithDetails } from "@/types";
 import { ActivityReactions } from "./activity-reactions";
@@ -103,10 +104,12 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
           isOwn ? "bg-primary/20 text-primary ring-2 ring-primary/30" : "bg-primary/10 text-primary"
         }`}>
           {activity.user.avatar_url ? (
-            <img
+            <Image
               src={activity.user.avatar_url}
               alt={activity.user.username}
               className="h-12 w-12 rounded-full object-cover"
+              width={48}
+              height={48}
             />
           ) : (
             activity.user.display_name?.[0]?.toUpperCase() ||
@@ -139,10 +142,12 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
       {(activity.type === "song_added" || activity.type === "song_mastered") && activity.song && (
         <div className="flex items-center gap-3 rounded-xl bg-accent/30 p-3">
           {activity.song.cover_url ? (
-            <img
+            <Image
               src={activity.song.cover_url}
               alt={activity.song.title}
               className="h-16 w-16 rounded-lg object-cover"
+              width={64}
+              height={64}
             />
           ) : (
             <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
@@ -212,10 +217,12 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
         <div className="flex items-center gap-3 rounded-xl bg-accent/30 p-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
             {activity.friend.avatar_url ? (
-              <img
+              <Image
                 src={activity.friend.avatar_url}
                 alt={activity.friend.username}
                 className="h-12 w-12 rounded-full object-cover"
+                width={48}
+                height={48}
               />
             ) : (
               activity.friend.display_name?.[0]?.toUpperCase() ||
@@ -234,10 +241,12 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
       {activity.type === "song_wishlisted" && activity.wishlistSong && (
         <div className="flex items-center gap-3 rounded-xl bg-accent/30 p-3">
           {activity.wishlistSong.cover_url ? (
-            <img
+            <Image
               src={activity.wishlistSong.cover_url}
               alt={activity.wishlistSong.title}
               className="h-16 w-16 rounded-lg object-cover"
+              width={64}
+              height={64}
             />
           ) : (
             <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
@@ -286,10 +295,12 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
         <div className="overflow-hidden rounded-xl bg-accent/30">
           <div className="flex items-center gap-3 p-3">
             {activity.albumReview.cover_url ? (
-              <img
+              <Image
                 src={activity.albumReview.cover_url}
                 alt={activity.albumReview.album_name}
                 className="h-20 w-20 rounded-lg object-cover"
+                width={80}
+                height={80}
               />
             ) : (
               <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-muted">
@@ -320,10 +331,12 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
       {activity.type === "album_wishlisted" && activity.albumWishlistItem && (
         <div className="flex items-center gap-3 rounded-xl bg-accent/30 p-3">
           {activity.albumWishlistItem.cover_url ? (
-            <img
+            <Image
               src={activity.albumWishlistItem.cover_url}
               alt={activity.albumWishlistItem.album_name}
               className="h-16 w-16 rounded-lg object-cover"
+              width={64}
+              height={64}
             />
           ) : (
             <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">

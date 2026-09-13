@@ -30,7 +30,7 @@ export default function AuthLayout({
               className="rounded-lg"
             />
           </div>
-          <span className="bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-xl font-extrabold text-transparent">Ostinara</span>
+          <span className="text-xl font-extrabold text-primary">Ostinara</span>
         </Link>
       </header>
 

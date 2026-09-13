@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   BarChart,
   Bar,
@@ -125,10 +126,12 @@ export function SongDistributionChart({ data }: SongDistributionChartProps) {
               </span>
             </div>
             {song.coverUrl ? (
-              <img
+              <Image
                 src={song.coverUrl}
                 alt={song.songTitle}
                 className="w-10 h-10 rounded object-cover flex-shrink-0"
+                width={40}
+                height={40}
               />
             ) : (
               <div

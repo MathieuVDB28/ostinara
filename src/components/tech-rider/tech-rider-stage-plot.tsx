@@ -175,16 +175,16 @@ export function TechRiderStagePlot({
         <div className="absolute inset-x-4 bottom-3 border-t border-dashed border-zinc-700" />
 
         {/* Labels */}
-        <div className="pointer-events-none absolute left-1/2 top-1 -translate-x-1/2 text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-600">
+        <div className="pointer-events-none absolute left-1/2 top-1 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-600">
           Fond de scene
         </div>
-        <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-600">
+        <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-600">
           Public
         </div>
-        <div className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-[9px] font-medium text-zinc-700 [writing-mode:vertical-lr]">
+        <div className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-[11px] font-medium text-zinc-700 [writing-mode:vertical-lr]">
           Cour (SR)
         </div>
-        <div className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 rotate-180 text-[9px] font-medium text-zinc-700 [writing-mode:vertical-lr]">
+        <div className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 rotate-180 text-[11px] font-medium text-zinc-700 [writing-mode:vertical-lr]">
           Jardin (SL)
         </div>
 
@@ -220,10 +220,10 @@ export function TechRiderStagePlot({
             >
               {m.name?.[0]?.toUpperCase() || "?"}
             </div>
-            <span className="mt-1 max-w-20 truncate rounded bg-black/60 px-1.5 py-0.5 text-center text-[10px] font-medium leading-tight text-white">
+            <span className="mt-1 max-w-20 truncate rounded bg-black/60 px-1.5 py-0.5 text-center text-[11px] font-medium leading-tight text-white">
               {m.name || "Sans nom"}
             </span>
-            <span className="max-w-20 truncate text-[9px] text-zinc-400">
+            <span className="max-w-20 truncate text-[11px] text-zinc-400">
               {m.instrument}
             </span>
           </div>
@@ -251,7 +251,7 @@ export function TechRiderStagePlot({
               }`}
             />
             <span
-              className={`mt-1 max-w-20 truncate rounded bg-black/60 px-1 py-0.5 text-center text-[9px] font-medium leading-tight text-white ${
+              className={`mt-1 max-w-20 truncate rounded bg-black/60 px-1 py-0.5 text-center text-[11px] font-medium leading-tight text-white ${
                 el.type === "monitor" ? "-mt-0" : ""
               }`}
             >
@@ -295,17 +295,17 @@ export function TechRiderStagePlot({
       {/* Legend */}
       {(musicians.length > 0 || stageElements.length > 0) && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             Legende :
           </span>
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
             <span className="inline-block h-3 w-3 rounded-full bg-primary/90" />
             Musicien
           </span>
           {[...new Set(stageElements.map((e) => e.type))].map((type) => (
             <span
               key={type}
-              className="flex items-center gap-1 text-[10px] text-muted-foreground"
+              className="flex items-center gap-1 text-[11px] text-muted-foreground"
             >
               <span
                 className={`inline-block h-3 w-3 rounded-sm ${ELEMENT_COLORS[type]}`}

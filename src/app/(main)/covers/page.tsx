@@ -1,18 +1,6 @@
-import { getCovers, canUploadCover } from "@/lib/actions/covers";
-import { CoversView } from "@/components/covers/covers-view";
+import { redirect } from "next/navigation";
 
-export default async function CoversPage() {
-  const [covers, uploadStatus] = await Promise.all([
-    getCovers(),
-    canUploadCover(),
-  ]);
-
-  return (
-    <CoversView
-      initialCovers={covers}
-      canUpload={uploadStatus.allowed}
-      coverLimit={uploadStatus.limit}
-      coverCount={uploadStatus.current}
-    />
-  );
+/** Ancienne route — conservee pour les liens et PWA deja installees. */
+export default function Page() {
+  redirect("/biblio/covers");
 }

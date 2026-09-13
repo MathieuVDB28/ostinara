@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useMemo } from "react";
 import type { Song } from "@/types";
 
@@ -79,10 +80,12 @@ export function SongSelector({
           </div>
           <div className="flex items-center gap-3">
             {selectedSong.cover_url ? (
-              <img
+              <Image
                 src={selectedSong.cover_url}
                 alt={selectedSong.title}
                 className="h-12 w-12 rounded-lg object-cover"
+                width={48}
+                height={48}
               />
             ) : (
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent">
@@ -130,10 +133,12 @@ export function SongSelector({
           >
             {/* Cover */}
             {song.cover_url ? (
-              <img
+              <Image
                 src={song.cover_url}
                 alt={song.title}
                 className="h-10 w-10 rounded object-cover"
+                width={40}
+                height={40}
               />
             ) : (
               <div className="flex h-10 w-10 items-center justify-center rounded bg-accent">

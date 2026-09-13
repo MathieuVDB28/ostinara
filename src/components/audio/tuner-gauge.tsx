@@ -107,13 +107,13 @@ export function TunerGauge({ cents }: TunerGaugeProps) {
         </g>
 
         {/* Labels */}
-        <text x="15" y="118" className="fill-muted-foreground text-[10px]">
+        <text x="15" y="118" className="fill-muted-foreground text-[11px]">
           ♭
         </text>
-        <text x="95" y="22" className="fill-green-400 text-[10px]" textAnchor="middle">
+        <text x="95" y="22" className="fill-green-400 text-[11px]" textAnchor="middle">
           ✓
         </text>
-        <text x="183" y="118" className="fill-muted-foreground text-[10px]">
+        <text x="183" y="118" className="fill-muted-foreground text-[11px]">
           ♯
         </text>
       </svg>

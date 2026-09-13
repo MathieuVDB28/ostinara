@@ -109,7 +109,7 @@ export function RehearsalDetailView({
       {/* Back + Header */}
       <div>
         <Link
-          href="/setlists"
+          href="/commu/groupes"
           className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>

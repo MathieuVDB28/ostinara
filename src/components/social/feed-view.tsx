@@ -45,7 +45,7 @@ export function FeedView({ initialActivities, currentUserId }: FeedViewProps) {
             Ajoute des amis pour voir leur activité dans ton feed
           </p>
           <button
-            onClick={() => router.push("/friends")}
+            onClick={() => router.push("/commu/amis")}
             className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground"
           >
             Trouver des amis

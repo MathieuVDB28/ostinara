@@ -1,10 +1,27 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import type { ChartData } from "@/types";
 import { PracticeHeatmap } from "./practice-heatmap";
-import { BpmProgressChart } from "./bpm-progress-chart";
-import { MoodDistributionChart } from "./mood-distribution-chart";
-import { SongDistributionChart } from "./song-distribution-chart";
+// recharts (~380 Ko avec ses dependances) n'est tire que lorsque
+// l'onglet Stats est reellement affiche.
+const chartFallback = () => (
+  <div className="h-64 w-full animate-pulse rounded-2xl bg-muted" />
+);
+
+const BpmProgressChart = dynamic(
+  () => import("./bpm-progress-chart").then((m) => m.BpmProgressChart),
+  { ssr: false, loading: chartFallback }
+);
+const MoodDistributionChart = dynamic(
+  () => import("./mood-distribution-chart").then((m) => m.MoodDistributionChart),
+  { ssr: false, loading: chartFallback }
+);
+const SongDistributionChart = dynamic(
+  () => import("./song-distribution-chart").then((m) => m.SongDistributionChart),
+  { ssr: false, loading: chartFallback }
+);
 
 interface StatsTabProps {
   data: ChartData;

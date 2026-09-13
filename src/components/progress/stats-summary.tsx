@@ -20,7 +20,6 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {/* Sessions totales */}
       <div className="relative overflow-hidden rounded-xl border border-border bg-card p-4" style={{ boxShadow: "0 0 20px rgba(139, 92, 246, 0.08)" }}>
-        <div className="absolute -right-4 -bottom-4 h-20 w-20 rounded-full bg-primary/20 blur-xl" />
         <div className="relative">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
             <span className="material-symbols-outlined text-[18px] text-primary">bar_chart</span>
@@ -32,10 +31,9 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
 
       {/* Temps total */}
       <div className="relative overflow-hidden rounded-xl border border-border bg-card p-4" style={{ boxShadow: "0 0 20px rgba(139, 92, 246, 0.08)" }}>
-        <div className="absolute -right-4 -bottom-4 h-20 w-20 rounded-full bg-accent-teal/20 blur-xl" />
         <div className="relative">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <span className="material-symbols-outlined text-[18px] text-accent-teal">schedule</span>
+            <span className="material-symbols-outlined text-[18px] text-muted-foreground">schedule</span>
             <span className="text-xs font-medium">Temps total</span>
           </div>
           <p className="text-2xl font-bold">{formatDuration(stats.totalMinutes)}</p>
@@ -44,10 +42,9 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
 
       {/* Streak */}
       <div className="relative overflow-hidden rounded-xl border border-border bg-card p-4" style={{ boxShadow: "0 0 20px rgba(139, 92, 246, 0.08)" }}>
-        <div className="absolute -right-4 -bottom-4 h-20 w-20 rounded-full bg-accent-orange/20 blur-xl" />
         <div className="relative">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <span className="material-symbols-outlined text-[18px] text-accent-orange">local_fire_department</span>
+            <span className="material-symbols-outlined text-[18px] text-muted-foreground">local_fire_department</span>
             <span className="text-xs font-medium">Streak</span>
           </div>
           <div className="flex items-baseline gap-1">
@@ -64,7 +61,6 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
 
       {/* Cette semaine */}
       <div className="relative overflow-hidden rounded-xl border border-border bg-card p-4" style={{ boxShadow: "0 0 20px rgba(139, 92, 246, 0.08)" }}>
-        <div className="absolute -right-4 -bottom-4 h-20 w-20 rounded-full bg-purple-500/20 blur-xl" />
         <div className="relative">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
             <span className="material-symbols-outlined text-[18px] text-purple-400">calendar_today</span>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { createSong } from "@/lib/actions/songs";
 import type { CreateSongInput, SongDifficulty } from "@/types";
@@ -152,7 +153,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
           <h2 className="text-xl font-bold">
             {step === "search" ? "Ajouter un morceau" : prefillTrack ? "Ajouter à la bibliothèque" : "Détails du morceau"}
           </h2>
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -198,10 +199,12 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                   className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-accent"
                 >
                   {track.cover_url ? (
-                    <img
+                    <Image
                       src={track.cover_url}
                       alt={track.album}
                       className="h-12 w-12 rounded-md object-cover"
+                      width={48}
+                      height={48}
                     />
                   ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted">
@@ -238,10 +241,12 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
             {selectedTrack && (
               <div className="mb-6 flex items-center gap-4 rounded-lg bg-accent/50 p-3">
                 {selectedTrack.cover_url && (
-                  <img
+                  <Image
                     src={selectedTrack.cover_url}
                     alt={selectedTrack.album}
                     className="h-16 w-16 rounded-lg object-cover"
+                    width={64}
+                    height={64}
                   />
                 )}
                 <div className="flex-1 truncate">

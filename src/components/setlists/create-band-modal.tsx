@@ -96,7 +96,7 @@ export function CreateBandModal({
               Collabore sur des setlists avec ton groupe
             </p>
           </div>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >

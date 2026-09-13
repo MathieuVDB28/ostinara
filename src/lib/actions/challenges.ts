@@ -433,13 +433,27 @@ export async function updateChallengeProgress(
     return;
   }
 
+  // Une seule requete pour toutes les progressions, au lieu d'une par
+  // challenge. Cette fonction est appelee a la fin de chaque session de
+  // pratique : elle etait sur le chemin chaud.
+  const { data: allProgress } = await supabase
+    .from("challenge_progress")
+    .select("*")
+    .in(
+      "challenge_id",
+      challenges.map((c) => c.id)
+    )
+    .eq("user_id", user.id);
+
+  const progressByChallenge = new Map(
+    (allProgress ?? []).map((p) => [p.challenge_id, p])
+  );
+
+  // Les ecritures sont accumulees puis envoyees en parallele en fin de boucle.
+  const writes: PromiseLike<unknown>[] = [];
+
   for (const challenge of challenges) {
-    const { data: progress } = await supabase
-      .from("challenge_progress")
-      .select("*")
-      .eq("challenge_id", challenge.id)
-      .eq("user_id", user.id)
-      .single();
+    const progress = progressByChallenge.get(challenge.id);
 
     if (!progress) continue;
 
@@ -480,18 +494,19 @@ export async function updateChallengeProgress(
         updates.song_mastered_at = new Date().toISOString();
 
         // Vérifier si c'est le premier à maîtriser = victoire immédiate
-        await completeChallenge(challenge.id, user.id);
+        writes.push(completeChallenge(challenge.id, user.id));
       }
     }
 
     // Appliquer les mises à jour si nécessaire
     if (Object.keys(updates).length > 0) {
-      await supabase
-        .from("challenge_progress")
-        .update(updates)
-        .eq("id", progress.id);
+      writes.push(
+        supabase.from("challenge_progress").update(updates).eq("id", progress.id)
+      );
     }
   }
+
+  await Promise.all(writes);
 
   revalidatePath("/challenges");
 }

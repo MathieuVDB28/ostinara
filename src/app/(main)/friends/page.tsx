@@ -1,18 +1,6 @@
-import { getFriends, getPendingRequests, getFriendsLimitInfo } from "@/lib/actions/friends";
-import { FriendsView } from "@/components/friends/friends-view";
+import { redirect } from "next/navigation";
 
-export default async function FriendsPage() {
-  const [friends, requests, limitInfo] = await Promise.all([
-    getFriends(),
-    getPendingRequests(),
-    getFriendsLimitInfo(),
-  ]);
-
-  return (
-    <FriendsView
-      initialFriends={friends}
-      initialRequests={requests}
-      limitInfo={limitInfo}
-    />
-  );
+/** Ancienne route — conservee pour les liens et PWA deja installees. */
+export default function Page() {
+  redirect("/commu/amis");
 }

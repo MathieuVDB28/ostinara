@@ -1,11 +1,25 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Routes qui nécessitent une authentification
-const protectedRoutes = ['/library', '/progress', '/covers', '/friends', '/feed', '/settings']
+/**
+ * Prefixes accessibles sans session. Tout le reste est considere protege.
+ *
+ * On raisonne par liste blanche : l'ancienne liste noire enumerait
+ * /library, /covers, /friends… et n'avait pas suivi la refonte des routes
+ * (/biblio, /commu, /profil, /jouer), si bien qu'elle ne protegeait plus
+ * rien. Les pages restaient couvertes par (main)/layout.tsx, mais le
+ * middleware ne servait plus a rien.
+ */
+const PUBLIC_PREFIXES = [
+  '/login',
+  '/register',
+  '/cgu',
+  '/mentions-legales',
+  '/politique-confidentialite',
+  '/auth',
+]
 
-// Routes accessibles uniquement aux utilisateurs non connectés
-const authRoutes = ['/login', '/register']
+const AUTH_ROUTES = ['/login', '/register']
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -33,25 +47,45 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  /**
+   * getClaims() verifie la signature du JWT localement a partir du JWKS
+   * (mis en cache), sans aller-retour reseau vers Supabase a chaque requete
+   * comme le faisait getUser(). La verification reste cryptographique, donc
+   * utilisable pour une decision d'autorisation — contrairement a
+   * getSession(), qui se contente de lire le cookie.
+   *
+   * Si le projet signe encore en HS256, getClaims() retombe de lui-meme sur
+   * getUser() : le comportement est alors identique a avant, jamais pire.
+   */
+  const { data } = await supabase.auth.getClaims()
+  const isAuthenticated = Boolean(data?.claims?.sub)
+
   const pathname = request.nextUrl.pathname
 
-  // Vérifie si la route est protégée
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
-  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+  // Les routes API gerent elles-memes leur authentification et ne doivent
+  // jamais etre redirigees : un webhook Stripe recevant une 307 vers /login
+  // serait rejoue en boucle.
+  if (pathname.startsWith('/api')) {
+    return supabaseResponse
+  }
 
-  // Redirige vers login si non connecté et route protégée
-  if (isProtectedRoute && !user) {
+  const isPublic =
+    pathname === '/' ||
+    PUBLIC_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(prefix + '/')
+    )
+  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route))
+
+  if (!isPublic && !isAuthenticated) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirect', pathname)
     return NextResponse.redirect(url)
   }
 
-  // Redirige vers dashboard si connecté et sur la landing page ou une page d'auth
-  if ((isAuthRoute || pathname === '/') && user) {
+  if ((isAuthRoute || pathname === '/') && isAuthenticated) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/jouer'
     return NextResponse.redirect(url)
   }
 

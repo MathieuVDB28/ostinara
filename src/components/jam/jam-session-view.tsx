@@ -50,13 +50,13 @@ export function JamSessionView({
 
   const handleLeave = async () => {
     await leaveJamSession(initialSession.id);
-    router.push("/setlists");
+    router.push("/commu/groupes");
   };
 
   const handleEnd = async () => {
     if (!isPersonalJam && !confirm("Terminer la Jam Session pour tout le monde ?")) return;
     await endJamSession(initialSession.id);
-    router.push("/setlists");
+    router.push("/commu/groupes");
   };
 
   const handleStartSession = () => {
@@ -92,7 +92,7 @@ export function JamSessionView({
             : "La Jam Session a ete terminee par le host."}
         </p>
         <button
-          onClick={() => router.push("/setlists")}
+          onClick={() => router.push("/commu/groupes")}
           className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90"
         >
           Retour aux setlists

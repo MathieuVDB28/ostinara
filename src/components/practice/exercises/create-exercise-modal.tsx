@@ -143,7 +143,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-4">
           <h2 className="text-lg font-semibold">Créer un exercice</h2>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-1 transition-colors hover:bg-accent"
           >

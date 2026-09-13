@@ -214,7 +214,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                   className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3 transition-colors hover:bg-primary/10"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 flex-col items-center justify-center rounded-lg bg-primary/20 text-primary">
-                    <span className="text-[10px] font-medium uppercase leading-none">
+                    <span className="text-[11px] font-medium uppercase leading-none">
                       {new Date(nextRehearsal.date).toLocaleDateString("fr-FR", { weekday: "short" })}
                     </span>
                     <span className="text-base font-bold leading-tight">

@@ -159,7 +159,7 @@ export function SetlistItemCard({
       }`}
     >
       {/* Drag handle */}
-      <button
+      <button aria-label="Réordonner le morceau"
         {...attributes}
         {...listeners}
         className="shrink-0 cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground active:cursor-grabbing"
@@ -305,7 +305,7 @@ export function SetlistItemCard({
 
       {/* Actions (visible on hover) */}
       <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <button
+        <button aria-label="Modifier le morceau"
           onClick={onEdit}
           className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
         >
@@ -323,7 +323,7 @@ export function SetlistItemCard({
             />
           </svg>
         </button>
-        <button
+        <button aria-label="Supprimer le morceau"
           onClick={onDelete}
           className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         >

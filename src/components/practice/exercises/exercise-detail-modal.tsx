@@ -135,7 +135,7 @@ export function ExerciseDetailModal({
               )}
             </div>
           </div>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-1 transition-colors hover:bg-accent"
           >

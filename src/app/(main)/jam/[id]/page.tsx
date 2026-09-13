@@ -16,19 +16,20 @@ export default async function JamPage({ params }: JamPageProps) {
     redirect("/login");
   }
 
-  // Get user profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  // Profil, session et messages ne dependent pas les uns des autres :
+  // on les demande ensemble plutot qu'en trois allers-retours successifs.
+  // Les controles d'acces ci-dessous restent inchanges, et rien n'est rendu
+  // avant qu'ils soient passes.
+  const [{ data: profile }, session, messages] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    getJamSession(id),
+    getJamMessages(id),
+  ]);
 
   if (!profile) {
     redirect("/login");
   }
 
-  // Get session
-  const session = await getJamSession(id);
   if (!session) {
     notFound();
   }
@@ -64,9 +65,6 @@ export default async function JamPage({ params }: JamPageProps) {
   if (!isParticipant) {
     await joinJamSession(id);
   }
-
-  // Get initial messages
-  const messages = await getJamMessages(id);
 
   return (
     <JamSessionView

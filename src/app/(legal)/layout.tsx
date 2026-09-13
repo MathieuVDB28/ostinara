@@ -23,7 +23,7 @@ export default function LegalLayout({
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold leading-tight">Ostinara</span>
-              <span className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
+              <span className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
                 Stay tuned
               </span>
             </div>

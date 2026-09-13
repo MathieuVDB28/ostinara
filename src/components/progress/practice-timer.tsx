@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Song } from "@/types";
 
@@ -200,7 +201,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
         {/* Contrôles */}
         <div className="mt-6 flex items-center gap-4">
           {!isActive ? (
-            <button
+            <button aria-label="Démarrer la session"
               onClick={start}
               className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl"
               title="Démarrer"
@@ -212,7 +213,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
           ) : (
             <>
               {timerState.isRunning ? (
-                <button
+                <button aria-label="Mettre la session en pause"
                   onClick={pause}
                   className="flex h-14 w-14 items-center justify-center rounded-full bg-yellow-500 text-white shadow-lg transition-all hover:scale-105"
                   title="Pause"
@@ -222,7 +223,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
                   </svg>
                 </button>
               ) : (
-                <button
+                <button aria-label="Reprendre la session"
                   onClick={resume}
                   className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105"
                   title="Reprendre"
@@ -233,7 +234,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
                 </button>
               )}
 
-              <button
+              <button aria-label="Terminer et enregistrer la session"
                 onClick={stop}
                 className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition-all hover:scale-105"
                 title="Terminer et enregistrer"
@@ -243,7 +244,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
                 </svg>
               </button>
 
-              <button
+              <button aria-label="Annuler la session"
                 onClick={cancel}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground transition-all hover:bg-destructive hover:text-destructive-foreground"
                 title="Annuler"
@@ -269,10 +270,12 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
               `}
             >
               {selectedSong.cover_url ? (
-                <img
+                <Image
                   src={selectedSong.cover_url}
                   alt={selectedSong.title}
                   className="h-12 w-12 rounded-lg object-cover"
+                  width={48}
+                  height={48}
                 />
               ) : (
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent">
@@ -372,10 +375,12 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
                   `}
                 >
                   {song.cover_url ? (
-                    <img
+                    <Image
                       src={song.cover_url}
                       alt={song.title}
                       className="h-10 w-10 rounded-md object-cover"
+                      width={40}
+                      height={40}
                     />
                   ) : (
                     <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">

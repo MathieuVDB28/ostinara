@@ -123,7 +123,7 @@ export function CoversView({ initialCovers, canUpload, coverLimit, coverCount }:
             Enregistre ton premier cover depuis ta bibliothèque de morceaux
           </p>
           <button
-            onClick={() => router.push("/library")}
+            onClick={() => router.push("/biblio")}
             className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90"
           >
             Aller à la bibliothèque

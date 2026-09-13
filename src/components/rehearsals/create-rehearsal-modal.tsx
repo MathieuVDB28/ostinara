@@ -143,7 +143,7 @@ export function CreateRehearsalModal({
             <h2 className="text-xl font-bold">Nouvelle repetition</h2>
             <p className="text-sm text-muted-foreground">{band.name}</p>
           </div>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -315,7 +315,7 @@ export function CreateRehearsalModal({
                     {member.profile.display_name || member.profile.username}
                   </span>
                   {member.role === "owner" && (
-                    <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] text-primary">
+                    <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[11px] text-primary">
                       Owner
                     </span>
                   )}

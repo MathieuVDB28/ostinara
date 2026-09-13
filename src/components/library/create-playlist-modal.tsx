@@ -75,7 +75,7 @@ export function CreatePlaylistModal({ isOpen, onClose, onSuccess }: CreatePlayli
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border p-6">
           <h2 className="text-lg font-semibold">Nouvelle playlist</h2>
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 transition-colors hover:bg-accent"
           >

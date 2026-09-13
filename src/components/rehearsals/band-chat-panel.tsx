@@ -193,7 +193,7 @@ export function BandChatPanel({
             className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
             disabled={sending}
           />
-          <button
+          <button aria-label="Envoyer le message"
             type="submit"
             disabled={!input.trim() || sending}
             className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"

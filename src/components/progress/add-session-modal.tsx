@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createPracticeSession } from "@/lib/actions/practice";
@@ -147,7 +148,7 @@ export function AddSessionModal({
           <h2 className="text-xl font-bold">
             {mode === "timer" ? "Enregistrer la session" : "Ajouter une session"}
           </h2>
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -171,10 +172,12 @@ export function AddSessionModal({
             {selectedSong ? (
               <div className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3">
                 {selectedSong.cover_url ? (
-                  <img
+                  <Image
                     src={selectedSong.cover_url}
                     alt={selectedSong.title}
                     className="h-12 w-12 rounded-lg object-cover"
+                    width={48}
+                    height={48}
                   />
                 ) : (
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent">
@@ -441,10 +444,12 @@ export function AddSessionModal({
                     `}
                   >
                     {song.cover_url ? (
-                      <img
+                      <Image
                         src={song.cover_url}
                         alt={song.title}
                         className="h-10 w-10 rounded-md object-cover"
+                        width={40}
+                        height={40}
                       />
                     ) : (
                       <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">

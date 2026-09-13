@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getMyProfile, updateProfile, setFavoriteSong, setFavoriteAlbum, removeFavoriteSong, removeFavoriteAlbum, uploadAvatar } from "@/lib/actions/profile";
 import { createSong } from "@/lib/actions/songs";
 import type { UserProfile, UpdateProfileInput, Song } from "@/types";
@@ -15,9 +15,24 @@ import Link from "next/link";
 
 type Tab = "profile" | "favorites" | "privacy" | "integrations" | "subscription";
 
-export default function EditProfilePage() {
+const TABS: Tab[] = [
+  "profile",
+  "favorites",
+  "privacy",
+  "integrations",
+  "subscription",
+];
+
+function EditProfilePageContent() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const searchParams = useSearchParams();
+
+  // Les lignes de /profil/reglages pointent directement sur un onglet :
+  // sans ca, "Confidentialite" ouvrait toujours l'onglet Profil.
+  const requestedTab = searchParams.get("tab") as Tab | null;
+  const [activeTab, setActiveTab] = useState<Tab>(
+    requestedTab && TABS.includes(requestedTab) ? requestedTab : "profile"
+  );
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -103,7 +118,7 @@ export default function EditProfilePage() {
       setSaving(false);
     } else {
       // Rediriger vers le profil
-      router.push("/library"); // ou "/" selon où tu veux rediriger
+      router.push("/biblio"); // ou "/" selon où tu veux rediriger
     }
   };
 
@@ -720,5 +735,19 @@ export default function EditProfilePage() {
         onSelectAlbum={selectorType === "album" ? handleSelectAlbum : undefined}
       />
     </div>
+  );
+}
+
+export default function EditProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[400px] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      }
+    >
+      <EditProfilePageContent />
+    </Suspense>
   );
 }

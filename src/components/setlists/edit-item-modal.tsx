@@ -214,7 +214,7 @@ export function EditItemModal({
               </p>
             )}
           </div>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -509,14 +509,14 @@ export function EditItemModal({
                           }`}
                         >
                           <span className="block text-xs font-medium">{section.name}</span>
-                          <span className="block text-[10px] text-muted-foreground">
+                          <span className="block text-[11px] text-muted-foreground">
                             Mes. {section.startMeasure}-{section.endMeasure} ({measures})
                           </span>
                         </button>
                       );
                     })}
                   </div>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground">
                     Clique sur les sections que tu joues. Les mesures sont remplies automatiquement.
                   </p>
                 </div>

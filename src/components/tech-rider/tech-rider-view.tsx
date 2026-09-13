@@ -1,10 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveTechRider } from "@/lib/actions/tech-riders";
 import { TechRiderStagePlot } from "./tech-rider-stage-plot";
-import { TechRiderPDFExport } from "./tech-rider-pdf";
+// Meme raison que pour les setlists : le moteur PDF reste hors du bundle
+// initial et n'arrive qu'au moment de l'export.
+const TechRiderPDFExport = dynamic(
+  () => import("./tech-rider-pdf").then((m) => m.TechRiderPDFExport),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-10 w-32 animate-pulse rounded-xl bg-muted" />
+    ),
+  }
+);
 import type {
   BandWithMembers,
   TechRider,
@@ -169,7 +181,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push("/setlists")}
+            onClick={() => router.push("/commu/groupes")}
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-border transition-colors hover:bg-accent"
           >
             <svg
@@ -303,7 +315,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
             Musiciens
           </h2>
           {canEdit && (
-            <button
+            <button aria-label="Ajouter un musicien"
               onClick={addMusician}
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
             >
@@ -466,7 +478,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
             Patch / Input List
           </h2>
           {canEdit && (
-            <button
+            <button aria-label="Ajouter un canal"
               onClick={addChannel}
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
             >

@@ -30,7 +30,7 @@ export function GearSetupCard({
           )}
         </div>
         <div className="ml-2 flex items-center gap-1">
-          <button
+          <button aria-label="Modifier le setup"
             onClick={onEdit}
             className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
             title="Modifier"
@@ -40,7 +40,7 @@ export function GearSetupCard({
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
           </button>
-          <button
+          <button aria-label="Supprimer le setup"
             onClick={onDelete}
             className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-500"
             title="Supprimer"

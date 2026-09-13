@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { PracticeSessionWithSong, PracticeStats, Song, ChartData } from "@/types";
@@ -137,10 +138,12 @@ export function ProgressView({
                 </p>
                 <div className="flex items-center gap-3">
                   {stats.mostPracticedSong.song.cover_url ? (
-                    <img
+                    <Image
                       src={stats.mostPracticedSong.song.cover_url}
                       alt={stats.mostPracticedSong.song.title}
                       className="h-12 w-12 rounded-lg object-cover"
+                      width={48}
+                      height={48}
                     />
                   ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">

@@ -1,67 +1,79 @@
 @import "tailwindcss";
 
+/*
+ * Palette Ostinara — tons chauds ambrés/bois (cf. CLAUDE.md).
+ * Regle d'emploi : --primary ne sert qu'a deux choses, ce qui est
+ * interactif et ce qui touche au tempo. Partout ailleurs, de l'encre
+ * sur du papier. Une couleur = un sens.
+ * Tous les ratios en commentaire sont calcules sur les valeurs reelles.
+ */
+
 :root {
   --radius: 0.5rem;
-  /* Light mode */
-  --background: #f6f6f8;
-  --foreground: #1a1a2e;
-  --muted: #e8e8f0;
-  --muted-foreground: #6b6b80;
+
+  /* Light mode — encre sur papier chaud */
+  --background: #f6f4f1;        /* papier */
+  --foreground: #1c1a17;        /* 15.9:1 sur background */
+  --muted: #e9e5df;
+  --muted-foreground: #5e5850;  /* 6.4:1 sur background, 7.0:1 sur card */
   --popover: #ffffff;
-  --popover-foreground: #1a1a2e;
+  --popover-foreground: #1c1a17;
   --card: #ffffff;
-  --card-foreground: #1a1a2e;
-  --border: #e2e2ea;
-  --input: #e2e2ea;
-  --primary: #3713ec;
-  --primary-foreground: #ffffff;
-  --secondary: #ededf5;
-  --secondary-foreground: #3a3a52;
-  --accent: #f0f0f8;
-  --accent-foreground: #3a3a52;
-  --destructive: #ef4444;
+  --card-foreground: #1c1a17;   /* 17.4:1 */
+  --border: #e4dfd6;            /* separateur decoratif */
+  --input: #8d857b;             /* bordure de controle — 3.6:1 sur card */
+  --primary: #8a5214;           /* 6.4:1 sur card, 6.1:1 sur background */
+  --primary-foreground: #ffffff;/* 6.4:1 sur primary */
+  --secondary: #efebe4;
+  --secondary-foreground: #3d382f;
+  --accent: #f2ede5;
+  --accent-foreground: #3d382f;
+  --destructive: #b3261e;       /* 6.5:1 sur card (etait 3.76:1) */
   --destructive-foreground: #ffffff;
-  --ring: #3713ec;
+  --success: #2f6b3c;           /* 6.4:1 sur card */
+  --success-foreground: #ffffff;
+  --ring: #8a5214;              /* 6.4:1 — anneau de focus */
   --surface: #ffffff;
-  --surface-lighter: #f0f0f8;
-  --accent-orange: #ff6b35;
-  --accent-teal: #00f0ff;
-  --chart-1: #3713ec;
-  --chart-2: #ff6b35;
-  --chart-3: #00f0ff;
-  --chart-4: #8b5cf6;
-  --chart-5: #06b6d4;
+  --surface-lighter: #f2ede5;
+
+  /* Series de graphiques — identite de teinte stable entre les deux themes */
+  --chart-1: #4a2e0b;           /* bronze   12.5:1 */
+  --chart-2: #1f4e79;           /* bleu      8.7:1 */
+  --chart-3: #2f7040;           /* vert      6.0:1 */
+  --chart-4: #7a3b6b;           /* prune     7.9:1 */
+  --chart-5: #9a9188;           /* neutre    3.1:1 */
 }
 
 .dark {
-  --background: #131022;
-  --foreground: #f0f0f8;
-  --muted: #1e1933;
-  --muted-foreground: #9b9bb0;
-  --popover: #1e1933;
-  --popover-foreground: #f0f0f8;
-  --card: #1e1933;
-  --card-foreground: #f0f0f8;
-  --border: #292348;
-  --input: #292348;
-  --primary: #3713ec;
-  --primary-foreground: #ffffff;
-  --secondary: #292348;
-  --secondary-foreground: #c0c0d0;
-  --accent: #292348;
-  --accent-foreground: #d0d0e0;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --ring: #3713ec;
-  --surface: #1e1933;
-  --surface-lighter: #292348;
-  --accent-orange: #ff6b35;
-  --accent-teal: #00f0ff;
-  --chart-1: #3713ec;
-  --chart-2: #ff6b35;
-  --chart-3: #00f0ff;
-  --chart-4: #8b5cf6;
-  --chart-5: #06b6d4;
+  --background: #141210;
+  --foreground: #f2efea;        /* 16.3:1 sur background */
+  --muted: #26221c;
+  --muted-foreground: #a79e92;  /* 7.1:1 sur background, 6.5:1 sur card */
+  --popover: #1e1b17;
+  --popover-foreground: #f2efea;
+  --card: #1e1b17;
+  --card-foreground: #f2efea;   /* 15.0:1 */
+  --border: #332e27;
+  --input: #857c72;             /* 4.2:1 sur card */
+  --primary: #e0a34a;           /* variante claire — 7.8:1 sur card (etait 1.99:1) */
+  --primary-foreground: #1e1b17;/* 7.8:1 sur primary */
+  --secondary: #2c2720;
+  --secondary-foreground: #ddd6cc;
+  --accent: #2c2720;
+  --accent-foreground: #ddd6cc;
+  --destructive: #f2857c;       /* 6.9:1 sur card */
+  --destructive-foreground: #1e1b17;
+  --success: #6fbf7f;           /* 7.7:1 sur card */
+  --success-foreground: #1e1b17;
+  --ring: #e0a34a;              /* 7.8:1 */
+  --surface: #1e1b17;
+  --surface-lighter: #2c2720;
+
+  --chart-1: #f2c98a;           /* bronze   11.0:1 */
+  --chart-2: #5e9ed0;           /* bleu      5.9:1 */
+  --chart-3: #6fbf7f;           /* vert      7.7:1 */
+  --chart-4: #b06ba0;           /* prune     4.5:1 */
+  --chart-5: #7a7268;           /* neutre    3.6:1 */
 }
 
 @theme inline {
@@ -87,17 +99,18 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-ring: var(--ring);
   --color-surface: var(--surface);
   --color-surface-lighter: var(--surface-lighter);
-  --color-accent-orange: var(--accent-orange);
-  --color-accent-teal: var(--accent-teal);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --font-sans: var(--font-plus-jakarta);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 html,
@@ -111,32 +124,35 @@ body {
   color: var(--foreground);
 }
 
-/* Smooth scroll */
 html {
   scroll-behavior: smooth;
 }
 
-/* Utility classes */
-.progress-gradient {
-  background: linear-gradient(90deg, #3713ec, #8b5cf6, #00f0ff);
+/* Chiffres alignes en colonne : BPM, durees, dates */
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
 
+/* Materiau translucide — couche fonctionnelle flottante uniquement */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-:root .glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border);
 }
 
 .dark .glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(30, 27, 23, 0.72);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+}
+
+/* Reduce Transparency : la couche flottante devient opaque */
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .dark .glass {
+    background: var(--card);
+    backdrop-filter: none;
+  }
 }
 
 /* Animations */
@@ -203,4 +219,49 @@ html {
 
 .animate-nav-progress {
   animation: nav-progress 1.4s ease-in-out infinite;
+}
+
+/* Repli sans deplacement pour Reduce Motion — l'opacite reste lisible. */
+@keyframes nav-progress-reduced {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/*
+ * Reduce Motion.
+ * Les cinq animations en boucle sont purement decoratives : on les coupe.
+ * fade-in-up se termine sur son etat final (le contenu doit rester visible).
+ * nav-progress porte une information — le chargement — donc elle ne
+ * disparait pas, elle passe d'un balayage a une pulsation d'opacite.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-float,
+  .animate-pulse-glow,
+  .animate-gradient,
+  .animate-listening-pulse {
+    animation: none;
+  }
+
+  .animate-fade-in-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* La barre reste bien visible : elle porte une information. */
+  .animate-nav-progress {
+    animation: nav-progress-reduced 1.6s ease-in-out infinite;
+    transform: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

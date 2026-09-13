@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { getAlbumRecommendations } from "@/lib/actions/albums";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
@@ -245,10 +246,12 @@ export function AlbumRecommendations({
             {/* Album info */}
             <div className="flex items-center gap-4 p-5">
               {selectedAlbum.images[0]?.url ? (
-                <img
+                <Image
                   src={selectedAlbum.images[0].url}
                   alt={selectedAlbum.name}
                   className="h-16 w-16 shrink-0 rounded-xl object-cover"
+                  width={64}
+                  height={64}
                 />
               ) : (
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-muted">

@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import * as tus from "tus-js-client";
 import { createClient } from "@/lib/supabase/client";
-import { needsCompression, compressVideo } from "@/lib/video-compression";
+import { needsCompression } from "@/lib/video-compression";
 
 interface VideoUploadProps {
   songId: string;
@@ -55,6 +55,9 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
         setProgress(0);
         setStatusMessage("Chargement du moteur de compression...");
 
+        // @ffmpeg n'est telecharge qu'ici, quand une compression est
+        // reellement necessaire.
+        const { compressVideo } = await import("@/lib/video-compression");
         fileToUpload = await compressVideo(
           file,
           (p) => {

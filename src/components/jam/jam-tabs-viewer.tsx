@@ -250,8 +250,8 @@ export function JamTabsViewer({
           {/* Global progress */}
           <div className="mb-2">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-muted-foreground">Progression globale</span>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">Progression globale</span>
+              <span className="text-[11px] text-muted-foreground">
                 {Math.floor(totalDuration / 60)}:{Math.round(totalDuration % 60).toString().padStart(2, "0")}
               </span>
             </div>
@@ -286,7 +286,7 @@ export function JamTabsViewer({
                   <p className="text-[11px] font-semibold whitespace-nowrap">
                     {section.name}
                   </p>
-                  <p className={`text-[10px] whitespace-nowrap ${isCurrent ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                  <p className={`text-[11px] whitespace-nowrap ${isCurrent ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                     {Math.floor(duration / 60)}:{Math.round(duration % 60).toString().padStart(2, "0")}
                   </p>
                   {isCurrent && (

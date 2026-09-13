@@ -12,20 +12,23 @@ interface SetlistPageProps {
 
 export default async function SetlistPage({ params }: SetlistPageProps) {
   const { id } = await params;
-  const setlist = await getSetlist(id);
 
-  if (!setlist) {
-    notFound();
-  }
-
+  // La setlist, l'utilisateur et son plan ne dependent pas les uns des
+  // autres : les enchainer serialisait trois allers-retours.
   const supabase = await createClient();
-  const user = await getAuthenticatedUser();
+  const [setlist, user] = await Promise.all([
+    getSetlist(id),
+    getAuthenticatedUser(),
+  ]);
 
   if (!user) {
     redirect("/login");
   }
 
-  // Get user profile for plan info
+  if (!setlist) {
+    notFound();
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("plan")

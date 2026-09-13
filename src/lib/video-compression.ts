@@ -1,5 +1,8 @@
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile, toBlobURL } from "@ffmpeg/util";
+// Pas d'import @ffmpeg au sommet : ce module exporte aussi needsCompression,
+// et un import statique ferait entrer ~la bibliotheque entiere dans le bundle
+// de toute page qui touche a l'upload. Les modules sont charges dans
+// loadFFmpeg(), au moment ou une compression est reellement lancee.
+import type { FFmpeg } from "@ffmpeg/ffmpeg";
 
 const SUPABASE_FREE_LIMIT = 50 * 1024 * 1024; // 50 MB
 const TARGET_SIZE = 44 * 1024 * 1024; // 44 MB (marge de sécurité)
@@ -12,10 +15,15 @@ async function loadFFmpeg(
 ): Promise<FFmpeg> {
   if (ffmpegInstance?.loaded) return ffmpegInstance;
 
+  onLoadProgress?.("Chargement du moteur de compression...");
+
+  const [{ FFmpeg }, { toBlobURL }] = await Promise.all([
+    import("@ffmpeg/ffmpeg"),
+    import("@ffmpeg/util"),
+  ]);
+
   const ffmpeg = new FFmpeg();
   ffmpegInstance = ffmpeg;
-
-  onLoadProgress?.("Chargement du moteur de compression...");
 
   const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
 
@@ -77,6 +85,7 @@ export async function compressVideo(
     Math.floor((targetBits / duration - audioBitrate * 1000) / 1000)
   );
 
+  const { fetchFile } = await import("@ffmpeg/util");
   await ffmpeg.writeFile(inputName, await fetchFile(file));
 
   await ffmpeg.exec([
