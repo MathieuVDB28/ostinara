@@ -8,6 +8,7 @@ import { AlbumRecommendations } from "./album-recommendations";
 import { AlbumWishlistCard } from "./album-wishlist-card";
 import { AddToAlbumWishlistModal } from "./add-to-album-wishlist-modal";
 import { removeFromAlbumWishlist } from "@/lib/actions/album-wishlist";
+import { useBiblioSearch } from "@/components/biblio/biblio-search";
 
 interface AlbumsViewProps {
   initialReviews: AlbumReview[];
@@ -24,7 +25,7 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [reviewFromWishlist, setReviewFromWishlist] = useState<AlbumWishlistItem | null>(null);
   const [starFilter, setStarFilter] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { query: searchQuery, setQuery: setSearchQuery } = useBiblioSearch();
   const isPaid = userPlan !== "free";
 
   // Recherche insensible a la casse et aux accents, sur le titre et l'artiste
@@ -161,32 +162,6 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
           )}
         </button>
       </div>
-
-      {/* Search bar */}
-      {((activeTab === "reviews" && reviews.length > 0) ||
-        (activeTab === "wishlist" && wishlist.length > 0)) && (
-        <div className="relative mb-4">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base text-muted-foreground">
-            search
-          </span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher par album ou artiste..."
-            className="w-full rounded-xl border border-border/50 bg-card py-2.5 pl-10 pr-10 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              aria-label="Effacer la recherche"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <span className="material-symbols-outlined text-base">close</span>
-            </button>
-          )}
-        </div>
-      )}
 
       {/* Content - Reviews */}
       {activeTab === "reviews" && (
