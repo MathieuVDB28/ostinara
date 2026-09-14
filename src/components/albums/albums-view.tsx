@@ -24,12 +24,34 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [reviewFromWishlist, setReviewFromWishlist] = useState<AlbumWishlistItem | null>(null);
   const [starFilter, setStarFilter] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
   const isPaid = userPlan !== "free";
 
+  // Recherche insensible a la casse et aux accents, sur le titre et l'artiste
+  const normalize = (value: string) =>
+    value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+  const query = normalize(searchQuery.trim());
+  const matchesSearch = (album: { album_name: string; artist_name: string }) =>
+    !query ||
+    normalize(album.album_name).includes(query) ||
+    normalize(album.artist_name).includes(query);
+
   // starFilter: 0 = all, 1–5 = exact star bucket (e.g. 4 = ratings 4★ and 4.5★, db 8–9)
-  const filteredReviews = starFilter === 0
-    ? reviews
-    : reviews.filter((r) => r.rating >= starFilter * 2 && r.rating < (starFilter + 1) * 2);
+  const filteredReviews = reviews.filter(
+    (r) =>
+      matchesSearch(r) &&
+      (starFilter === 0 || (r.rating >= starFilter * 2 && r.rating < (starFilter + 1) * 2))
+  );
+
+  const filteredWishlist = wishlist.filter(matchesSearch);
+
+  const hasActiveFilters = query.length > 0 || starFilter > 0;
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStarFilter(0);
+  };
 
   const handleReviewAdded = (review: AlbumReview) => {
     setReviews((prev) => [review, ...prev]);
@@ -140,6 +162,32 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
         </button>
       </div>
 
+      {/* Search bar */}
+      {((activeTab === "reviews" && reviews.length > 0) ||
+        (activeTab === "wishlist" && wishlist.length > 0)) && (
+        <div className="relative mb-4">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base text-muted-foreground">
+            search
+          </span>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Rechercher par album ou artiste..."
+            className="w-full rounded-xl border border-border/50 bg-card py-2.5 pl-10 pr-10 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              aria-label="Effacer la recherche"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <span className="material-symbols-outlined text-base">close</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Content - Reviews */}
       {activeTab === "reviews" && (
         <>
@@ -168,7 +216,7 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
                   </button>
                 );
               })}
-              {starFilter > 0 && (
+              {hasActiveFilters && (
                 <span className="text-sm text-muted-foreground">
                   {filteredReviews.length} résultat{filteredReviews.length !== 1 ? "s" : ""}
                 </span>
@@ -189,13 +237,19 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
             </div>
           ) : reviews.length > 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12">
-              <span className="material-symbols-outlined mb-3 text-4xl text-muted-foreground">filter_list</span>
-              <p className="text-muted-foreground">Aucun album avec cette note</p>
+              <span className="material-symbols-outlined mb-3 text-4xl text-muted-foreground">
+                {query ? "search_off" : "filter_list"}
+              </span>
+              <p className="text-muted-foreground">
+                {query
+                  ? `Aucun album ne correspond a "${searchQuery.trim()}"`
+                  : "Aucun album avec cette note"}
+              </p>
               <button
-                onClick={() => setStarFilter(0)}
+                onClick={clearFilters}
                 className="mt-3 text-sm text-primary hover:underline"
               >
-                Effacer le filtre
+                Effacer les filtres
               </button>
             </div>
           ) : (
@@ -221,9 +275,9 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
       {/* Content - Wishlist */}
       {activeTab === "wishlist" && (
         <>
-          {wishlist.length > 0 ? (
+          {filteredWishlist.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {wishlist.map((album) => (
+              {filteredWishlist.map((album) => (
                 <AlbumWishlistCard
                   key={album.id}
                   album={album}
@@ -232,6 +286,19 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
                   isRemoving={removingIds.has(album.id)}
                 />
               ))}
+            </div>
+          ) : wishlist.length > 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12">
+              <span className="material-symbols-outlined mb-3 text-4xl text-muted-foreground">search_off</span>
+              <p className="text-muted-foreground">
+                Aucun album ne correspond a &quot;{searchQuery.trim()}&quot;
+              </p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="mt-3 text-sm text-primary hover:underline"
+              >
+                Effacer la recherche
+              </button>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
