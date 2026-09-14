@@ -81,7 +81,7 @@ export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
       </div>
 
       {/* Remove button */}
-      <button
+      <button aria-label="Retirer de la wishlist"
         onClick={onRemove}
         className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-red-500/10 hover:text-red-500 group-hover:opacity-100"
         title="Retirer de la wishlist"

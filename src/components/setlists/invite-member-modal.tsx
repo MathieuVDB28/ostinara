@@ -113,7 +113,7 @@ export function InviteMemberModal({
             <h2 className="text-xl font-bold">Inviter un membre</h2>
             <p className="mt-1 text-sm text-muted-foreground">{bandName}</p>
           </div>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >

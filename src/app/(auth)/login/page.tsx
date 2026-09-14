@@ -22,7 +22,7 @@ export default function LoginPage() {
       setError(result.error);
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      router.push("/jouer");
       router.refresh();
     }
   }

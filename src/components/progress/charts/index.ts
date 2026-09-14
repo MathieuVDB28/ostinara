@@ -1,5 +1,4 @@
-export { PracticeHeatmap } from "./practice-heatmap";
-export { BpmProgressChart } from "./bpm-progress-chart";
-export { MoodDistributionChart } from "./mood-distribution-chart";
-export { SongDistributionChart } from "./song-distribution-chart";
+// Seul StatsTab est consomme hors de ce dossier. Reexporter les graphiques
+// ici les ferait entrer dans le bundle initial et annulerait le dynamic()
+// applique dans stats-tab.tsx.
 export { StatsTab } from "./stats-tab";

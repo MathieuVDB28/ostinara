@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { updatePlaylist, deletePlaylist, removeSongFromPlaylist } from "@/lib/actions/playlists";
 import type { PlaylistWithSongs } from "@/types";
@@ -106,7 +107,7 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
       <div className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border p-6">
           <h2 className="text-lg font-semibold">Modifier la playlist</h2>
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 transition-colors hover:bg-accent"
           >
@@ -156,10 +157,12 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
                   >
                     {/* Song cover */}
                     {song.cover_url ? (
-                      <img
+                      <Image
                         src={song.cover_url}
                         alt={song.title}
                         className="h-10 w-10 rounded object-cover"
+                        width={40}
+                        height={40}
                       />
                     ) : (
                       <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">

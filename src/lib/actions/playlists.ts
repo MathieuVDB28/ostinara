@@ -28,44 +28,52 @@ export async function getPlaylists(): Promise<PlaylistWithSongs[]> {
     return [];
   }
 
-  // For each playlist, fetch its songs via the junction table
-  const results: PlaylistWithSongs[] = [];
+  if (playlists.length === 0) return [];
 
-  for (const playlist of playlists) {
-    const { data: playlistSongs } = await supabase
-      .from("playlist_songs")
-      .select("song_id, position")
-      .eq("playlist_id", playlist.id)
-      .order("position", { ascending: true });
+  // Trois requetes au total, quel que soit le nombre de playlists.
+  // La version precedente bouclait sur les playlists avec deux requetes
+  // sequentielles chacune : 10 playlists = 21 allers-retours en serie.
+  const { data: links } = await supabase
+    .from("playlist_songs")
+    .select("playlist_id, song_id, position")
+    .in(
+      "playlist_id",
+      playlists.map((p) => p.id)
+    )
+    .order("position", { ascending: true });
 
-    const songIds = playlistSongs?.map((ps) => ps.song_id) || [];
+  const songIds = [...new Set((links ?? []).map((l) => l.song_id))];
 
-    let songs: Song[] = [];
-    if (songIds.length > 0) {
-      const { data: songsData } = await supabase
-        .from("songs")
-        .select("*")
-        .in("id", songIds);
+  const songsById = new Map<string, Song>();
+  if (songIds.length > 0) {
+    const { data: songsData } = await supabase
+      .from("songs")
+      .select("*")
+      .in("id", songIds);
 
-      // Sort songs by playlist position
-      if (songsData) {
-        const positionMap = new Map(
-          playlistSongs?.map((ps) => [ps.song_id, ps.position]) || []
-        );
-        songs = songsData.sort(
-          (a, b) => (positionMap.get(a.id) || 0) - (positionMap.get(b.id) || 0)
-        );
-      }
-    }
-
-    results.push({
-      ...playlist,
-      songs,
-      song_count: songIds.length,
-    });
+    for (const song of songsData ?? []) songsById.set(song.id, song);
   }
 
-  return results;
+  // Les liens arrivent deja tries par position ; on conserve cet ordre.
+  const linksByPlaylist = new Map<string, typeof links>();
+  for (const link of links ?? []) {
+    const bucket = linksByPlaylist.get(link.playlist_id);
+    if (bucket) bucket.push(link);
+    else linksByPlaylist.set(link.playlist_id, [link]);
+  }
+
+  return playlists.map((playlist) => {
+    const playlistLinks = linksByPlaylist.get(playlist.id) ?? [];
+    const songs = playlistLinks
+      .map((link) => songsById.get(link.song_id))
+      .filter((song): song is Song => Boolean(song));
+
+    return {
+      ...playlist,
+      songs,
+      song_count: playlistLinks.length,
+    };
+  });
 }
 
 // === Get a single playlist with songs ===

@@ -1,28 +1,6 @@
-import { getUserAlbumReviews } from "@/lib/actions/albums";
-import { getAlbumWishlist } from "@/lib/actions/album-wishlist";
-import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
-import { AlbumsView } from "@/components/albums/albums-view";
+import { redirect } from "next/navigation";
 
-export default async function AlbumsPage() {
-  const supabase = await createClient();
-  const user = await getAuthenticatedUser();
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("plan")
-    .eq("id", user!.id)
-    .single();
-
-  const [reviews, wishlist] = await Promise.all([
-    getUserAlbumReviews(),
-    getAlbumWishlist(),
-  ]);
-
-  return (
-    <AlbumsView
-      initialReviews={reviews}
-      initialWishlist={wishlist}
-      userPlan={profile?.plan || "free"}
-    />
-  );
+/** Ancienne route — conservee pour les liens et PWA deja installees. */
+export default function Page() {
+  redirect("/biblio/albums");
 }

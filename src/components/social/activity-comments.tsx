@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useTransition } from "react";
 import { addComment, deleteComment, getActivityComments } from "@/lib/actions/activities";
 import type { ActivityCommentWithProfile } from "@/types";
@@ -114,10 +115,12 @@ export function ActivityComments({
                     {/* Avatar */}
                     <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                       {comment.user.avatar_url ? (
-                        <img
+                        <Image
                           src={comment.user.avatar_url}
                           alt={comment.user.username}
                           className="h-7 w-7 rounded-full object-cover"
+                          width={28}
+                          height={28}
                         />
                       ) : (
                         comment.user.display_name?.[0]?.toUpperCase() ||
@@ -164,7 +167,7 @@ export function ActivityComments({
               maxLength={500}
               className="min-w-0 flex-1 rounded-xl border border-border bg-accent/30 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none"
             />
-            <button
+            <button aria-label="Envoyer le commentaire"
               type="submit"
               disabled={!newComment.trim() || isSending}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-opacity disabled:opacity-40"

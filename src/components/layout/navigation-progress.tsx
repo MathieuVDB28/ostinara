@@ -45,7 +45,7 @@ export function NavigationProgress() {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[9999] h-[2px] overflow-hidden">
-      <div className="progress-gradient animate-nav-progress h-full w-full" />
+      <div className="animate-nav-progress h-full w-full bg-primary" />
     </div>
   );
 }

@@ -120,7 +120,7 @@ export function CreateChallengeModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative max-h-[90vh] w-full max-w-md overflow-auto rounded-xl border border-border bg-card p-6">
-        <button
+        <button aria-label="Fermer"
           onClick={onClose}
           className="absolute right-4 top-4 rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >

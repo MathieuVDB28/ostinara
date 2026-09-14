@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useCallback } from "react";
 import type { FriendProfile, SongStatus } from "@/types";
 
@@ -61,7 +62,7 @@ export function FriendProfileModal({
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-border p-6">
           <h2 className="text-xl font-bold">Profil</h2>
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -83,10 +84,12 @@ export function FriendProfileModal({
               <div className="mb-6 flex items-center gap-4">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
                   {friendProfile.profile.avatar_url ? (
-                    <img
+                    <Image
                       src={friendProfile.profile.avatar_url}
                       alt={friendProfile.profile.username}
                       className="h-16 w-16 rounded-full object-cover"
+                      width={64}
+                      height={64}
                     />
                   ) : (
                     friendProfile.profile.display_name?.[0]?.toUpperCase() ||
@@ -133,10 +136,12 @@ export function FriendProfileModal({
                         className="flex items-center gap-3 rounded-lg border border-border p-3"
                       >
                         {song.cover_url ? (
-                          <img
+                          <Image
                             src={song.cover_url}
                             alt={song.title}
                             className="h-10 w-10 rounded object-cover"
+                            width={40}
+                            height={40}
                           />
                         ) : (
                           <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">

@@ -113,7 +113,7 @@ export function AddCoverModal({ song, isOpen, onClose, onSuccess }: AddCoverModa
               {song.title} - {song.artist}
             </p>
           </div>
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >

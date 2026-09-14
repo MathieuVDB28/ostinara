@@ -134,7 +134,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
             </div>
           )}
 
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="absolute right-4 top-4 rounded-lg bg-black/50 p-2 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
           >

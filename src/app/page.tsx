@@ -51,7 +51,7 @@ export default function Home() {
       {/* ──────────────── Global decorative blobs ──────────────── */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="animate-pulse-glow absolute -top-40 left-1/2 h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-primary/20 blur-[120px]" />
-        <div className="animate-float absolute top-[60%] -right-40 h-[500px] w-[500px] rounded-full bg-accent-teal/10 blur-[120px]" />
+        <div className="animate-float absolute top-[60%] -right-40 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[120px]" />
         <div className="animate-float absolute bottom-0 -left-40 h-[400px] w-[400px] rounded-full bg-primary/10 blur-[120px]" />
       </div>
 
@@ -69,10 +69,10 @@ export default function Home() {
               />
             </div>
             <div className="flex flex-col">
-              <span className="bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-xl font-extrabold leading-tight text-transparent">
+              <span className="text-xl font-extrabold leading-tight text-primary">
                 Ostinara
               </span>
-              <span className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
+              <span className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
                 Stay tuned
               </span>
             </div>
@@ -111,7 +111,7 @@ export default function Home() {
             {/* Headline */}
             <h1 className="animate-fade-in-up max-w-5xl text-5xl leading-[1.08] font-extrabold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
               Track Your{" "}
-              <span className="bg-gradient-to-r from-primary via-purple-400 to-accent-teal bg-clip-text text-transparent">
+              <span className="text-primary">
                 Guitar Journey
               </span>
             </h1>
@@ -160,7 +160,7 @@ export default function Home() {
                 className="rounded-2xl border border-border/50 bg-card/50 p-6 text-center backdrop-blur-xl transition-all hover:border-primary/30"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
-                <div className="bg-gradient-to-r from-primary to-accent-teal bg-clip-text text-3xl font-extrabold text-transparent sm:text-4xl">
+                <div className="text-3xl font-extrabold text-primary sm:text-4xl">
                   {stat.value}
                 </div>
                 <div className="mt-1 text-sm text-muted-foreground">
@@ -179,7 +179,7 @@ export default function Home() {
           <div className="mb-16 text-center">
             <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl">
               Tout pour progresser,{" "}
-              <span className="bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+              <span className="text-primary">
                 rien de superflu
               </span>
             </h2>
@@ -197,7 +197,7 @@ export default function Home() {
                 className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/50 p-8 backdrop-blur-xl transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_40px_rgba(55,19,236,0.1)]"
               >
                 {/* Hover gradient overlay */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent-teal/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                 <div className="relative">
                   {/* Icon */}
@@ -260,12 +260,12 @@ export default function Home() {
           <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-card/50 p-12 backdrop-blur-xl sm:p-16">
             {/* Decorative blobs */}
             <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-primary/20 blur-[80px]" />
-            <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-accent-teal/20 blur-[80px]" />
+            <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-primary/20 blur-[80px]" />
 
             <div className="relative text-center">
               <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl">
                 Prêt à tracker ta{" "}
-                <span className="bg-gradient-to-r from-primary via-purple-400 to-accent-teal bg-clip-text text-transparent">
+                <span className="text-primary">
                   progression
                 </span>{" "}
                 ?
@@ -310,10 +310,10 @@ export default function Home() {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="bg-gradient-to-r from-primary to-purple-400 bg-clip-text font-extrabold leading-tight text-transparent">
+                  <span className="font-extrabold leading-tight text-primary">
                     Ostinara
                   </span>
-                  <span className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
+                  <span className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
                     Stay tuned
                   </span>
                 </div>

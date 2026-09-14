@@ -235,7 +235,7 @@ export function GearDetailModal({
                 </button>
               </>
             )}
-            <button
+            <button aria-label="Fermer"
               onClick={onClose}
               className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
             >
@@ -573,7 +573,7 @@ export function GearDetailModal({
                 {gear.serial_number && (
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      N° de série <span className="text-[10px]">(privé)</span>
+                      N° de série <span className="text-[11px]">(privé)</span>
                     </p>
                     <p className="font-mono text-sm font-medium">{gear.serial_number}</p>
                   </div>
@@ -581,7 +581,7 @@ export function GearDetailModal({
                 {gear.purchase_price != null && (
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      Prix d&apos;achat <span className="text-[10px]">(privé)</span>
+                      Prix d&apos;achat <span className="text-[11px]">(privé)</span>
                     </p>
                     <p className="text-sm font-medium">
                       {gear.purchase_price.toLocaleString("fr-FR", {

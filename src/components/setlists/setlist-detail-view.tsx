@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -20,7 +22,17 @@ import {
 import { SetlistItemCard } from "./setlist-item-card";
 import { AddItemModal } from "./add-item-modal";
 import { EditItemModal } from "./edit-item-modal";
-import { SetlistPDFExport } from "./setlist-pdf-export";
+// Charge a la demande : @react-pdf/renderer pese ~988 Ko et ne sert
+// qu'au clic sur « Export PDF ».
+const SetlistPDFExport = dynamic(
+  () => import("./setlist-pdf-export").then((m) => m.SetlistPDFExport),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-10 w-32 animate-pulse rounded-xl bg-muted" />
+    ),
+  }
+);
 import {
   updateSetlist,
   deleteSetlist,
@@ -160,7 +172,7 @@ export function SetlistDetailView({
 
   const handleDeleteSetlist = async () => {
     await deleteSetlist(setlist.id);
-    router.push("/setlists");
+    router.push("/commu/groupes");
   };
 
   const handleDuplicate = async () => {
@@ -193,7 +205,7 @@ export function SetlistDetailView({
     <div>
       {/* Back button */}
       <button
-        onClick={() => router.push("/setlists")}
+        onClick={() => router.push("/commu/groupes")}
         className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
       >
         <svg

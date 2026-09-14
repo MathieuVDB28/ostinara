@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { searchUsers, sendFriendRequest } from "@/lib/actions/friends";
 import type { UserSearchResult } from "@/types";
@@ -111,7 +112,7 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold">Ajouter un ami</h2>
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -170,10 +171,12 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
                 {/* Avatar */}
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
                   {user.avatar_url ? (
-                    <img
+                    <Image
                       src={user.avatar_url}
                       alt={user.username}
                       className="h-10 w-10 rounded-full object-cover"
+                      width={40}
+                      height={40}
                     />
                   ) : (
                     user.display_name?.[0]?.toUpperCase() || user.username[0].toUpperCase()

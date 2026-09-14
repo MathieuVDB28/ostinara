@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -90,10 +91,12 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
       <div className="flex gap-5 sm:gap-7">
         <div className="shrink-0">
           {album.images[0] ? (
-            <img
+            <Image
               src={album.images[0].url}
               alt={album.name}
               className="h-36 w-36 rounded-xl object-cover shadow-lg sm:h-44 sm:w-44"
+              width={144}
+              height={144}
             />
           ) : (
             <div className="flex h-36 w-36 items-center justify-center rounded-xl bg-muted sm:h-44 sm:w-44">
@@ -264,7 +267,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
             </span>
             <p className="text-sm text-muted-foreground">Tu n&apos;as pas encore reviewé cet album</p>
             <Link
-              href="/albums"
+              href="/biblio/albums"
               className="mt-4 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               Ajouter une review

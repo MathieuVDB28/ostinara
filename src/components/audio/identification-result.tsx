@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSong } from "@/lib/actions/songs";
@@ -40,7 +41,7 @@ export function IdentificationResult({ result, onRetry }: IdentificationResultPr
   };
 
   const handleGoToLibrary = () => {
-    router.push("/library");
+    router.push("/biblio");
   };
 
   return (
@@ -50,10 +51,12 @@ export function IdentificationResult({ result, onRetry }: IdentificationResultPr
         <div className="flex gap-4 p-4">
           {/* Album art */}
           {result.cover_url ? (
-            <img
+            <Image
               src={result.cover_url}
               alt={result.album || result.title}
               className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
+              width={80}
+              height={80}
             />
           ) : (
             <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg bg-muted">

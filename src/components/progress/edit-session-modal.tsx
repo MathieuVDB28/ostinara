@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { updatePracticeSession, deletePracticeSession } from "@/lib/actions/practice";
@@ -193,7 +194,7 @@ export function EditSessionModal({
                 </svg>
               </button>
             )}
-            <button
+            <button aria-label="Fermer"
               onClick={handleClose}
               className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
             >
@@ -220,7 +221,10 @@ export function EditSessionModal({
               {selectedSong ? (
                 <div className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3">
                   {selectedSong.cover_url ? (
-                    <img src={selectedSong.cover_url} alt={selectedSong.title} className="h-12 w-12 rounded-lg object-cover" />
+                    <Image src={selectedSong.cover_url} alt={selectedSong.title} className="h-12 w-12 rounded-lg object-cover"
+                      width={48}
+                      height={48}
+                    />
                   ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent">
                       <svg className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -319,7 +323,10 @@ export function EditSessionModal({
             {/* Morceau */}
             <div className="flex items-center gap-4">
               {session.song?.cover_url ? (
-                <img src={session.song.cover_url} alt={session.song.title} className="h-20 w-20 rounded-xl object-cover" />
+                <Image src={session.song.cover_url} alt={session.song.title} className="h-20 w-20 rounded-xl object-cover"
+                  width={80}
+                  height={80}
+                />
               ) : (
                 <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-muted">
                   <svg className="h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -435,7 +442,10 @@ export function EditSessionModal({
               <div className="max-h-64 space-y-2 overflow-y-auto">
                 {filteredSongs.map((song) => (
                   <button key={song.id} onClick={() => { setSelectedSong(song); setShowSongSearch(false); }} className={`w-full flex items-center gap-3 rounded-lg p-2 text-left transition-all ${selectedSong?.id === song.id ? "bg-primary/10 border border-primary" : "hover:bg-accent"}`}>
-                    {song.cover_url ? <img src={song.cover_url} alt={song.title} className="h-10 w-10 rounded-md object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted"><svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" /></svg></div>}
+                    {song.cover_url ? <Image src={song.cover_url} alt={song.title} className="h-10 w-10 rounded-md object-cover"
+        width={40}
+        height={40}
+      /> : <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted"><svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" /></svg></div>}
                     <div className="min-w-0">
                       <p className="font-medium truncate">{song.title}</p>
                       <p className="text-sm text-muted-foreground truncate">{song.artist}</p>

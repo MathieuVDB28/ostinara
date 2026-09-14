@@ -218,7 +218,7 @@ export function AddItemModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-4">
           <h2 className="text-lg font-bold">Ajouter un element</h2>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >

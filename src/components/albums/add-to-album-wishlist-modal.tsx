@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
 import type { SpotifyAlbum, CreateAlbumWishlistInput } from "@/types";
@@ -109,7 +110,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-border p-5">
           <h2 className="text-lg font-bold">Ajouter à la wishlist</h2>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -156,10 +157,12 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
                 className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-accent disabled:opacity-50"
               >
                 {album.images[0]?.url ? (
-                  <img
+                  <Image
                     src={album.images[0].url}
                     alt={album.name}
                     className="h-14 w-14 rounded-lg object-cover"
+                    width={56}
+                    height={56}
                   />
                 ) : (
                   <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-muted">

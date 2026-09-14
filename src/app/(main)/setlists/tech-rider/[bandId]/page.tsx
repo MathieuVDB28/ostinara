@@ -15,18 +15,16 @@ export default async function TechRiderPage({ params }: Props) {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("plan")
-    .eq("id", user.id)
-    .single();
+  // Plan, groupe et fiche technique sont independants : trois allers-retours
+  // en serie devenaient un seul temps d'attente.
+  const [{ data: profile }, band, techRider] = await Promise.all([
+    supabase.from("profiles").select("plan").eq("id", user.id).single(),
+    getBand(bandId),
+    getTechRider(bandId),
+  ]);
 
   if (profile?.plan !== "band") redirect("/setlists");
-
-  const band = await getBand(bandId);
   if (!band) redirect("/setlists");
-
-  const techRider = await getTechRider(bandId);
 
   const currentMember = band.members.find((m) => m.user_id === user.id);
   const canEdit =

@@ -90,7 +90,7 @@ export function RehearsalCalendar({
     <div className="rounded-xl border border-border bg-card">
       {/* Navigation */}
       <div className="flex items-center justify-between border-b border-border p-4">
-        <button
+        <button aria-label="Mois précédent"
           onClick={prevMonth}
           className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
@@ -107,7 +107,7 @@ export function RehearsalCalendar({
             Aujourd&apos;hui
           </button>
         </div>
-        <button
+        <button aria-label="Mois suivant"
           onClick={nextMonth}
           className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
@@ -159,7 +159,7 @@ export function RehearsalCalendar({
                   <button
                     key={r.id}
                     onClick={() => onRehearsalClick(r)}
-                    className={`w-full truncate rounded px-1 py-0.5 text-left text-[10px] font-medium transition-colors hover:opacity-80 ${
+                    className={`w-full truncate rounded px-1 py-0.5 text-left text-[11px] font-medium transition-colors hover:opacity-80 ${
                       r.status === "cancelled"
                         ? "bg-red-500/20 text-red-400 line-through"
                         : r.status === "completed"

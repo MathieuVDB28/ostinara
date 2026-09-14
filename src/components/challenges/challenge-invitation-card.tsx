@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ChallengeWithDetails } from "@/types";
@@ -63,10 +64,12 @@ export function ChallengeInvitationCard({ challenge }: ChallengeInvitationCardPr
       {/* Header avec avatar */}
       <div className="mb-4 flex items-center gap-3">
         {challenge.creator.avatar_url ? (
-          <img
+          <Image
             src={challenge.creator.avatar_url}
             alt={creatorName}
             className="h-12 w-12 rounded-full object-cover"
+            width={48}
+            height={48}
           />
         ) : (
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">

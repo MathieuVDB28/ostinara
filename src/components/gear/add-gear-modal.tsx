@@ -178,7 +178,7 @@ export function AddGearModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
           <h2 className="text-lg font-semibold">Ajouter du matériel</h2>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
           >

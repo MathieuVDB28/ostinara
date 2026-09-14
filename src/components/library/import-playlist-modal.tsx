@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { importSpotifyPlaylist } from "@/lib/actions/spotify";
 import type { SpotifyPlaylist } from "@/types";
@@ -187,7 +188,7 @@ export function ImportPlaylistModal({ isOpen, onClose, onSuccess }: ImportPlayli
               )}
             </div>
           </div>
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
@@ -231,10 +232,12 @@ export function ImportPlaylistModal({ isOpen, onClose, onSuccess }: ImportPlayli
                       className="flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent"
                     >
                       {playlist.images[0] ? (
-                        <img
+                        <Image
                           src={playlist.images[0].url}
                           alt={playlist.name}
                           className="h-12 w-12 rounded-lg object-cover"
+                          width={48}
+                          height={48}
                         />
                       ) : (
                         <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
@@ -320,10 +323,12 @@ export function ImportPlaylistModal({ isOpen, onClose, onSuccess }: ImportPlayli
                           </div>
 
                           {track.cover_url ? (
-                            <img
+                            <Image
                               src={track.cover_url}
                               alt={track.album}
                               className="h-10 w-10 rounded object-cover"
+                              width={40}
+                              height={40}
                             />
                           ) : (
                             <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">

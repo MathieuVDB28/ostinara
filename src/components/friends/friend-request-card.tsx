@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import type { FriendRequest } from "@/types";
 import { acceptFriendRequest, rejectFriendRequest } from "@/lib/actions/friends";
@@ -45,10 +46,12 @@ export function FriendRequestCard({ request, onRefresh }: FriendRequestCardProps
         {/* Avatar */}
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
           {request.requester.avatar_url ? (
-            <img
+            <Image
               src={request.requester.avatar_url}
               alt={request.requester.username}
               className="h-12 w-12 rounded-full object-cover"
+              width={48}
+              height={48}
             />
           ) : (
             request.requester.display_name?.[0]?.toUpperCase() ||

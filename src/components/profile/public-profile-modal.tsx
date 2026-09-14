@@ -1,12 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useCallback, useState, useMemo } from "react";
 import type {
   PublicProfile,
   Song,
   SongStatus,
   SongDifficulty,
-  WishlistSong,
   PlaylistWithSongs,
   AlbumReview,
   CoverWithSong,
@@ -157,6 +157,12 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
     () => profile?.all_songs?.filter((s) => s.status === "mastered") || [],
     [profile?.all_songs]
   );
+  // "A apprendre" a remplace la table wishlist_songs : un seul endroit
+  // ou un morceau souhaite est enregistre.
+  const wantedSongs = useMemo(
+    () => profile?.all_songs?.filter((s) => s.status === "want_to_learn") || [],
+    [profile?.all_songs]
+  );
 
   // Covers for a specific song
   const coversForSong = useMemo(() => {
@@ -183,7 +189,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
       {/* Modal */}
       <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
         {/* Close button */}
-        <button
+        <button aria-label="Fermer"
           onClick={handleClose}
           className="absolute right-4 top-4 z-20 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent"
         >
@@ -204,17 +210,18 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
               <div className="relative overflow-hidden border-b border-border px-6 pb-6 pt-8">
                 {/* Decorative gradient */}
                 <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5" />
-                <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
 
                 <div className="flex items-start gap-5">
                   {/* Avatar */}
                   <div className="relative flex-shrink-0">
                     <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl font-bold text-primary ring-2 ring-primary/20 ring-offset-2 ring-offset-card">
                       {profile.profile.avatar_url ? (
-                        <img
+                        <Image
                           src={profile.profile.avatar_url}
                           alt={profile.profile.username}
                           className="h-20 w-20 rounded-full object-cover"
+                          width={80}
+                          height={80}
                         />
                       ) : (
                         profile.profile.display_name?.[0]?.toUpperCase() ||
@@ -222,7 +229,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                       )}
                     </div>
                     {profile.profile.plan !== "free" && (
-                      <div className="absolute -bottom-1 -right-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground shadow-sm">
+                      <div className="absolute -bottom-1 -right-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground shadow-sm">
                         {profile.profile.plan.toUpperCase()}
                       </div>
                     )}
@@ -394,7 +401,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                                   )}
                                   <div className="min-w-0 flex-1">
                                     <p className="truncate text-xs font-medium">{fg.gear?.brand} {fg.gear?.model}</p>
-                                    <p className="text-[10px] text-muted-foreground">{GEAR_TYPE_LABELS[fg.gear?.type || "other"]}</p>
+                                    <p className="text-[11px] text-muted-foreground">{GEAR_TYPE_LABELS[fg.gear?.type || "other"]}</p>
                                   </div>
                                 </div>
                               ))}
@@ -451,7 +458,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                             [
                               { key: "learning", label: "En cours", count: learningSongs.length },
                               { key: "mastered", label: "Maîtrisés", count: masteredSongs.length },
-                              { key: "wishlist", label: "Wishlist", count: profile.wishlist?.length ?? 0 },
+                              { key: "wishlist", label: "À apprendre", count: wantedSongs.length },
                               { key: "playlists", label: "Playlists", count: profile.playlists?.length ?? 0 },
                             ] as const
                           ).map((sub) => (
@@ -482,7 +489,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
 
                         {/* Wishlist */}
                         {librarySubTab === "wishlist" && (
-                          <WishlistList wishlist={profile.wishlist || []} />
+                          <SongList songs={wantedSongs} onSongClick={setSelectedSong} />
                         )}
 
                         {/* Playlists */}
@@ -530,12 +537,12 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                                   </p>
                                   <div className="mt-1.5 flex flex-wrap gap-1.5">
                                     {gear.condition && (
-                                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${GEAR_CONDITION_COLORS[gear.condition]}`}>
+                                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${GEAR_CONDITION_COLORS[gear.condition]}`}>
                                         {GEAR_CONDITION_LABELS[gear.condition]}
                                       </span>
                                     )}
                                     {gear.is_active && (
-                                      <span className="rounded-full bg-green-500/15 px-2 py-0.5 text-[10px] font-medium text-green-400">
+                                      <span className="rounded-full bg-green-500/15 px-2 py-0.5 text-[11px] font-medium text-green-400">
                                         Actif
                                       </span>
                                     )}
@@ -660,10 +667,12 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
 
               <div className="flex items-center gap-4">
                 {selectedSong.cover_url ? (
-                  <img
+                  <Image
                     src={selectedSong.cover_url}
                     alt={selectedSong.title}
                     className="h-20 w-20 rounded-xl object-cover shadow-md"
+                    width={80}
+                    height={80}
                   />
                 ) : (
                   <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-primary/10">
@@ -843,7 +852,10 @@ function SongList({ songs, onSongClick }: { songs: Song[]; onSongClick: (song: S
           className="group flex w-full items-center gap-3 rounded-xl border border-border/50 bg-card p-3 text-left transition-all hover:border-primary/30 hover:bg-primary/[0.02]"
         >
           {song.cover_url ? (
-            <img src={song.cover_url} alt={song.title} className="h-12 w-12 rounded-lg object-cover" />
+            <Image src={song.cover_url} alt={song.title} className="h-12 w-12 rounded-lg object-cover"
+              width={48}
+              height={48}
+            />
           ) : (
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
               <span className="material-symbols-outlined text-muted-foreground">music_note</span>
@@ -880,7 +892,7 @@ function SongList({ songs, onSongClick }: { songs: Song[]; onSongClick: (song: S
             </div>
           )}
           {song.difficulty && (
-            <span className={`hidden rounded-full px-2 py-0.5 text-[10px] font-medium sm:inline-block ${difficultyColors[song.difficulty]}`}>
+            <span className={`hidden rounded-full px-2 py-0.5 text-[11px] font-medium sm:inline-block ${difficultyColors[song.difficulty]}`}>
               {difficultyLabels[song.difficulty]}
             </span>
           )}
@@ -888,36 +900,6 @@ function SongList({ songs, onSongClick }: { songs: Song[]; onSongClick: (song: S
             chevron_right
           </span>
         </button>
-      ))}
-    </div>
-  );
-}
-
-function WishlistList({ wishlist }: { wishlist: WishlistSong[] }) {
-  if (wishlist.length === 0) {
-    return <EmptyState icon="favorite" message="Wishlist vide" />;
-  }
-
-  return (
-    <div className="space-y-2">
-      {wishlist.map((song) => (
-        <div
-          key={song.id}
-          className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-3"
-        >
-          {song.cover_url ? (
-            <img src={song.cover_url} alt={song.title} className="h-12 w-12 rounded-lg object-cover" />
-          ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
-              <span className="material-symbols-outlined text-muted-foreground">music_note</span>
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <div className="truncate font-medium">{song.title}</div>
-            <div className="truncate text-sm text-muted-foreground">{song.artist}</div>
-          </div>
-          <span className="material-symbols-outlined text-[18px] text-rose-400">favorite</span>
-        </div>
       ))}
     </div>
   );
@@ -947,7 +929,10 @@ function PlaylistList({
             className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-accent/30"
           >
             {playlist.cover_url ? (
-              <img src={playlist.cover_url} alt={playlist.name} className="h-12 w-12 rounded-lg object-cover" />
+              <Image src={playlist.cover_url} alt={playlist.name} className="h-12 w-12 rounded-lg object-cover"
+                width={48}
+                height={48}
+              />
             ) : (
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                 <span className="material-symbols-outlined text-primary">queue_music</span>
@@ -978,7 +963,10 @@ function PlaylistList({
                 >
                   <span className="w-5 text-center text-xs text-muted-foreground">{index + 1}</span>
                   {song.cover_url ? (
-                    <img src={song.cover_url} alt={song.title} className="h-8 w-8 rounded object-cover" />
+                    <Image src={song.cover_url} alt={song.title} className="h-8 w-8 rounded object-cover"
+                      width={32}
+                      height={32}
+                    />
                   ) : (
                     <div className="flex h-8 w-8 items-center justify-center rounded bg-muted">
                       <span className="material-symbols-outlined text-sm text-muted-foreground">music_note</span>
@@ -988,7 +976,7 @@ function PlaylistList({
                     <div className="truncate text-sm font-medium">{song.title}</div>
                     <div className="truncate text-xs text-muted-foreground">{song.artist}</div>
                   </div>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColors[song.status]}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusColors[song.status]}`}>
                     {statusLabels[song.status]}
                   </span>
                 </button>
@@ -1012,10 +1000,12 @@ function AlbumReviewList({ reviews }: { reviews: AlbumReview[] }) {
         <div key={review.id} className="overflow-hidden rounded-xl border border-border/50 bg-card">
           <div className="flex items-start gap-4 p-4">
             {review.cover_url ? (
-              <img
+              <Image
                 src={review.cover_url}
                 alt={review.album_name}
                 className="h-20 w-20 flex-shrink-0 rounded-lg object-cover shadow-sm"
+                width={80}
+                height={80}
               />
             ) : (
               <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -1050,7 +1040,10 @@ function SessionCard({ session }: { session: PracticeSessionWithSong }) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-3">
       {session.song?.cover_url ? (
-        <img src={session.song.cover_url} alt={session.song.title} className="h-10 w-10 rounded-lg object-cover" />
+        <Image src={session.song.cover_url} alt={session.song.title} className="h-10 w-10 rounded-lg object-cover"
+          width={40}
+          height={40}
+        />
       ) : (
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
           <span className="material-symbols-outlined text-primary text-[18px]">headphones</span>

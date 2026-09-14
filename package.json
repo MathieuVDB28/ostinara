@@ -6,7 +6,8 @@
     "dev": "next dev --experimental-https",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "icons": "node scripts/extract-icons.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

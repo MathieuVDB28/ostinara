@@ -1,10 +1,6 @@
-import { getFeedActivities } from "@/lib/actions/activities";
-import { FeedView } from "@/components/social/feed-view";
-import { getAuthenticatedUser } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-export default async function FeedPage() {
-  const user = await getAuthenticatedUser();
-  const activities = await getFeedActivities();
-
-  return <FeedView initialActivities={activities} currentUserId={user?.id || ""} />;
+/** Ancienne route — conservee pour les liens et PWA deja installees. */
+export default function Page() {
+  redirect("/commu");
 }

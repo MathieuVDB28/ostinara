@@ -120,6 +120,36 @@ export function NavIcon({ icon, className }: { icon: string; className?: string 
           <circle cx="11" cy="17" r="1.5"/>
         </svg>
       );
+    case "person":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1" strokeLinecap="round"/>
+        </svg>
+      );
+    case "settings":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 008 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9v0a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      );
+    case "exercise":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M6.5 6.5v11M17.5 6.5v11" strokeLinecap="round"/>
+          <path d="M3.5 9.5v5M20.5 9.5v5" strokeLinecap="round"/>
+          <path d="M6.5 12h11" strokeLinecap="round"/>
+        </svg>
+      );
+    case "tuner":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M3.5 15a9 9 0 1117 0" strokeLinecap="round"/>
+          <path d="M12 15l4-4.5" strokeLinecap="round"/>
+          <circle cx="12" cy="15" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+      );
     case "more":
       return (
         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

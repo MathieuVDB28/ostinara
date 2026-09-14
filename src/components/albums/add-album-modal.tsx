@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { createAlbumReview } from "@/lib/actions/albums";
 import { StarRating } from "@/components/ui/star-rating";
@@ -126,7 +127,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
               {step === "search" ? "Chercher un album" : "Ton avis"}
             </h2>
           </div>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -167,10 +168,12 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                     className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-accent"
                   >
                     {album.images[0]?.url ? (
-                      <img
+                      <Image
                         src={album.images[0].url}
                         alt={album.name}
                         className="h-14 w-14 rounded-lg object-cover"
+                        width={56}
+                        height={56}
                       />
                     ) : (
                       <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-muted">
@@ -204,10 +207,12 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
               {/* Selected album preview */}
               <div className="mb-6 flex items-center gap-4">
                 {selectedAlbum.images[0]?.url ? (
-                  <img
+                  <Image
                     src={selectedAlbum.images[0].url}
                     alt={selectedAlbum.name}
                     className="h-20 w-20 rounded-xl object-cover"
+                    width={80}
+                    height={80}
                   />
                 ) : (
                   <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-muted">

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { ChallengeWithDetails } from "@/types";
 import { ChallengeProgressBar } from "./challenge-progress-bar";
@@ -190,10 +191,12 @@ function ParticipantInfo({
     <div className={`flex flex-1 flex-col items-center gap-2 ${reverse ? "items-end" : "items-start"}`}>
       <div className="relative">
         {profile.avatar_url ? (
-          <img
+          <Image
             src={profile.avatar_url}
             alt={displayName}
             className="h-12 w-12 rounded-full object-cover"
+            width={48}
+            height={48}
           />
         ) : (
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">

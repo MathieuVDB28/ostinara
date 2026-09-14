@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import type { LeaderboardEntry, LeaderboardPeriod } from "@/types";
 import { getLeaderboard } from "@/lib/actions/challenges";
@@ -97,10 +98,12 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
 
               {/* Avatar */}
               {entry.avatar_url ? (
-                <img
+                <Image
                   src={entry.avatar_url}
                   alt={entry.display_name || entry.username}
                   className="h-12 w-12 flex-shrink-0 rounded-full object-cover"
+                  width={48}
+                  height={48}
                 />
               ) : (
                 <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">

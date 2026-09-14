@@ -1,14 +1,28 @@
 "use client";
 
+import Image from "next/image";
+import dynamic from "next/dynamic";
+
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { updateSong, deleteSong } from "@/lib/actions/songs";
 import { getCoversBySong, canUploadCover } from "@/lib/actions/covers";
-import { AddCoverModal } from "@/components/covers/add-cover-modal";
-import { CoverDetailModal } from "@/components/covers/cover-detail-modal";
+// AddCoverModal entraine video-upload → tus-js-client, et video-upload
+// charge lui-meme @ffmpeg a l'execution. Rien de tout cela n'est necessaire
+// pour editer le titre d'un morceau.
+const AddCoverModal = dynamic(() =>
+  import("@/components/covers/add-cover-modal").then((m) => m.AddCoverModal)
+);
+const CoverDetailModal = dynamic(() =>
+  import("@/components/covers/cover-detail-modal").then((m) => m.CoverDetailModal)
+);
 import { SongSessionsPanel } from "@/components/progress/song-sessions-panel";
-import { AddSessionModal } from "@/components/progress/add-session-modal";
-import { AddToPlaylistModal } from "./add-to-playlist-modal";
+const AddSessionModal = dynamic(() =>
+  import("@/components/progress/add-session-modal").then((m) => m.AddSessionModal)
+);
+const AddToPlaylistModal = dynamic(() =>
+  import("./add-to-playlist-modal").then((m) => m.AddToPlaylistModal)
+);
 import { AudioFeaturesBadge } from "./audio-features-badge";
 import { TabsSearchPanel } from "./tabs-search-panel";
 import type { Song, SongDifficulty, SongStatus, Cover, CoverWithSong, UserPlan } from "@/types";
@@ -202,7 +216,7 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
           <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
 
           {/* Close button */}
-          <button
+          <button aria-label="Fermer"
             onClick={handleClose}
             className="absolute right-4 top-4 rounded-lg bg-background/50 p-2 backdrop-blur-sm transition-colors hover:bg-background"
           >
@@ -215,10 +229,12 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
         {/* Song info header */}
         <div className="-mt-16 flex gap-4 px-6">
           {song.cover_url ? (
-            <img
+            <Image
               src={song.cover_url}
               alt={song.album || song.title}
               className="h-24 w-24 rounded-lg object-cover shadow-lg"
+              width={96}
+              height={96}
             />
           ) : (
             <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-muted shadow-lg">
@@ -618,6 +634,7 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
       </div>
 
       {/* Add Cover Modal */}
+      {showAddCover && (
       <AddCoverModal
         song={song}
         isOpen={showAddCover}
@@ -627,8 +644,10 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
           onUpdate();
         }}
       />
+      )}
 
       {/* Cover Detail Modal */}
+      {selectedCover && (
       <CoverDetailModal
         cover={selectedCover}
         isOpen={!!selectedCover}
@@ -638,8 +657,10 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
           onUpdate();
         }}
       />
+      )}
 
       {/* Add Session Modal */}
+      {showAddSession && (
       <AddSessionModal
         isOpen={showAddSession}
         onClose={() => setShowAddSession(false)}
@@ -652,8 +673,10 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
         timerSong={song}
         mode="manual"
       />
+      )}
 
       {/* Add to Playlist Modal */}
+      {showAddToPlaylist && (
       <AddToPlaylistModal
         songId={song.id}
         isOpen={showAddToPlaylist}
@@ -663,6 +686,7 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
           onUpdate();
         }}
       />
+      )}
     </div>
   );
 }

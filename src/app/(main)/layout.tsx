@@ -1,25 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
-import { getFriendsCount } from "@/lib/actions/friends";
+import { getPendingRequestsCount } from "@/lib/actions/friends";
+import { getPendingChallengesCount } from "@/lib/actions/challenges";
+import { getPendingBandInvitations } from "@/lib/actions/bands";
 import { PushNotificationManager } from "@/components/pwa";
-import { SidebarWrapper } from "@/components/layout/sidebar-wrapper";
+import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
-  { href: "/library", label: "Bibliothèque", icon: "library" },
-  { href: "/progress", label: "Progression", icon: "chart" },
-  { href: "/practice", label: "Practice", icon: "metronome" },
-  { href: "/covers", label: "Covers", icon: "video" },
-  { href: "/gear", label: "Matos", icon: "guitar" },
-  { href: "/albums", label: "Albums", icon: "album" },
-  { href: "/setlists", label: "Setlists", icon: "setlist" },
-  { href: "/challenges", label: "Défis", icon: "trophy" },
-  { href: "/friends", label: "Amis", icon: "users" },
-  { href: "/feed", label: "Feed", icon: "feed" },
-  { href: "/audio", label: "Audio", icon: "audio" },
-];
+import type { BadgeCounts } from "@/lib/navigation";
 
 export default async function MainLayout({
   children,
@@ -33,24 +21,33 @@ export default async function MainLayout({
     redirect("/login");
   }
 
-  // Recuperer le profil et le nombre d'amis
-  const [{ data: profile }, friendsCount] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("username, display_name, avatar_url")
-      .eq("id", user.id)
-      .single(),
-    getFriendsCount(),
-  ]);
+  // Un badge signale une information qui appelle une action, pas un total :
+  // la barre affichait le nombre d'amis (12) la ou il fallait le nombre de
+  // demandes en attente (0).
+  const [{ data: profile }, pendingFriends, pendingChallenges, bandInvitations] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("username, display_name, avatar_url")
+        .eq("id", user.id)
+        .single(),
+      getPendingRequestsCount(),
+      getPendingChallengesCount(),
+      getPendingBandInvitations(),
+    ]);
 
-  const navItemsWithBadge = navItems.map((item) => ({
-    ...item,
-    badge: item.href === "/friends" ? friendsCount : undefined,
-  }));
+  const badges: BadgeCounts = {
+    friends: pendingFriends,
+    challenges: pendingChallenges,
+    bands: bandInvitations.length,
+  };
 
   const userInfo = {
     displayName: profile?.display_name || profile?.username || "User",
-    initial: profile?.display_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U",
+    initial:
+      profile?.display_name?.[0]?.toUpperCase() ||
+      user.email?.[0]?.toUpperCase() ||
+      "U",
     email: user.email || "",
     avatarUrl: profile?.avatar_url,
   };
@@ -59,18 +56,14 @@ export default async function MainLayout({
     <div className="flex min-h-screen">
       <NavigationProgress />
 
-      {/* Mobile Bottom Tab Bar */}
-      <SidebarWrapper navItems={navItemsWithBadge} userInfo={userInfo} />
+      <BottomTabBar badges={badges} />
 
-      {/* Desktop Sidebar */}
-      <DesktopSidebar navItems={navItemsWithBadge} userInfo={userInfo} />
+      <DesktopSidebar badges={badges} userInfo={userInfo} />
 
-      {/* Main content */}
       <main className="w-full min-w-0 flex-1 overflow-x-hidden p-4 pb-24 lg:ml-64 lg:p-8 lg:pb-8">
         {children}
       </main>
 
-      {/* Push notifications */}
       <PushNotificationManager userId={user.id} />
     </div>
   );

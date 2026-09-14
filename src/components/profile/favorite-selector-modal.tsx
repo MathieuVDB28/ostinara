@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import type { Song } from "@/types";
 import { createClient } from "@/lib/supabase/client";
@@ -158,7 +159,7 @@ export function FavoriteSelectorModal({
           <h2 className="text-xl font-bold">
             {type === "song" ? "Sélectionner un morceau" : "Sélectionner un album"}
           </h2>
-          <button
+          <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -241,10 +242,12 @@ export function FavoriteSelectorModal({
                     className="flex w-full items-center gap-3 rounded-lg border border-border p-3 text-left transition-all hover:bg-accent"
                   >
                     {song.cover_url ? (
-                      <img
+                      <Image
                         src={song.cover_url}
                         alt={song.title}
                         className="h-12 w-12 rounded object-cover"
+                        width={48}
+                        height={48}
                       />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded bg-muted">
@@ -276,10 +279,12 @@ export function FavoriteSelectorModal({
                     className="flex w-full items-center gap-3 rounded-lg border border-border p-3 text-left transition-all hover:bg-accent"
                   >
                     {track.cover_url ? (
-                      <img
+                      <Image
                         src={track.cover_url}
                         alt={track.title}
                         className="h-12 w-12 rounded object-cover"
+                        width={48}
+                        height={48}
                       />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded bg-muted">

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { SetlistWithDetails, SetlistItem } from "@/types";
 
 interface JamSongQueueProps {
@@ -73,10 +74,12 @@ export function JamSongQueue({
 
               {/* Cover art */}
               {item.song_cover_url ? (
-                <img
+                <Image
                   src={item.song_cover_url}
                   alt=""
                   className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                  width={40}
+                  height={40}
                 />
               ) : (
                 <div className="h-10 w-10 shrink-0 rounded-lg bg-accent flex items-center justify-center">
@@ -110,12 +113,12 @@ export function JamSongQueue({
                     {item.song_artist}
                   </p>
                   {item.tabs_url && (
-                    <span className="shrink-0 rounded-full bg-blue-500/20 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">
+                    <span className="shrink-0 rounded-full bg-blue-500/20 px-1.5 py-0.5 text-[11px] font-medium text-blue-400">
                       Tab
                     </span>
                   )}
                   {item.played_sections && item.played_sections.length > 0 && (
-                    <span className="shrink-0 rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-medium text-purple-400">
+                    <span className="shrink-0 rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[11px] font-medium text-purple-400">
                       {item.played_sections.length} sect.
                     </span>
                   )}

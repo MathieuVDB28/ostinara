@@ -147,7 +147,7 @@ export default function SubscriptionPage() {
       {/* Header avec retour */}
       <div className="mb-8 flex items-center gap-4">
         <Link
-          href="/profile/edit"
+          href="/profil/reglages"
           className="rounded-lg p-2 transition-colors hover:bg-accent"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

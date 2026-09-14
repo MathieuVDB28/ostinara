@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import {
   LineChart,
@@ -75,10 +76,12 @@ export function BpmProgressChart({ data }: BpmProgressChartProps) {
             `}
           >
             {song.coverUrl ? (
-              <img
+              <Image
                 src={song.coverUrl}
                 alt={song.songTitle}
                 className="w-6 h-6 rounded object-cover"
+                width={24}
+                height={24}
               />
             ) : (
               <div
