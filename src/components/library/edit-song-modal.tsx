@@ -25,7 +25,21 @@ const AddToPlaylistModal = dynamic(() =>
 );
 import { AudioFeaturesBadge } from "./audio-features-badge";
 import { TabsSearchPanel } from "./tabs-search-panel";
-import type { Song, SongDifficulty, SongStatus, Cover, CoverWithSong, UserPlan } from "@/types";
+import { TempoLadder } from "@/components/ui/tempo-ladder";
+import { SongBpmCurve } from "@/components/progress/song-bpm-curve";
+import { getSongBpmProgress } from "@/lib/actions/practice";
+import { saveSongTabStructure } from "@/lib/actions/songs";
+import { songTargetBpm, slowPracticeFloor } from "@/lib/song-progress";
+import type {
+  Song,
+  SongBpmPoint,
+  SongDifficulty,
+  SongStatus,
+  SongsterrTabStructure,
+  Cover,
+  CoverWithSong,
+  UserPlan,
+} from "@/types";
 
 interface EditSongModalProps {
   song: Song | null;
@@ -34,6 +48,8 @@ interface EditSongModalProps {
   onUpdate: () => void;
   onDelete?: (songId: string) => void;
   userPlan?: UserPlan;
+  /** Meilleur tempo tenu en session — l'axe de la progression. */
+  bestBpm?: number | null;
 }
 
 const statusOptions: { value: SongStatus; label: string }[] = [
@@ -52,7 +68,15 @@ const difficultyOptions: { value: SongDifficulty | ""; label: string }[] = [
 
 import { TUNING_GROUPS } from "@/lib/tunings";
 
-export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userPlan = "free" }: EditSongModalProps) {
+export function EditSongModal({
+  song,
+  isOpen,
+  onClose,
+  onUpdate,
+  onDelete,
+  userPlan = "free",
+  bestBpm = null,
+}: EditSongModalProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -78,7 +102,17 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
   const [artist, setArtist] = useState("");
   const [difficulty, setDifficulty] = useState<SongDifficulty | "">("");
   const [status, setStatus] = useState<SongStatus>("want_to_learn");
-  const [progress, setProgress] = useState(0);
+  /*
+   * Le curseur « 0-100 % » a disparu. Ce qu'un guitariste decide a propos
+   * d'un morceau, c'est un tempo a atteindre ; ce qu'il constate, c'est le
+   * tempo qu'il tient. Le pourcentage se deduit des deux, il ne se saisit
+   * plus (cf. syncSongProgressFromTempo).
+   */
+  const [targetBpm, setTargetBpm] = useState("");
+  const [bpmPoints, setBpmPoints] = useState<SongBpmPoint[] | null>(null);
+  const [tabStructure, setTabStructure] = useState<SongsterrTabStructure | null>(
+    null
+  );
   const [tuning, setTuning] = useState("Standard");
   const [capo, setCapo] = useState(0);
   const [tabsUrl, setTabsUrl] = useState("");
@@ -91,7 +125,8 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
       setArtist(song.artist);
       setDifficulty(song.difficulty || "");
       setStatus(song.status);
-      setProgress(song.progress_percent);
+      setTargetBpm(song.target_bpm ? String(song.target_bpm) : "");
+      setTabStructure(null);
       setTuning(song.tuning);
       setCapo(song.capo_position);
       setTabsUrl(song.tabs_url || "");
@@ -99,6 +134,24 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
       setActiveTab("details");
     }
   }, [song]);
+
+  /*
+   * La courbe de tempo du morceau.
+   *
+   * Chargee a l'ouverture, en meme temps que les covers : c'est la
+   * premiere chose qu'on vient regarder sur la fiche d'un morceau qu'on
+   * travaille, et elle ne coute qu'une lecture de deux colonnes.
+   */
+  useEffect(() => {
+    if (!song || !isOpen) return;
+    let cancelled = false;
+    getSongBpmProgress(song.id).then((points) => {
+      if (!cancelled) setBpmPoints(points);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [song, isOpen]);
 
   // Load covers for the song
   useEffect(() => {
@@ -131,12 +184,19 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
     setSaving(true);
     setError(null);
 
+    const parsedTarget = targetBpm ? parseInt(targetBpm, 10) : null;
+    if (parsedTarget !== null && (isNaN(parsedTarget) || parsedTarget < 20 || parsedTarget > 300)) {
+      setError("Le tempo cible doit être compris entre 20 et 300 BPM");
+      setSaving(false);
+      return;
+    }
+
     const result = await updateSong(song.id, {
       title,
       artist,
       difficulty: difficulty || undefined,
       status,
-      progress_percent: progress,
+      target_bpm: parsedTarget ?? undefined,
       tuning,
       capo_position: capo,
       tabs_url: tabsUrl || undefined,
@@ -318,18 +378,14 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
         {/* Details Tab */}
         {activeTab === "details" && (
         <div className="space-y-6 p-6">
-          {/* Status & Progress */}
+          {/* Statut */}
           <div className="rounded-xl bg-accent/50 p-4">
             <label className="mb-3 block text-sm font-medium">Statut</label>
             <div className="flex gap-2">
               {statusOptions.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => {
-                    setStatus(option.value);
-                    if (option.value === "mastered") setProgress(100);
-                    else if (option.value === "want_to_learn") setProgress(0);
-                  }}
+                  onClick={() => setStatus(option.value)}
                   className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
                     status === option.value
                       ? "bg-primary text-primary-foreground"
@@ -340,24 +396,28 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
                 </button>
               ))}
             </div>
-
-            {status === "learning" && (
-              <div className="mt-4">
-                <div className="mb-2 flex items-center justify-between text-sm">
-                  <span>Progression</span>
-                  <span className="font-medium">{progress}%</span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  value={progress}
-                  onChange={(e) => setProgress(parseInt(e.target.value))}
-                  className="h-2 w-full cursor-pointer appearance-none rounded-full bg-muted [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
-                />
-              </div>
-            )}
           </div>
+
+          {/*
+            La progression, au tempo.
+
+            C'etait un curseur 0-100 % : une valeur saisie une fois, jamais
+            revue, et fausse des la deuxieme semaine. Ici, deux nombres qui
+            existent : la cible qu'on se donne et le meilleur tempo tenu en
+            session. Le reste — barre, pourcentage, courbe — n'est qu'une
+            lecture de ces deux-la.
+          */}
+          <TempoBlock
+            song={song}
+            targetBpm={targetBpm}
+            onTargetBpmChange={setTargetBpm}
+            bestBpm={bestBpm}
+            points={bpmPoints}
+            onWorkOnSong={() => {
+              onClose();
+              router.push(`/jouer?song=${song.id}`);
+            }}
+          />
 
           {/* Basic info */}
           <div className="grid gap-4 sm:grid-cols-2">
@@ -367,7 +427,7 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
             <div>
@@ -376,7 +436,7 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
                 type="text"
                 value={artist}
                 onChange={(e) => setArtist(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
           </div>
@@ -388,7 +448,7 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as SongDifficulty)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               >
                 {difficultyOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -402,7 +462,7 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
               <select
                 value={tuning}
                 onChange={(e) => setTuning(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               >
                 {TUNING_GROUPS.map((group) => (
                   <optgroup key={group.label} label={group.label}>
@@ -420,7 +480,7 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
               <select
                 value={capo}
                 onChange={(e) => setCapo(parseInt(e.target.value))}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               >
                 <option value={0}>Pas de capo</option>
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
@@ -451,7 +511,7 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Astuces, passages difficiles, remarques..."
               rows={4}
-              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
           </div>
 
@@ -501,13 +561,48 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
 
         {/* Tablatures Tab */}
         {activeTab === "tablatures" && (
-          <div className="p-6">
+          <div className="space-y-4 p-6">
             <TabsSearchPanel
               title={title}
               artist={artist}
               currentTabsUrl={tabsUrl}
               onSelectTab={(url) => setTabsUrl(url)}
+              /*
+                L'analyse etait calculee puis jetee : rouvrir le morceau
+                relancait le telechargement du fichier Guitar Pro. Elle se
+                range maintenant sur le morceau, et le tempo de la
+                partition devient la cible quand aucune n'est reglee.
+              */
+              onTabStructure={async (structure, songsterrId) => {
+                setTabStructure(structure);
+                const saved = await saveSongTabStructure(song.id, {
+                  songsterrId: songsterrId ?? null,
+                  tabsUrl: tabsUrl || undefined,
+                  structure,
+                });
+                if (saved.targetBpmApplied) {
+                  setTargetBpm(String(saved.targetBpmApplied));
+                }
+                onUpdate();
+              }}
               userPlan={userPlan}
+            />
+
+            <TabStructureSummary
+              structure={
+                tabStructure ??
+                (song.tab_bpm
+                  ? {
+                      bpm: song.tab_bpm,
+                      totalMeasures: song.tab_total_measures ?? 0,
+                      timeSignatureBeats: song.tab_time_signature_beats ?? 4,
+                      timeSignatureValue: song.tab_time_signature_value ?? 4,
+                      sections: song.tab_sections ?? [],
+                    }
+                  : null)
+              }
+              syncedAt={song.tab_synced_at}
+              onUseAsTarget={(bpm) => setTargetBpm(String(bpm))}
             />
           </div>
         )}
@@ -687,6 +782,228 @@ export function EditSongModal({ song, isOpen, onClose, onUpdate, onDelete, userP
         }}
       />
       )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// La progression, au tempo
+// ---------------------------------------------------------------------------
+
+interface TempoBlockProps {
+  song: Song;
+  targetBpm: string;
+  onTargetBpmChange: (value: string) => void;
+  bestBpm: number | null;
+  /** `null` tant que la courbe n'est pas revenue du serveur. */
+  points: SongBpmPoint[] | null;
+  onWorkOnSong: () => void;
+}
+
+/**
+ * Le bloc qui a remplace le curseur de progression.
+ *
+ * Trois choses, dans l'ordre ou on les consulte : ou j'en suis
+ * (l'echelle de tempo), comment j'y suis arrive (la courbe), et ou je
+ * veux aller (la cible, le seul champ de saisie).
+ */
+function TempoBlock({
+  song,
+  targetBpm,
+  onTargetBpmChange,
+  bestBpm,
+  points,
+  onWorkOnSong,
+}: TempoBlockProps) {
+  const parsed = targetBpm ? parseInt(targetBpm, 10) : NaN;
+  const effectiveTarget = !isNaN(parsed) && parsed > 0 ? parsed : null;
+
+  // Les propositions : la partition d'abord, l'enregistrement ensuite.
+  // Ce sont des raccourcis, pas des valeurs imposees.
+  const suggestions = [
+    song.tab_bpm ? { bpm: song.tab_bpm, label: "Tablature" } : null,
+    song.spotify_bpm
+      ? { bpm: Math.round(song.spotify_bpm), label: "Original" }
+      : null,
+  ].filter(Boolean) as { bpm: number; label: string }[];
+
+  const fallbackTarget = songTargetBpm(song);
+  const ladderTarget = effectiveTarget ?? fallbackTarget?.bpm ?? null;
+
+  return (
+    <div className="space-y-4 rounded-xl border border-border p-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-medium">Progression au tempo</h3>
+        <button
+          type="button"
+          onClick={onWorkOnSong}
+          className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <span aria-hidden="true" className="material-symbols-outlined text-[16px]">
+            play_arrow
+          </span>
+          Travailler
+        </button>
+      </div>
+
+      {ladderTarget ? (
+        <TempoLadder
+          targetBpm={ladderTarget}
+          achievedBpm={bestBpm}
+          floorBpm={slowPracticeFloor(ladderTarget)}
+        />
+      ) : (
+        <p className="rounded-lg bg-accent/50 p-3 text-sm text-muted-foreground">
+          Donne-toi un tempo à atteindre : c&apos;est lui qui mesurera la
+          progression, séance après séance.
+        </p>
+      )}
+
+      {/* La courbe : l'histoire, pas l'instantane. */}
+      {points !== null && points.length > 0 && (
+        <SongBpmCurve
+          points={points}
+          targetBpm={ladderTarget}
+          floorBpm={ladderTarget ? slowPracticeFloor(ladderTarget) : null}
+        />
+      )}
+
+      <div>
+        <label
+          htmlFor="target-bpm"
+          className="mb-1 block text-sm font-medium"
+        >
+          Tempo cible
+        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
+            <input
+              id="target-bpm"
+              type="number"
+              inputMode="numeric"
+              min={20}
+              max={300}
+              value={targetBpm}
+              onChange={(event) => onTargetBpmChange(event.target.value)}
+              placeholder="—"
+              className="tabular w-24 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
+            />
+            <span className="text-sm text-muted-foreground">BPM</span>
+          </div>
+
+          {suggestions.map((suggestion) => (
+            <button
+              key={suggestion.label}
+              type="button"
+              onClick={() => onTargetBpmChange(String(suggestion.bpm))}
+              className="tabular inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-input px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {suggestion.label} · {suggestion.bpm}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          Le pourcentage affiché ailleurs se déduit de ce tempo et du
+          meilleur que tu aies tenu — il ne se saisit plus.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Ce que la tablature a livre
+// ---------------------------------------------------------------------------
+
+interface TabStructureSummaryProps {
+  structure: SongsterrTabStructure | null;
+  syncedAt?: string;
+  onUseAsTarget: (bpm: number) => void;
+}
+
+/**
+ * Le resultat de l'analyse, garde sur le morceau.
+ *
+ * Sans ca, « Analyser la tab » etait un bouton qui affichait un spinner
+ * puis ne montrait rien : le tempo et les sections partaient dans un
+ * callback que personne n'ecoutait sur cet ecran.
+ */
+function TabStructureSummary({
+  structure,
+  syncedAt,
+  onUseAsTarget,
+}: TabStructureSummaryProps) {
+  if (!structure) return null;
+
+  return (
+    <div className="rounded-xl border border-border p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h4 className="text-sm font-medium">Ce que dit la tablature</h4>
+        {syncedAt && (
+          <span className="text-xs text-muted-foreground">
+            Analysée le{" "}
+            {new Date(syncedAt).toLocaleDateString("fr-FR", {
+              day: "numeric",
+              month: "short",
+            })}
+          </span>
+        )}
+      </div>
+
+      <dl className="mt-3 grid grid-cols-3 gap-3">
+        <div>
+          <dt className="text-xs text-muted-foreground">Tempo</dt>
+          <dd className="tabular text-lg font-bold text-primary">
+            {structure.bpm}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Mesure</dt>
+          <dd className="tabular text-lg font-bold">
+            {structure.timeSignatureBeats}/{structure.timeSignatureValue}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Mesures</dt>
+          <dd className="tabular text-lg font-bold">
+            {structure.totalMeasures || "—"}
+          </dd>
+        </div>
+      </dl>
+
+      {structure.sections.length > 0 && (
+        <div className="mt-3">
+          <p className="mb-1.5 text-xs text-muted-foreground">
+            {structure.sections.length} section
+            {structure.sections.length > 1 ? "s" : ""}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {structure.sections.map((section) => (
+              <span
+                key={`${section.name}-${section.startMeasure}`}
+                className="tabular rounded-full bg-accent px-2.5 py-1 text-xs"
+              >
+                {section.name}
+                <span className="text-muted-foreground">
+                  {" "}
+                  {section.startMeasure}–{section.endMeasure}
+                </span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => onUseAsTarget(structure.bpm)}
+        className="mt-3 inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-input px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <span aria-hidden="true" className="material-symbols-outlined text-[16px]">
+          speed
+        </span>
+        Prendre {structure.bpm} BPM comme cible
+      </button>
     </div>
   );
 }

@@ -174,7 +174,7 @@ export function GearCard({ gear, onClick }: GearCardProps) {
             </span>
           )}
           {gear.is_active && (
-            <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+            <span className="rounded-full bg-success/10 px-2.5 py-0.5 text-[11px] font-medium text-success dark:text-success">
               Actif
             </span>
           )}

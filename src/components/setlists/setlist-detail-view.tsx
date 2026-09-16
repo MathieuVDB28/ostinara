@@ -234,7 +234,7 @@ export function SetlistDetailView({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-lg font-bold focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-lg font-bold focus:border-primary"
                 autoFocus
               />
             </div>
@@ -246,7 +246,7 @@ export function SetlistDetailView({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={2}
-                className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -258,7 +258,7 @@ export function SetlistDetailView({
                   type="date"
                   value={concertDate}
                   onChange={(e) => setConcertDate(e.target.value)}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
               </div>
               <div>
@@ -268,7 +268,7 @@ export function SetlistDetailView({
                   value={venue}
                   onChange={(e) => setVenue(e.target.value)}
                   placeholder="Ex: Le Bataclan"
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
               </div>
             </div>
@@ -388,7 +388,7 @@ export function SetlistDetailView({
                 <button
                   onClick={handleLaunchJam}
                   disabled={launchingJam}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-white transition-all hover:bg-amber-600 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
                 >
                   <svg
                     className="h-4 w-4"

@@ -124,7 +124,7 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
           placeholder="Rechercher un exercice..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 text-sm transition-colors focus:border-primary focus:outline-none"
+          className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 text-sm transition-colors focus:border-primary"
         />
       </div>
 
@@ -155,8 +155,8 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
             onClick={() => setSelectedSource("mine")}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               selectedSource === "mine"
-                ? "bg-violet-500 text-white"
-                : "bg-violet-500/20 text-violet-400 hover:bg-violet-500/30"
+                ? "bg-primary text-primary-foreground"
+                : "bg-primary/20 text-primary hover:bg-primary/30"
             }`}
           >
             Mes exercices
@@ -167,8 +167,8 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
             onClick={() => setSelectedSource("friends")}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               selectedSource === "friends"
-                ? "bg-violet-500 text-white"
-                : "bg-violet-500/20 text-violet-400 hover:bg-violet-500/30"
+                ? "bg-primary text-primary-foreground"
+                : "bg-primary/20 text-primary hover:bg-primary/30"
             }`}
           >
             <span className="flex items-center gap-1">

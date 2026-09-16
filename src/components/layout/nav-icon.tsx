@@ -150,6 +150,13 @@ export function NavIcon({ icon, className }: { icon: string; className?: string 
           <circle cx="12" cy="15" r="1.5" fill="currentColor" stroke="none"/>
         </svg>
       );
+    case "search":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M16.5 16.5L21 21" strokeLinecap="round"/>
+        </svg>
+      );
     case "more":
       return (
         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

@@ -2,57 +2,63 @@ import { getAuthenticatedUser } from "@/lib/supabase/server";
 import { getSongs } from "@/lib/actions/songs";
 import { getExercises } from "@/lib/actions/exercises";
 import {
-  getSongPracticeStats,
-  getPracticeSessionsBySong,
+  getAllSongPracticeStats,
+  getLastPracticeSession,
 } from "@/lib/actions/practice";
 import { getMyProfile } from "@/lib/actions/profile";
 import { requirePaidPlan } from "@/lib/actions/spotify";
+import { getWeeklyPlan } from "@/lib/actions/weekly-plan";
 import { PlayView } from "@/components/play/play-view";
-import type { SongPracticeStats } from "@/types";
 
 export const metadata = {
   title: "Jouer | Ostinara",
   description: "Métronome, exercices et accordeur",
 };
 
-export default async function JouerPage() {
+export default async function JouerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ exercise?: string; song?: string }>;
+}) {
+  const { exercise: initialExerciseId, song: initialSongId } = await searchParams;
   const user = await getAuthenticatedUser();
 
   if (!user) {
     return null;
   }
 
-  const [songs, exercises, profile, planCheck] = await Promise.all([
+  // Les stats de pratique arrivent en une lecture, pas une par morceau,
+  // et elles partent en parallele du reste.
+  const [
+    songs,
+    exercises,
+    profile,
+    planCheck,
+    songPracticeStats,
+    lastSession,
+    weeklyPlan,
+  ] = await Promise.all([
     getSongs(),
     getExercises(),
     getMyProfile(),
     requirePaidPlan(),
+    getAllSongPracticeStats(),
+    getLastPracticeSession(),
+    // Le plan se genere a la premiere ouverture de la semaine : c'est ici
+    // que l'app est ouverte, pas dans un cron qui ecrirait pour des
+    // comptes dormants.
+    getWeeklyPlan(),
   ]);
-
-  // Stats de pratique pour tous les morceaux, en parallele
-  const statsEntries = await Promise.all(
-    songs.map(async (song) => {
-      const stats = await getSongPracticeStats(song.id);
-      return stats ? ([song.id, stats] as const) : null;
-    })
-  );
-  const songPracticeStats: Record<string, SongPracticeStats> =
-    Object.fromEntries(
-      statsEntries.filter((e): e is [string, SongPracticeStats] => e !== null)
-    );
 
   // Le morceau en cours ouvre la page : c'est la raison pour laquelle
   // on ouvre l'app.
   const learningSongs = songs.filter((s) => s.status === "learning");
   const currentFocus = learningSongs[0] ?? null;
+
+  // Le meilleur tempo est deja agrege ci-dessus : le relire session par
+  // session etait une requete de plus pour une valeur deja connue.
   const focusBestBpm = currentFocus
-    ? (await getPracticeSessionsBySong(currentFocus.id)).reduce<number | null>(
-        (best, session) =>
-          session.bpm_achieved && session.bpm_achieved > (best ?? 0)
-            ? session.bpm_achieved
-            : best,
-        null
-      )
+    ? songPracticeStats[currentFocus.id]?.bestBpm ?? null
     : null;
 
   return (
@@ -63,6 +69,11 @@ export default async function JouerPage() {
       displayName={profile?.display_name || profile?.username || "Guitariste"}
       currentFocus={currentFocus}
       focusBestBpm={focusBestBpm}
+      lastSession={lastSession}
+      initialExerciseId={initialExerciseId}
+      initialSongId={initialSongId}
+      weeklyPlan={weeklyPlan}
+      userPlan={planCheck.plan}
       isPaid={planCheck.allowed}
     />
   );

@@ -182,7 +182,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ajoute une description..."
               rows={3}
-              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
           </div>
 

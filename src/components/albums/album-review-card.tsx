@@ -116,7 +116,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
 
           {/* Rating badge */}
           <div className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-sm font-bold text-white shadow-lg backdrop-blur-sm">
-            <span className="material-symbols-outlined text-[13px] text-amber-400">star</span>
+            <span className="material-symbols-outlined text-[13px] text-primary">star</span>
             {starsFromDb(review.rating)}
           </div>
 
@@ -145,7 +145,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(); }}
                     disabled={isDeleting}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-accent disabled:opacity-50"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent disabled:opacity-50"
                   >
                     <span className="material-symbols-outlined text-[16px]">delete</span>
                     {isDeleting ? "Suppression..." : "Supprimer"}
@@ -232,7 +232,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                   <div className="mb-6">
                     <div className="mb-3 flex items-center justify-between">
                       <label className="text-sm font-medium">Ta note</label>
-                      <span className="text-sm font-semibold text-amber-400">
+                      <span className="text-sm font-semibold text-primary">
                         {editRating > 0 ? `${editRating} / 5` : "—"}
                       </span>
                     </div>
@@ -258,7 +258,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                   </div>
 
                   {editError && (
-                    <p className="mb-4 text-sm text-red-500">{editError}</p>
+                    <p className="mb-4 text-sm text-destructive">{editError}</p>
                   )}
 
                   {/* Edit Actions */}
@@ -285,7 +285,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                   <div className="mb-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <StarRating value={starsFromDb(review.rating)} size="md" />
-                      <span className="text-sm font-semibold text-amber-400">
+                      <span className="text-sm font-semibold text-primary">
                         {starsFromDb(review.rating)} / 5
                       </span>
                     </div>

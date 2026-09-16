@@ -163,7 +163,7 @@ export function CreateRehearsalModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Repet avant le concert"
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               autoFocus
             />
           </div>
@@ -176,7 +176,7 @@ export function CreateRehearsalModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Notes sur cette repet..."
               rows={2}
-              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
           </div>
 
@@ -188,7 +188,7 @@ export function CreateRehearsalModal({
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
             <div>
@@ -197,7 +197,7 @@ export function CreateRehearsalModal({
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
             <div>
@@ -206,7 +206,7 @@ export function CreateRehearsalModal({
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
           </div>
@@ -220,7 +220,7 @@ export function CreateRehearsalModal({
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Ex: Local de repet"
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
             <div>
@@ -230,7 +230,7 @@ export function CreateRehearsalModal({
                 value={locationUrl}
                 onChange={(e) => setLocationUrl(e.target.value)}
                 placeholder="https://maps.google.com/..."
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
           </div>
@@ -242,7 +242,7 @@ export function CreateRehearsalModal({
               <select
                 value={setlistId}
                 onChange={(e) => setSetlistId(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               >
                 <option value="">Aucune setlist</option>
                 {bandSetlists.map((s) => (
@@ -258,7 +258,7 @@ export function CreateRehearsalModal({
             <select
               value={recurrence}
               onChange={(e) => setRecurrence(e.target.value as RecurrenceType)}
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             >
               {Object.entries(RECURRENCE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
@@ -274,7 +274,7 @@ export function CreateRehearsalModal({
                 value={recurrenceEndDate}
                 onChange={(e) => setRecurrenceEndDate(e.target.value)}
                 min={date}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
               <p className="mt-1 text-xs text-muted-foreground">
                 Les repetitions seront creees automatiquement jusqu&apos;a cette date

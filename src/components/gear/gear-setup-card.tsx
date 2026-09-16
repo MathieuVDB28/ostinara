@@ -42,7 +42,7 @@ export function GearSetupCard({
           </button>
           <button aria-label="Supprimer le setup"
             onClick={onDelete}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-500"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
             title="Supprimer"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -92,7 +92,7 @@ export function GearSetupCard({
                 {/* Remove button */}
                 <button
                   onClick={() => onRemoveItem(gear.id)}
-                  className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-red-500/10 hover:text-red-500 group-hover/item:opacity-100"
+                  className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover/item:opacity-100"
                   title="Retirer du setup"
                 >
                   <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

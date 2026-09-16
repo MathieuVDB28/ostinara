@@ -83,7 +83,7 @@ export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
       {/* Remove button */}
       <button aria-label="Retirer de la wishlist"
         onClick={onRemove}
-        className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-red-500/10 hover:text-red-500 group-hover:opacity-100"
+        className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
         title="Retirer de la wishlist"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

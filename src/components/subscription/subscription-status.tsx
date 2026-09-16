@@ -21,21 +21,21 @@ export function SubscriptionStatusBadge({
   // Couleurs selon le plan
   const planColors = {
     free: "bg-muted text-muted-foreground",
-    pro: "bg-amber-500/20 text-amber-400",
-    band: "bg-purple-500/20 text-purple-400",
+    pro: "bg-primary/20 text-primary",
+    band: "bg-primary/20 text-primary",
   };
 
   // Couleurs selon le statut
   const statusColors: Record<SubscriptionStatus, { bg: string; text: string; label: string }> = {
     none: { bg: "bg-muted", text: "text-muted-foreground", label: "" },
-    active: { bg: "bg-green-500/20", text: "text-green-400", label: "Actif" },
-    trialing: { bg: "bg-blue-500/20", text: "text-blue-400", label: "Essai" },
-    past_due: { bg: "bg-red-500/20", text: "text-red-400", label: "Paiement en retard" },
-    canceled: { bg: "bg-yellow-500/20", text: "text-yellow-400", label: "Annulé" },
-    incomplete: { bg: "bg-orange-500/20", text: "text-orange-400", label: "Incomplet" },
-    incomplete_expired: { bg: "bg-red-500/20", text: "text-red-400", label: "Expiré" },
-    unpaid: { bg: "bg-red-500/20", text: "text-red-400", label: "Impayé" },
-    paused: { bg: "bg-gray-500/20", text: "text-gray-400", label: "En pause" },
+    active: { bg: "bg-success/20", text: "text-success", label: "Actif" },
+    trialing: { bg: "bg-chart-2/20", text: "text-chart-2", label: "Essai" },
+    past_due: { bg: "bg-destructive/20", text: "text-destructive", label: "Paiement en retard" },
+    canceled: { bg: "bg-primary/20", text: "text-primary", label: "Annulé" },
+    incomplete: { bg: "bg-primary/20", text: "text-primary", label: "Incomplet" },
+    incomplete_expired: { bg: "bg-destructive/20", text: "text-destructive", label: "Expiré" },
+    unpaid: { bg: "bg-destructive/20", text: "text-destructive", label: "Impayé" },
+    paused: { bg: "bg-muted/20", text: "text-muted-foreground", label: "En pause" },
   };
 
   const statusInfo = status ? statusColors[status] : null;
@@ -84,13 +84,13 @@ export function SubscriptionStatusBadge({
       )}
 
       {periodEnd && status === "canceled" && plan !== "free" && (
-        <p className="text-sm text-yellow-400">
+        <p className="text-sm text-primary">
           Accès jusqu'au {formatDate(periodEnd)}
         </p>
       )}
 
       {status === "past_due" && (
-        <p className="text-sm text-red-400">
+        <p className="text-sm text-destructive">
           Veuillez mettre à jour votre moyen de paiement
         </p>
       )}

@@ -16,10 +16,10 @@ const DIFFICULTY_LABELS: Record<ExerciseDifficulty, string> = {
 };
 
 const DIFFICULTY_COLORS: Record<ExerciseDifficulty, string> = {
-  beginner: "bg-green-500/20 text-green-400",
-  intermediate: "bg-blue-500/20 text-blue-400",
-  advanced: "bg-orange-500/20 text-orange-400",
-  expert: "bg-red-500/20 text-red-400",
+  beginner: "bg-success/20 text-success",
+  intermediate: "bg-chart-2/20 text-chart-2",
+  advanced: "bg-primary/20 text-primary",
+  expert: "bg-destructive/20 text-destructive",
 };
 
 export function ExerciseCard({ exercise, onClick }: ExerciseCardProps) {
@@ -41,7 +41,7 @@ export function ExerciseCard({ exercise, onClick }: ExerciseCardProps) {
       onClick={onClick}
       className={`w-full rounded-xl border p-4 text-left transition-all hover:shadow-lg ${
         isFromFriend
-          ? "border-violet-500/30 bg-card hover:border-violet-500/60"
+          ? "border-primary/30 bg-card hover:border-primary/60"
           : "border-border bg-card hover:border-primary/50"
       }`}
     >
@@ -63,7 +63,7 @@ export function ExerciseCard({ exercise, onClick }: ExerciseCardProps) {
           {EXERCISE_CATEGORY_LABELS[exercise.category]}
         </p>
         {isFromFriend && exercise.creator_name && (
-          <span className="flex items-center gap-1 rounded-full bg-violet-500/20 px-2 py-0.5 text-xs font-medium text-violet-400">
+          <span className="flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
             <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
@@ -89,7 +89,7 @@ export function ExerciseCard({ exercise, onClick }: ExerciseCardProps) {
       <div className="mb-3 h-2 overflow-hidden rounded-full bg-accent">
         <div
           className={`h-full rounded-full transition-all ${
-            isFromFriend ? "bg-violet-500" : "bg-primary"
+            isFromFriend ? "bg-primary" : "bg-primary"
           }`}
           style={{ width: `${progressPercent}%` }}
         />

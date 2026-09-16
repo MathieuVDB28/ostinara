@@ -135,7 +135,7 @@ export function CreateSetlistModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Concert du 15 janvier"
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               autoFocus
             />
           </div>
@@ -150,7 +150,7 @@ export function CreateSetlistModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Notes sur cette setlist..."
               rows={2}
-              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
           </div>
 
@@ -165,7 +165,7 @@ export function CreateSetlistModal({
                 type="date"
                 value={concertDate}
                 onChange={(e) => setConcertDate(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
 
@@ -177,7 +177,7 @@ export function CreateSetlistModal({
                 value={venue}
                 onChange={(e) => setVenue(e.target.value)}
                 placeholder="Ex: Le Bataclan"
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
           </div>
@@ -191,7 +191,7 @@ export function CreateSetlistModal({
               <select
                 value={bandId}
                 onChange={(e) => setBandId(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               >
                 <option value="">Setlist personnelle</option>
                 {bands.map((band) => (

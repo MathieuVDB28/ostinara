@@ -125,8 +125,8 @@ export function RehearsalDetailView({
             <span
               className={`rounded-full px-3 py-1 text-sm font-medium ${
                 rehearsal.status === "cancelled"
-                  ? "bg-red-500/20 text-red-400"
-                  : "bg-green-500/20 text-green-400"
+                  ? "bg-destructive/20 text-destructive"
+                  : "bg-success/20 text-success"
               }`}
             >
               {rehearsal.status === "cancelled" ? "Annulee" : "Terminee"}
@@ -282,9 +282,9 @@ export function RehearsalDetailView({
                 Participants ({rehearsal.participants.length})
               </h3>
               <div className="flex gap-2 text-xs">
-                <span className="text-green-400">{acceptedCount} oui</span>
-                <span className="text-yellow-400">{maybeCount} peut-etre</span>
-                <span className="text-red-400">{declinedCount} non</span>
+                <span className="text-success">{acceptedCount} oui</span>
+                <span className="text-primary">{maybeCount} peut-etre</span>
+                <span className="text-destructive">{declinedCount} non</span>
               </div>
             </div>
             <div className="space-y-2">
@@ -339,7 +339,7 @@ export function RehearsalDetailView({
                   onChange={(e) => setNotesText(e.target.value)}
                   placeholder="Notes sur cette repet (morceaux bosses, points a revoir...)"
                   rows={4}
-                  className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
                 <div className="flex gap-2">
                   <button
@@ -369,7 +369,7 @@ export function RehearsalDetailView({
               {isPast && (
                 <button
                   onClick={handleComplete}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-green-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-600"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-sm font-medium text-success-foreground hover:opacity-90"
                 >
                   <span className="material-symbols-outlined text-[16px]">check</span>
                   Marquer comme terminee

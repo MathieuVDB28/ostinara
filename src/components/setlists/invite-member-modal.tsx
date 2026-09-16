@@ -153,14 +153,14 @@ export function InviteMemberModal({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Rechercher par username..."
-            className="w-full rounded-lg border border-input bg-background py-3 pl-10 pr-4 text-sm focus:border-primary focus:outline-none"
+            className="w-full rounded-lg border border-input bg-background py-3 pl-10 pr-4 text-sm focus:border-primary"
             autoFocus
           />
         </div>
 
         {/* Success message */}
         {successMessage && (
-          <div className="mb-4 rounded-lg bg-green-500/10 px-4 py-3 text-sm text-green-400">
+          <div className="mb-4 rounded-lg bg-success/10 px-4 py-3 text-sm text-success">
             {successMessage}
           </div>
         )}

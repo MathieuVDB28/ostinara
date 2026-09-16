@@ -323,7 +323,7 @@ function EditProfilePageContent() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingAvatar}
-            className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:opacity-90 disabled:opacity-50"
+            className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-colors hover:opacity-90 disabled:opacity-50"
           >
             {uploadingAvatar ? (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -553,19 +553,19 @@ function EditProfilePageContent() {
               <h4 className="mb-2 font-medium">Ce que les autres voient :</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   Ton avatar, nom et nom d&apos;utilisateur
                 </li>
                 <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   Ton badge de plan (Free/Pro/Band)
                 </li>
                 <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   Tes statistiques (nombre de morceaux, covers)
@@ -573,13 +573,13 @@ function EditProfilePageContent() {
                 {isPrivate ? (
                   <>
                     <li className="flex items-start gap-2">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                       Ta bio et tes liens sociaux <span className="text-primary">(amis uniquement)</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                       Tes morceaux et favoris <span className="text-primary">(amis uniquement)</span>
@@ -588,13 +588,13 @@ function EditProfilePageContent() {
                 ) : (
                   <>
                     <li className="flex items-start gap-2">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                       Ta bio et tes liens sociaux
                     </li>
                     <li className="flex items-start gap-2">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                       Tes morceaux et favoris
@@ -615,7 +615,7 @@ function EditProfilePageContent() {
                 <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${
                   spotifyMessage.includes("Erreur")
                     ? "bg-destructive/10 text-destructive"
-                    : "bg-green-500/10 text-green-500"
+                    : "bg-success/10 text-success"
                 }`}>
                   {spotifyMessage}
                 </div>
@@ -662,7 +662,7 @@ function EditProfilePageContent() {
                 {PLANS[profile.plan].features.map((feature, index) => (
                   <li key={index} className="flex items-start gap-2 text-sm">
                     <svg
-                      className="mt-0.5 h-4 w-4 shrink-0 text-green-500"
+                      className="mt-0.5 h-4 w-4 shrink-0 text-success"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"

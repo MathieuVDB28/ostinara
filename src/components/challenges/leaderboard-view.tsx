@@ -49,7 +49,7 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
           onClick={() => handlePeriodChange("week")}
           className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
             period === "week"
-              ? "bg-primary text-white"
+              ? "bg-primary text-primary-foreground"
               : "bg-card border border-border text-muted-foreground hover:bg-muted/80"
           }`}
         >
@@ -59,7 +59,7 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
           onClick={() => handlePeriodChange("month")}
           className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
             period === "month"
-              ? "bg-primary text-white"
+              ? "bg-primary text-primary-foreground"
               : "bg-card border border-border text-muted-foreground hover:bg-muted/80"
           }`}
         >

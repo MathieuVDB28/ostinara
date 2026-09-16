@@ -861,3 +861,79 @@ export async function getCoverActivityData(
     currentUserId: user.id,
   };
 }
+
+/**
+ * Reagir a une cover, en un geste.
+ *
+ * Le feed connait deja l'identifiant d'activite de chaque cover et peut
+ * appeler `toggleReaction` directement. Cette variante couvre le cas
+ * inverse : une cover partagee dont l'activite n'existe pas — publiee
+ * en prive puis repassee en « amis », ou anterieure au feed. Sans elle,
+ * ces covers affichaient un bouton de reaction sans effet.
+ */
+export async function toggleCoverReaction(
+  coverId: string,
+  emoji: string
+): Promise<{ success: boolean; activityId?: string; error?: string }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: "Non authentifié" };
+  }
+
+  const { data: cover } = await supabase
+    .from("covers")
+    .select("id, user_id, visibility")
+    .eq("id", coverId)
+    .maybeSingle();
+
+  // La RLS a deja filtre : si la ligne revient, elle est visible.
+  if (!cover) {
+    return { success: false, error: "Cover introuvable" };
+  }
+
+  if (cover.visibility === "private") {
+    return { success: false, error: "Cette cover n'est pas partagée" };
+  }
+
+  let { data: activity } = await supabase
+    .from("activities")
+    .select("id")
+    .eq("type", "cover_posted")
+    .eq("reference_id", coverId)
+    .maybeSingle();
+
+  if (!activity) {
+    // On ne peut creer l'activite que pour ses propres covers : `activities`
+    // n'autorise l'insertion que sur sa propre ligne.
+    if (cover.user_id !== user.id) {
+      return {
+        success: false,
+        error: "Cette cover n'est pas encore publiée dans le feed",
+      };
+    }
+
+    const { data: created } = await supabase
+      .from("activities")
+      .insert({
+        user_id: user.id,
+        type: "cover_posted",
+        reference_id: coverId,
+        metadata: { visibility: cover.visibility },
+      })
+      .select("id")
+      .single();
+
+    if (!created) {
+      return { success: false, error: "Erreur lors de la réaction" };
+    }
+    activity = created;
+  }
+
+  const result = await toggleReaction(activity.id, emoji);
+  if (!result.success) return result;
+
+  revalidatePath("/commu/covers");
+  return { success: true, activityId: activity.id };
+}

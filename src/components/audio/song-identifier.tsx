@@ -124,7 +124,7 @@ export function SongIdentifier() {
           </button>
 
           {recorder.error && (
-            <p className="max-w-sm text-center text-sm text-red-400">{recorder.error}</p>
+            <p className="max-w-sm text-center text-sm text-destructive">{recorder.error}</p>
           )}
         </div>
       )}
@@ -183,8 +183,8 @@ export function SongIdentifier() {
       {/* Error state */}
       {state === "error" && (
         <div className="flex flex-col items-center gap-6">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-500/10">
-            <svg className="h-10 w-10 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+            <svg className="h-10 w-10 text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="12" cy="12" r="10" />
               <path d="M15 9l-6 6M9 9l6 6" strokeLinecap="round" />
             </svg>

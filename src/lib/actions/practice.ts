@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { updateChallengeProgress } from "./challenges";
+import { derivedProgressPercent } from "@/lib/song-progress";
 import type {
+  SongBpmPoint,
   PracticeSession,
   PracticeSessionWithSong,
   CreatePracticeSessionInput,
@@ -21,9 +23,17 @@ import type {
   SessionMood,
 } from "@/types";
 
+/**
+ * Le journal, par page.
+ *
+ * L'ecran chargeait 50 sessions d'un coup et n'offrait aucun moyen de
+ * voir la 51e : au-dela, l'historique existait sans etre atteignable.
+ * `offset` rend la suite accessible sans jamais tout descendre.
+ */
 export async function getPracticeSessions(
   filters?: PracticeSessionFilters,
-  limit?: number
+  limit?: number,
+  offset?: number
 ): Promise<PracticeSessionWithSong[]> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
@@ -54,7 +64,9 @@ export async function getPracticeSessions(
     query = query.eq("mood", filters.mood);
   }
   if (limit) {
-    query = query.limit(limit);
+    // `range` est inclusif des deux cotes, d'ou le -1.
+    if (offset) query = query.range(offset, offset + limit - 1);
+    else query = query.limit(limit);
   }
 
   const { data, error } = await query;
@@ -90,6 +102,40 @@ export async function getPracticeSessionsBySong(
   }
 
   return data as PracticeSession[];
+}
+
+/**
+ * La derniere session enregistree, morceau compris.
+ *
+ * Elle porte tout ce qu'il faut pour reprendre sans rien ressaisir : le
+ * morceau, le tempo atteint et les sections travaillees. « Jouer »
+ * ouvrait sur un selecteur vide alors que la reponse etait en base.
+ */
+export async function getLastPracticeSession(): Promise<PracticeSessionWithSong | null> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("practice_sessions")
+    .select(`
+      *,
+      song:songs(*)
+    `)
+    .eq("user_id", user.id)
+    .order("practiced_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching last practice session:", error);
+    return null;
+  }
+
+  return (data as PracticeSessionWithSong | null) ?? null;
 }
 
 export async function getPracticeSession(
@@ -156,9 +202,102 @@ export async function createPracticeSession(
   // Mettre à jour la progression des challenges actifs
   updateChallengeProgress(input.duration_minutes).catch(console.error);
 
+  // La progression du morceau suit le tempo, plus le curseur.
+  if (input.song_id) {
+    await syncSongProgressFromTempo(input.song_id);
+  }
+
   revalidatePath("/progress");
   revalidatePath("/library");
+  revalidatePath("/jouer");
+  revalidatePath("/biblio");
   return { success: true, session: data as PracticeSession };
+}
+
+/**
+ * Reecrit `songs.progress_percent` a partir du meilleur tempo tenu.
+ *
+ * La colonne reste — le profil public, les favoris et le tri s'en servent —
+ * mais elle cesse d'etre saisie a la main. Elle devient la lecture en
+ * pourcentage d'une mesure reelle : le chemin parcouru entre le travail
+ * lent et la cible.
+ *
+ * Sans cible connue, on ne touche a rien : ecrire 0 effacerait la valeur
+ * historique sans rien dire de plus juste.
+ */
+export async function syncSongProgressFromTempo(
+  songId: string
+): Promise<{ success: boolean; percent?: number }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+  if (!user) return { success: false };
+
+  const { data: song } = await supabase
+    .from("songs")
+    .select("id, status, target_bpm, tab_bpm, spotify_bpm, progress_percent")
+    .eq("id", songId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!song) return { success: false };
+
+  const { data: sessions } = await supabase
+    .from("practice_sessions")
+    .select("bpm_achieved")
+    .eq("user_id", user.id)
+    .eq("song_id", songId)
+    .not("bpm_achieved", "is", null)
+    .order("bpm_achieved", { ascending: false })
+    .limit(1);
+
+  const bestBpm = sessions?.[0]?.bpm_achieved ?? null;
+  const percent = derivedProgressPercent(song, bestBpm);
+
+  if (percent === null || percent === song.progress_percent) {
+    return { success: true, percent: song.progress_percent };
+  }
+
+  await supabase
+    .from("songs")
+    .update({ progress_percent: percent })
+    .eq("id", songId)
+    .eq("user_id", user.id);
+
+  return { success: true, percent };
+}
+
+/**
+ * La courbe BPM/temps d'un morceau.
+ *
+ * Un point par session ou un tempo a ete note, du plus ancien au plus
+ * recent. C'est la seule representation honnete de « ou j'en suis » :
+ * elle monte, elle plafonne, elle redescend apres deux semaines sans
+ * toucher l'instrument — un curseur « 60 % » ne fait aucun des trois.
+ */
+export async function getSongBpmProgress(
+  songId: string
+): Promise<SongBpmPoint[]> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("practice_sessions")
+    .select("practiced_at, bpm_achieved")
+    .eq("user_id", user.id)
+    .eq("song_id", songId)
+    .not("bpm_achieved", "is", null)
+    .order("practiced_at", { ascending: true });
+
+  if (error || !data) {
+    if (error) console.error("Error fetching song BPM progress:", error);
+    return [];
+  }
+
+  return data.map((row) => ({
+    date: row.practiced_at,
+    bpm: row.bpm_achieved as number,
+  }));
 }
 
 export async function updatePracticeSession(
@@ -186,8 +325,14 @@ export async function updatePracticeSession(
     return { success: false, error: "Erreur lors de la mise à jour" };
   }
 
+  // Corriger un tempo a la baisse doit corriger la progression du morceau.
+  if (input.song_id) {
+    await syncSongProgressFromTempo(input.song_id);
+  }
+
   revalidatePath("/progress");
   revalidatePath("/library");
+  revalidatePath("/jouer");
   return { success: true };
 }
 
@@ -236,10 +381,16 @@ export async function getPracticeStats(): Promise<PracticeStats> {
     return defaultStats;
   }
 
-  // Récupérer toutes les sessions
+  /*
+   * Les stats ont besoin de toutes les sessions — un total, une moyenne
+   * et une serie ne se calculent pas sur une page. Mais elles n'ont besoin
+   * que de trois colonnes : `*, song:songs(*)` joignait la ligne complete
+   * de chaque morceau a chaque session, pour ne garder au final qu'un
+   * seul morceau, le plus pratique.
+   */
   const { data: sessions, error } = await supabase
     .from("practice_sessions")
-    .select("*, song:songs(*)")
+    .select("practiced_at, duration_minutes, song_id")
     .eq("user_id", user.id)
     .order("practiced_at", { ascending: false });
 
@@ -307,25 +458,36 @@ export async function getPracticeStats(): Promise<PracticeStats> {
   }
   longestStreak = Math.max(longestStreak, tempStreak);
 
-  // Morceau le plus pratiqué
-  const songCounts = new Map<string, { song: Song; count: number }>();
-  sessions.forEach(s => {
-    if (s.song_id && s.song) {
-      const existing = songCounts.get(s.song_id);
-      if (existing) {
-        existing.count++;
-      } else {
-        songCounts.set(s.song_id, { song: s.song as Song, count: 1 });
-      }
+  /*
+   * Morceau le plus pratique : on compte sur les identifiants, puis on lit
+   * la ligne du gagnant. Une requete de plus, mais une seule — contre une
+   * jointure sur chaque session dont on jetait 99 % du resultat.
+   */
+  const countBySong = new Map<string, number>();
+  for (const session of sessions) {
+    if (!session.song_id) continue;
+    countBySong.set(session.song_id, (countBySong.get(session.song_id) ?? 0) + 1);
+  }
+
+  let winnerId: string | null = null;
+  let winnerCount = 0;
+  for (const [songId, count] of countBySong) {
+    if (count > winnerCount) {
+      winnerId = songId;
+      winnerCount = count;
     }
-  });
+  }
 
   let mostPracticedSong: { song: Song; count: number } | null = null;
-  songCounts.forEach(value => {
-    if (!mostPracticedSong || value.count > mostPracticedSong.count) {
-      mostPracticedSong = value;
-    }
-  });
+  if (winnerId) {
+    const { data: song } = await supabase
+      .from("songs")
+      .select("*")
+      .eq("id", winnerId)
+      .maybeSingle();
+    // Le morceau a pu etre supprime alors que ses sessions restent.
+    if (song) mostPracticedSong = { song: song as Song, count: winnerCount };
+  }
 
   return {
     totalSessions,
@@ -388,6 +550,95 @@ export async function getSongPracticeStats(songId: string): Promise<SongPractice
     averageBpm,
     bestBpm,
   };
+}
+
+/**
+ * Les stats de pratique de tous les morceaux, en une passe.
+ *
+ * La page "Jouer" appelait getSongPracticeStats() une fois par morceau :
+ * a 80 morceaux en bibliotheque, 80 clients Supabase, 80 verifications
+ * d'identite et 80 allers-retours avant le premier pixel. Ici, une seule
+ * lecture et l'agregation en memoire.
+ */
+export async function getAllSongPracticeStats(): Promise<
+  Record<string, SongPracticeStats>
+> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return {};
+  }
+
+  type StatsRow = Pick<
+    PracticeSession,
+    "song_id" | "duration_minutes" | "practiced_at" | "bpm_achieved"
+  >;
+
+  // PostgREST plafonne une reponse a 1000 lignes. Sans pagination, le
+  // journal d'un utilisateur assidu serait tronque au bout de trois ans
+  // environ — silencieusement, sans erreur.
+  const PAGE_SIZE = 1000;
+  const rows: StatsRow[] = [];
+
+  for (let page = 0; ; page++) {
+    const { data, error } = await supabase
+      .from("practice_sessions")
+      .select("song_id, duration_minutes, practiced_at, bpm_achieved")
+      .eq("user_id", user.id)
+      .not("song_id", "is", null)
+      .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+
+    if (error) {
+      console.error("Error fetching song practice stats:", error);
+      return {};
+    }
+
+    if (!data || data.length === 0) break;
+    rows.push(...(data as StatsRow[]));
+    if (data.length < PAGE_SIZE) break;
+  }
+
+  const stats: Record<string, SongPracticeStats> = {};
+  // La moyenne a besoin de sa propre somme : les sessions sans BPM ne
+  // doivent compter ni au numerateur ni au denominateur.
+  const bpm: Record<string, { sum: number; count: number }> = {};
+
+  for (const row of rows) {
+    const songId = row.song_id;
+    if (!songId) continue;
+
+    const entry = (stats[songId] ??= {
+      totalSessions: 0,
+      totalMinutes: 0,
+      lastPracticed: null,
+      averageBpm: null,
+      bestBpm: null,
+    });
+
+    entry.totalSessions += 1;
+    entry.totalMinutes += row.duration_minutes;
+
+    if (
+      !entry.lastPracticed ||
+      new Date(row.practiced_at) > new Date(entry.lastPracticed)
+    ) {
+      entry.lastPracticed = row.practiced_at;
+    }
+
+    if (row.bpm_achieved !== null) {
+      const accumulator = (bpm[songId] ??= { sum: 0, count: 0 });
+      accumulator.sum += row.bpm_achieved;
+      accumulator.count += 1;
+      entry.bestBpm = Math.max(entry.bestBpm ?? 0, row.bpm_achieved);
+    }
+  }
+
+  for (const [songId, accumulator] of Object.entries(bpm)) {
+    stats[songId].averageBpm = Math.round(accumulator.sum / accumulator.count);
+  }
+
+  return stats;
 }
 
 // Configuration des moods pour les graphiques

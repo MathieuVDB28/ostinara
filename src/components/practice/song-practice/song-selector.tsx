@@ -62,7 +62,7 @@ export function SongSelector({
           placeholder="Rechercher un morceau..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 text-sm transition-colors focus:border-primary focus:outline-none"
+          className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 text-sm transition-colors focus:border-primary"
         />
       </div>
 
@@ -177,7 +177,7 @@ export function SongSelector({
                     onChange={(e) => setTempTargetBpm(e.target.value)}
                     min={20}
                     max={300}
-                    className="w-16 rounded border border-border bg-background px-2 py-1 text-center text-sm focus:border-primary focus:outline-none"
+                    className="w-16 rounded border border-border bg-background px-2 py-1 text-center text-sm focus:border-primary"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSaveTargetBpm(song.id);
@@ -186,7 +186,7 @@ export function SongSelector({
                   />
                   <button
                     onClick={() => handleSaveTargetBpm(song.id)}
-                    className="rounded p-1 text-green-400 hover:bg-green-400/20"
+                    className="rounded p-1 text-success hover:bg-success/20"
                   >
                     <svg
                       className="h-4 w-4"

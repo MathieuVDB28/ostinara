@@ -10,11 +10,11 @@ interface MoodOption {
 }
 
 const moods: MoodOption[] = [
-  { value: "frustrated", emoji: "😤", label: "Frustré", color: "text-red-400" },
-  { value: "neutral", emoji: "😐", label: "Normal", color: "text-gray-400" },
-  { value: "good", emoji: "🙂", label: "Bien", color: "text-blue-400" },
-  { value: "great", emoji: "😊", label: "Super", color: "text-green-400" },
-  { value: "on_fire", emoji: "🔥", label: "On fire!", color: "text-orange-400" },
+  { value: "frustrated", emoji: "😤", label: "Frustré", color: "text-destructive" },
+  { value: "neutral", emoji: "😐", label: "Normal", color: "text-muted-foreground" },
+  { value: "good", emoji: "🙂", label: "Bien", color: "text-chart-2" },
+  { value: "great", emoji: "😊", label: "Super", color: "text-success" },
+  { value: "on_fire", emoji: "🔥", label: "On fire!", color: "text-primary" },
 ];
 
 interface MoodSelectorProps {

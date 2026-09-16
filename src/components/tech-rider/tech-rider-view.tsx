@@ -852,7 +852,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
             disabled={saving}
             className={`inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold shadow-lg transition-all ${
               saved
-                ? "bg-green-500 text-white"
+                ? "bg-success text-success-foreground"
                 : "bg-primary text-primary-foreground hover:opacity-90"
             } disabled:opacity-50`}
           >

@@ -8,6 +8,12 @@
  * Regle : un onglet est une destination, jamais une action. Le tiroir
  * "Plus" a disparu — il masquait 8 sections derriere un bouton qui
  * n'etait pas une page.
+ *
+ * "Recherche" respecte cette regle : c'est /recherche, une page, pas
+ * l'ouverture d'un champ. Elle n'existe que sur mobile — sur desktop le
+ * meme service passe par la palette cmd-K, que la sidebar affiche en
+ * tete. D'ou `mobileOnly` : la liste reste unique, chaque barre decide
+ * ce qu'elle en montre.
  */
 
 export type BadgeKey = "friends" | "challenges" | "bands";
@@ -26,6 +32,8 @@ export interface NavTab {
   /** Segments servis par des routes distinctes. Vide = segments client. */
   segments: NavSegment[];
   badgeKeys?: BadgeKey[];
+  /** Absent de la sidebar : le desktop a un meilleur chemin (cmd-K). */
+  mobileOnly?: boolean;
 }
 
 export const NAV_TABS: NavTab[] = [
@@ -35,6 +43,13 @@ export const NAV_TABS: NavTab[] = [
     icon: "metronome",
     // Les segments de /jouer sont du state client : le metronome et le
     // chrono de session doivent survivre au changement d'onglet.
+    segments: [],
+  },
+  {
+    href: "/recherche",
+    label: "Recherche",
+    icon: "search",
+    mobileOnly: true,
     segments: [],
   },
   {
@@ -54,6 +69,10 @@ export const NAV_TABS: NavTab[] = [
     badgeKeys: ["friends", "challenges", "bands"],
     segments: [
       { href: "/commu", label: "Feed", icon: "feed" },
+      // Les covers ont quitte la bibliotheque pour la communaute : c'est
+      // le seul contenu de l'app qu'on publie pour etre vu, pas pour
+      // s'en souvenir. « Biblio › Covers » reste l'archive personnelle.
+      { href: "/commu/covers", label: "Covers", icon: "video" },
       { href: "/commu/amis", label: "Amis", icon: "users", badgeKey: "friends" },
       { href: "/commu/defis", label: "Défis", icon: "trophy", badgeKey: "challenges" },
       { href: "/commu/groupes", label: "Groupes", icon: "setlist", badgeKey: "bands" },
@@ -104,3 +123,6 @@ export function tabBadgeTotal(tab: NavTab, counts: BadgeCounts): number {
     0
   );
 }
+
+/** Les onglets affiches par la sidebar desktop. */
+export const DESKTOP_TABS: NavTab[] = NAV_TABS.filter((tab) => !tab.mobileOnly);

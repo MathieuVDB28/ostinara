@@ -20,7 +20,7 @@ const statusLabels: Record<SongStatus, string> = {
 const statusColors: Record<SongStatus, string> = {
   want_to_learn: "bg-secondary text-secondary-foreground",
   learning: "bg-primary/20 text-primary",
-  mastered: "bg-green-500/20 text-green-400",
+  mastered: "bg-success/20 text-success",
 };
 
 export function FriendProfileModal({

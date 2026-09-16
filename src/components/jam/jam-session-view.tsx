@@ -117,13 +117,13 @@ export function JamSessionView({
                 </span>
               )}
               {isConnected ? (
-                <span className="flex items-center gap-1.5 text-sm text-green-500">
-                  <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="flex items-center gap-1.5 text-sm text-success">
+                  <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
                   Connecte
                 </span>
               ) : (
-                <span className="flex items-center gap-1.5 text-sm text-yellow-500">
-                  <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                <span className="flex items-center gap-1.5 text-sm text-primary">
+                  <span className="h-2 w-2 rounded-full bg-primary" />
                   Connexion...
                 </span>
               )}
@@ -141,9 +141,9 @@ export function JamSessionView({
             <span
               className={`rounded-full px-3 py-1 text-xs font-medium ${
                 session.status === "active"
-                  ? "bg-green-500/20 text-green-400"
+                  ? "bg-success/20 text-success"
                   : session.status === "paused"
-                  ? "bg-yellow-500/20 text-yellow-400"
+                  ? "bg-primary/20 text-primary"
                   : "bg-muted text-muted-foreground"
               }`}
             >
@@ -159,7 +159,7 @@ export function JamSessionView({
                 {session.status === "waiting" && (
                   <button
                     onClick={handleStartSession}
-                    className="rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-green-600"
+                    className="rounded-lg bg-success px-4 py-2 text-sm font-medium text-success-foreground transition-all hover:opacity-90"
                   >
                     Lancer
                   </button>
@@ -175,7 +175,7 @@ export function JamSessionView({
                 {session.status === "paused" && (
                   <button
                     onClick={handleStartSession}
-                    className="rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-green-600"
+                    className="rounded-lg bg-success px-4 py-2 text-sm font-medium text-success-foreground transition-all hover:opacity-90"
                   >
                     Reprendre
                   </button>

@@ -274,7 +274,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                   <select
                     value={difficulty}
                     onChange={(e) => setDifficulty(e.target.value as SongDifficulty)}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   >
                     <option value="">Non définie</option>
                     <option value="beginner">Débutant</option>
@@ -288,7 +288,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                   <select
                     value={tuning}
                     onChange={(e) => setTuning(e.target.value)}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   >
                     {TUNING_GROUPS.map((group) => (
                       <optgroup key={group.label} label={group.label}>
@@ -311,7 +311,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                   max={12}
                   value={capo}
                   onChange={(e) => setCapo(parseInt(e.target.value) || 0)}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
               </div>
 
@@ -322,7 +322,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                   value={tabsUrl}
                   onChange={(e) => setTabsUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
               </div>
 
@@ -333,7 +333,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Remarques, astuces..."
                   rows={3}
-                  className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
               </div>
 

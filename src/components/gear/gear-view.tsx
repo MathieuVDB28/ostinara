@@ -44,6 +44,8 @@ interface GearViewProps {
   initialGearSetups: GearSetupWithItems[];
   initialWishlistItems: GearWishlistItem[];
   userPlan: UserPlan;
+  /** Materiel a ouvrir a l'arrivee — lien profond de la recherche globale. */
+  initialGearId?: string;
 }
 
 const GEAR_TYPES: { value: GearType | "all"; label: string }[] = [
@@ -81,6 +83,7 @@ export function GearView({
   initialGearSetups,
   initialWishlistItems,
   userPlan,
+  initialGearId,
 }: GearViewProps) {
   // --- Tab state ---
   const [mainTab, setMainTab] = useState<MainTab>("gear");
@@ -100,7 +103,11 @@ export function GearView({
 
   // --- Modal state ---
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedGear, setSelectedGear] = useState<GearItem | null>(null);
+  // Arrivee depuis la recherche globale : la fiche du materiel s'ouvre des
+  // le premier rendu.
+  const [selectedGear, setSelectedGear] = useState<GearItem | null>(
+    () => initialGearItems.find((item) => item.id === initialGearId) ?? null
+  );
 
   // --- Setup creation state ---
   const [showSetupForm, setShowSetupForm] = useState(false);

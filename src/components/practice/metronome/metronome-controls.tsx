@@ -63,7 +63,7 @@ export function MetronomeControls({
               onChange={(e) => onBpmChange(parseInt(e.target.value) || 120)}
               min={20}
               max={300}
-              className="w-20 bg-transparent text-center text-3xl font-bold focus:outline-none"
+              className="w-20 bg-transparent text-center text-3xl font-bold"
             />
             <span className="text-xs text-muted-foreground">BPM</span>
           </div>

@@ -219,8 +219,8 @@ export function JamTabsViewer({
                   onClick={openTabWindow}
                   className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                     tabWindowOpen
-                      ? "bg-green-500/20 text-green-400"
-                      : "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                      ? "bg-success/20 text-success"
+                      : "bg-chart-2/20 text-chart-2 hover:bg-chart-2/30"
                   }`}
                 >
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -298,7 +298,7 @@ export function JamTabsViewer({
                     </div>
                   )}
                   {isPast && (
-                    <div className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full bg-green-500 flex items-center justify-center">
+                    <div className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full bg-success flex items-center justify-center">
                       <svg className="h-2 w-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
@@ -324,8 +324,8 @@ export function JamTabsViewer({
             onClick={openTabWindow}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
               tabWindowOpen
-                ? "bg-green-500/20 text-green-400"
-                : "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                ? "bg-success/20 text-success"
+                : "bg-chart-2/20 text-chart-2 hover:bg-chart-2/30"
             }`}
           >
             {tabWindowOpen ? "Tab ouverte" : "Voir la tab"}

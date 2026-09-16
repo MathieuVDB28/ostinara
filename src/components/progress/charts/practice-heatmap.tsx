@@ -9,10 +9,10 @@ interface PracticeHeatmapProps {
 
 const LEVEL_COLORS = [
   "bg-muted/30",           // 0 - pas de pratique
-  "bg-emerald-200 dark:bg-emerald-900",  // 1 - faible
-  "bg-emerald-400 dark:bg-emerald-700",  // 2 - moyen
-  "bg-emerald-500 dark:bg-emerald-500",  // 3 - élevé
-  "bg-emerald-600 dark:bg-emerald-400",  // 4 - max
+  "bg-success dark:bg-success",  // 1 - faible
+  "bg-success dark:bg-success",  // 2 - moyen
+  "bg-success dark:bg-success",  // 3 - élevé
+  "bg-success dark:bg-success",  // 4 - max
 ];
 
 const MONTHS_FR = [

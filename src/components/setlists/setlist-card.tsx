@@ -66,7 +66,7 @@ export function SetlistCard({ setlist, onClick }: SetlistCardProps) {
               </span>
             )}
             {setlist.concert_date && (
-              <span className={`flex items-center gap-1 ${isUpcoming ? "text-green-400" : ""}`}>
+              <span className={`flex items-center gap-1 ${isUpcoming ? "text-success" : ""}`}>
                 <span className="material-symbols-outlined text-[14px]">calendar_today</span>
                 {formatDate(setlist.concert_date)}
               </span>

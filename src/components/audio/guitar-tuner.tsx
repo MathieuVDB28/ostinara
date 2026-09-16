@@ -74,13 +74,13 @@ export function GuitarTuner() {
 
   if (closestString) {
     if (absCents <= 5) {
-      statusColor = "text-green-400";
+      statusColor = "text-success";
       statusText = "Accordé !";
     } else if (absCents <= 15) {
-      statusColor = "text-yellow-400";
+      statusColor = "text-primary";
       statusText = closestString.cents < 0 ? "Un peu bas" : "Un peu haut";
     } else {
-      statusColor = "text-red-400";
+      statusColor = "text-destructive";
       statusText = closestString.cents < 0 ? "Trop bas" : "Trop haut";
     }
   }
@@ -186,7 +186,7 @@ export function GuitarTuner() {
           </button>
 
           {error && (
-            <p className="max-w-sm text-center text-sm text-red-400">{error}</p>
+            <p className="max-w-sm text-center text-sm text-destructive">{error}</p>
           )}
         </div>
       )}

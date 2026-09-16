@@ -38,6 +38,19 @@ for (const file of files) {
     names.add(m[1]);
   }
 
+  // 1 bis. Le nom calcule dans une expression :
+  //   <span className="material-symbols-outlined">{query ? "search_off" : "filter_list"}</span>
+  // La regle 1 ne voit rien ici, et les deux branches sont necessaires :
+  // celle qui manque s'affichait en texte brut ("search_off") dans la vue
+  // Albums.
+  for (const m of src.matchAll(
+    /material-symbols-outlined[^>]*>\s*\{([^}]*)\}\s*</g
+  )) {
+    for (const lit of m[1].matchAll(/"([a-z][a-z0-9_]*)"/g)) {
+      names.add(lit[1]);
+    }
+  }
+
   // 2. Les icones passees en prop ou via une table de correspondance.
   //    On ne scanne que les fichiers qui manipulent des Material Symbols,
   //    pour ne pas ramasser les noms d'icones SVG maison (NavIcon).

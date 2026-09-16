@@ -40,7 +40,84 @@ export default withPWA({
   importScripts: ['/sw-push-handler.js'],
   buildExcludes: [/app-build-manifest\.json$/],
   publicExcludes: ['!robots.txt', '!sitemap.xml'],
+  /*
+   * Le repli hors ligne.
+   *
+   * L'app etait installable et se declarait PWA, mais aucune regle ne
+   * couvrait les navigations : une page demandee sans reseau tombait sur
+   * l'erreur du navigateur. /offline est pre-rendue au build, donc mise
+   * en cache a l'installation du service worker — elle lit ensuite la
+   * bibliotheque et le journal depuis IndexedDB.
+   */
+  fallbacks: {
+    document: '/offline',
+  },
   runtimeCaching: [
+    {
+      /*
+       * Les navigations, en reseau d'abord.
+       *
+       * Trois secondes d'attente maximum : au sous-sol, une requete qui
+       * n'aboutit pas met une minute a expirer, et l'app reste blanche
+       * tout ce temps alors que la reponse est deja en cache.
+       */
+      urlPattern: ({ request }) => request.mode === 'navigate',
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'pages',
+        networkTimeoutSeconds: 3,
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24 * 7, // 7 jours
+        },
+        cacheableResponse: {
+          statuses: [200],
+        },
+      },
+    },
+    {
+      /*
+       * L'instantane hors ligne : bibliotheque + journal, en une reponse.
+       *
+       * La copie en cache sert de secours immediat pendant que le reseau
+       * repond — et de seule source quand il ne repond pas.
+       */
+      urlPattern: /\/api\/offline\/snapshot$/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offline-snapshot',
+        networkTimeoutSeconds: 5,
+        expiration: {
+          maxEntries: 1,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 jours : mieux vaut vieux que rien
+        },
+        cacheableResponse: {
+          statuses: [200],
+        },
+      },
+    },
+    {
+      /*
+       * Les pochettes servies par Supabase Storage.
+       *
+       * La regle `supabase-api` ci-dessous les couvrait avec un TTL de
+       * cinq minutes : une bibliotheque consultee hors ligne s'affichait
+       * sans aucune pochette des le lendemain. Les fichiers du Storage
+       * sont immuables, ils meritent leur propre regle.
+       */
+      urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/v1\/object\/public\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'supabase-storage',
+        expiration: {
+          maxEntries: 300,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        },
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
+      },
+    },
     {
       urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
       handler: 'NetworkFirst',

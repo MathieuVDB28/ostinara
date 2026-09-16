@@ -112,7 +112,7 @@ export function BpmProgressChart({ data }: BpmProgressChartProps) {
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/50">
               <p className={`text-2xl font-bold ${
-                selectedData.improvement >= 0 ? "text-emerald-500" : "text-red-500"
+                selectedData.improvement >= 0 ? "text-success" : "text-destructive"
               }`}>
                 {selectedData.improvement >= 0 ? "+" : ""}{selectedData.improvement}%
               </p>

@@ -231,7 +231,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
               <div className="mb-6">
                 <div className="mb-3 flex items-center justify-between">
                   <label className="text-sm font-medium">Ta note</label>
-                  <span className="text-sm font-semibold text-amber-400">
+                  <span className="text-sm font-semibold text-primary">
                     {rating > 0 ? `${rating} / 5` : "—"}
                   </span>
                 </div>
@@ -257,7 +257,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
               </div>
 
               {error && (
-                <p className="mb-4 text-sm text-red-500">{error}</p>
+                <p className="mb-4 text-sm text-destructive">{error}</p>
               )}
             </div>
           )}

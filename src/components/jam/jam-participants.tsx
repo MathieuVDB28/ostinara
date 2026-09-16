@@ -49,7 +49,7 @@ export function JamParticipants({ participants, hostId }: JamParticipantsProps) 
                     )}
                   </div>
                   {/* Online indicator */}
-                  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-green-500" />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-success" />
                 </div>
 
                 {/* Name */}

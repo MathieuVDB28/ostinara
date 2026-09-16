@@ -2,10 +2,16 @@
 
 import type { PracticeSessionWithSong } from "@/types";
 import { SessionCard } from "./session-card";
+import { SwipeRow } from "@/components/ui/swipe-row";
+import { EmptyState } from "@/components/ui/empty-state";
+import { usePracticeSession } from "@/components/providers/practice-session-provider";
+import { deletePracticeSession } from "@/lib/actions/practice";
 
 interface SessionListProps {
   sessions: PracticeSessionWithSong[];
   onSessionClick: (session: PracticeSessionWithSong) => void;
+  /** Suppression par glissement : la liste rend la main pour rafraichir. */
+  onSessionDeleted?: (sessionId: string) => void;
 }
 
 interface GroupedSessions {
@@ -15,7 +21,13 @@ interface GroupedSessions {
   sessions: PracticeSessionWithSong[];
 }
 
-export function SessionList({ sessions, onSessionClick }: SessionListProps) {
+export function SessionList({
+  sessions,
+  onSessionClick,
+  onSessionDeleted,
+}: SessionListProps) {
+  const { start, openManualEntry } = usePracticeSession();
+
   const formatDuration = (minutes: number): string => {
     if (minutes < 60) {
       return `${minutes}min`;
@@ -75,15 +87,25 @@ export function SessionList({ sessions, onSessionClick }: SessionListProps) {
 
   if (sessions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <span className="material-symbols-outlined text-3xl">schedule</span>
-        </div>
-        <h3 className="mb-2 text-lg font-semibold">Aucune session</h3>
-        <p className="max-w-sm text-center text-muted-foreground">
-          Lance le timer ou ajoute une session manuellement pour commencer a tracker ta progression.
-        </p>
-      </div>
+      <EmptyState
+        icon="schedule"
+        title="Aucune session"
+        description="Une session, c'est une durée et un tempo. À partir de deux, la courbe de progression et la série quotidienne se remplissent toutes seules."
+        actions={[
+          {
+            label: "Démarrer le chrono",
+            icon: "timer",
+            primary: true,
+            onClick: () => start(),
+          },
+          {
+            label: "Saisir une session passée",
+            icon: "edit",
+            onClick: openManualEntry,
+          },
+        ]}
+        hint="Le chrono suit d'un écran à l'autre : tu peux lancer une session ici et continuer sur « Jouer »."
+      />
     );
   }
 
@@ -118,12 +140,41 @@ export function SessionList({ sessions, onSessionClick }: SessionListProps) {
                     />
                   </div>
 
-                  {/* Carte de session */}
+                  {/*
+                    Carte de session. Modifier et supprimer passaient tous
+                    deux par EditSessionModal ; la suppression demande une
+                    confirmation dans le tiroir meme — pas de boite de
+                    dialogue native qui gele la page.
+                  */}
                   <div className="flex-1 pb-1">
-                    <SessionCard
-                      session={session}
-                      onClick={() => onSessionClick(session)}
-                    />
+                    <SwipeRow
+                      label={`session du ${new Date(session.practiced_at).toLocaleDateString("fr-FR")}`}
+                      actions={[
+                        {
+                          key: "edit",
+                          label: "Modifier",
+                          icon: "edit",
+                          tone: "neutral",
+                          onAction: () => onSessionClick(session),
+                        },
+                        {
+                          key: "delete",
+                          label: "Supprimer",
+                          icon: "delete",
+                          tone: "destructive",
+                          confirm: true,
+                          onAction: async () => {
+                            const result = await deletePracticeSession(session.id);
+                            if (result.success) onSessionDeleted?.(session.id);
+                          },
+                        },
+                      ]}
+                    >
+                      <SessionCard
+                        session={session}
+                        onClick={() => onSessionClick(session)}
+                      />
+                    </SwipeRow>
                   </div>
                 </div>
               ))}

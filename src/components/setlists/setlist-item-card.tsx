@@ -117,13 +117,13 @@ function getSectionIcon(name?: string) {
 
 function getSectionColor(name?: string) {
   const lowerName = name?.toLowerCase() || "";
-  if (lowerName.includes("intro")) return "bg-blue-500/20 text-blue-400";
-  if (lowerName.includes("pause")) return "bg-yellow-500/20 text-yellow-400";
-  if (lowerName.includes("rappel")) return "bg-purple-500/20 text-purple-400";
-  if (lowerName.includes("outro")) return "bg-red-500/20 text-red-400";
-  if (lowerName.includes("medley")) return "bg-green-500/20 text-green-400";
+  if (lowerName.includes("intro")) return "bg-chart-2/20 text-chart-2";
+  if (lowerName.includes("pause")) return "bg-primary/20 text-primary";
+  if (lowerName.includes("rappel")) return "bg-primary/20 text-primary";
+  if (lowerName.includes("outro")) return "bg-destructive/20 text-destructive";
+  if (lowerName.includes("medley")) return "bg-success/20 text-success";
   if (lowerName.includes("acoustique"))
-    return "bg-amber-500/20 text-amber-400";
+    return "bg-primary/20 text-primary";
   return "bg-muted text-muted-foreground";
 }
 
@@ -244,7 +244,7 @@ export function SetlistItemCard({
       {/* Tabs badge */}
       {isSong && item.tabs_url && (
         <div
-          className="shrink-0 rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-400"
+          className="shrink-0 rounded-full bg-chart-2/20 px-2 py-0.5 text-xs font-medium text-chart-2"
           title="Tablature liee"
         >
           Tab
@@ -256,7 +256,7 @@ export function SetlistItemCard({
         item.played_sections &&
         item.played_sections.length > 0 && (
           <div
-            className="shrink-0 rounded-full bg-purple-500/20 px-2 py-0.5 text-xs font-medium text-purple-400"
+            className="shrink-0 rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary"
             title={item.played_sections.map((s) => s.name).join(", ")}
           >
             {item.played_sections.length} sect.

@@ -253,11 +253,11 @@ export function EditSessionModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-2 block text-sm font-medium">Durée (minutes)</label>
-                <input type="number" inputMode="numeric" min="1" max="480" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value === "" ? "" : parseInt(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none" />
+                <input type="number" inputMode="numeric" min="1" max="480" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value === "" ? "" : parseInt(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium">Date et heure</label>
-                <input type="datetime-local" value={practicedAt} onChange={(e) => setPracticedAt(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none" />
+                <input type="datetime-local" value={practicedAt} onChange={(e) => setPracticedAt(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
               </div>
             </div>
 
@@ -276,7 +276,7 @@ export function EditSessionModal({
             {/* BPM */}
             <div>
               <label className="mb-2 block text-sm font-medium">BPM atteint</label>
-              <input type="number" min="20" max="300" placeholder="ex: 120" value={bpmAchieved} onChange={(e) => setBpmAchieved(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none" />
+              <input type="number" min="20" max="300" placeholder="ex: 120" value={bpmAchieved} onChange={(e) => setBpmAchieved(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
             </div>
 
             {/* Sections */}
@@ -288,7 +288,7 @@ export function EditSessionModal({
             {/* Objectifs */}
             <div>
               <label className="mb-2 block text-sm font-medium">Objectifs</label>
-              <textarea placeholder="Qu'est-ce que tu voulais travailler ?" value={sessionGoals} onChange={(e) => setSessionGoals(e.target.value)} rows={2} className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none" />
+              <textarea placeholder="Qu'est-ce que tu voulais travailler ?" value={sessionGoals} onChange={(e) => setSessionGoals(e.target.value)} rows={2} className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
               {sessionGoals && (
                 <label className="mt-2 flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={goalsAchieved} onChange={(e) => setGoalsAchieved(e.target.checked)} className="h-4 w-4 rounded border-input text-primary focus:ring-primary" />
@@ -300,7 +300,7 @@ export function EditSessionModal({
             {/* Notes */}
             <div>
               <label className="mb-2 block text-sm font-medium">Notes</label>
-              <textarea placeholder="Remarques, difficultés, ce qui a bien marché..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none" />
+              <textarea placeholder="Remarques, difficultés, ce qui a bien marché..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
             </div>
 
             {/* Actions */}
@@ -392,7 +392,7 @@ export function EditSessionModal({
                 <div className="flex items-center gap-2 mb-2">
                   <p className="text-xs font-medium text-muted-foreground">Objectifs</p>
                   {session.goals_achieved && (
-                    <span className="flex items-center gap-1 text-xs text-green-400">
+                    <span className="flex items-center gap-1 text-xs text-success">
                       <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
@@ -432,7 +432,7 @@ export function EditSessionModal({
                 <svg className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
-                <input type="text" placeholder="Rechercher..." value={songSearchQuery} onChange={(e) => setSongSearchQuery(e.target.value)} className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm focus:border-primary focus:outline-none" />
+                <input type="text" placeholder="Rechercher..." value={songSearchQuery} onChange={(e) => setSongSearchQuery(e.target.value)} className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm focus:border-primary" />
               </div>
 
               <button onClick={() => { setSelectedSong(null); setShowSongSearch(false); }} className="mb-2 w-full rounded-lg border border-dashed border-border p-3 text-left text-sm text-muted-foreground hover:border-primary hover:bg-primary/5">

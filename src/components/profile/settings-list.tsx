@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { logout } from "@/lib/actions/auth";
+import { LogoutButton } from "@/components/layout/logout-button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { SubscriptionStatusBadge } from "@/components/subscription";
 import type { UserProfile } from "@/types";
@@ -131,14 +131,10 @@ export function SettingsList({ profile, spotifyConnected }: SettingsListProps) {
 
       {/* Session */}
       <section>
-        <form action={logout}>
-          <button
-            type="submit"
-            className="min-h-[44px] w-full rounded-2xl border border-border px-4 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
-          >
-            Se déconnecter
-          </button>
-        </form>
+        <LogoutButton
+          label="Se déconnecter"
+          className="min-h-[44px] w-full rounded-2xl border border-border px-4 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
+        />
       </section>
 
       <p className="px-1 pb-2 text-center text-xs text-muted-foreground">

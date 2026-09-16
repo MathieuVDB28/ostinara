@@ -144,7 +144,7 @@ export function ActivityComments({
                           <button
                             onClick={() => handleDelete(comment.id)}
                             disabled={isSending}
-                            className="text-xs text-muted-foreground transition-colors hover:text-red-400"
+                            className="text-xs text-muted-foreground transition-colors hover:text-destructive"
                           >
                             Supprimer
                           </button>
@@ -165,7 +165,7 @@ export function ActivityComments({
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Ecrire un commentaire..."
               maxLength={500}
-              className="min-w-0 flex-1 rounded-xl border border-border bg-accent/30 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+              className="min-w-0 flex-1 rounded-xl border border-border bg-accent/30 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary"
             />
             <button aria-label="Envoyer le commentaire"
               type="submit"

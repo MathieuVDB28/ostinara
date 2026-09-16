@@ -49,7 +49,7 @@ export function PlanToggle({ interval, onIntervalChange }: PlanToggleProps) {
         }`}
       >
         Annuel
-        <span className="ml-1.5 inline-flex items-center rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-400">
+        <span className="ml-1.5 inline-flex items-center rounded-full bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
           -20%
         </span>
       </button>

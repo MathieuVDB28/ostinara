@@ -9,15 +9,18 @@ export function TunerGauge({ cents }: TunerGaugeProps) {
   const clampedCents = Math.max(-50, Math.min(50, cents));
   const angle = (clampedCents / 50) * 90;
 
-  // Color based on deviation
+  // Trois zones : juste, approchant, faux. Les jetons du theme portent
+  // deja cette semantique et s'adaptent aux deux appearances — les
+  // teintes Tailwind etaient calees sur le sombre et tombaient sous
+  // 2:1 en clair.
   const absCents = Math.abs(clampedCents);
   let color: string;
   if (absCents <= 5) {
-    color = "text-green-400";
+    color = "text-success";
   } else if (absCents <= 15) {
-    color = "text-yellow-400";
+    color = "text-primary";
   } else {
-    color = "text-red-400";
+    color = "text-destructive";
   }
 
   return (
@@ -38,7 +41,7 @@ export function TunerGauge({ cents }: TunerGaugeProps) {
           fill="none"
           stroke="currentColor"
           strokeWidth="6"
-          className="text-red-500/40"
+          className="text-destructive/40"
         />
 
         {/* Yellow zone left */}
@@ -47,7 +50,7 @@ export function TunerGauge({ cents }: TunerGaugeProps) {
           fill="none"
           stroke="currentColor"
           strokeWidth="6"
-          className="text-yellow-500/40"
+          className="text-primary/40"
         />
 
         {/* Green zone center */}
@@ -56,7 +59,7 @@ export function TunerGauge({ cents }: TunerGaugeProps) {
           fill="none"
           stroke="currentColor"
           strokeWidth="6"
-          className="text-green-500/40"
+          className="text-success/40"
         />
 
         {/* Yellow zone right */}
@@ -65,7 +68,7 @@ export function TunerGauge({ cents }: TunerGaugeProps) {
           fill="none"
           stroke="currentColor"
           strokeWidth="6"
-          className="text-yellow-500/40"
+          className="text-primary/40"
         />
 
         {/* Red zone right */}
@@ -74,7 +77,7 @@ export function TunerGauge({ cents }: TunerGaugeProps) {
           fill="none"
           stroke="currentColor"
           strokeWidth="6"
-          className="text-red-500/40"
+          className="text-destructive/40"
         />
 
         {/* Center tick mark */}
@@ -85,7 +88,7 @@ export function TunerGauge({ cents }: TunerGaugeProps) {
           y2="38"
           stroke="currentColor"
           strokeWidth="2"
-          className="text-green-400"
+          className="text-success"
         />
 
         {/* Needle */}
@@ -110,7 +113,7 @@ export function TunerGauge({ cents }: TunerGaugeProps) {
         <text x="15" y="118" className="fill-muted-foreground text-[11px]">
           ♭
         </text>
-        <text x="95" y="22" className="fill-green-400 text-[11px]" textAnchor="middle">
+        <text x="95" y="22" className="fill-success text-[11px]" textAnchor="middle">
           ✓
         </text>
         <text x="183" y="118" className="fill-muted-foreground text-[11px]">

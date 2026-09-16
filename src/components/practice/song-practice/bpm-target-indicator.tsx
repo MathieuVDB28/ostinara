@@ -43,10 +43,10 @@ export function BpmTargetIndicator({
 
   // Couleur du cercle basée sur la progression
   const getCircleColor = () => {
-    if (isAtTarget) return "text-green-500";
+    if (isAtTarget) return "text-success";
     if (progressPercent >= 75) return "text-primary";
-    if (progressPercent >= 50) return "text-blue-400";
-    if (progressPercent >= 25) return "text-yellow-400";
+    if (progressPercent >= 50) return "text-chart-2";
+    if (progressPercent >= 25) return "text-primary";
     return "text-muted-foreground";
   };
 
@@ -94,7 +94,7 @@ export function BpmTargetIndicator({
         </div>
 
         {isAtTarget && (
-          <span className="flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-400">
+          <span className="flex items-center gap-1 rounded-full bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
             <svg
               className="h-3.5 w-3.5"
               fill="none"

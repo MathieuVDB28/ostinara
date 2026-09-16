@@ -38,7 +38,7 @@ export function StarRating({ value, onChange, size = "md", className }: StarRati
             {/* Filled portion */}
             {(isFull || isHalf) && (
               <span
-                className={`material-symbols-outlined ${sizeClass} absolute inset-0 select-none text-amber-400`}
+                className={`material-symbols-outlined ${sizeClass} absolute inset-0 select-none text-primary`}
                 style={isHalf ? { clipPath: "inset(0 50% 0 0)" } : undefined}
               >
                 star

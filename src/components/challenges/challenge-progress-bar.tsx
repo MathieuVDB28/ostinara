@@ -51,7 +51,7 @@ export function ChallengeProgressBar({
         <div className="flex flex-1 items-center gap-2">
           <div
             className={`h-3 w-3 rounded-full ${
-              creatorProgress?.song_mastered_at ? "bg-green-500" : "bg-muted"
+              creatorProgress?.song_mastered_at ? "bg-success" : "bg-muted"
             }`}
           />
           <span className="text-xs text-muted-foreground">
@@ -64,7 +64,7 @@ export function ChallengeProgressBar({
           </span>
           <div
             className={`h-3 w-3 rounded-full ${
-              challengerProgress?.song_mastered_at ? "bg-green-500" : "bg-muted"
+              challengerProgress?.song_mastered_at ? "bg-success" : "bg-muted"
             }`}
           />
         </div>
@@ -84,7 +84,7 @@ export function ChallengeProgressBar({
         )}
         {challengerPercent > 0 && (
           <div
-            className="bg-blue-500 transition-all duration-500"
+            className="bg-chart-2 transition-all duration-500"
             style={{ width: `${challengerPercent}%` }}
           />
         )}
@@ -96,7 +96,7 @@ export function ChallengeProgressBar({
         </span>
         <span className="flex items-center gap-1">
           {challenge.challenger.display_name || challenge.challenger.username}
-          <span className="h-2 w-2 rounded-full bg-blue-500" />
+          <span className="h-2 w-2 rounded-full bg-chart-2" />
         </span>
       </div>
     </div>

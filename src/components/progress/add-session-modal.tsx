@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createPracticeSession } from "@/lib/actions/practice";
+import { useOffline } from "@/components/offline/offline-provider";
 import { MoodSelector } from "./mood-selector";
 import { SectionsSelector } from "./sections-selector";
 import { EnergySelector } from "./energy-selector";
@@ -17,6 +17,8 @@ interface AddSessionModalProps {
   // Props pour le mode timer
   timerDuration?: number;
   timerSong?: Song | null;
+  /** Tempo du metronome au moment du "Terminer", quand il y en avait un. */
+  timerBpm?: number;
   mode: "timer" | "manual";
 }
 
@@ -27,11 +29,21 @@ export function AddSessionModal({
   songs,
   timerDuration,
   timerSong,
+  timerBpm,
   mode,
 }: AddSessionModalProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /*
+   * L'ecriture passe par le magasin hors ligne.
+   *
+   * C'est le seul formulaire de l'app ou l'absence de reseau fait perdre
+   * quelque chose : une session qu'on vient de jouer, dont la duree, le
+   * tempo et les sections ne sont nulle part ailleurs. `saveSession`
+   * ecrit directement si le reseau est la, met en file sinon.
+   */
+  const { saveSession, isOnline } = useOffline();
 
   // Champs du formulaire
   const [selectedSong, setSelectedSong] = useState<Song | null>(timerSong || null);
@@ -39,7 +51,9 @@ export function AddSessionModal({
   const [practicedAt, setPracticedAt] = useState(
     new Date().toISOString().slice(0, 16)
   );
-  const [bpmAchieved, setBpmAchieved] = useState<string>("");
+  const [bpmAchieved, setBpmAchieved] = useState<string>(
+    timerBpm ? String(timerBpm) : ""
+  );
   const [mood, setMood] = useState<SessionMood | null>(null);
   const [energyLevel, setEnergyLevel] = useState<EnergyLevel | null>(null);
   const [sectionsWorked, setSectionsWorked] = useState<SongSection[]>([]);
@@ -62,7 +76,7 @@ export function AddSessionModal({
       setSelectedSong(timerSong || null);
       setDurationMinutes(timerDuration || 30);
       setPracticedAt(new Date().toISOString().slice(0, 16));
-      setBpmAchieved("");
+      setBpmAchieved(timerBpm ? String(timerBpm) : "");
       setMood(null);
       setEnergyLevel(null);
       setSectionsWorked([]);
@@ -74,7 +88,7 @@ export function AddSessionModal({
       setShowFeeling(false);
       setShowGoals(false);
     }
-  }, [isOpen, timerDuration, timerSong]);
+  }, [isOpen, timerDuration, timerSong, timerBpm]);
 
   const handleClose = useCallback(() => {
     onClose();
@@ -104,7 +118,7 @@ export function AddSessionModal({
     setLoading(true);
     setError(null);
 
-    const result = await createPracticeSession({
+    const result = await saveSession({
       song_id: selectedSong?.id,
       duration_minutes: durationMinutes,
       practiced_at: new Date(practicedAt).toISOString(),
@@ -120,7 +134,10 @@ export function AddSessionModal({
     setLoading(false);
 
     if (result.success) {
-      router.refresh();
+      // Une session mise en file n'a rien change cote serveur : un
+      // refresh renverrait la page telle quelle. Le bandeau hors ligne
+      // dit deja ce qu'il faut savoir.
+      if (!result.queued) router.refresh();
       onSuccess();
       handleClose();
     } else {
@@ -163,6 +180,24 @@ export function AddSessionModal({
           <div className="mb-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
           </div>
+        )}
+
+        {/*
+          Hors ligne : on le dit avant l'enregistrement, pas apres. Savoir
+          que la session part plus tard change la confiance qu'on accorde
+          au bouton.
+        */}
+        {!isOnline && (
+          <p className="mb-4 flex items-center gap-2 rounded-lg bg-accent/60 px-4 py-3 text-sm text-muted-foreground">
+            <span
+              aria-hidden="true"
+              className="material-symbols-outlined text-[18px]"
+            >
+              cloud_off
+            </span>
+            Pas de réseau : la session sera gardée et envoyée automatiquement
+            au retour de la connexion.
+          </p>
         )}
 
         <div className="space-y-6">
@@ -223,7 +258,7 @@ export function AddSessionModal({
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 disabled={mode === "timer"}
               />
             </div>
@@ -233,7 +268,7 @@ export function AddSessionModal({
                 type="datetime-local"
                 value={practicedAt}
                 onChange={(e) => setPracticedAt(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 disabled={mode === "timer"}
               />
             </div>
@@ -274,7 +309,7 @@ export function AddSessionModal({
                     placeholder="ex: 120"
                     value={bpmAchieved}
                     onChange={(e) => setBpmAchieved(e.target.value)}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                 </div>
                 <div>
@@ -337,7 +372,7 @@ export function AddSessionModal({
                     value={sessionGoals}
                     onChange={(e) => setSessionGoals(e.target.value)}
                     rows={2}
-                    className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                 </div>
                 {sessionGoals && (
@@ -363,7 +398,7 @@ export function AddSessionModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
           </div>
 
@@ -378,8 +413,10 @@ export function AddSessionModal({
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                 Enregistrement...
               </span>
-            ) : (
+            ) : isOnline ? (
               "Enregistrer la session"
+            ) : (
+              "Garder pour le retour du réseau"
             )}
           </button>
         </div>
@@ -413,7 +450,7 @@ export function AddSessionModal({
                   placeholder="Rechercher..."
                   value={songSearchQuery}
                   onChange={(e) => setSongSearchQuery(e.target.value)}
-                  className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm focus:border-primary focus:outline-none"
+                  className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm focus:border-primary"
                 />
               </div>
 

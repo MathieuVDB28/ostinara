@@ -275,7 +275,7 @@ export function EditItemModal({
                     value={sectionName}
                     onChange={(e) => setSectionName(e.target.value)}
                     placeholder="Ex: Pause, Rappel..."
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                 </div>
               )}
@@ -288,7 +288,7 @@ export function EditItemModal({
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Notes pour ce morceau..."
                   rows={3}
-                  className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
               </div>
 
@@ -306,7 +306,7 @@ export function EditItemModal({
                     }
                     placeholder="0"
                     min="0"
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                 </div>
                 <div>
@@ -321,7 +321,7 @@ export function EditItemModal({
                     }
                     placeholder="0"
                     min="0"
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                 </div>
                 {isSong && (
@@ -336,7 +336,7 @@ export function EditItemModal({
                       placeholder="120"
                       min="20"
                       max="300"
-                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                     />
                   </div>
                 )}
@@ -368,7 +368,7 @@ export function EditItemModal({
 
               {/* BPM reminder */}
               {bpm <= 0 && (
-                <p className="text-xs text-yellow-500">
+                <p className="text-xs text-primary">
                   Definis un BPM dans l&apos;onglet General pour calculer la duree des sections en jam.
                 </p>
               )}
@@ -481,14 +481,14 @@ export function EditItemModal({
 
               {/* Detected sections from tab analysis */}
               {detectedSections.length > 0 && (
-                <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 space-y-2.5">
+                <div className="rounded-lg border border-chart-2/30 bg-chart-2/5 p-3 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-blue-400">
+                    <p className="text-sm font-medium text-chart-2">
                       {detectedSections.length} sections detectees
                     </p>
                     <button
                       onClick={handleAddAllDetected}
-                      className="rounded-lg bg-blue-500/20 px-2.5 py-1 text-xs font-medium text-blue-400 transition-colors hover:bg-blue-500/30"
+                      className="rounded-lg bg-chart-2/20 px-2.5 py-1 text-xs font-medium text-chart-2 transition-colors hover:bg-chart-2/30"
                     >
                       Tout ajouter
                     </button>
@@ -555,7 +555,7 @@ export function EditItemModal({
                       value={newSectionName}
                       onChange={(e) => setNewSectionName(e.target.value)}
                       placeholder="Nom de la section"
-                      className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
+                      className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:border-primary"
                     />
                   </div>
                   <div className="w-20">
@@ -569,7 +569,7 @@ export function EditItemModal({
                         setNewSectionStart(parseInt(e.target.value) || 1)
                       }
                       min="1"
-                      className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
+                      className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:border-primary"
                     />
                   </div>
                   <div className="w-20">
@@ -583,7 +583,7 @@ export function EditItemModal({
                         setNewSectionEnd(parseInt(e.target.value) || 1)
                       }
                       min="1"
-                      className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
+                      className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:border-primary"
                     />
                   </div>
                   <button

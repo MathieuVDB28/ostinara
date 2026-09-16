@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/pwa";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -9,6 +9,24 @@ const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
   subsets: ["latin"],
   weight: ["400", "500", "700", "800"],
+});
+
+/*
+ * globals.css declarait --font-mono: var(--font-jetbrains-mono) sans que
+ * personne ne charge la police : la variable n'existait pas, la famille
+ * etait invalide, et les six usages de font-mono — chrono de session,
+ * BPM, numeros de serie — retombaient sur la police proportionnelle, ou
+ * les chiffres n'ont pas la meme largeur et sautent a chaque seconde.
+ *
+ * preload: false — deux graisses latines pour six endroits, inutile de
+ * les mettre sur le chemin critique de chaque page.
+ */
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -27,8 +45,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Ces deux valeurs sont --background clair et sombre, a la lettre :
+  // #FBFAF8 laissait une couture claire au-dessus du contenu une fois
+  // l'app installee sur iOS.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FBFAF8" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f4f1" },
     { media: "(prefers-color-scheme: dark)", color: "#141210" },
   ],
   width: "device-width",
@@ -56,7 +77,7 @@ export default function RootLayout({
         <link rel="stylesheet" href={MATERIAL_SYMBOLS_HREF} />
       </head>
       <body
-        className={`${plusJakarta.variable} font-sans antialiased bg-background text-foreground overflow-x-hidden`}
+        className={`${plusJakarta.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-foreground overflow-x-hidden`}
       >
         <ThemeProvider>
           <ServiceWorkerRegistration />

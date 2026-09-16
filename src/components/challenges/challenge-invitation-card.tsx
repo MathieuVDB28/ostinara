@@ -109,7 +109,7 @@ export function ChallengeInvitationCard({ challenge }: ChallengeInvitationCardPr
 
       {/* Erreur */}
       {error && (
-        <p className="mb-4 text-sm text-red-500">{error}</p>
+        <p className="mb-4 text-sm text-destructive">{error}</p>
       )}
 
       {/* Actions */}

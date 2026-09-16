@@ -154,7 +154,7 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
           </div>
         )}
         {successMessage && (
-          <div className="mb-4 rounded-lg bg-green-500/10 px-4 py-3 text-sm text-green-400">
+          <div className="mb-4 rounded-lg bg-success/10 px-4 py-3 text-sm text-success">
             {successMessage}
           </div>
         )}

@@ -59,8 +59,8 @@ export function TapTempo({ onTap, tapBpm, onReset }: TapTempoProps) {
           </svg>
           <span>TAP TEMPO</span>
           {tapCount > 0 && tapBpm === null && (
-            <span className="flex items-center gap-1 rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs text-yellow-400">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-yellow-400" />
+            <span className="flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
               {tapCount} tap{tapCount > 1 ? "s" : ""}
             </span>
           )}

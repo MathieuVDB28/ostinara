@@ -16,6 +16,8 @@ interface FriendsViewProps {
     current: number;
     limit: number;
   } | null;
+  /** Profil a ouvrir a l'arrivee — lien profond de la recherche globale. */
+  initialFriendId?: string;
 }
 
 type Tab = "friends" | "requests";
@@ -24,14 +26,21 @@ export function FriendsView({
   initialFriends,
   initialRequests,
   limitInfo,
+  initialFriendId,
 }: FriendsViewProps) {
   const router = useRouter();
   const [friends, setFriends] = useState(initialFriends);
   const [requests, setRequests] = useState(initialRequests);
   const [activeTab, setActiveTab] = useState<Tab>("friends");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  // Arrivee depuis la recherche globale : le profil s'ouvre des le premier
+  // rendu.
+  const [selectedFriendId, setSelectedFriendId] = useState<string | null>(
+    initialFriendId ?? null
+  );
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(
+    Boolean(initialFriendId)
+  );
 
   useEffect(() => {
     setFriends(initialFriends);

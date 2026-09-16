@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 interface BiblioSearchValue {
   query: string;
@@ -25,7 +25,15 @@ const BiblioSearchContext = createContext<BiblioSearchValue | null>(null);
  * plutot que de repasser par le serveur a chaque frappe.
  */
 export function BiblioSearchProvider({ children }: { children: ReactNode }) {
-  const [query, setQuery] = useState("");
+  const searchParams = useSearchParams();
+
+  /*
+   * `?q=` amorce le champ. Les albums n'ont pas de fiche propre : un
+   * resultat de la recherche globale atterrit donc sur le segment Albums
+   * deja filtre sur son nom. L'amorce ne vaut qu'au montage — ensuite,
+   * c'est le champ qui mene, pas l'URL.
+   */
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   const value = useMemo(() => ({ query, setQuery }), [query]);
 
   return (

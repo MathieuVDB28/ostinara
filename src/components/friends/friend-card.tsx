@@ -40,7 +40,7 @@ export function FriendCard({ friend, onViewProfile, onRefresh }: FriendCardProps
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-purple-600">
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-primary/70">
             <span className="text-4xl font-bold text-white">
               {(friend.profile.display_name?.[0] || friend.profile.username[0]).toUpperCase()}
             </span>

@@ -3,11 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { logout } from "@/lib/actions/auth";
+import { LogoutButton } from "./logout-button";
 import { NavIcon } from "./nav-icon";
 import { ThemeToggle } from "./theme-toggle";
+import { useCommandPalette } from "@/components/search/command-palette";
 import {
-  NAV_TABS,
+  DESKTOP_TABS,
   activeSegment,
   coversPath,
   tabBadgeTotal,
@@ -31,6 +32,7 @@ interface DesktopSidebarProps {
  */
 export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
   const pathname = usePathname();
+  const { open: openCommandPalette } = useCommandPalette();
 
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-full w-64 flex-col border-r border-border bg-card lg:flex">
@@ -49,9 +51,28 @@ export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
       </div>
 
       {/* Navigation */}
+      {/*
+        La recherche est un onglet sur mobile et une palette ici : sur
+        desktop, cmd-K va plus vite qu'un aller-retour vers une page, et
+        le bouton existe pour qui ne connait pas le raccourci.
+      */}
+      <div className="px-3 pt-4">
+        <button
+          type="button"
+          onClick={openCommandPalette}
+          className="flex min-h-[44px] w-full items-center gap-3 rounded-xl border border-input px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <NavIcon icon="search" className="h-5 w-5 shrink-0" />
+          <span className="flex-1">Rechercher…</span>
+          <kbd className="shrink-0 rounded-md border border-border px-1.5 py-0.5 text-[11px]">
+            ⌘K
+          </kbd>
+        </button>
+      </div>
+
       <nav aria-label="Navigation principale" className="flex-1 overflow-y-auto px-3 py-4">
         <div className="space-y-1.5">
-          {NAV_TABS.map((tab) => {
+          {DESKTOP_TABS.map((tab) => {
             const isTabActive = coversPath(tab.href, pathname);
             const current = activeSegment(tab, pathname);
             const tabBadge = tabBadgeTotal(tab, badges);
@@ -135,14 +156,10 @@ export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
           </div>
         </Link>
         <ThemeToggle />
-        <form action={logout}>
-          <button
-            type="submit"
-            className="w-full rounded-xl border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            Déconnexion
-          </button>
-        </form>
+        <LogoutButton
+          label="Déconnexion"
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-60"
+        />
       </div>
     </aside>
   );

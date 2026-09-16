@@ -262,7 +262,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
               {activeJam ? (
                 <Link
                   href={`/jam/${activeJam.id}`}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-green-500 px-3 py-1.5 text-sm font-medium text-white transition-all hover:bg-green-600"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-sm font-medium text-success-foreground transition-all hover:opacity-90"
                 >
                   <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
                   Rejoindre la Jam
@@ -270,7 +270,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
               ) : (
                 <button
                   onClick={() => setShowJamModal(true)}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-all hover:bg-amber-600"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
                 >
                   <svg
                     className="h-4 w-4"

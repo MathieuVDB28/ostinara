@@ -41,7 +41,7 @@ const statusLabels: Record<SongStatus, string> = {
 const statusColors: Record<SongStatus, string> = {
   want_to_learn: "bg-muted text-muted-foreground",
   learning: "bg-primary/15 text-primary",
-  mastered: "bg-green-500/15 text-green-400",
+  mastered: "bg-success/15 text-success",
 };
 
 const difficultyLabels: Record<SongDifficulty, string> = {
@@ -52,10 +52,10 @@ const difficultyLabels: Record<SongDifficulty, string> = {
 };
 
 const difficultyColors: Record<SongDifficulty, string> = {
-  beginner: "bg-green-500/20 text-green-400",
-  intermediate: "bg-blue-500/20 text-blue-400",
-  advanced: "bg-orange-500/20 text-orange-400",
-  expert: "bg-red-500/20 text-red-400",
+  beginner: "bg-success/20 text-success",
+  intermediate: "bg-chart-2/20 text-chart-2",
+  advanced: "bg-primary/20 text-primary",
+  expert: "bg-destructive/20 text-destructive",
 };
 
 const moodLabels: Record<SessionMood, string> = {
@@ -209,7 +209,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
               {/* ===== PROFILE HEADER ===== */}
               <div className="relative overflow-hidden border-b border-border px-6 pb-6 pt-8">
                 {/* Decorative gradient */}
-                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5" />
+                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
 
                 <div className="flex items-start gap-5">
                   {/* Avatar */}
@@ -319,15 +319,15 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                     <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
                       <StatCard
                         icon="local_fire_department"
-                        iconColor="text-orange-400"
-                        iconBg="bg-orange-500/10"
+                        iconColor="text-primary"
+                        iconBg="bg-primary/10"
                         value={profile.practice_stats?.currentStreak ?? 0}
                         label="Streak"
                       />
                       <StatCard
                         icon="emoji_events"
-                        iconColor="text-amber-400"
-                        iconBg="bg-amber-500/10"
+                        iconColor="text-primary"
+                        iconBg="bg-primary/10"
                         value={profile.stats.masteredSongs ?? 0}
                         label="Maîtrisés"
                       />
@@ -340,22 +340,22 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                       />
                       <StatCard
                         icon="headphones"
-                        iconColor="text-purple-400"
-                        iconBg="bg-purple-500/10"
+                        iconColor="text-primary"
+                        iconBg="bg-primary/10"
                         value={profile.practice_stats?.totalSessions ?? 0}
                         label="Sessions"
                       />
                       <StatCard
                         icon="videocam"
-                        iconColor="text-rose-400"
-                        iconBg="bg-rose-500/10"
+                        iconColor="text-destructive"
+                        iconBg="bg-destructive/10"
                         value={profile.stats.totalCovers}
                         label="Covers"
                       />
                       <StatCard
                         icon="album"
-                        iconColor="text-emerald-400"
-                        iconBg="bg-emerald-500/10"
+                        iconColor="text-success"
+                        iconBg="bg-success/10"
                         value={profile.stats.totalAlbumReviews}
                         label="Albums"
                       />
@@ -542,7 +542,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                                       </span>
                                     )}
                                     {gear.is_active && (
-                                      <span className="rounded-full bg-green-500/15 px-2 py-0.5 text-[11px] font-medium text-green-400">
+                                      <span className="rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-medium text-success">
                                         Actif
                                       </span>
                                     )}
@@ -591,7 +591,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                             </div>
                             <div className="rounded-xl bg-accent/50 p-3 text-center">
                               <div className="flex items-center justify-center gap-1">
-                                <span className="material-symbols-outlined text-orange-400 text-[18px]">local_fire_department</span>
+                                <span className="material-symbols-outlined text-primary text-[18px]">local_fire_department</span>
                                 <span className="text-lg font-bold">{profile.practice_stats.currentStreak}</span>
                               </div>
                               <div className="text-xs text-muted-foreground">Jours de streak</div>
@@ -784,7 +784,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                               preload="metadata"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-purple-500/10">
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/10">
                               <audio src={cover.media_url} controls className="w-4/5" preload="metadata" />
                             </div>
                           )}
@@ -1085,7 +1085,7 @@ function CoverCard({ cover }: { cover: CoverWithSong }) {
             <video src={cover.media_url} className="h-full w-full object-cover" muted preload="metadata" />
           )
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-purple-500/10">
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/10">
             <span className="material-symbols-outlined text-3xl text-primary/50">audiotrack</span>
           </div>
         )}

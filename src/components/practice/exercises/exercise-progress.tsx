@@ -30,7 +30,7 @@ export function ExerciseProgress({
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-medium">{exercise.name}</h3>
         {isAtTarget && (
-          <span className="flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-400">
+          <span className="flex items-center gap-1 rounded-full bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
             <svg
               className="h-3.5 w-3.5"
               fill="none"
@@ -89,7 +89,7 @@ export function ExerciseProgress({
         <div className="h-3 overflow-hidden rounded-full bg-accent">
           <div
             className={`h-full rounded-full transition-all ${
-              isAtTarget ? "bg-green-500" : "bg-primary"
+              isAtTarget ? "bg-success" : "bg-primary"
             }`}
             style={{ width: `${progressPercent}%` }}
           />
@@ -100,7 +100,7 @@ export function ExerciseProgress({
       {improvement !== 0 && (
         <div
           className={`mt-3 flex items-center justify-center gap-1 text-sm ${
-            improvement > 0 ? "text-green-400" : "text-red-400"
+            improvement > 0 ? "text-success" : "text-destructive"
           }`}
         >
           <svg

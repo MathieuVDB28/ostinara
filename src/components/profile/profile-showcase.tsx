@@ -9,69 +9,44 @@ interface ProfileShowcaseProps {
   profile: UserProfile;
 }
 
+type ShowcaseKind = "song" | "album" | "gear";
+
 interface ShowcaseItem {
   key: string;
+  kind: ShowcaseKind;
   title: string;
   subtitle: string;
   coverUrl?: string;
 }
 
+/** Le glyphe de repli, quand il n'y a pas de pochette ni de photo. */
+const KIND_ICON: Record<ShowcaseKind, string> = {
+  song: "music_note",
+  album: "album",
+  // Material Symbols n'a pas de « guitar » : le nom etait rendu tel quel,
+  // en toutes lettres, dans la police d'icones.
+  gear: "tune",
+};
+
+/** Singulier, pluriel — un rang d'un seul element ne s'annonce pas au pluriel. */
+const KIND_LABEL: Record<ShowcaseKind, [one: string, many: string]> = {
+  song: ["Morceau favori", "Morceaux favoris"],
+  album: ["Album favori", "Albums favoris"],
+  gear: ["Matos favori", "Matos favoris"],
+};
+
 /**
  * La vitrine : morceaux, albums et matos favoris.
  *
- * Elle vivait dans UserProfileModal en grille 2 colonnes. En rangee
- * horizontale elle tient au-dessus des segments sans les repousser hors
- * de l'ecran, et elle reste ce qu'elle est — de l'identite, pas de la
- * progression.
+ * Elle occupait trois rangees empilees — environ 475 px — juste au-dessus
+ * de la progression, qui est la raison d'ouvrir l'ecran. Elle a d'abord
+ * ete reduite a un rail unique ou une pastille de type marquait chaque
+ * vignette : trop discret, on ne distinguait plus un album d'un morceau.
+ *
+ * Elle retrouve donc un rang par type, avec son intitule ecrit — mais
+ * seulement pour les types remplis, et sur des vignettes restees petites.
+ * Le sens revient sans reprendre les 475 px.
  */
-function ShowcaseRow({
-  label,
-  items,
-  rounded,
-}: {
-  label: string;
-  items: ShowcaseItem[];
-  rounded: string;
-}) {
-  if (items.length === 0) return null;
-
-  return (
-    <section>
-      <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </h2>
-      <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
-        {items.map((item) => (
-          <li key={item.key} className="w-[104px] shrink-0">
-            {item.coverUrl ? (
-              <img
-                src={item.coverUrl}
-                alt=""
-                className={`h-[104px] w-[104px] object-cover ${rounded}`}
-              />
-            ) : (
-              <div
-                className={`flex h-[104px] w-[104px] items-center justify-center bg-accent ${rounded}`}
-              >
-                <span
-                  aria-hidden="true"
-                  className="material-symbols-outlined text-muted-foreground"
-                >
-                  music_note
-                </span>
-              </div>
-            )}
-            <p className="mt-1.5 truncate text-xs font-medium">{item.title}</p>
-            <p className="truncate text-[11px] text-muted-foreground">
-              {item.subtitle}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
   const pathname = usePathname();
 
@@ -86,6 +61,7 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
     .sort(byPosition)
     .map((favorite) => ({
       key: favorite.id,
+      kind: "song",
       title: favorite.song.title,
       subtitle: favorite.song.artist,
       coverUrl: favorite.song.cover_url,
@@ -95,6 +71,7 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
     .sort(byPosition)
     .map((favorite) => ({
       key: favorite.id,
+      kind: "album",
       title: favorite.album_name,
       subtitle: favorite.artist_name,
       coverUrl: favorite.cover_url,
@@ -105,19 +82,30 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
     .filter((favorite) => favorite.gear)
     .map((favorite) => ({
       key: favorite.id,
+      kind: "gear",
       title: `${favorite.gear.brand} ${favorite.gear.model}`.trim(),
       subtitle: GEAR_TYPE_LABELS[favorite.gear.type] ?? "Matos",
       coverUrl: favorite.gear.image_url,
     }));
 
-  const isEmpty =
-    songs.length === 0 && albums.length === 0 && gear.length === 0;
+  /*
+   * Un rang par type, les types vides passes sous silence : afficher
+   * « Matos favori » a qui n'en a pas ajoute ne dit rien et coute une
+   * ligne.
+   */
+  const groups = (
+    [
+      { kind: "song" as const, items: songs },
+      { kind: "album" as const, items: albums },
+      { kind: "gear" as const, items: gear },
+    ] satisfies { kind: ShowcaseKind; items: ShowcaseItem[] }[]
+  ).filter((group) => group.items.length > 0);
 
-  if (isEmpty) {
+  if (groups.length === 0) {
     return (
       <Link
         href="/profile/edit?tab=favorites"
-        className="mb-6 flex items-center gap-3 rounded-2xl border border-dashed border-border p-4 transition-colors hover:bg-accent"
+        className="mb-5 flex min-h-[44px] items-center gap-3 rounded-2xl border border-dashed border-border p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span
           aria-hidden="true"
@@ -142,17 +130,84 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
   }
 
   return (
-    <div className="mb-6 space-y-5">
-      <ShowcaseRow label="Morceaux favoris" items={songs} rounded="rounded-xl" />
-      <ShowcaseRow label="Albums favoris" items={albums} rounded="rounded-xl" />
-      <ShowcaseRow label="Matos favori" items={gear} rounded="rounded-xl" />
+    <section aria-labelledby="showcase-heading" className="mb-5">
+      {/*
+        « Modifier » se pose contre le titre, pas a l'autre bout de la
+        ligne : rejete a droite, il flottait au-dessus du premier rang et
+        semblait porter sur lui plutot que sur la vitrine entiere.
+      */}
+      <div className="mb-2.5 flex items-baseline gap-3">
+        <h2
+          id="showcase-heading"
+          className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+        >
+          Ma vitrine
+        </h2>
+        <Link
+          href="/profile/edit?tab=favorites"
+          className="text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Modifier
+        </Link>
+      </div>
 
-      <Link
-        href="/profile/edit?tab=favorites"
-        className="inline-flex min-h-[36px] items-center text-sm font-medium text-primary hover:underline"
-      >
-        Modifier ma vitrine
-      </Link>
-    </div>
+      <div className="flex flex-col gap-4">
+        {groups.map((group) => {
+          const [one, many] = KIND_LABEL[group.kind];
+          const label = group.items.length > 1 ? many : one;
+          const headingId = `showcase-${group.kind}`;
+
+          return (
+            <div key={group.kind}>
+              {/*
+                L'intitule ecrit, pas une pastille : c'est lui qui dit
+                qu'on regarde des albums, et il le dit une fois pour le
+                rang entier plutot que douze fois en 13 px.
+              */}
+              <h3
+                id={headingId}
+                className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground"
+              >
+                {label}
+              </h3>
+
+              <ul
+                aria-labelledby={headingId}
+                className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden"
+              >
+                {group.items.map((item) => (
+                  <li key={item.key} className="w-[88px] shrink-0">
+                    {item.coverUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.coverUrl}
+                        alt=""
+                        className="h-[88px] w-[88px] rounded-xl object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-[88px] w-[88px] items-center justify-center rounded-xl bg-accent">
+                        <span
+                          aria-hidden="true"
+                          className="material-symbols-outlined text-muted-foreground"
+                        >
+                          {KIND_ICON[group.kind]}
+                        </span>
+                      </div>
+                    )}
+
+                    <p className="mt-1.5 truncate text-xs font-medium">
+                      {item.title}
+                    </p>
+                    <p className="truncate text-[11px] text-muted-foreground">
+                      {item.subtitle}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }

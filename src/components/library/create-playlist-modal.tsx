@@ -94,7 +94,7 @@ export function CreatePlaylistModal({ isOpen, onClose, onSuccess }: CreatePlayli
               onChange={(e) => setName(e.target.value)}
               placeholder="Ma playlist..."
               autoFocus
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
           </div>
 
@@ -107,7 +107,7 @@ export function CreatePlaylistModal({ isOpen, onClose, onSuccess }: CreatePlayli
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Décris ta playlist..."
               rows={3}
-              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
           </div>
 

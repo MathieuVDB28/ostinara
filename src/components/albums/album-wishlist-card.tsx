@@ -27,7 +27,7 @@ export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: Alb
         )}
 
         {/* Wishlist badge */}
-        <div className="absolute left-2 top-2 rounded-full bg-amber-500/20 px-2 py-1 text-xs font-medium text-amber-400">
+        <div className="absolute left-2 top-2 rounded-full bg-primary/20 px-2 py-1 text-xs font-medium text-primary">
           A écouter
         </div>
       </div>

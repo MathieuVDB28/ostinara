@@ -97,17 +97,17 @@ export function RehearsalCard({ rehearsal, currentUserId, onClick }: RehearsalCa
               </span>
             )}
             {dateIsTomorrow && (
-              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-400">
+              <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
                 Demain
               </span>
             )}
             {rehearsal.status === "cancelled" && (
-              <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
+              <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-xs font-medium text-destructive">
                 Annulee
               </span>
             )}
             {rehearsal.status === "completed" && (
-              <span className="rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-400">
+              <span className="rounded-full bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
                 Terminee
               </span>
             )}

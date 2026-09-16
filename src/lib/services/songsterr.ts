@@ -1,4 +1,9 @@
 import type { SongsterrTabStructure, PlayedSection } from '@/types';
+// Les deux helpers d'URL vivent a part : ils sont aussi lus par des
+// composants clients, qui n'ont rien a faire du parseur Guitar Pro.
+import { extractSongsterrId, getSongsterrUrl } from '@/lib/songsterr-url';
+
+export { extractSongsterrId, getSongsterrUrl };
 
 // New Songsterr API response format
 interface SongsterrApiSong {
@@ -55,22 +60,6 @@ export async function searchSongsterr(
   } catch {
     return [];
   }
-}
-
-export function getSongsterrUrl(songId: number): string {
-  return `https://www.songsterr.com/a/wsa/${songId}`;
-}
-
-// Extract Songsterr song ID from URL
-export function extractSongsterrId(url: string): number | null {
-  // Format: https://www.songsterr.com/a/wsa/tool-stinkfist-tab-s19811
-  // The ID is at the end after "-s" or just the number after /wsa/
-  const match = url.match(/songsterr\.com\/a\/wsa\/.*?(\d+)$/);
-  if (match) return parseInt(match[1], 10);
-  // Fallback: just try to find a number
-  const numMatch = url.match(/songsterr\.com\/a\/wsa\/(\d+)/);
-  if (numMatch) return parseInt(numMatch[1], 10);
-  return null;
 }
 
 // Fetch and parse tab structure from Songsterr by downloading the GP file

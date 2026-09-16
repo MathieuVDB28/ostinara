@@ -128,7 +128,7 @@ export function CreateBandModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: The Rockers"
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               autoFocus
             />
           </div>
@@ -143,7 +143,7 @@ export function CreateBandModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Decris ton groupe..."
               rows={3}
-              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
           </div>
 

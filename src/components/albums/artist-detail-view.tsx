@@ -120,7 +120,7 @@ export function ArtistDetailView({ artist, albums, communityStats }: Props) {
                     {/* Community rating badge */}
                     {stats && stats.review_count > 0 && (
                       <div className="absolute right-2 top-2 flex items-center gap-0.5 rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">
-                        <span className="material-symbols-outlined text-[11px] text-amber-400">
+                        <span className="material-symbols-outlined text-[11px] text-primary">
                           star
                         </span>
                         {(stats.avg_rating / 2).toFixed(1)}

@@ -76,17 +76,24 @@ export async function createAlbumReview(
 }
 
 // === Récupérer les reviews de l'utilisateur ===
-export async function getUserAlbumReviews(): Promise<AlbumReview[]> {
+export async function getUserAlbumReviews(
+  /** Sans limite, tout le mur d'albums. Avec, les N derniers ecoutes. */
+  limit?: number
+): Promise<AlbumReview[]> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
 
   if (!user) return [];
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("album_reviews")
     .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
+
+  if (limit) query = query.limit(limit);
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("Error fetching album reviews:", error);

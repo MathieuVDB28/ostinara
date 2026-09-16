@@ -128,6 +128,26 @@ html {
   scroll-behavior: smooth;
 }
 
+/*
+ * Anneau de focus par defaut.
+ *
+ * L'app comptait 148 focus:outline-none dont 107 ne remplacaient rien :
+ * au clavier, sur desktop, le contour systeme etait supprime et rien ne
+ * prenait sa place. On tabulait a l'aveugle.
+ *
+ * :where() a une specificite nulle : n'importe quelle classe utilitaire
+ * posee sur un element gagne encore, donc les controles qui definissent
+ * deja leur propre anneau gardent le leur. --ring vaut 6,4:1 en clair et
+ * 7,8:1 en sombre.
+ *
+ * :focus-visible et non :focus : l'anneau apparait au clavier, pas au clic.
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
 /* Chiffres alignes en colonne : BPM, durees, dates */
 .tabular {
   font-variant-numeric: tabular-nums;

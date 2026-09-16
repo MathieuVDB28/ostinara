@@ -134,7 +134,7 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
 
                 {/* Objectifs atteints */}
                 {session.goals_achieved && (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500/20 text-green-400">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success/20 text-success">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>

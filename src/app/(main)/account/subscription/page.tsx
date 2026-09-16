@@ -164,7 +164,7 @@ export default function SubscriptionPage() {
 
       {/* Messages */}
       {success && (
-        <div className="mb-6 rounded-lg bg-green-500/10 px-4 py-3 text-sm text-green-400">
+        <div className="mb-6 rounded-lg bg-success/10 px-4 py-3 text-sm text-success">
           {success}
         </div>
       )}
@@ -282,7 +282,7 @@ export default function SubscriptionPage() {
         <div className="rounded-lg border border-border bg-card/50 p-4 text-sm text-muted-foreground">
           <p className="flex items-start gap-2">
             <svg
-              className="mt-0.5 h-4 w-4 shrink-0 text-blue-400"
+              className="mt-0.5 h-4 w-4 shrink-0 text-chart-2"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

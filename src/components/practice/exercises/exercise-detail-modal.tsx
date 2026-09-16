@@ -21,10 +21,10 @@ const DIFFICULTY_LABELS: Record<ExerciseDifficulty, string> = {
 };
 
 const DIFFICULTY_COLORS: Record<ExerciseDifficulty, string> = {
-  beginner: "bg-green-500/20 text-green-400",
-  intermediate: "bg-blue-500/20 text-blue-400",
-  advanced: "bg-orange-500/20 text-orange-400",
-  expert: "bg-red-500/20 text-red-400",
+  beginner: "bg-success/20 text-success",
+  intermediate: "bg-chart-2/20 text-chart-2",
+  advanced: "bg-primary/20 text-primary",
+  expert: "bg-destructive/20 text-destructive",
 };
 
 export function ExerciseDetailModal({
@@ -121,7 +121,7 @@ export function ExerciseDetailModal({
                 {DIFFICULTY_LABELS[exercise.difficulty]}
               </span>
               {exercise.is_from_friend && exercise.creator_name && (
-                <span className="flex items-center gap-1 rounded-full bg-violet-500/20 px-2 py-0.5 text-xs font-medium text-violet-400">
+                <span className="flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
                   <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -175,7 +175,7 @@ export function ExerciseDetailModal({
             <div className="mb-2 h-2 overflow-hidden rounded-full bg-accent">
               <div
                 className={`h-full rounded-full transition-all ${
-                  exercise.is_from_friend ? "bg-violet-500" : "bg-primary"
+                  exercise.is_from_friend ? "bg-primary" : "bg-primary"
                 }`}
                 style={{ width: `${progressPercent}%` }}
               />
@@ -264,7 +264,7 @@ export function ExerciseDetailModal({
               {/* Share toggle */}
               <div className="flex items-center justify-between rounded-lg border border-border bg-accent/30 p-3">
                 <div className="flex items-center gap-2">
-                  <svg className="h-5 w-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                   <div>
@@ -280,7 +280,7 @@ export function ExerciseDetailModal({
                   onClick={handleToggleShare}
                   disabled={sharing}
                   className={`relative h-6 w-11 rounded-full transition-colors disabled:opacity-50 ${
-                    exercise.shared_with_friends ? "bg-violet-500" : "bg-muted"
+                    exercise.shared_with_friends ? "bg-primary" : "bg-muted"
                   }`}
                 >
                   <span
@@ -297,8 +297,8 @@ export function ExerciseDetailModal({
                 disabled={deleting}
                 className={`w-full rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                   confirmDelete
-                    ? "border-red-500 bg-red-500/10 text-red-400 hover:bg-red-500/20"
-                    : "border-border text-muted-foreground hover:border-red-500/50 hover:text-red-400"
+                    ? "border-destructive bg-destructive/10 text-destructive hover:bg-destructive/20"
+                    : "border-border text-muted-foreground hover:border-destructive/50 hover:text-destructive"
                 }`}
               >
                 {deleting
@@ -316,7 +316,7 @@ export function ExerciseDetailModal({
           <button
             onClick={() => onStartPractice(exercise, startingBpm)}
             className={`flex w-full items-center justify-center gap-2 rounded-lg py-3 font-semibold text-primary-foreground transition-colors hover:opacity-90 ${
-              exercise.is_from_friend ? "bg-violet-500" : "bg-primary"
+              exercise.is_from_friend ? "bg-primary" : "bg-primary"
             }`}
           >
             <svg

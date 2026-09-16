@@ -11,6 +11,7 @@ import { ChallengeCard } from "./challenge-card";
 import { ChallengeInvitationCard } from "./challenge-invitation-card";
 import { CreateChallengeModal } from "./create-challenge-modal";
 import { LeaderboardView } from "./leaderboard-view";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface ChallengesViewProps {
   initialChallenges: ChallengeWithDetails[];
@@ -127,11 +128,50 @@ export function ChallengesView({
       {activeTab === "challenges" && (
         <div className="space-y-4">
           {myChallenges.length === 0 ? (
+            /*
+              Un defi se joue a deux : sans ami, le bouton « Creer » ne
+              mene nulle part. L'etat vide propose alors l'etape d'avant
+              plutot qu'une action fermee sans explication.
+            */
             <EmptyState
+              icon="emoji_events"
               title="Aucun défi en cours"
-              description="Lance un défi à un ami pour commencer !"
-              actionLabel={friends.length > 0 ? "Créer un défi" : undefined}
-              onAction={() => setIsCreateModalOpen(true)}
+              description={
+                friends.length > 0
+                  ? "Un défi, c'est un objectif de pratique sur une période : minutes jouées, morceaux maîtrisés, tempo atteint. Celui qui va le plus loin gagne."
+                  : "Un défi se joue à deux. Ajoute un ami, et vous pourrez vous fixer un objectif de pratique commun."
+              }
+              actions={
+                friends.length > 0
+                  ? [
+                      {
+                        label: "Créer un défi",
+                        icon: "add",
+                        primary: true,
+                        onClick: () => setIsCreateModalOpen(true),
+                      },
+                      {
+                        label: "Voir le classement",
+                        icon: "leaderboard",
+                        onClick: () => setActiveTab("leaderboard"),
+                      },
+                    ]
+                  : [
+                      {
+                        label: "Ajouter un ami",
+                        icon: "person_add",
+                        primary: true,
+                        href: "/commu/amis",
+                      },
+                      {
+                        label: "Créer un défi",
+                        icon: "add",
+                        disabled: true,
+                        disabledReason: "Il faut au moins un ami",
+                      },
+                    ]
+              }
+              hint="Tes sessions de pratique alimentent tes défis toutes seules : rien à cocher en plus."
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -165,8 +205,25 @@ export function ChallengesView({
         <div className="space-y-4">
           {pendingInvitations.length === 0 ? (
             <EmptyState
+              icon="emoji_events"
               title="Aucune invitation"
-              description="Tu n'as pas de demande de defi en attente"
+              description="Personne ne t'a défié pour l'instant. Rien n'empêche de commencer."
+              actions={[
+                {
+                  label: "Lancer un défi",
+                  icon: "add",
+                  primary: true,
+                  disabled: friends.length === 0,
+                  disabledReason:
+                    friends.length === 0 ? "Il faut au moins un ami" : undefined,
+                  onClick: () => setIsCreateModalOpen(true),
+                },
+                {
+                  label: "Voir mes défis",
+                  icon: "emoji_events",
+                  onClick: () => setActiveTab("challenges"),
+                },
+              ]}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -192,60 +249,6 @@ export function ChallengesView({
         friends={friends}
         songs={songs}
       />
-    </div>
-  );
-}
-
-function EmptyState({
-  title,
-  description,
-  actionLabel,
-  onAction,
-}: {
-  title: string;
-  description: string;
-  actionLabel?: string;
-  onAction?: () => void;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12 text-center">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-        <svg
-          className="h-8 w-8 text-primary"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M6 4h12v2a6 6 0 01-12 0V4z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M9 16h6v4H9z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M12 12v4"
-          />
-        </svg>
-      </div>
-      <h3 className="mb-2 font-semibold">{title}</h3>
-      <p className="mb-4 text-sm text-muted-foreground">{description}</p>
-      {actionLabel && onAction && (
-        <button
-          onClick={onAction}
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
-        >
-          {actionLabel}
-        </button>
-      )}
     </div>
   );
 }

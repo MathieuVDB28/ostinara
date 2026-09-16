@@ -143,7 +143,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
       {stats && stats.review_count > 0 && (
         <div className="mt-6 flex items-center gap-4 rounded-2xl border border-border bg-card p-5">
           <div className="flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-amber-400">{avgStars!.toFixed(1)}</span>
+            <span className="text-3xl font-bold text-primary">{avgStars!.toFixed(1)}</span>
             <span className="text-xs text-muted-foreground">/ 5</span>
           </div>
           <div className="flex flex-col gap-1">
@@ -181,7 +181,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
                 <div className="mb-5">
                   <div className="mb-2.5 flex items-center justify-between">
                     <label className="text-sm font-medium">Ta note</label>
-                    <span className="text-sm font-semibold text-amber-400">
+                    <span className="text-sm font-semibold text-primary">
                       {editRating > 0 ? `${editRating} / 5` : "—"}
                     </span>
                   </div>
@@ -205,7 +205,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
                   </p>
                 </div>
 
-                {editError && <p className="mb-4 text-sm text-red-500">{editError}</p>}
+                {editError && <p className="mb-4 text-sm text-destructive">{editError}</p>}
 
                 <div className="flex gap-3">
                   <button
@@ -229,7 +229,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <StarRating value={starsFromDb(userReview.rating)} size="sm" />
-                    <span className="font-semibold text-amber-400">
+                    <span className="font-semibold text-primary">
                       {starsFromDb(userReview.rating)} / 5
                     </span>
                   </div>
@@ -244,7 +244,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
                     <button
                       onClick={handleDelete}
                       disabled={isDeleting}
-                      className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm text-red-500 transition-colors hover:bg-accent disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm text-destructive transition-colors hover:bg-accent disabled:opacity-50"
                     >
                       <span className="material-symbols-outlined text-[15px]">delete</span>
                       {isDeleting ? "..." : "Supprimer"}

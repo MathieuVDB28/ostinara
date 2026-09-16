@@ -113,12 +113,12 @@ export function JamSongQueue({
                     {item.song_artist}
                   </p>
                   {item.tabs_url && (
-                    <span className="shrink-0 rounded-full bg-blue-500/20 px-1.5 py-0.5 text-[11px] font-medium text-blue-400">
+                    <span className="shrink-0 rounded-full bg-chart-2/20 px-1.5 py-0.5 text-[11px] font-medium text-chart-2">
                       Tab
                     </span>
                   )}
                   {item.played_sections && item.played_sections.length > 0 && (
-                    <span className="shrink-0 rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[11px] font-medium text-purple-400">
+                    <span className="shrink-0 rounded-full bg-primary/20 px-1.5 py-0.5 text-[11px] font-medium text-primary">
                       {item.played_sections.length} sect.
                     </span>
                   )}

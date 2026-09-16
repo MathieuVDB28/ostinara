@@ -88,7 +88,7 @@ export function BandChatPanel({
         <div className="flex items-center gap-1.5">
           <span
             className={`h-2 w-2 rounded-full ${
-              isConnected ? "bg-green-400" : "bg-zinc-400"
+              isConnected ? "bg-success" : "bg-muted"
             }`}
           />
           <span className="text-xs text-muted-foreground">
@@ -190,7 +190,7 @@ export function BandChatPanel({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Envoyer un message..."
-            className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             disabled={sending}
           />
           <button aria-label="Envoyer le message"

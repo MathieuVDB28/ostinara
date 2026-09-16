@@ -29,18 +29,18 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
     profile.facebook_url;
 
   return (
-    <div className="mb-6">
-      <div className="flex items-start gap-4">
+    <div className="mb-5">
+      <div className="flex items-start gap-3.5">
         {profile.avatar_url ? (
           <Image
             src={profile.avatar_url}
             alt=""
-            className="h-16 w-16 shrink-0 rounded-full object-cover lg:h-20 lg:w-20"
-            width={64}
-            height={64}
+            className="h-14 w-14 shrink-0 rounded-full object-cover lg:h-20 lg:w-20"
+            width={80}
+            height={80}
           />
         ) : (
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary lg:h-20 lg:w-20">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary lg:h-20 lg:w-20 lg:text-2xl">
             {(profile.display_name || profile.username)[0]?.toUpperCase()}
           </div>
         )}
@@ -61,13 +61,13 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
           </p>
 
           {profile.bio && (
-            <p className="mt-2 line-clamp-3 text-sm text-foreground">
+            <p className="mt-1.5 line-clamp-2 text-sm text-foreground">
               {profile.bio}
             </p>
           )}
 
           {hasSocials && (
-            <div className="mt-3">
+            <div className="mt-2">
               <SocialLinks
                 links={{
                   instagram: profile.instagram_url,
@@ -82,21 +82,26 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
 
         <Link
           href="/profil/reglages"
-          className="flex min-h-[44px] shrink-0 items-center rounded-xl border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
+          aria-label="Éditer mon profil"
+          className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-input px-3 py-2 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Éditer
+          <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
+            edit
+          </span>
+          <span className="hidden sm:inline">Éditer</span>
         </Link>
       </div>
 
-      {/* Stats */}
-      <dl className="mt-5 grid grid-cols-4 gap-2">
+      {/* Stats — une ligne, pas quatre tuiles bordees */}
+      <dl className="mt-3.5 grid grid-cols-4 rounded-xl bg-accent/50 px-1 py-2">
         {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-xl bg-accent/50 px-2 py-3 text-center"
-          >
-            <dd className="text-xl font-extrabold">{stat.value}</dd>
-            <dt className="text-[11px] text-muted-foreground">{stat.label}</dt>
+          <div key={stat.label} className="px-1 text-center">
+            <dd className="tabular text-base font-extrabold leading-tight">
+              {stat.value}
+            </dd>
+            <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              {stat.label}
+            </dt>
           </div>
         ))}
       </dl>

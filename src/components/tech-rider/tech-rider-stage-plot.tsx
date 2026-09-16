@@ -24,13 +24,13 @@ const ELEMENT_LABELS: Record<TechRiderStageElement["type"], string> = {
 };
 
 const ELEMENT_COLORS: Record<TechRiderStageElement["type"], string> = {
-  monitor: "bg-blue-500",
-  amp: "bg-zinc-500",
-  drums: "bg-red-500",
-  keyboard: "bg-purple-500",
-  di_box: "bg-green-500",
-  mic_stand: "bg-orange-500",
-  custom: "bg-zinc-400",
+  monitor: "bg-chart-2",
+  amp: "bg-muted",
+  drums: "bg-destructive",
+  keyboard: "bg-primary",
+  di_box: "bg-success",
+  mic_stand: "bg-primary",
+  custom: "bg-muted",
 };
 
 const ELEMENT_SHAPES: Record<TechRiderStageElement["type"], string> = {
@@ -164,34 +164,34 @@ export function TechRiderStagePlot({
       {/* Stage area */}
       <div
         ref={stageRef}
-        className="relative w-full select-none overflow-hidden rounded-xl border-2 border-zinc-700 bg-zinc-900"
+        className="relative w-full select-none overflow-hidden rounded-xl border-2 border-border bg-muted"
         style={{ aspectRatio: "16 / 9" }}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onClick={handleStageClick}
       >
         {/* Stage boundary markers */}
-        <div className="absolute inset-x-4 top-3 border-t border-dashed border-zinc-700" />
-        <div className="absolute inset-x-4 bottom-3 border-t border-dashed border-zinc-700" />
+        <div className="absolute inset-x-4 top-3 border-t border-dashed border-border" />
+        <div className="absolute inset-x-4 bottom-3 border-t border-dashed border-border" />
 
         {/* Labels */}
-        <div className="pointer-events-none absolute left-1/2 top-1 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-600">
+        <div className="pointer-events-none absolute left-1/2 top-1 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
           Fond de scene
         </div>
-        <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-600">
+        <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
           Public
         </div>
-        <div className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-[11px] font-medium text-zinc-700 [writing-mode:vertical-lr]">
+        <div className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-[11px] font-medium text-muted-foreground [writing-mode:vertical-lr]">
           Cour (SR)
         </div>
-        <div className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 rotate-180 text-[11px] font-medium text-zinc-700 [writing-mode:vertical-lr]">
+        <div className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 rotate-180 text-[11px] font-medium text-muted-foreground [writing-mode:vertical-lr]">
           Jardin (SL)
         </div>
 
         {/* Empty state */}
         {musicians.length === 0 && stageElements.length === 0 && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <p className="text-sm text-zinc-600">
+            <p className="text-sm text-muted-foreground">
               Ajoute des musiciens et des elements pour construire ton plan
             </p>
           </div>
@@ -223,7 +223,7 @@ export function TechRiderStagePlot({
             <span className="mt-1 max-w-20 truncate rounded bg-black/60 px-1.5 py-0.5 text-center text-[11px] font-medium leading-tight text-white">
               {m.name || "Sans nom"}
             </span>
-            <span className="max-w-20 truncate text-[11px] text-zinc-400">
+            <span className="max-w-20 truncate text-[11px] text-muted-foreground">
               {m.instrument}
             </span>
           </div>

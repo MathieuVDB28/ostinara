@@ -207,7 +207,7 @@ export function ImportPlaylistModal({ isOpen, onClose, onSuccess }: ImportPlayli
           )}
 
           {result && (
-            <div className="mx-6 mt-4 rounded-lg bg-green-500/10 px-4 py-3 text-sm text-green-500">
+            <div className="mx-6 mt-4 rounded-lg bg-success/10 px-4 py-3 text-sm text-success">
               {result.imported} morceau{result.imported > 1 ? "x" : ""} importé{result.imported > 1 ? "s" : ""}
               {result.skipped > 0 && ` (${result.skipped} déjà dans ta bibliothèque)`}
             </div>

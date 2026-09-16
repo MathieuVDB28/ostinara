@@ -16,9 +16,9 @@ interface AudioFeaturesBadgeProps {
 }
 
 function getEnergyColor(energy: number): string {
-  if (energy < 0.33) return "bg-blue-500";
-  if (energy < 0.66) return "bg-yellow-500";
-  return "bg-red-500";
+  if (energy < 0.33) return "bg-chart-2";
+  if (energy < 0.66) return "bg-primary";
+  return "bg-destructive";
 }
 
 function getEnergyLabel(energy: number): string {

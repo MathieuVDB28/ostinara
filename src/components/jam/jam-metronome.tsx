@@ -118,7 +118,7 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
                 const [beats, noteValue] = e.target.value.split("/").map(Number);
                 setTimeSignature({ beats, noteValue });
               }}
-              className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+              className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:border-primary"
             >
               {TIME_SIGNATURES.map((ts) => (
                 <option key={formatTimeSignature(ts)} value={formatTimeSignature(ts)}>
@@ -178,13 +178,13 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
           <div
             className={`inline-flex items-center gap-2 rounded-full px-4 py-2 ${
               isPlaying
-                ? "bg-green-500/20 text-green-400"
+                ? "bg-success/20 text-success"
                 : "bg-muted text-muted-foreground"
             }`}
           >
             {isPlaying ? (
               <>
-                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
                 En cours
               </>
             ) : (

@@ -158,7 +158,7 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
         >
           Recos
           {!isPaid && (
-            <span className="ml-1.5 rounded bg-amber-500/20 px-1.5 py-0.5 text-xs text-amber-500">PRO</span>
+            <span className="ml-1.5 rounded bg-primary/20 px-1.5 py-0.5 text-xs text-primary">PRO</span>
           )}
         </button>
       </div>
@@ -176,15 +176,15 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
                     onClick={() => setStarFilter(val)}
                     className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
                       isActive
-                        ? "border-amber-400 bg-amber-400/10 text-amber-500"
-                        : "border-border bg-card text-muted-foreground hover:border-amber-400/50 hover:text-foreground"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground"
                     }`}
                   >
                     {val === 0 ? (
                       "Toutes"
                     ) : (
                       <>
-                        <span className="material-symbols-outlined text-[14px] text-amber-400">star</span>
+                        <span className="material-symbols-outlined text-[14px] text-primary">star</span>
                         {val}
                       </>
                     )}
@@ -277,7 +277,7 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <span className="material-symbols-outlined text-3xl">bookmark</span>
               </div>
               <h3 className="mb-2 text-lg font-semibold">Aucun album en attente</h3>

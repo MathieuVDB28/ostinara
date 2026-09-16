@@ -161,9 +161,9 @@ export function RehearsalCalendar({
                     onClick={() => onRehearsalClick(r)}
                     className={`w-full truncate rounded px-1 py-0.5 text-left text-[11px] font-medium transition-colors hover:opacity-80 ${
                       r.status === "cancelled"
-                        ? "bg-red-500/20 text-red-400 line-through"
+                        ? "bg-destructive/20 text-destructive line-through"
                         : r.status === "completed"
-                        ? "bg-green-500/20 text-green-400"
+                        ? "bg-success/20 text-success"
                         : "bg-primary/20 text-primary"
                     }`}
                   >

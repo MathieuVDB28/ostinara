@@ -10,6 +10,10 @@ interface AddCoverModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  /** La cover a laquelle celle-ci repond, quand c'en est une. */
+  replyToCoverId?: string;
+  /** « Auteur · Morceau », affiche en tete pour dire a quoi l'on repond. */
+  replyToLabel?: string;
 }
 
 const visibilityOptions: { value: CoverVisibility; label: string }[] = [
@@ -18,7 +22,14 @@ const visibilityOptions: { value: CoverVisibility; label: string }[] = [
   { value: "public", label: "Public" },
 ];
 
-export function AddCoverModal({ song, isOpen, onClose, onSuccess }: AddCoverModalProps) {
+export function AddCoverModal({
+  song,
+  isOpen,
+  onClose,
+  onSuccess,
+  replyToCoverId,
+  replyToLabel,
+}: AddCoverModalProps) {
   const [step, setStep] = useState<"upload" | "details">("upload");
   const [uploadedFile, setUploadedFile] = useState<{
     url: string;
@@ -26,6 +37,11 @@ export function AddCoverModal({ song, isOpen, onClose, onSuccess }: AddCoverModa
     fileSize: number;
   } | null>(null);
   const [visibility, setVisibility] = useState<CoverVisibility>("friends");
+  // Repondre en prive n'a pas de sens : la personne a qui l'on repond ne
+  // verrait rien. Le selecteur reste, mais « Privé » est ecarte.
+  const replyVisibilityOptions = visibilityOptions.filter(
+    (option) => !replyToCoverId || option.value !== "private"
+  );
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +72,7 @@ export function AddCoverModal({ song, isOpen, onClose, onSuccess }: AddCoverModa
       file_size_bytes: uploadedFile.fileSize,
       visibility,
       description: description || undefined,
+      reply_to_cover_id: replyToCoverId,
     });
 
     if (result.success) {
@@ -107,11 +124,26 @@ export function AddCoverModal({ song, isOpen, onClose, onSuccess }: AddCoverModa
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold">
-              {step === "upload" ? "Ajouter un cover" : "Détails du cover"}
+              {replyToCoverId
+                ? "Répondre en cover"
+                : step === "upload"
+                  ? "Ajouter un cover"
+                  : "Détails du cover"}
             </h2>
             <p className="text-sm text-muted-foreground">
               {song.title} - {song.artist}
             </p>
+            {replyToLabel && (
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span
+                  aria-hidden="true"
+                  className="material-symbols-outlined text-[14px]"
+                >
+                  reply
+                </span>
+                En réponse à {replyToLabel}
+              </p>
+            )}
           </div>
           <button aria-label="Fermer"
             onClick={handleClose}
@@ -170,7 +202,7 @@ export function AddCoverModal({ song, isOpen, onClose, onSuccess }: AddCoverModa
             <div>
               <label className="mb-2 block text-sm font-medium">Visibilité</label>
               <div className="flex gap-2">
-                {visibilityOptions.map((option) => (
+                {replyVisibilityOptions.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setVisibility(option.value)}
@@ -194,7 +226,7 @@ export function AddCoverModal({ song, isOpen, onClose, onSuccess }: AddCoverModa
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Ajoute une description..."
                 rows={3}
-                className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
 
@@ -210,7 +242,11 @@ export function AddCoverModal({ song, isOpen, onClose, onSuccess }: AddCoverModa
                 disabled={saving}
                 className="flex-1 rounded-lg bg-primary py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
               >
-                {saving ? "Publication..." : "Publier"}
+                {saving
+                  ? "Publication..."
+                  : replyToCoverId
+                    ? "Publier la réponse"
+                    : "Publier"}
               </button>
             </div>
           </div>

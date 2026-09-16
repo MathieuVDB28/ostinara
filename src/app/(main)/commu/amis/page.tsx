@@ -1,7 +1,13 @@
 import { getFriends, getPendingRequests, getFriendsLimitInfo } from "@/lib/actions/friends";
 import { FriendsView } from "@/components/friends/friends-view";
 
-export default async function CommuAmisPage() {
+export default async function CommuAmisPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ friend?: string }>;
+}) {
+  const { friend: initialFriendId } = await searchParams;
+
   const [friends, requests, limitInfo] = await Promise.all([
     getFriends(),
     getPendingRequests(),
@@ -13,6 +19,7 @@ export default async function CommuAmisPage() {
       initialFriends={friends}
       initialRequests={requests}
       limitInfo={limitInfo}
+      initialFriendId={initialFriendId}
     />
   );
 }

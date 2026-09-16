@@ -8,6 +8,7 @@ import { SetlistCard } from "./setlist-card";
 import { CreateSetlistModal } from "./create-setlist-modal";
 import { CreateBandModal } from "./create-band-modal";
 import { BandInvitationCard } from "./band-invitation-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import type {
   SetlistWithDetails,
   BandWithMembers,
@@ -156,22 +157,36 @@ export function GroupsView({
             })}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-            <p className="font-medium text-muted-foreground">Aucun groupe</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {hasBandPlan
-                ? "Crée un groupe pour partager setlists, répètes et fiches technique."
-                : "Les espaces groupe sont inclus dans le plan Band."}
-            </p>
-            {!hasBandPlan && (
-              <Link
-                href="/pricing"
-                className="mt-4 inline-flex min-h-[44px] items-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                Voir le plan Band
-              </Link>
-            )}
-          </div>
+          <EmptyState
+            compact
+            icon="groups"
+            title="Aucun groupe"
+            description={
+              hasBandPlan
+                ? "Un groupe met en commun les setlists, le calendrier des répètes et la fiche technique. Chaque membre voit les mêmes, et les modifie."
+                : "Un groupe met en commun setlists, répètes et fiche technique. Les espaces groupe font partie du plan Band."
+            }
+            actions={
+              hasBandPlan
+                ? [
+                    {
+                      label: "Créer un groupe",
+                      icon: "add",
+                      primary: true,
+                      onClick: () => setShowCreateBand(true),
+                    },
+                  ]
+                : [
+                    { label: "Voir le plan Band", primary: true, href: "/pricing" },
+                    { label: "Créer une setlist", icon: "add", onClick: () => setShowCreateSetlist(true) },
+                  ]
+            }
+            hint={
+              hasBandPlan
+                ? "Tu invites les membres par leur pseudo une fois le groupe créé."
+                : "Sans le plan Band, tes setlists perso restent disponibles juste en dessous."
+            }
+          />
         )}
       </section>
 
@@ -206,12 +221,22 @@ export function GroupsView({
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-            <p className="font-medium text-muted-foreground">Aucune setlist perso</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Une setlist te sert à préparer un set, seul ou avant une répète.
-            </p>
-          </div>
+          <EmptyState
+            compact
+            icon="queue_music"
+            title="Aucune setlist perso"
+            description="Une setlist ordonne des morceaux de ta bibliothèque pour un set : tu la joues dans l'ordre, seul ou avant une répète."
+            actions={[
+              {
+                label: "Créer une setlist",
+                icon: "add",
+                primary: true,
+                onClick: () => setShowCreateSetlist(true),
+              },
+              { label: "Voir ma bibliothèque", icon: "music_note", href: "/biblio" },
+            ]}
+            hint="Les morceaux viennent de ta bibliothèque : ajoute-les là-bas d'abord."
+          />
         )}
       </section>
 

@@ -6,85 +6,75 @@ interface StatsSummaryProps {
   stats: PracticeStats;
 }
 
+function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hours} h ${mins}` : `${hours} h`;
+}
+
+/**
+ * Bandeau de stats, pas quatre cartes.
+ *
+ * Les cartes bordees portaient une ombre violette codee en dur
+ * (rgba(139, 92, 246, .08)) et une icone text-primary, restes d'une
+ * palette anterieure : deux teintes qui n'existent nulle part ailleurs
+ * dans le theme ambre, et qui ne changent pas entre clair et sombre.
+ * Elles pesaient aussi ~210 px avant la premiere session. Ici : un
+ * bandeau de chiffres, ~120 px, et rien qui rivalise visuellement avec
+ * les cartes de session en dessous.
+ */
 export function StatsSummary({ stats }: StatsSummaryProps) {
-  const formatDuration = (minutes: number): string => {
-    if (minutes < 60) {
-      return `${minutes}min`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  };
+  const items = [
+    {
+      label: "Sessions",
+      value: String(stats.totalSessions),
+      hint: null,
+    },
+    {
+      label: "Temps total",
+      value: formatDuration(stats.totalMinutes),
+      hint: null,
+    },
+    {
+      label: "Série",
+      value: `${stats.currentStreak} j`,
+      hint:
+        stats.longestStreak > stats.currentStreak
+          ? `record ${stats.longestStreak} j`
+          : null,
+    },
+    {
+      label: "Cette semaine",
+      value: formatDuration(stats.minutesThisWeek),
+      hint: `${stats.sessionsThisWeek} session${
+        stats.sessionsThisWeek > 1 ? "s" : ""
+      }`,
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {/* Sessions totales */}
-      <div className="relative overflow-hidden rounded-xl border border-border bg-card p-4" style={{ boxShadow: "0 0 20px rgba(139, 92, 246, 0.08)" }}>
-        <div className="relative">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <span className="material-symbols-outlined text-[18px] text-primary">bar_chart</span>
-            <span className="text-xs font-medium">Sessions</span>
-          </div>
-          <p className="text-2xl font-bold">{stats.totalSessions}</p>
-        </div>
-      </div>
-
-      {/* Temps total */}
-      <div className="relative overflow-hidden rounded-xl border border-border bg-card p-4" style={{ boxShadow: "0 0 20px rgba(139, 92, 246, 0.08)" }}>
-        <div className="relative">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <span className="material-symbols-outlined text-[18px] text-muted-foreground">schedule</span>
-            <span className="text-xs font-medium">Temps total</span>
-          </div>
-          <p className="text-2xl font-bold">{formatDuration(stats.totalMinutes)}</p>
-        </div>
-      </div>
-
-      {/* Streak */}
-      <div className="relative overflow-hidden rounded-xl border border-border bg-card p-4" style={{ boxShadow: "0 0 20px rgba(139, 92, 246, 0.08)" }}>
-        <div className="relative">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <span className="material-symbols-outlined text-[18px] text-muted-foreground">local_fire_department</span>
-            <span className="text-xs font-medium">Streak</span>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold">{stats.currentStreak}</span>
-            <span className="text-sm text-muted-foreground">jours</span>
-          </div>
-          {stats.longestStreak > stats.currentStreak && (
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Record: {stats.longestStreak} jours
+    <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl border border-border bg-card px-4 py-3.5 sm:grid-cols-4 sm:divide-x sm:divide-border sm:gap-x-0">
+      {items.map((item, index) => (
+        <div key={item.label} className={index > 0 ? "sm:pl-4" : ""}>
+          <dt className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            {item.label}
+          </dt>
+          <dd className="tabular mt-0.5 text-xl font-extrabold leading-tight">
+            {item.value}
+          </dd>
+          {item.hint && (
+            <p className="tabular text-[11px] text-muted-foreground">
+              {item.hint}
             </p>
           )}
         </div>
-      </div>
-
-      {/* Cette semaine */}
-      <div className="relative overflow-hidden rounded-xl border border-border bg-card p-4" style={{ boxShadow: "0 0 20px rgba(139, 92, 246, 0.08)" }}>
-        <div className="relative">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <span className="material-symbols-outlined text-[18px] text-purple-400">calendar_today</span>
-            <span className="text-xs font-medium">Cette semaine</span>
-          </div>
-          <span className="text-2xl font-bold">{formatDuration(stats.minutesThisWeek)}</span>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {stats.sessionsThisWeek} session{stats.sessionsThisWeek > 1 ? "s" : ""}
-          </p>
-        </div>
-      </div>
-    </div>
+      ))}
+    </dl>
   );
 }
 
 export function StatsSummaryCompact({ stats }: StatsSummaryProps) {
-  const formatDuration = (minutes: number): string => {
-    if (minutes < 60) {
-      return `${minutes}min`;
-    }
-    const hours = Math.floor(minutes / 60);
-    return `${hours}h`;
-  };
-
   return (
     <div className="flex items-center gap-4 text-sm text-muted-foreground">
       <span className="flex items-center gap-1">

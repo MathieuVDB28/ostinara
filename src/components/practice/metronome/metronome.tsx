@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useMetronome } from "@/lib/hooks/use-metronome";
 import { MetronomeControls } from "./metronome-controls";
 import { MetronomeVisualizer } from "./metronome-visualizer";
@@ -7,6 +8,15 @@ import { TapTempo } from "./tap-tempo";
 
 interface MetronomeProps {
   initialBpm?: number;
+  /**
+   * Tempo impose de l'exterieur — « Reprendre a 96 BPM » regle le
+   * metronome sans que personne ne touche au curseur.
+   *
+   * L'objet change d'identite a chaque demande, meme pour la meme valeur :
+   * reprendre deux fois a 96 BPM doit recaler le metronome les deux fois,
+   * y compris apres que l'utilisateur l'a bouge entre-temps.
+   */
+  bpmRequest?: { bpm: number; id: number } | null;
   onBpmChange?: (bpm: number) => void;
   onPlayingChange?: (isPlaying: boolean) => void;
   className?: string;
@@ -14,6 +24,7 @@ interface MetronomeProps {
 
 export function Metronome({
   initialBpm = 120,
+  bpmRequest = null,
   onBpmChange,
   onPlayingChange,
   className = "",
@@ -24,6 +35,13 @@ export function Metronome({
       // Callback optionnel pour synchroniser avec d'autres éléments
     },
   });
+
+  const { setBpm } = metronome;
+
+  useEffect(() => {
+    if (!bpmRequest) return;
+    setBpm(bpmRequest.bpm);
+  }, [bpmRequest, setBpm]);
 
   // Notifier les changements
   const handleBpmChange = (bpm: number) => {
@@ -49,8 +67,8 @@ export function Metronome({
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Métronome</h2>
         {metronome.isPlaying && (
-          <span className="flex items-center gap-1.5 rounded-full bg-green-500/20 px-2.5 py-0.5 text-xs font-medium text-green-400">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+          <span className="flex items-center gap-1.5 rounded-full bg-success/20 px-2.5 py-0.5 text-xs font-medium text-success">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
             En cours
           </span>
         )}
@@ -95,7 +113,7 @@ export function Metronome({
         onClick={handleToggle}
         className={`flex h-14 items-center justify-center gap-2 rounded-xl text-lg font-semibold transition-all ${
           metronome.isPlaying
-            ? "bg-red-500 text-white hover:bg-red-600"
+            ? "bg-destructive text-destructive-foreground hover:opacity-90"
             : "bg-primary text-primary-foreground hover:opacity-90"
         }`}
       >

@@ -77,7 +77,7 @@ export function ChallengeCard({ challenge, isPending }: ChallengeCardProps) {
       className={`rounded-xl border bg-card p-4 transition-all ${
         isCompleted
           ? iAmWinner
-            ? "border-green-500/50"
+            ? "border-success/50"
             : "border-border"
           : "border-border hover:border-primary/50"
       }`}
@@ -101,16 +101,16 @@ export function ChallengeCard({ challenge, isPending }: ChallengeCardProps) {
         </div>
         <div className="text-right">
           {isPending ? (
-            <span className="rounded-full bg-yellow-500/10 px-2 py-1 text-xs text-yellow-500">
+            <span className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
               En attente
             </span>
           ) : isCompleted ? (
             <span
               className={`rounded-full px-2 py-1 text-xs ${
                 iAmWinner
-                  ? "bg-green-500/10 text-green-500"
+                  ? "bg-success/10 text-success"
                   : isWinner
-                  ? "bg-red-500/10 text-red-500"
+                  ? "bg-destructive/10 text-destructive"
                   : "bg-muted text-muted-foreground"
               }`}
             >
@@ -204,7 +204,7 @@ function ParticipantInfo({
           </div>
         )}
         {isCompleted && isWinner && (
-          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-500 text-xs">
+          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs">
             👑
           </span>
         )}

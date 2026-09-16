@@ -89,14 +89,14 @@ export function AlbumRecommendations({
   if (!isPaid) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
           <span className="material-symbols-outlined text-3xl">stars</span>
         </div>
         <h3 className="mb-2 text-lg font-semibold">Fonctionnalité Pro</h3>
         <p className="mb-6 max-w-sm text-center text-muted-foreground">
           Passe en Pro pour obtenir des recommandations d&apos;albums personnalisées basées sur tes écoutes
         </p>
-        <a href="/settings" className="rounded-lg bg-amber-500 px-6 py-2.5 font-medium text-white">
+        <a href="/settings" className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground">
           Passer Pro
         </a>
       </div>
@@ -176,7 +176,7 @@ export function AlbumRecommendations({
                 onClick={() => status !== "done" && setSelectedAlbum(album)}
                 className={`group relative overflow-hidden rounded-xl border bg-card transition-colors ${
                   status === "done"
-                    ? "border-green-500/40 cursor-default"
+                    ? "border-success/40 cursor-default"
                     : "border-border hover:border-primary/40 cursor-pointer"
                 }`}
               >
@@ -196,7 +196,7 @@ export function AlbumRecommendations({
                   {/* Done badge */}
                   {status === "done" && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500 text-white">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-success-foreground">
                         <span className="material-symbols-outlined text-[24px]">check</span>
                       </div>
                     </div>
@@ -221,7 +221,7 @@ export function AlbumRecommendations({
                     </p>
                   )}
                   {status === "done" && (
-                    <p className="mt-1 text-xs font-medium text-green-500">Ajouté à écouter</p>
+                    <p className="mt-1 text-xs font-medium text-success">Ajouté à écouter</p>
                   )}
                 </div>
               </div>
@@ -285,9 +285,9 @@ export function AlbumRecommendations({
                 disabled={wishlistStatus[selectedAlbum.id] === "loading"}
                 className="flex w-full items-center gap-3 rounded-xl border border-border bg-accent/50 px-4 py-3.5 text-left font-medium transition-colors hover:bg-accent disabled:opacity-60"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-500">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
                   {wishlistStatus[selectedAlbum.id] === "loading" ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   ) : (
                     <span className="material-symbols-outlined text-[20px]">bookmark_add</span>
                   )}

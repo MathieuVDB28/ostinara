@@ -101,7 +101,7 @@ export function PricingCard({
         {config.features.map((feature, index) => (
           <li key={index} className="flex items-start gap-2 text-sm">
             <svg
-              className="mt-0.5 h-4 w-4 shrink-0 text-green-500"
+              className="mt-0.5 h-4 w-4 shrink-0 text-success"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

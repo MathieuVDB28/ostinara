@@ -4,7 +4,13 @@ import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import { updateChallengeProgress } from "./challenges";
-import type { CreateSongInput, UpdateSongInput, Song, SongStatus } from "@/types";
+import type {
+  CreateSongInput,
+  UpdateSongInput,
+  Song,
+  SongStatus,
+  SongsterrTabStructure,
+} from "@/types";
 
 export async function getSongs(): Promise<Song[]> {
   const supabase = await createClient();
@@ -208,4 +214,115 @@ export async function updateSongProgress(
                  progress_percent > 0 ? "learning" : "want_to_learn";
 
   return updateSong(id, { progress_percent, status });
+}
+
+/**
+ * Range l'analyse d'une tablature sur le morceau.
+ *
+ * Le pont Songsterr existait a moitie : la recherche trouvait la tab, le
+ * parseur en tirait le tempo et les sections — puis tout etait jete. On
+ * rouvrait le morceau et il fallait tout retelecharger, ou bien saisir le
+ * tempo a la main alors que la partition le donne.
+ *
+ * `target_bpm` n'est ecrit que s'il est vide : le tempo de la partition
+ * est une proposition, pas une decision. Qui a regle sa cible a 104 pour
+ * travailler ne doit pas la voir sauter a 168 parce qu'il a lie une tab.
+ */
+export async function saveSongTabStructure(
+  songId: string,
+  input: {
+    songsterrId?: number | null;
+    tabsUrl?: string | null;
+    structure: SongsterrTabStructure;
+  }
+): Promise<{ success: boolean; error?: string; targetBpmApplied?: number }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: "Non authentifié" };
+  }
+
+  const { data: song } = await supabase
+    .from("songs")
+    .select("target_bpm")
+    .eq("id", songId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!song) {
+    return { success: false, error: "Morceau introuvable" };
+  }
+
+  const { structure } = input;
+  const applyTarget = !song.target_bpm && structure.bpm > 0;
+
+  const { error } = await supabase
+    .from("songs")
+    .update({
+      songsterr_id: input.songsterrId ?? null,
+      tabs_url: input.tabsUrl ?? undefined,
+      tab_bpm: structure.bpm || null,
+      tab_time_signature_beats: structure.timeSignatureBeats || null,
+      tab_time_signature_value: structure.timeSignatureValue || null,
+      tab_total_measures: structure.totalMeasures || null,
+      tab_sections: structure.sections ?? [],
+      tab_synced_at: new Date().toISOString(),
+      ...(applyTarget ? { target_bpm: structure.bpm } : {}),
+    })
+    .eq("id", songId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("Error saving tab structure:", error);
+    return { success: false, error: "Erreur lors de l'enregistrement de la tablature" };
+  }
+
+  revalidatePath("/biblio");
+  revalidatePath("/jouer");
+  return {
+    success: true,
+    targetBpmApplied: applyTarget ? structure.bpm : undefined,
+  };
+}
+
+/**
+ * Le tempo cible d'un morceau, regle depuis n'importe quel ecran.
+ *
+ * C'est la valeur qui a remplace le curseur « 0-100 % » : la seule chose
+ * qu'un guitariste decide vraiment a propos d'un morceau qu'il travaille.
+ */
+export async function setSongTargetBpm(
+  songId: string,
+  targetBpm: number | null
+): Promise<{ success: boolean; error?: string }> {
+  if (targetBpm !== null && (targetBpm < 20 || targetBpm > 300)) {
+    return { success: false, error: "Le tempo doit être compris entre 20 et 300 BPM" };
+  }
+
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: "Non authentifié" };
+  }
+
+  const { error } = await supabase
+    .from("songs")
+    .update({ target_bpm: targetBpm })
+    .eq("id", songId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("Error updating target BPM:", error);
+    return { success: false, error: "Erreur lors de la mise à jour du tempo" };
+  }
+
+  // Changer la cible change la lecture de la progression : on la reecrit.
+  const { syncSongProgressFromTempo } = await import("./practice");
+  await syncSongProgressFromTempo(songId);
+
+  revalidatePath("/biblio");
+  revalidatePath("/jouer");
+  return { success: true };
 }

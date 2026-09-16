@@ -23,6 +23,15 @@ export interface Song {
   spotify_key?: number;
   spotify_energy?: number;
   spotify_audio_fetched_at?: string;
+  /* Pont Songsterr : l'analyse de la tab reste sur le morceau, pour que
+     l'ouvrir donne la tab, le tempo et les sections sans rien retelecharger. */
+  songsterr_id?: number;
+  tab_bpm?: number;
+  tab_time_signature_beats?: number;
+  tab_time_signature_value?: number;
+  tab_total_measures?: number;
+  tab_sections?: PlayedSection[];
+  tab_synced_at?: string;
   created_at: string;
   updated_at: string;
   covers_count?: number;
@@ -56,6 +65,13 @@ export interface UpdateSongInput {
   tabs_url?: string;
   notes?: string;
   target_bpm?: number;
+  songsterr_id?: number | null;
+  tab_bpm?: number | null;
+  tab_time_signature_beats?: number | null;
+  tab_time_signature_value?: number | null;
+  tab_total_measures?: number | null;
+  tab_sections?: PlayedSection[];
+  tab_synced_at?: string | null;
 }
 
 // Types pour la wishlist
@@ -292,6 +308,8 @@ export interface Cover {
   file_size_bytes?: number;
   visibility: CoverVisibility;
   description?: string;
+  /** La cover a laquelle celle-ci repond, quand c'en est une. */
+  reply_to_cover_id?: string | null;
   created_at: string;
 }
 
@@ -308,6 +326,7 @@ export interface CreateCoverInput {
   file_size_bytes?: number;
   visibility?: CoverVisibility;
   description?: string;
+  reply_to_cover_id?: string | null;
 }
 
 export interface UpdateCoverInput {
@@ -766,12 +785,12 @@ export interface UpdateSetlistItemInput {
 
 // Predefined section types for setlists
 export const SECTION_PRESETS = [
-  { name: 'Intro', icon: 'play', color: 'bg-blue-500/20 text-blue-400' },
-  { name: 'Pause', icon: 'pause', color: 'bg-yellow-500/20 text-yellow-400' },
-  { name: 'Rappel', icon: 'repeat', color: 'bg-purple-500/20 text-purple-400' },
-  { name: 'Outro', icon: 'stop', color: 'bg-red-500/20 text-red-400' },
-  { name: 'Medley', icon: 'layers', color: 'bg-green-500/20 text-green-400' },
-  { name: 'Acoustique', icon: 'guitar', color: 'bg-amber-500/20 text-amber-400' },
+  { name: 'Intro', icon: 'play', color: 'bg-chart-2/20 text-chart-2' },
+  { name: 'Pause', icon: 'pause', color: 'bg-muted text-muted-foreground' },
+  { name: 'Rappel', icon: 'repeat', color: 'bg-chart-4/20 text-chart-4' },
+  { name: 'Outro', icon: 'stop', color: 'bg-chart-1/20 text-chart-1' },
+  { name: 'Medley', icon: 'layers', color: 'bg-chart-3/20 text-chart-3' },
+  { name: 'Acoustique', icon: 'guitar', color: 'bg-primary/15 text-primary' },
 ] as const;
 
 export type SectionPresetName = typeof SECTION_PRESETS[number]['name'];
@@ -1386,10 +1405,10 @@ export const RSVP_LABELS: Record<RehearsalRsvpStatus, string> = {
 };
 
 export const RSVP_COLORS: Record<RehearsalRsvpStatus, string> = {
-  invited: 'bg-zinc-500/20 text-zinc-400',
-  accepted: 'bg-green-500/20 text-green-400',
-  declined: 'bg-red-500/20 text-red-400',
-  maybe: 'bg-yellow-500/20 text-yellow-400',
+  invited: 'bg-muted text-muted-foreground',
+  accepted: 'bg-success/15 text-success',
+  declined: 'bg-destructive/15 text-destructive',
+  maybe: 'bg-primary/15 text-primary',
 };
 
 // =============================================
@@ -1644,11 +1663,11 @@ export const GEAR_CONDITION_LABELS: Record<GearCondition, string> = {
 };
 
 export const GEAR_CONDITION_COLORS: Record<GearCondition, string> = {
-  mint: 'bg-green-500/20 text-green-400',
-  excellent: 'bg-blue-500/20 text-blue-400',
-  good: 'bg-amber-500/20 text-amber-400',
-  fair: 'bg-orange-500/20 text-orange-400',
-  poor: 'bg-red-500/20 text-red-400',
+  mint: 'bg-success/15 text-success',
+  excellent: 'bg-chart-2/20 text-chart-2',
+  good: 'bg-primary/15 text-primary',
+  fair: 'bg-chart-1/20 text-chart-1',
+  poor: 'bg-destructive/15 text-destructive',
 };
 
 export const GEAR_PRIORITY_LABELS: Record<GearPriority, string> = {
@@ -1658,9 +1677,9 @@ export const GEAR_PRIORITY_LABELS: Record<GearPriority, string> = {
 };
 
 export const GEAR_PRIORITY_COLORS: Record<GearPriority, string> = {
-  low: 'bg-zinc-500/20 text-zinc-400',
-  medium: 'bg-amber-500/20 text-amber-400',
-  high: 'bg-red-500/20 text-red-400',
+  low: 'bg-muted text-muted-foreground',
+  medium: 'bg-primary/15 text-primary',
+  high: 'bg-destructive/15 text-destructive',
 };
 
 // Marques courantes pour l'autocomplétion
@@ -1673,3 +1692,176 @@ export const GEAR_BRANDS: Record<GearType, string[]> = {
   recording: ['Focusrite', 'Universal Audio', 'PreSonus', 'Audient', 'MOTU', 'RME', 'Shure', 'Rode', 'Audio-Technica', 'Sennheiser', 'AKG', 'Neumann', 'Beyerdynamic', 'KRK', 'Yamaha', 'Adam Audio', 'JBL'],
   other: [],
 };
+
+// ---------------------------------------------------------------------------
+// Recherche globale
+//
+// L'app comptait quatorze champs de recherche locaux et aucun point
+// d'entree unique : chercher « Blackbird » supposait de savoir d'avance
+// si c'etait un morceau, une cover ou un album. Une seule recherche, un
+// seul format de resultat, quel que soit l'ecran d'ou on part.
+// ---------------------------------------------------------------------------
+
+export type SearchResultKind =
+  | "song"
+  | "album"
+  | "cover"
+  | "gear"
+  | "friend"
+  | "exercise";
+
+export interface SearchResult {
+  kind: SearchResultKind;
+  id: string;
+  title: string;
+  subtitle?: string;
+  /** Pochette, photo de matos ou avatar. */
+  imageUrl?: string;
+  /** Repli quand il n'y a pas d'image — nom Material Symbols. */
+  icon: string;
+  /** Lien profond : il ouvre la fiche, pas seulement l'ecran. */
+  href: string;
+}
+
+export interface SearchResultGroup {
+  kind: SearchResultKind;
+  label: string;
+  results: SearchResult[];
+}
+
+// ---------------------------------------------------------------------------
+// Plan de travail hebdomadaire
+//
+// L'app sait tres bien dire ce qui a ete joue. Elle ne disait rien de la
+// semaine qui vient. Trois objectifs, derives du statut des morceaux, de la
+// serie en cours et des sections faibles — et cochables.
+// ---------------------------------------------------------------------------
+
+export type WeeklyGoalKind =
+  | "tempo"
+  | "mastery"
+  | "minutes"
+  | "days"
+  | "section"
+  | "cover"
+  | "song_start";
+
+export interface WeeklyGoal {
+  id: string;
+  user_id: string;
+  /** Le lundi de la semaine, en YYYY-MM-DD. */
+  week_start: string;
+  kind: WeeklyGoalKind;
+  title: string;
+  detail: string | null;
+  song_id: string | null;
+  target_value: number | null;
+  baseline_value: number;
+  unit: string | null;
+  position: number;
+  completed_at: string | null;
+  created_at: string;
+}
+
+/**
+ * Un objectif et sa mesure.
+ *
+ * `current` est recalcule a chaque lecture depuis le journal : cocher est
+ * un geste, pas la seule source de verite. Un objectif atteint par la
+ * mesure s'affiche atteint meme si personne n'a coche.
+ */
+export interface WeeklyGoalWithProgress extends WeeklyGoal {
+  song: Song | null;
+  current: number;
+  /** 0 a 100, borne. */
+  percent: number;
+  /** Mesure atteinte, coche manuelle, ou les deux. */
+  done: boolean;
+  checked: boolean;
+}
+
+export interface WeeklyPlan {
+  weekStart: string;
+  /** Le dimanche soir, pour l'echeance affichee. */
+  weekEnd: string;
+  goals: WeeklyGoalWithProgress[];
+  /** Objectifs atteints sur le total. */
+  completedCount: number;
+}
+
+// ---------------------------------------------------------------------------
+// Progression au tempo
+// ---------------------------------------------------------------------------
+
+/**
+ * Ou en est un morceau, mesure en BPM et non en pourcentage saisi a la main.
+ *
+ * `floor` est le depart du travail lent, `achieved` le meilleur tempo tenu
+ * en session, `target` la cible. Le pourcentage n'est qu'une lecture de ces
+ * trois valeurs — il n'est jamais saisi.
+ */
+export interface SongTempoProgress {
+  target: number;
+  achieved: number;
+  floor: number;
+  percent: number;
+  atTempo: boolean;
+  /** D'ou vient la cible : reglee a la main, lue dans la tab, ou Spotify. */
+  source: "manual" | "tab" | "spotify";
+}
+
+/** Un point de la courbe BPM/temps d'un morceau. */
+export interface SongBpmPoint {
+  date: string;
+  bpm: number;
+}
+
+// ---------------------------------------------------------------------------
+// Feed de covers
+// ---------------------------------------------------------------------------
+
+export interface CoverFeedItem extends CoverWithSong {
+  author: Pick<Profile, "id" | "username" | "display_name" | "avatar_url" | "plan">;
+  /** L'activite portant reactions et commentaires, quand elle existe. */
+  activityId: string | null;
+  reactions: ReactionSummary[];
+  currentUserReactions: string[];
+  commentCount: number;
+  /** La cover a laquelle celle-ci repond. */
+  replyTo: {
+    id: string;
+    authorName: string;
+    songTitle: string;
+    thumbnailUrl?: string;
+  } | null;
+  replyCount: number;
+  isOwn: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Hors ligne
+// ---------------------------------------------------------------------------
+
+/**
+ * Ce qui doit rester lisible au sous-sol : la bibliotheque et le journal.
+ * Rien d'autre — un instantane doit tenir dans IndexedDB et se rafraichir
+ * en une requete.
+ */
+export interface OfflineSnapshot {
+  generatedAt: string;
+  userId: string;
+  songs: Song[];
+  sessions: PracticeSessionWithSong[];
+  stats: PracticeStats;
+}
+
+/** Une session enregistree sans reseau, en attente d'envoi. */
+export interface QueuedPracticeSession {
+  /** Identifiant local : il ne vient pas de la base. */
+  localId: string;
+  queuedAt: string;
+  input: CreatePracticeSessionInput;
+  /** Nombre d'envois rates — au-dela, on cesse de reessayer en boucle. */
+  attempts: number;
+  lastError?: string;
+}

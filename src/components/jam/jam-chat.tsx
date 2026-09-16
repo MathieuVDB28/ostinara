@@ -112,7 +112,7 @@ export function JamChat({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Envoyer un message..."
-            className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             disabled={sending}
           />
           <button aria-label="Envoyer le message"

@@ -230,7 +230,7 @@ export function AddGearModal({
                 if (brandSuggestions.length > 0) setShowBrandDropdown(true);
               }}
               placeholder="Ex: Fender, Gibson..."
-              className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
             />
             {showBrandDropdown && brandSuggestions.length > 0 && (
               <div className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-border/50 bg-card shadow-lg">
@@ -259,7 +259,7 @@ export function AddGearModal({
               value={model}
               onChange={(e) => setModel(e.target.value)}
               placeholder="Ex: Stratocaster, Les Paul..."
-              className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
             />
           </div>
 
@@ -276,7 +276,7 @@ export function AddGearModal({
                 placeholder="2024"
                 min="1900"
                 max={new Date().getFullYear() + 1}
-                className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
               />
             </div>
             <div>
@@ -288,7 +288,7 @@ export function AddGearModal({
                 value={colorFinish}
                 onChange={(e) => setColorFinish(e.target.value)}
                 placeholder="Sunburst"
-                className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
               />
             </div>
           </div>
@@ -299,7 +299,7 @@ export function AddGearModal({
             <select
               value={condition}
               onChange={(e) => setCondition(e.target.value as GearCondition)}
-              className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
             >
               {CONDITION_OPTIONS.map((c) => (
                 <option key={c} value={c}>
@@ -320,7 +320,7 @@ export function AddGearModal({
               value={serialNumber}
               onChange={(e) => setSerialNumber(e.target.value)}
               placeholder="N° de série"
-              className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
             />
           </div>
 
@@ -339,7 +339,7 @@ export function AddGearModal({
                   placeholder="0"
                   min="0"
                   step="0.01"
-                  className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 pr-8 text-sm transition-colors focus:border-primary focus:outline-none"
+                  className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 pr-8 text-sm transition-colors focus:border-primary"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                   €
@@ -355,7 +355,7 @@ export function AddGearModal({
                 type="date"
                 value={purchaseDate}
                 onChange={(e) => setPurchaseDate(e.target.value)}
-                className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
               />
             </div>
           </div>
@@ -370,7 +370,7 @@ export function AddGearModal({
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
             />
           </div>
 
@@ -384,7 +384,7 @@ export function AddGearModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Cordes, modifications, réglages..."
               rows={2}
-              className="w-full resize-none rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none"
+              className="w-full resize-none rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
             />
           </div>
 
@@ -439,7 +439,7 @@ export function AddGearModal({
 
           {/* Error */}
           {error && (
-            <div className="rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+            <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive dark:text-destructive">
               {error}
             </div>
           )}

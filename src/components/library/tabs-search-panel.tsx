@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
+import { extractSongsterrId } from "@/lib/songsterr-url";
 import type { TabSource, UserPlan, SongsterrTabStructure } from "@/types";
 
 interface TabsSearchPanelProps {
@@ -9,7 +10,17 @@ interface TabsSearchPanelProps {
   artist: string;
   currentTabsUrl: string;
   onSelectTab: (url: string) => void;
-  onTabStructure?: (structure: SongsterrTabStructure) => void;
+  /**
+   * L'analyse de la tab, une fois le fichier Guitar Pro lu.
+   *
+   * `songsterrId` accompagne la structure : c'est lui qui permet de
+   * ranger la tab sur le morceau et d'y revenir sans relancer la
+   * recherche.
+   */
+  onTabStructure?: (
+    structure: SongsterrTabStructure,
+    songsterrId?: number
+  ) => void;
   userPlan: UserPlan;
 }
 
@@ -63,7 +74,7 @@ export function TabsSearchPanel({
         if (response.ok) {
           const data = await response.json();
           if (data.structure) {
-            onTabStructure(data.structure);
+            onTabStructure(data.structure, result.songsterrId);
           }
         }
       } catch {
@@ -87,7 +98,7 @@ export function TabsSearchPanel({
       if (response.ok) {
         const data = await response.json();
         if (data.structure) {
-          onTabStructure(data.structure);
+          onTabStructure(data.structure, extractSongsterrId(manualUrl) ?? undefined);
         }
       }
     } catch {
@@ -110,7 +121,7 @@ export function TabsSearchPanel({
             value={manualUrl}
             onChange={(e) => setManualUrl(e.target.value)}
             placeholder="https://www.songsterr.com/a/wsa/..."
-            className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
           />
           {manualUrl !== currentTabsUrl && manualUrl && (
             <button
@@ -196,7 +207,7 @@ export function TabsSearchPanel({
                     className="flex items-center gap-3 rounded-lg border border-border p-3"
                   >
                     {/* Songsterr icon */}
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold bg-blue-500/10 text-blue-500">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold bg-chart-2/10 text-chart-2">
                       S
                     </div>
 

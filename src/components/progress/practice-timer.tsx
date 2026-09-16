@@ -1,149 +1,53 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState } from "react";
+import { usePracticeSession } from "@/components/providers/practice-session-provider";
 import type { Song } from "@/types";
-
-interface TimerState {
-  isRunning: boolean;
-  isPaused: boolean;
-  startTime: number | null;
-  pausedTime: number;
-  elapsed: number;
-  songId: string | null;
-}
-
-const TIMER_STORAGE_KEY = "ostinara_practice_timer";
 
 interface PracticeTimerProps {
   songs: Song[];
-  onComplete: (duration: number, song: Song | null) => void;
 }
 
-export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
-  const [timerState, setTimerState] = useState<TimerState>({
-    isRunning: false,
-    isPaused: false,
-    startTime: null,
-    pausedTime: 0,
-    elapsed: 0,
-    songId: null,
-  });
-  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+/**
+ * Le cadran de la page Progression.
+ *
+ * Il portait son propre etat et sa propre cle localStorage, en parallele
+ * du chrono de "Jouer" : on pouvait en lancer deux a la fois sans que
+ * l'un sache que l'autre tournait. Il ne garde plus que son affichage —
+ * l'etat vient de PracticeSessionProvider, partage par toute l'app.
+ */
+export function PracticeTimer({ songs }: PracticeTimerProps) {
+  const {
+    status,
+    isActive,
+    elapsedMs,
+    songId,
+    start,
+    pause,
+    resume,
+    stop,
+    cancel,
+    setSongId,
+  } = usePracticeSession();
+
   const [showSongSelector, setShowSongSelector] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Charger l'état depuis localStorage au montage
-  useEffect(() => {
-    const saved = localStorage.getItem(TIMER_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as TimerState;
-        if (parsed.isRunning || parsed.isPaused) {
-          // Calculer le temps écoulé si le timer était en cours
-          let elapsed = parsed.elapsed;
-          if (parsed.isRunning && parsed.startTime) {
-            elapsed = parsed.pausedTime + (Date.now() - parsed.startTime);
-          }
-          setTimerState({ ...parsed, elapsed });
+  const selectedSong = songId
+    ? songs.find((song) => song.id === songId) ?? null
+    : null;
 
-          // Restaurer le morceau sélectionné
-          if (parsed.songId) {
-            const song = songs.find(s => s.id === parsed.songId);
-            if (song) setSelectedSong(song);
-          }
-        }
-      } catch (e) {
-        localStorage.removeItem(TIMER_STORAGE_KEY);
-      }
-    }
-  }, [songs]);
+  const timerState = {
+    isRunning: status === "running",
+    isPaused: status === "paused",
+    elapsed: elapsedMs,
+  };
 
-  // Sauvegarder l'état dans localStorage
-  useEffect(() => {
-    if (timerState.isRunning || timerState.isPaused) {
-      localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(timerState));
-    } else {
-      localStorage.removeItem(TIMER_STORAGE_KEY);
-    }
-  }, [timerState]);
+  const setSelectedSong = (song: Song | null) => setSongId(song?.id ?? null);
 
-  // Timer interval
-  useEffect(() => {
-    if (timerState.isRunning && timerState.startTime) {
-      intervalRef.current = setInterval(() => {
-        setTimerState(prev => ({
-          ...prev,
-          elapsed: prev.pausedTime + (Date.now() - (prev.startTime || 0)),
-        }));
-      }, 1000);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [timerState.isRunning, timerState.startTime]);
-
-  const start = useCallback(() => {
-    setTimerState({
-      isRunning: true,
-      isPaused: false,
-      startTime: Date.now(),
-      pausedTime: 0,
-      elapsed: 0,
-      songId: selectedSong?.id || null,
-    });
-  }, [selectedSong]);
-
-  const pause = useCallback(() => {
-    setTimerState(prev => ({
-      ...prev,
-      isRunning: false,
-      isPaused: true,
-      pausedTime: prev.elapsed,
-      startTime: null,
-    }));
-  }, []);
-
-  const resume = useCallback(() => {
-    setTimerState(prev => ({
-      ...prev,
-      isRunning: true,
-      isPaused: false,
-      startTime: Date.now(),
-    }));
-  }, []);
-
-  const stop = useCallback(() => {
-    const durationMinutes = Math.max(1, Math.floor(timerState.elapsed / 60000));
-    onComplete(durationMinutes, selectedSong);
-
-    setTimerState({
-      isRunning: false,
-      isPaused: false,
-      startTime: null,
-      pausedTime: 0,
-      elapsed: 0,
-      songId: null,
-    });
-  }, [timerState.elapsed, selectedSong, onComplete]);
-
-  const cancel = useCallback(() => {
-    setTimerState({
-      isRunning: false,
-      isPaused: false,
-      startTime: null,
-      pausedTime: 0,
-      elapsed: 0,
-      songId: null,
-    });
-    localStorage.removeItem(TIMER_STORAGE_KEY);
-  }, []);
+  // Un chrono lance depuis ce cadran demarre sur le morceau affiche.
+  const handleStart = () => start({ songId: selectedSong?.id ?? null });
 
   const formatTime = (ms: number): string => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -160,16 +64,14 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
   const getTimerColor = (): string => {
     const minutes = timerState.elapsed / 60000;
     if (minutes < 30) return "text-primary";
-    if (minutes < 60) return "text-yellow-400";
-    return "text-orange-400";
+    if (minutes < 60) return "text-primary";
+    return "text-primary";
   };
 
   const filteredSongs = songs.filter(song =>
     song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     song.artist.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const isActive = timerState.isRunning || timerState.isPaused;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
@@ -183,7 +85,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
             ${timerState.isRunning
               ? "border-primary animate-pulse shadow-lg shadow-primary/20"
               : timerState.isPaused
-                ? "border-yellow-400"
+                ? "border-primary"
                 : "border-border"
             }
           `}
@@ -193,7 +95,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
               {formatTime(timerState.elapsed)}
             </span>
             {timerState.isPaused && (
-              <p className="mt-1 text-sm text-yellow-400">En pause</p>
+              <p className="mt-1 text-sm text-primary">En pause</p>
             )}
           </div>
         </div>
@@ -202,7 +104,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
         <div className="mt-6 flex items-center gap-4">
           {!isActive ? (
             <button aria-label="Démarrer la session"
-              onClick={start}
+              onClick={handleStart}
               className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl"
               title="Démarrer"
             >
@@ -215,7 +117,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
               {timerState.isRunning ? (
                 <button aria-label="Mettre la session en pause"
                   onClick={pause}
-                  className="flex h-14 w-14 items-center justify-center rounded-full bg-yellow-500 text-white shadow-lg transition-all hover:scale-105"
+                  className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105"
                   title="Pause"
                 >
                   <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
@@ -236,7 +138,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
 
               <button aria-label="Terminer et enregistrer la session"
                 onClick={stop}
-                className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition-all hover:scale-105"
+                className="flex h-14 w-14 items-center justify-center rounded-full bg-success text-success-foreground shadow-lg transition-all hover:scale-105"
                 title="Terminer et enregistrer"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -342,7 +244,7 @@ export function PracticeTimer({ songs, onComplete }: PracticeTimerProps) {
                 placeholder="Rechercher..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm focus:border-primary"
               />
             </div>
 

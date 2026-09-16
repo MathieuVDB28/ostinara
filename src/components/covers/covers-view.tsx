@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CoverCard } from "./cover-card";
 import { CoverDetailModal } from "./cover-detail-modal";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { CoverWithSong, CoverVisibility } from "@/types";
 
 interface CoversViewProps {
@@ -11,6 +13,8 @@ interface CoversViewProps {
   canUpload: boolean;
   coverLimit?: number;
   coverCount?: number;
+  /** Cover a ouvrir a l'arrivee — lien profond de la recherche globale. */
+  initialCoverId?: string;
 }
 
 const filters: { value: CoverVisibility | "all"; label: string }[] = [
@@ -20,10 +24,20 @@ const filters: { value: CoverVisibility | "all"; label: string }[] = [
   { value: "public", label: "Publics" },
 ];
 
-export function CoversView({ initialCovers, canUpload, coverLimit, coverCount }: CoversViewProps) {
+export function CoversView({
+  initialCovers,
+  canUpload,
+  coverLimit,
+  coverCount,
+  initialCoverId,
+}: CoversViewProps) {
   const router = useRouter();
   const [covers, setCovers] = useState(initialCovers);
-  const [selectedCover, setSelectedCover] = useState<CoverWithSong | null>(null);
+  // Arrivee depuis la recherche globale : la cover demandee s'ouvre des le
+  // premier rendu.
+  const [selectedCover, setSelectedCover] = useState<CoverWithSong | null>(
+    () => initialCovers.find((cover) => cover.id === initialCoverId) ?? null
+  );
   const [activeFilter, setActiveFilter] = useState<CoverVisibility | "all">("all");
 
   useEffect(() => {
@@ -58,6 +72,21 @@ export function CoversView({ initialCovers, canUpload, coverLimit, coverCount }:
             )}
           </p>
         </div>
+
+        {/*
+          Cet ecran est l'archive : il montre aussi les covers privees.
+          Le feed est ailleurs, dans « Commu » — et il faut pouvoir y
+          aller depuis ici, sinon les deux ecrans s'ignorent.
+        */}
+        <Link
+          href="/commu/covers"
+          className="inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-xl border border-input px-3 py-2 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
+            feed
+          </span>
+          Le feed des covers
+        </Link>
       </div>
 
       {covers.length > 0 ? (
@@ -101,34 +130,42 @@ export function CoversView({ initialCovers, canUpload, coverLimit, coverCount }:
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-              <p className="text-muted-foreground">Aucun cover avec ce filtre</p>
-              <button
-                onClick={() => setActiveFilter("all")}
-                className="mt-2 text-sm text-primary hover:underline"
-              >
-                Voir tous les covers
-              </button>
-            </div>
+            <EmptyState
+              compact
+              icon="videocam"
+              title="Aucun cover ici"
+              description={`Tes ${stats.total} cover${stats.total > 1 ? "s" : ""} sont rangés sous un autre niveau de visibilité.`}
+              actions={[
+                {
+                  label: "Voir tous les covers",
+                  primary: true,
+                  onClick: () => setActiveFilter("all"),
+                },
+              ]}
+            />
           )}
         </>
       ) : (
-        /* État vide */
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <span className="material-symbols-outlined text-3xl text-primary">videocam</span>
-          </div>
-          <h3 className="mb-2 text-lg font-semibold">Aucun cover</h3>
-          <p className="mb-6 max-w-sm text-center text-muted-foreground">
-            Enregistre ton premier cover depuis ta bibliothèque de morceaux
-          </p>
-          <button
-            onClick={() => router.push("/biblio")}
-            className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90"
-          >
-            Aller à la bibliothèque
-          </button>
-        </div>
+        /*
+          Un cover s'enregistre depuis la fiche d'un morceau, pas depuis
+          cet ecran : l'etat vide doit dire ou aller, et ce qui se passe
+          apres — sinon « Aller a la bibliotheque » ressemble a un renvoi.
+        */
+        <EmptyState
+          icon="videocam"
+          title="Aucun cover"
+          description="Un cover, c'est ta version d'un morceau, filmée ou enregistrée. Il part de la fiche du morceau, dans ta bibliothèque."
+          actions={[
+            {
+              label: "Choisir un morceau",
+              icon: "music_note",
+              primary: true,
+              href: "/biblio",
+            },
+            { label: "Voir le feed des covers", icon: "feed", href: "/commu/covers" },
+          ]}
+          hint="Un cover est privé par défaut. Tu choisis ensuite s'il reste pour toi, pour tes amis, ou public."
+        />
       )}
 
       {/* Modal de détail */}

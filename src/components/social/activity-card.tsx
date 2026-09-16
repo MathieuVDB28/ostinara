@@ -159,7 +159,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
             <div className="truncate text-sm text-muted-foreground">{activity.song.artist}</div>
           </div>
           {activity.type === "song_mastered" && (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20 text-green-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success/20 text-success">
               <span className="material-symbols-outlined text-[20px]">check</span>
             </div>
           )}
@@ -257,7 +257,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
             <div className="truncate font-semibold">{activity.wishlistSong.title}</div>
             <div className="truncate text-sm text-muted-foreground">{activity.wishlistSong.artist}</div>
           </div>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-500">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary">
             <span className="material-symbols-outlined text-[18px]">star</span>
           </div>
         </div>
@@ -279,7 +279,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
 
       {(activity.type === "band_created" || activity.type === "band_joined") && activity.metadata && (
         <div className="flex items-center gap-3 rounded-xl bg-accent/30 p-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-purple-500/20 text-purple-400">
+          <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/20 text-primary">
             <span className="material-symbols-outlined text-3xl">groups</span>
           </div>
           <div className="min-w-0 flex-1">
@@ -311,7 +311,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
               <div className="truncate font-semibold">{activity.albumReview.album_name}</div>
               <div className="truncate text-sm text-muted-foreground">{activity.albumReview.artist_name}</div>
               <div className="mt-1.5 flex items-center gap-1.5">
-                <div className="flex items-center gap-1 rounded-full bg-amber-500/20 px-2.5 py-0.5 text-sm font-semibold text-amber-500">
+                <div className="flex items-center gap-1 rounded-full bg-primary/20 px-2.5 py-0.5 text-sm font-semibold text-primary">
                   <span className="material-symbols-outlined text-[14px]">star</span>
                   {activity.albumReview.rating / 2} / 5
                 </div>
@@ -347,7 +347,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
             <div className="truncate font-semibold">{activity.albumWishlistItem.album_name}</div>
             <div className="truncate text-sm text-muted-foreground">{activity.albumWishlistItem.artist_name}</div>
           </div>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-500">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary">
             <span className="material-symbols-outlined text-[18px]">bookmark</span>
           </div>
         </div>
@@ -362,7 +362,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
               className="h-16 w-16 rounded-lg object-cover"
             />
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M19.5 3.5L20.5 4.5M20.5 4.5L21.5 3.5M20.5 4.5V7M14.5 9.5L17 7M17 7H20.5M17 7L14.5 4.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M12 10C12 10 10.5 11.5 9.5 12.5C8.5 13.5 7 15 7 17C7 19.2091 8.79086 21 11 21C13 21 14.5 19.5 15.5 18.5C16.5 17.5 18 16 18 14C18 12 16.5 10.5 15 9C13.5 7.5 12 6 12 4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -382,12 +382,12 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
       {activity.type.startsWith("challenge_") && activity.metadata && (
         <div className={`flex items-center gap-3 rounded-xl p-3 ${
           activity.type === "challenge_won"
-            ? "bg-yellow-500/10"
+            ? "bg-primary/10"
             : "bg-accent/30"
         }`}>
           <div className={`flex h-16 w-16 items-center justify-center rounded-lg ${
             activity.type === "challenge_won"
-              ? "bg-yellow-500/20 text-yellow-500"
+              ? "bg-primary/20 text-primary"
               : "bg-primary/20 text-primary"
           }`}>
             <span className="material-symbols-outlined text-3xl">emoji_events</span>

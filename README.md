@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ostinara
 
-## Getting Started
+PWA pour guitaristes : suivre sa progression, gérer son répertoire, partager
+ses covers. Next.js 16 (App Router), TypeScript, Tailwind CSS v4, Supabase.
 
-First, run the development server:
+## Démarrer
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # HTTPS local — requis pour l'accordeur (micro) et la PWA
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Copier `.env.example` vers `.env.local` et renseigner les clés Supabase,
+Spotify, Stripe et VAPID.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Commandes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Commande | Effet |
+|----------|-------|
+| `npm run dev` | Serveur de développement, HTTPS expérimental |
+| `npm run build` | Build de production |
+| `npm run lint` | ESLint |
+| `npm run icons` | Régénère le sous-ensemble Material Symbols — **à relancer après avoir ajouté une icône**, sinon elle s'affiche en texte brut |
 
-## Learn More
+## Conventions
 
-To learn more about Next.js, take a look at the following resources:
+Voir [CLAUDE.md](./CLAUDE.md) : structure, modèle de données, palette et
+règles de code.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Deux règles qui se voient tout de suite :
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Les couleurs viennent des jetons** de `src/app/globals.css`, jamais de la
+  palette Tailwind par défaut. `bg-green-500` n'est pas lisible en thème clair.
+- **La navigation est décrite une seule fois**, dans `src/lib/navigation.ts`.
