@@ -116,17 +116,20 @@ export async function createGearItem(input: CreateGearItemInput): Promise<{
     return { success: false, error: "Erreur lors de l'ajout de l'equipement" };
   }
 
-  // Creer une activite pour le feed
-  await createActivity({
-    type: "gear_added",
-    reference_id: data.id,
-    metadata: {
-      brand: data.brand,
-      model: data.model,
-      type: data.type,
-      image_url: data.image_url,
-    },
-  });
+  // Creer une activite pour le feed — sauf pour le matos prive, que les
+  // amis ne peuvent pas voir : ni carte dans le feed, ni notification.
+  if (data.visibility !== "private") {
+    await createActivity({
+      type: "gear_added",
+      reference_id: data.id,
+      metadata: {
+        brand: data.brand,
+        model: data.model,
+        type: data.type,
+        image_url: data.image_url,
+      },
+    });
+  }
 
   revalidatePath("/gear");
   revalidatePath("/feed");

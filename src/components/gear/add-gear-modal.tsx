@@ -59,7 +59,7 @@ export function AddGearModal({
   const [imageUrl, setImageUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [isActive, setIsActive] = useState(true);
-  const [visibility, setVisibility] = useState<GearVisibility>("private");
+  const [visibility, setVisibility] = useState<GearVisibility>("friends");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -122,7 +122,7 @@ export function AddGearModal({
     setImageUrl("");
     setNotes("");
     setIsActive(true);
-    setVisibility("private");
+    setVisibility("friends");
     setError("");
   }, []);
 

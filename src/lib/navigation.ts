@@ -73,6 +73,9 @@ export const NAV_TABS: NavTab[] = [
       // le seul contenu de l'app qu'on publie pour etre vu, pas pour
       // s'en souvenir. « Biblio › Covers » reste l'archive personnelle.
       { href: "/commu/covers", label: "Covers", icon: "video" },
+      // Les albums de la semaine : la meme vue que l'onglet « Semaine » de
+      // « Biblio › Albums », ou l'on note ce qu'on ecoute.
+      { href: "/commu/albums", label: "Albums", icon: "album" },
       { href: "/commu/amis", label: "Amis", icon: "users", badgeKey: "friends" },
       { href: "/commu/defis", label: "Défis", icon: "trophy", badgeKey: "challenges" },
       { href: "/commu/groupes", label: "Groupes", icon: "setlist", badgeKey: "bands" },

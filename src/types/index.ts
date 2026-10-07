@@ -165,6 +165,31 @@ export interface AlbumCommunityStats {
   review_count: number;
 }
 
+// Albums de la semaine : les ecoutes de toute la communaute, agregees
+export interface WeeklyAlbum {
+  /** spotify_id, ou « titre|artiste » pour les albums ajoutes a la main */
+  key: string;
+  album_name: string;
+  artist_name: string;
+  cover_url: string | null;
+  spotify_id: string | null;
+  /** Moyenne des notes de la semaine, 0–10 (une unite = une demi-etoile) */
+  avg_rating: number;
+  review_count: number;
+  /** La note de l'utilisateur courant cette semaine, s'il l'a ecoute */
+  user_rating: number | null;
+}
+
+export interface WeeklyAlbums {
+  /** Lundi de la semaine, AAAA-MM-JJ (heure de Paris) */
+  week_start: string;
+  /** Dimanche de la semaine, AAAA-MM-JJ */
+  week_end: string;
+  /** 0 = semaine en cours, 1 = semaine derniere, … */
+  week_offset: number;
+  albums: WeeklyAlbum[];
+}
+
 // Types pour le profil
 export type UserPlan = 'free' | 'pro' | 'band';
 
@@ -366,7 +391,7 @@ export interface FriendRequest {
 }
 
 // Types pour les activités
-export type ActivityType = 'song_added' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won' | 'album_reviewed' | 'exercise_shared' | 'gear_added' | 'album_wishlisted';
+export type ActivityType = 'song_added' | 'song_learning' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won' | 'album_reviewed' | 'exercise_shared' | 'gear_added' | 'album_wishlisted';
 
 export interface Activity {
   id: string;

@@ -52,7 +52,8 @@ export type NotificationType =
   | 'rehearsal_reminder'
   | 'rehearsal_today'
   | 'band_message'
-  | 'gear_added';
+  | 'gear_added'
+  | 'song_learning';
 
 export async function sendPushNotification(
   userId: string,

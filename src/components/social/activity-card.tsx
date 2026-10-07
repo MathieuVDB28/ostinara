@@ -13,6 +13,7 @@ interface ActivityCardProps {
 
 const activityMessages: Record<string, string> = {
   song_added: "a ajout\u00e9 un nouveau morceau",
+  song_learning: "a commenc\u00e9 \u00e0 apprendre un morceau",
   song_mastered: "a ma\u00eetris\u00e9 un morceau",
   cover_posted: "a post\u00e9 une cover",
   friend_added: "a un nouvel ami",
@@ -31,6 +32,7 @@ const activityMessages: Record<string, string> = {
 
 const activityIcons: Record<string, string> = {
   song_added: "add_circle",
+  song_learning: "school",
   song_mastered: "check_circle",
   cover_posted: "videocam",
   friend_added: "person_add",
@@ -139,7 +141,10 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
       </div>
 
       {/* Activity content based on type */}
-      {(activity.type === "song_added" || activity.type === "song_mastered") && activity.song && (
+      {(activity.type === "song_added" ||
+        activity.type === "song_learning" ||
+        activity.type === "song_mastered") &&
+        activity.song && (
         <div className="flex items-center gap-3 rounded-xl bg-accent/30 p-3">
           {activity.song.cover_url ? (
             <Image
@@ -158,6 +163,11 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
             <div className="truncate font-semibold">{activity.song.title}</div>
             <div className="truncate text-sm text-muted-foreground">{activity.song.artist}</div>
           </div>
+          {activity.type === "song_learning" && (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <span className="material-symbols-outlined text-[20px]">school</span>
+            </div>
+          )}
           {activity.type === "song_mastered" && (
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success/20 text-success">
               <span className="material-symbols-outlined text-[20px]">check</span>

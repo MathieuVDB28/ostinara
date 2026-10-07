@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { AlbumReview, AlbumWishlistItem, UserPlan } from "@/types";
+import type { AlbumReview, AlbumWishlistItem, UserPlan, WeeklyAlbums } from "@/types";
 import { AlbumReviewCard } from "./album-review-card";
 import { AddAlbumModal } from "./add-album-modal";
 import { AlbumRecommendations } from "./album-recommendations";
 import { AlbumWishlistCard } from "./album-wishlist-card";
+import { WeeklyAlbumsView } from "./weekly-albums-view";
 import { AddToAlbumWishlistModal } from "./add-to-album-wishlist-modal";
 import { removeFromAlbumWishlist } from "@/lib/actions/album-wishlist";
 import { useBiblioSearch } from "@/components/biblio/biblio-search";
@@ -13,15 +14,21 @@ import { useBiblioSearch } from "@/components/biblio/biblio-search";
 interface AlbumsViewProps {
   initialReviews: AlbumReview[];
   initialWishlist: AlbumWishlistItem[];
+  initialWeeklyAlbums: WeeklyAlbums | null;
   userPlan: UserPlan;
 }
 
-export function AlbumsView({ initialReviews, initialWishlist, userPlan }: AlbumsViewProps) {
+export function AlbumsView({
+  initialReviews,
+  initialWishlist,
+  initialWeeklyAlbums,
+  userPlan,
+}: AlbumsViewProps) {
   const [reviews, setReviews] = useState(initialReviews);
   const [wishlist, setWishlist] = useState(initialWishlist);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"reviews" | "wishlist" | "recommendations">("reviews");
+  const [activeTab, setActiveTab] = useState<"reviews" | "wishlist" | "week" | "recommendations">("reviews");
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [reviewFromWishlist, setReviewFromWishlist] = useState<AlbumWishlistItem | null>(null);
   const [starFilter, setStarFilter] = useState(0);
@@ -127,10 +134,10 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-1 rounded-xl bg-accent/50 p-1">
+      <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-accent/50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <button
           onClick={() => setActiveTab("reviews")}
-          className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+          className={`flex-1 shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === "reviews"
               ? "bg-card text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"
@@ -140,7 +147,7 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
         </button>
         <button
           onClick={() => setActiveTab("wishlist")}
-          className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+          className={`flex-1 shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === "wishlist"
               ? "bg-card text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"
@@ -149,8 +156,18 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
           A écouter ({wishlist.length})
         </button>
         <button
+          onClick={() => setActiveTab("week")}
+          className={`flex-1 shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === "week"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Semaine
+        </button>
+        <button
           onClick={() => setActiveTab("recommendations")}
-          className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+          className={`flex-1 shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === "recommendations"
               ? "bg-card text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"
@@ -296,6 +313,11 @@ export function AlbumsView({ initialReviews, initialWishlist, userPlan }: Albums
       )}
 
       {/* Content - Recommendations */}
+      {/* Content - Albums de la semaine */}
+      {activeTab === "week" && initialWeeklyAlbums && (
+        <WeeklyAlbumsView initial={initialWeeklyAlbums} query={searchQuery} />
+      )}
+
       {activeTab === "recommendations" && (
         <AlbumRecommendations
           isPaid={isPaid}

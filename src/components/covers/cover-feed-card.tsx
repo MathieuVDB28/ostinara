@@ -3,6 +3,7 @@
 import { useOptimistic, useRef, useState, useTransition } from "react";
 import { toggleCoverReaction } from "@/lib/actions/activities";
 import { ActivityComments } from "@/components/social/activity-comments";
+import { ReactionPicker } from "@/components/social/reaction-picker";
 import type { CoverFeedItem } from "@/types";
 
 /**
@@ -18,8 +19,6 @@ import type { CoverFeedItem } from "@/types";
 
 /** La reaction d'un geste. Les autres emojis restent derriere le selecteur. */
 const QUICK_EMOJI = "🔥";
-
-const PALETTE = ["🔥", "👏", "🎸", "❤️", "🤘"];
 
 interface CoverFeedCardProps {
   item: CoverFeedItem;
@@ -239,26 +238,11 @@ export function CoverFeedCard({
           </button>
 
           {showPalette && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowPalette(false)}
-              />
-              <div className="absolute bottom-full left-0 z-50 mb-2 flex gap-1 rounded-xl border border-border bg-card p-2 shadow-lg">
-                {PALETTE.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => react(emoji)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-lg text-lg transition-colors hover:bg-accent ${
-                      state.mine.includes(emoji) ? "bg-primary/15" : ""
-                    }`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            </>
+            <ReactionPicker
+              selected={state.mine}
+              onSelect={react}
+              onClose={() => setShowPalette(false)}
+            />
           )}
         </div>
 

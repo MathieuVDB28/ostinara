@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { sendPushNotification, sendPushNotificationToMultipleUsers } from "@/lib/notifications";
 import type { NotificationPayload, NotificationType } from "@/lib/notifications";
@@ -32,6 +33,15 @@ function getNotificationForActivity(
           data: { url: "/feed" },
         },
         notificationType: "song_added",
+      };
+    case "song_learning":
+      return {
+        payload: {
+          title: "Nouveau morceau en cours",
+          body: `${userName} a commencé à apprendre "${metadata?.title}"`,
+          data: { url: "/commu" },
+        },
+        notificationType: "song_learning",
       };
     case "song_mastered":
       return {
@@ -187,8 +197,10 @@ export async function createActivity(
     return { success: false, error: "Erreur lors de la création de l'activité" };
   }
 
-  // Envoyer des notifications push aux amis (en arrière-plan)
-  notifyFriendsOfActivity(user.id, input).catch(console.error);
+  // Envoyer des notifications push aux amis apres la reponse. `after`
+  // garde la fonction en vie jusqu'au bout de l'envoi : une promesse non
+  // attendue peut etre coupee des que la reponse est partie (Vercel).
+  after(() => notifyFriendsOfActivity(supabase, user.id, input));
 
   revalidatePath("/feed");
   return { success: true };
@@ -196,11 +208,11 @@ export async function createActivity(
 
 // === Notifier les amis d'une activité ===
 async function notifyFriendsOfActivity(
+  supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   input: CreateActivityInput
 ): Promise<void> {
   try {
-    const supabase = await createClient();
 
     // Récupérer le profil de l'utilisateur
     const { data: profile } = await supabase
@@ -351,7 +363,11 @@ export async function getFeedActivities(
 
   // Extraire les IDs par type pour récupérer les détails en batch
   const songIds = activities
-    .filter((a) => (a.type === "song_added" || a.type === "song_mastered") && a.reference_id)
+    .filter(
+      (a) =>
+        (a.type === "song_added" || a.type === "song_learning" || a.type === "song_mastered") &&
+        a.reference_id
+    )
     .map((a) => a.reference_id);
 
   const coverIds = activities
@@ -522,7 +538,7 @@ export async function getFeedActivities(
     };
 
     if (activity.reference_id) {
-      if (activity.type === "song_added" || activity.type === "song_mastered") {
+      if (activity.type === "song_added" || activity.type === "song_learning" || activity.type === "song_mastered") {
         const song = songsMap.get(activity.reference_id);
         // Si le morceau n'est pas trouvé (RLS), utiliser les métadonnées comme fallback
         if (song) {
@@ -604,6 +620,16 @@ export async function getFeedActivities(
   return enrichedActivities;
 }
 
+// Une reaction est un seul emoji. Le selecteur en propose tout le
+// catalogue, mais l'action reste appelable avec n'importe quelle chaine.
+const graphemes = new Intl.Segmenter("fr", { granularity: "grapheme" });
+
+function isSingleEmoji(value: string): boolean {
+  if (!value || value.length > 32) return false;
+  if ([...graphemes.segment(value)].length !== 1) return false;
+  return /\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20E3/u.test(value);
+}
+
 // === Toggle une réaction sur une activité ===
 export async function toggleReaction(
   activityId: string,
@@ -614,6 +640,10 @@ export async function toggleReaction(
 
   if (!user) {
     return { success: false, error: "Non authentifié" };
+  }
+
+  if (!isSingleEmoji(emoji)) {
+    return { success: false, error: "Réaction invalide" };
   }
 
   // Vérifier si la réaction existe déjà
@@ -650,7 +680,7 @@ export async function toggleReaction(
     }
 
     // Notifier le propriétaire de l'activité
-    notifyActivityOwner(supabase, activityId, user.id, "reaction", emoji).catch(console.error);
+    after(() => notifyActivityOwner(supabase, activityId, user.id, "reaction", emoji));
   }
 
   revalidatePath("/feed");
@@ -686,7 +716,7 @@ export async function addComment(
   }
 
   // Notifier le propriétaire de l'activité
-  notifyActivityOwner(supabase, activityId, user.id, "comment").catch(console.error);
+  after(() => notifyActivityOwner(supabase, activityId, user.id, "comment"));
 
   revalidatePath("/feed");
   return { success: true };
@@ -880,6 +910,10 @@ export async function toggleCoverReaction(
 
   if (!user) {
     return { success: false, error: "Non authentifié" };
+  }
+
+  if (!isSingleEmoji(emoji)) {
+    return { success: false, error: "Réaction invalide" };
   }
 
   const { data: cover } = await supabase

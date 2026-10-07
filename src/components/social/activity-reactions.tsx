@@ -2,9 +2,8 @@
 
 import { useState, useOptimistic, useTransition } from "react";
 import { toggleReaction } from "@/lib/actions/activities";
+import { ReactionPicker } from "./reaction-picker";
 import type { ReactionSummary } from "@/types";
-
-const AVAILABLE_EMOJIS = ["🔥", "👏", "🎸", "❤️", "😍", "🤘"];
 
 interface ActivityReactionsProps {
   activityId: string;
@@ -84,27 +83,11 @@ export function ActivityReactions({
 
         {/* Picker d'emoji */}
         {showPicker && (
-          <>
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setShowPicker(false)}
-            />
-            <div className="absolute bottom-full left-0 z-50 mb-2 flex gap-1 rounded-xl border border-border bg-card p-2 shadow-lg">
-              {AVAILABLE_EMOJIS.map((emoji) => (
-                <button
-                  key={emoji}
-                  onClick={() => handleReaction(emoji)}
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg text-lg transition-colors hover:bg-accent ${
-                    optimisticReactions.currentUserReactions.includes(emoji)
-                      ? "bg-primary/15"
-                      : ""
-                  }`}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </>
+          <ReactionPicker
+            selected={optimisticReactions.currentUserReactions}
+            onSelect={handleReaction}
+            onClose={() => setShowPicker(false)}
+          />
         )}
       </div>
     </div>

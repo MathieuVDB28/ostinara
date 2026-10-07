@@ -116,6 +116,22 @@ export async function createSong(input: CreateSongInput): Promise<{ success: boo
   return { success: true, song: data as Song };
 }
 
+/**
+ * L'activite de progression d'un changement de statut, s'il en merite une.
+ * « À apprendre » -> « en cours » : song_learning. Tout passage a
+ * « maîtrisé » : song_mastered (un saut direct ne poste pas l'etape « en
+ * cours »). Revenir en arriere ne poste rien.
+ */
+function progressActivityType(
+  previous: SongStatus | null,
+  next: SongStatus | undefined
+): "song_learning" | "song_mastered" | null {
+  if (!previous || !next || previous === next) return null;
+  if (next === "mastered") return "song_mastered";
+  if (previous === "want_to_learn" && next === "learning") return "song_learning";
+  return null;
+}
+
 export async function updateSong(
   id: string,
   input: UpdateSongInput
@@ -127,12 +143,12 @@ export async function updateSong(
     return { success: false, error: "Non authentifié" };
   }
 
-  // Récupérer le statut actuel si on change le statut vers mastered
+  // Le statut avant la mise a jour : c'est la transition qui fait l'activite
   let previousStatus: SongStatus | null = null;
-  if (input.status === "mastered") {
+  if (input.status) {
     const { data: currentSong } = await supabase
       .from("songs")
-      .select("status, title, artist")
+      .select("status")
       .eq("id", id)
       .eq("user_id", user.id)
       .single();
@@ -155,16 +171,31 @@ export async function updateSong(
     return { success: false, error: "Erreur lors de la mise à jour" };
   }
 
-  // Créer une activité si le morceau vient d'être maîtrisé
-  if (input.status === "mastered" && previousStatus !== "mastered" && updatedSong) {
-    await createActivity({
-      type: "song_mastered",
-      reference_id: id,
-      metadata: { title: updatedSong.title, artist: updatedSong.artist, cover_url: updatedSong.cover_url },
-    });
+  const progressType = progressActivityType(previousStatus, input.status);
+  if (progressType && updatedSong) {
+    // Une seule activite par morceau et par etape : repasser un morceau en
+    // « à apprendre » puis de nouveau en « en cours » ne renotifie pas.
+    const { data: alreadyPosted } = await supabase
+      .from("activities")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("type", progressType)
+      .eq("reference_id", id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!alreadyPosted) {
+      await createActivity({
+        type: progressType,
+        reference_id: id,
+        metadata: { title: updatedSong.title, artist: updatedSong.artist, cover_url: updatedSong.cover_url },
+      });
+    }
 
     // Vérifier les challenges de maîtrise de morceau
-    updateChallengeProgress(undefined, id).catch(console.error);
+    if (progressType === "song_mastered") {
+      updateChallengeProgress(undefined, id).catch(console.error);
+    }
 
     revalidatePath("/feed");
   }
