@@ -2,41 +2,17 @@
 
 import { useState } from "react";
 import { usePitchDetection } from "@/lib/hooks/use-pitch-detection";
+import { TUNING_GROUPS, pitchToFrequency } from "@/lib/tunings";
 import { TunerGauge } from "./tuner-gauge";
 import type { TuningPreset } from "@/types";
 
-const TUNING_PRESETS: TuningPreset[] = [
-  {
-    name: "Standard",
-    notes: ["E2", "A2", "D3", "G3", "B3", "E4"],
-    frequencies: [82.41, 110.0, 146.83, 196.0, 246.94, 329.63],
-  },
-  {
-    name: "Drop D",
-    notes: ["D2", "A2", "D3", "G3", "B3", "E4"],
-    frequencies: [73.42, 110.0, 146.83, 196.0, 246.94, 329.63],
-  },
-  {
-    name: "Half Step Down",
-    notes: ["Eb2", "Ab2", "Db3", "Gb3", "Bb3", "Eb4"],
-    frequencies: [77.78, 103.83, 138.59, 185.0, 233.08, 311.13],
-  },
-  {
-    name: "Open G",
-    notes: ["D2", "G2", "D3", "G3", "B3", "D4"],
-    frequencies: [73.42, 98.0, 146.83, 196.0, 246.94, 293.66],
-  },
-  {
-    name: "Open D",
-    notes: ["D2", "A2", "D3", "F#3", "A3", "D4"],
-    frequencies: [73.42, 110.0, 146.83, 185.0, 220.0, 293.66],
-  },
-  {
-    name: "DADGAD",
-    notes: ["D2", "A2", "D3", "G3", "A3", "D4"],
-    frequencies: [73.42, 110.0, 146.83, 196.0, 220.0, 293.66],
-  },
-];
+const TUNING_PRESETS: TuningPreset[] = TUNING_GROUPS.flatMap((group) =>
+  group.tunings.map((t) => ({
+    name: t.value,
+    notes: t.pitches,
+    frequencies: t.pitches.map(pitchToFrequency),
+  }))
+);
 
 function getClosestString(
   frequency: number,
@@ -88,21 +64,24 @@ export function GuitarTuner() {
   return (
     <div className="flex flex-col items-center px-4 py-6">
       {/* Tuning preset selector */}
-      <div className="mb-6 flex flex-wrap justify-center gap-2">
-        {TUNING_PRESETS.map((p, i) => (
-          <button
-            key={p.name}
-            onClick={() => setSelectedPreset(i)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              i === selectedPreset
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
-            }`}
-          >
-            {p.name}
-          </button>
+      <select
+        value={preset.name}
+        onChange={(e) =>
+          setSelectedPreset(TUNING_PRESETS.findIndex((p) => p.name === e.target.value))
+        }
+        aria-label="Accordage"
+        className="mb-6 w-full max-w-xs rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
+      >
+        {TUNING_GROUPS.map((group) => (
+          <optgroup key={group.label} label={group.label}>
+            {group.tunings.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label} ({t.notes})
+              </option>
+            ))}
+          </optgroup>
         ))}
-      </div>
+      </select>
 
       {/* String reference */}
       <div className="mb-6 flex gap-3">
@@ -174,7 +153,7 @@ export function GuitarTuner() {
           <div className="text-center">
             <h2 className="text-xl font-semibold">Accordeur guitare</h2>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Joue une corde à vide. L'accordeur détectera la note et t'indiquera si tu es juste.
+              Joue une corde à vide. L&apos;accordeur détectera la note et t&apos;indiquera si tu es juste.
             </p>
           </div>
 
@@ -182,7 +161,7 @@ export function GuitarTuner() {
             onClick={start}
             className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 hover:shadow-lg hover:shadow-primary/25"
           >
-            Activer l'accordeur
+            Activer l&apos;accordeur
           </button>
 
           {error && (

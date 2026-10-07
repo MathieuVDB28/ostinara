@@ -5,7 +5,7 @@ import type { PitchDetectionResult } from "@/types";
 
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const A4_FREQUENCY = 440;
-const MIN_FREQUENCY = 60; // ~B1, lowest guitar note
+const MIN_FREQUENCY = 50; // below A1 (55 Hz), lowest note of Drop A
 const MAX_FREQUENCY = 1400; // well above highest guitar note
 const RMS_THRESHOLD = 0.015; // noise gate
 
@@ -130,24 +130,6 @@ export function usePitchDetection(): UsePitchDetectionReturn {
   const rafRef = useRef<number | null>(null);
   const isActiveRef = useRef(false);
 
-  const analyze = useCallback(() => {
-    if (!isActiveRef.current || !analyserRef.current || !audioContextRef.current) return;
-
-    const analyser = analyserRef.current;
-    const buffer = new Float32Array(analyser.fftSize);
-    analyser.getFloatTimeDomainData(buffer);
-
-    const frequency = detectPitch(buffer, audioContextRef.current.sampleRate);
-
-    if (frequency) {
-      setResult(frequencyToNote(frequency));
-    } else {
-      setResult(null);
-    }
-
-    rafRef.current = requestAnimationFrame(analyze);
-  }, []);
-
   const start = useCallback(async () => {
     setError(null);
 
@@ -169,6 +151,16 @@ export function usePitchDetection(): UsePitchDetectionReturn {
       isActiveRef.current = true;
       setIsActive(true);
 
+      const buffer = new Float32Array(analyser.fftSize);
+      const analyze = () => {
+        if (!isActiveRef.current) return;
+
+        analyser.getFloatTimeDomainData(buffer);
+        const frequency = detectPitch(buffer, audioContext.sampleRate);
+        setResult(frequency ? frequencyToNote(frequency) : null);
+
+        rafRef.current = requestAnimationFrame(analyze);
+      };
       rafRef.current = requestAnimationFrame(analyze);
     } catch (err) {
       if (err instanceof DOMException && err.name === "NotAllowedError") {
@@ -179,7 +171,7 @@ export function usePitchDetection(): UsePitchDetectionReturn {
         setError("Impossible d'accéder au microphone.");
       }
     }
-  }, [analyze]);
+  }, []);
 
   const stop = useCallback(() => {
     isActiveRef.current = false;
