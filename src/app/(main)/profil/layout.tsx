@@ -21,8 +21,10 @@ export default async function ProfilLayout({
   return (
     <>
       <ProfileIdentity profile={profile} />
+      {/* Les onglets avant la vitrine : sous elle, Matos et Reglages
+          tombaient sous le premier ecran et on ne les trouvait plus. */}
+      <SegmentedNav tab={profilTab} variant="underline" className="mb-5" />
       <ProfileShowcase profile={profile} />
-      <SegmentedNav tab={profilTab} variant="underline" className="mb-6" />
       {children}
     </>
   );
