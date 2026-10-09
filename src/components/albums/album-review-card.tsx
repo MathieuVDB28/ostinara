@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deleteAlbumReview, updateAlbumReview } from "@/lib/actions/albums";
+import { EllipsisVertical, Pencil, Star, Trash2 } from "lucide-react";
+import { Cover } from "@/components/ui/cover";
 import { StarRating } from "@/components/ui/star-rating";
 import type { AlbumReview } from "@/types";
 
@@ -16,6 +18,11 @@ interface AlbumReviewCardProps {
 // rating is stored as 0–10 integer (db value = stars × 2)
 function starsFromDb(dbRating: number) {
   return dbRating / 2;
+}
+
+/** « 4,5 » et non « 4.5 » : l'app est en francais. */
+function formatStars(dbRating: number) {
+  return String(starsFromDb(dbRating)).replace(".", ",");
 }
 
 export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCardProps) {
@@ -96,50 +103,40 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
 
   return (
     <>
-      <div
-        onClick={handleCardClick}
-        className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-border/80"
-      >
-        {/* Cover image */}
-        <div className="relative aspect-square overflow-hidden bg-muted">
-          {review.cover_url ? (
-            <img
-              src={review.cover_url}
-              alt={review.album_name}
-              className="h-full w-full object-cover transition-transform group-hover:scale-105"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <span className="material-symbols-outlined text-5xl text-muted-foreground">album</span>
-            </div>
-          )}
+      {/*
+        Une tuile, pas une carte : la pochette porte la note, le texte
+        repose sur le fond (style Etagere, docs/refonte-ui.md).
+      */}
+      <div onClick={handleCardClick} className="group relative min-w-0 cursor-pointer">
+        <Cover src={review.cover_url} alt={review.album_name} className="aspect-square w-full rounded-md">
+          <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 font-display text-[13px] font-bold tracking-[0.03em] text-white">
+            <Star className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
+            {formatStars(review.rating)}
+            <span className="sr-only"> sur 5</span>
+          </span>
 
-          {/* Rating badge */}
-          <div className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-sm font-bold text-white shadow-lg backdrop-blur-sm">
-            <span className="material-symbols-outlined text-[13px] text-primary">star</span>
-            {starsFromDb(review.rating)}
-          </div>
-
-          {/* Menu button */}
-          <div className="absolute right-2 bottom-2">
+          {/* Menu : visible au doigt, revele au survol sur ordi */}
+          <div className="absolute bottom-2 right-2">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setShowMenu(!showMenu);
               }}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100"
+              aria-label={`Options pour ${review.album_name}`}
+              aria-expanded={showMenu}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white transition-opacity focus-visible:opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
             >
-              <span className="material-symbols-outlined text-[18px]">more_vert</span>
+              <EllipsisVertical className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
             </button>
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} />
-                <div className="absolute right-0 bottom-10 z-20 w-40 overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+                <div className="absolute bottom-10 right-0 z-20 w-40 overflow-hidden rounded-xl border border-border bg-card shadow-md">
                   <button
                     onClick={(e) => { e.stopPropagation(); handleEdit(); }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
                   >
-                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                    <Pencil className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                     Modifier
                   </button>
                   <button
@@ -147,35 +144,32 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                     disabled={isDeleting}
                     className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                    <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                     {isDeleting ? "Suppression..." : "Supprimer"}
                   </button>
                 </div>
               </>
             )}
           </div>
-        </div>
+        </Cover>
 
-        {/* Info */}
-        <div className="p-3">
-          <h3 className="truncate font-semibold">{review.album_name}</h3>
+        <div className="pt-2">
+          <h3 className="truncate text-sm font-semibold">{review.album_name}</h3>
           <Link
             href={`/artists/by-name?q=${encodeURIComponent(review.artist_name)}`}
             onClick={(e) => e.stopPropagation()}
-            className="truncate text-sm text-muted-foreground transition-colors hover:text-primary"
+            className="block truncate text-[13px] text-muted-foreground transition-colors hover:text-foreground"
           >
             {review.artist_name}
           </Link>
 
           {review.review && (
-            <p className="mt-2 line-clamp-2 text-sm text-muted-foreground italic">
+            <p className="mt-1.5 line-clamp-2 font-serif text-[13px] italic leading-snug text-foreground/80">
               &ldquo;{review.review}&rdquo;
             </p>
           )}
 
-          <p className="mt-2 text-xs text-muted-foreground">
-            {formatDate(review.created_at)}
-          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">{formatDate(review.created_at)}</p>
         </div>
       </div>
 

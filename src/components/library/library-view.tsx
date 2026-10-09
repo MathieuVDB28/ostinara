@@ -6,6 +6,8 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { SongCard } from "./song-card";
 import { SongSwipeRow } from "./song-swipe-row";
+import { SongShelf } from "./song-shelf";
+import { ChevronDown, ChevronLeft, ChevronRight, ListPlus, Music, Plus, SearchX } from "lucide-react";
 // Les modales ne sont ni montees ni telechargees tant qu'elles ne sont pas
 // ouvertes. EditSongModal entraine toute la chaine d'upload video
 // (add-cover-modal → video-upload → tus-js-client), inutile pour qui
@@ -76,18 +78,10 @@ interface LibraryViewProps {
 }
 
 /**
- * "A apprendre" est desormais l'ancienne wishlist : un seul endroit ou
- * ajouter un morceau qu'on veut travailler, un seul endroit ou le chercher.
- */
-const statusTabs: { value: SongStatus | "all"; label: string }[] = [
-  { value: "all", label: "Tous" },
-  { value: "want_to_learn", label: "À apprendre" },
-  { value: "learning", label: "En cours" },
-  { value: "mastered", label: "Maîtrisés" },
-];
-
-/**
- * L'ordre des sections de la vue "Tous" : ce qu'on travaille en ce moment
+ * "A apprendre" est l'ancienne wishlist : un seul endroit ou ajouter un
+ * morceau qu'on veut travailler, un seul endroit ou le chercher.
+ *
+ * L'ordre des etageres de la vue "Tous" : ce qu'on travaille en ce moment
  * d'abord, la file d'attente ensuite, le repertoire acquis en dernier.
  * C'est l'ordre dans lequel on ouvre la bibliotheque — pas l'ordre
  * alphabetique de l'enum.
@@ -104,16 +98,15 @@ const ALL_PLAYLISTS = "all";
  * Combien de morceaux avant le bouton « Voir les autres ».
  *
  * La bibliotheque rendait tout d'un coup : a 200 morceaux, c'est 200
- * cartes dans le DOM et un ascenseur de la taille d'un timbre. Les
- * sections de la vue « Tous » en montrent moins — il y en a trois, et on
- * vient y comparer, pas y lire.
+ * lignes dans le DOM et un ascenseur de la taille d'un timbre.
  *
  * La pagination reste ici, pas au serveur : recherche, filtres, tri et
  * compteurs d'onglets travaillent sur la liste entiere. Paginer en base
  * les rendrait tous faux — « Maitrises 4 » quand il y en a quarante.
  */
-const SONGS_PER_SECTION = 8;
 const SONGS_PER_PAGE = 20;
+/** Les maitrises en apercu, sous les deux etageres. */
+const MASTERED_PREVIEW = 4;
 
 interface SongGroupProps {
   songs: Song[];
@@ -123,10 +116,12 @@ interface SongGroupProps {
   bestBpm: Record<string, number | null>;
   onSelect: (song: Song) => void;
   onStatusChange: (songId: string, status: SongStatus) => void;
+  /** Remplace le depliage sur place par un renvoi vers la liste complete. */
+  onShowAll?: () => void;
 }
 
 /**
- * Une pile de cartes qui ne se deplie qu'a la demande.
+ * Une pile de lignes qui ne se deplie qu'a la demande.
  *
  * Pas de numeros de page : une bibliotheque se parcourt, et un morceau se
  * retrouve par la recherche ou les filtres, pas en se souvenant qu'il
@@ -138,6 +133,7 @@ function SongGroup({
   bestBpm,
   onSelect,
   onStatusChange,
+  onShowAll,
 }: SongGroupProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -151,7 +147,7 @@ function SongGroup({
   const hidden = songs.length - visible.length;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col">
       {visible.map((song) => (
         <SongSwipeRow key={song.id} song={song} onStatusChange={onStatusChange}>
           <SongCard
@@ -169,18 +165,15 @@ function SongGroup({
       {(hidden > 0 || isExpanded) && (
         <button
           type="button"
-          onClick={() => setIsExpanded((value) => !value)}
-          aria-expanded={isExpanded}
-          className="mt-1 inline-flex min-h-[44px] items-center justify-center gap-1.5 self-center rounded-xl px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+          onClick={onShowAll ?? (() => setIsExpanded((value) => !value))}
+          aria-expanded={onShowAll ? undefined : isExpanded}
+          className="mt-1 inline-flex min-h-[44px] items-center justify-center gap-1.5 self-center rounded-xl px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <span
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+            strokeWidth={2.25}
             aria-hidden="true"
-            className={`material-symbols-outlined text-[20px] transition-transform ${
-              isExpanded ? "rotate-180" : ""
-            }`}
-          >
-            expand_more
-          </span>
+          />
           {isExpanded
             ? "Réduire"
             : `Voir les ${hidden} autre${hidden > 1 ? "s" : ""}`}
@@ -425,24 +418,18 @@ export function LibraryView({
   if (songs.length === 0) {
     return (
       <>
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <svg className="h-8 w-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <h2 className="mb-2 text-lg font-semibold">Ta bibliothèque est vide</h2>
-          <p className="mb-6 max-w-sm text-center text-muted-foreground">
+        <div className="flex flex-col items-center py-16 text-center">
+          <Music className="mb-4 h-10 w-10 text-muted-foreground" strokeWidth={1.25} aria-hidden="true" />
+          <h2 className="mb-2 text-lg font-bold">Ta bibliothèque est vide</h2>
+          <p className="mb-6 max-w-sm text-muted-foreground">
             Ajoute un morceau que tu veux apprendre : il ira dans « À apprendre »
             jusqu&apos;à ce que tu commences à le travailler.
           </p>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
+            <Plus className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
             Ajouter un morceau
           </button>
         </div>
@@ -458,32 +445,36 @@ export function LibraryView({
     );
   }
 
+  const chip =
+    "inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const chipIdle = "border-border text-muted-foreground hover:text-foreground";
+  const chipActive = "border-border bg-secondary text-foreground";
+
+  const listSection = STATUS_SECTIONS.find((section) => section.value === activeFilter);
+
   return (
     <div>
       {/*
         Actions. Sur mobile, "Ajouter un morceau" quitte le haut de page
         pour un bouton flottant a portee du pouce (voir plus bas) : c'est
         l'action qu'on repete, et elle etait la ou le pouce n'atteint pas.
+        C'est le seul aplat ambre de l'ecran.
       */}
       <div className="mb-4 hidden items-center justify-end gap-2 sm:flex">
         {spotifyConnected && userPlan !== "free" && (
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-input px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
-              playlist_add
-            </span>
+            <ListPlus className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
             Importer une playlist
           </button>
         )}
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
-            add
-          </span>
+          <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
           Ajouter un morceau
         </button>
       </div>
@@ -495,127 +486,81 @@ export function LibraryView({
         onAddSong={() => setIsAddModalOpen(true)}
       />
 
-      {/* Selecteur de playlist : un filtre, pas une section */}
-      <div
-        role="group"
-        aria-label="Filtrer par playlist"
-        className="mb-2.5 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        <button
-          onClick={() => setActivePlaylistId(ALL_PLAYLISTS)}
-          aria-pressed={activePlaylistId === ALL_PLAYLISTS}
-          className={`min-h-[36px] shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            activePlaylistId === ALL_PLAYLISTS
-              ? "bg-secondary text-secondary-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Toutes les playlists
-        </button>
+      {/*
+        Filtres, tri et playlists sur une seule rangee de puces. L'ecran en
+        empilait trois (playlists, statuts, filtres) avant le premier
+        morceau ; le statut est devenu les etageres elles-memes.
+      */}
+      <div className="-mr-4 flex items-center gap-1.5 lg:mr-0">
+        {/* Hors de la zone qui defile : leurs panneaux y seraient coupes. */}
+        <FilterPopover
+          filters={filters}
+          onFiltersChange={setFilters}
+          activeCount={countActiveFilters(filters)}
+          availableTunings={availableTunings}
+        />
+        <SortDropdown value={sortBy} onChange={setSortBy} />
 
-        {playlists.map((playlist) => (
+        <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 bg-border" />
+
+        <div
+          role="group"
+          aria-label="Filtrer par playlist"
+          className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 pr-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:pr-0 [&::-webkit-scrollbar]:hidden"
+        >
           <button
-            key={playlist.id}
-            onClick={() => setActivePlaylistId(playlist.id)}
-            aria-pressed={activePlaylistId === playlist.id}
-            className={`min-h-[36px] shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-              activePlaylistId === playlist.id
-                ? "bg-secondary text-secondary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            onClick={() => setActivePlaylistId(ALL_PLAYLISTS)}
+            aria-pressed={activePlaylistId === ALL_PLAYLISTS}
+            className={`${chip} ${activePlaylistId === ALL_PLAYLISTS ? chipActive : chipIdle}`}
           >
-            {playlist.name}
-            <span className="tabular ml-1.5 opacity-70">{playlist.song_count}</span>
+            Tous
+            <span className="tabular opacity-70">{statusCounts.all}</span>
           </button>
-        ))}
 
-        <button
-          onClick={() => setIsCreatePlaylistModalOpen(true)}
-          className="flex min-h-[36px] shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-dashed border-border px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <span aria-hidden="true" className="material-symbols-outlined text-[16px]">
-            add
-          </span>
-          Playlist
-        </button>
+          {playlists.map((playlist) => (
+            <button
+              key={playlist.id}
+              onClick={() => setActivePlaylistId(playlist.id)}
+              aria-pressed={activePlaylistId === playlist.id}
+              className={`${chip} ${activePlaylistId === playlist.id ? chipActive : chipIdle}`}
+            >
+              {playlist.name}
+              <span className="tabular opacity-70">{playlist.song_count}</span>
+            </button>
+          ))}
+
+          <button
+            onClick={() => setIsCreatePlaylistModalOpen(true)}
+            className={`${chip} border-dashed ${chipIdle}`}
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+            Playlist
+          </button>
+        </div>
       </div>
 
       {/* Edition de la playlist active */}
       {activePlaylist && (
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-accent/40 px-4 py-2.5">
-          <p className="text-sm">
-            <span className="font-medium">{activePlaylist.name}</span>
-            {activePlaylist.description && (
-              <span className="text-muted-foreground"> — {activePlaylist.description}</span>
-            )}
-          </p>
+        <p className="mt-3 flex flex-wrap items-baseline gap-x-2 text-sm">
+          <span className="font-semibold">{activePlaylist.name}</span>
+          {activePlaylist.description && (
+            <span className="text-muted-foreground">{activePlaylist.description}</span>
+          )}
           <button
             onClick={() => setEditingPlaylist(activePlaylist)}
-            className="min-h-[36px] rounded-lg px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Modifier la playlist
+            Modifier
           </button>
-        </div>
+        </p>
       )}
 
-      {/*
-        Statut, filtres et tri sur une seule ligne. L'ecran empilait
-        quatre rangs de controles (segments biblio, playlists, statuts,
-        filtres) avant le premier morceau ; il en reste deux.
-      */}
-      <div className="mb-5 flex items-center gap-2">
-        <div
-          role="group"
-          aria-label="Filtrer par statut"
-          className="flex min-w-0 flex-1 gap-1 overflow-x-auto rounded-xl bg-accent/50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {statusTabs.map((tab) => {
-            const isActive = activeFilter === tab.value;
-            const count = statusCounts[tab.value];
-
-            return (
-              <button
-                key={tab.value}
-                onClick={() => setActiveFilter(tab.value)}
-                aria-pressed={isActive}
-                className={`flex min-h-[40px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  isActive
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {tab.label}
-                <span
-                  className={`tabular text-[11px] ${
-                    isActive ? "text-muted-foreground" : "opacity-60"
-                  }`}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <FilterPopover
-            filters={filters}
-            onFiltersChange={setFilters}
-            activeCount={countActiveFilters(filters)}
-            availableTunings={availableTunings}
-          />
-          <SortDropdown value={sortBy} onChange={setSortBy} />
-        </div>
-      </div>
+      <div aria-hidden="true" className="-mx-4 mt-3 h-px bg-border lg:mx-0" />
 
       {/* Liste */}
       {filteredSongs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <span aria-hidden="true" className="material-symbols-outlined text-muted-foreground">
-              search
-            </span>
-          </div>
+        <div className="flex flex-col items-center py-16 text-center">
+          <SearchX className="mb-3 h-8 w-8 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
           <p className="text-muted-foreground">Aucun morceau trouvé</p>
           {hasActiveNarrowing && (
             <button
@@ -625,78 +570,106 @@ export function LibraryView({
                 setFilters({ difficulties: [], tunings: [], hasCapo: null });
                 setSortBy("date_desc");
               }}
-              className="mt-2 min-h-[44px] text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="mt-2 min-h-[44px] text-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Réinitialiser les filtres
             </button>
           )}
         </div>
       ) : sections ? (
-        <div className="space-y-7">
+        /*
+          La vue d'ensemble : une etagere par etat de travail. Le chevron
+          ouvre la liste complete du statut — c'est l'ancien onglet.
+        */
+        <div className="space-y-6 pt-5">
           {sections.map((section) => (
             <section key={section.value} aria-labelledby={`section-${section.value}`}>
-              <div className="mb-2.5 flex items-baseline gap-2">
-                <h2
-                  id={`section-${section.value}`}
-                  className="text-sm font-semibold uppercase tracking-wider"
-                >
+              <div className="mb-2.5 flex items-center justify-between gap-3">
+                <h2 id={`section-${section.value}`} className="text-lg font-extrabold tracking-[-0.01em]">
                   {section.label}
+                  <span className="tabular font-bold text-muted-foreground">
+                    <span aria-hidden="true"> · </span>
+                    {section.songs.length}
+                  </span>
                 </h2>
-                <span className="tabular text-xs text-muted-foreground">
-                  {section.songs.length}
-                </span>
-                <span className="hidden text-xs text-muted-foreground sm:inline">
-                  — {section.hint}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setActiveFilter(section.value)}
+                  aria-label={`Voir tous les morceaux : ${section.label}`}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <ChevronRight className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
+                </button>
               </div>
-              <SongGroup
-                songs={section.songs}
-                limit={SONGS_PER_SECTION}
-                bestBpm={bestBpm}
-                onSelect={setSelectedSong}
-                onStatusChange={handleStatusChange}
-              />
+
+              {section.value === "mastered" ? (
+                // Le repertoire acquis se consulte plus qu'il ne se parcourt :
+                // une courte liste suffit, le chevron mene au reste.
+                <SongGroup
+                  songs={section.songs}
+                  limit={MASTERED_PREVIEW}
+                  bestBpm={bestBpm}
+                  onSelect={setSelectedSong}
+                  onStatusChange={handleStatusChange}
+                  onShowAll={() => setActiveFilter(section.value)}
+                />
+              ) : (
+                <SongShelf songs={section.songs} bestBpm={bestBpm} onSelect={setSelectedSong} />
+              )}
             </section>
           ))}
         </div>
       ) : (
-        <SongGroup
-          // Changer d'onglet de statut repart du haut d'une liste repliee :
-          // la longueur depliee du precedent n'a rien a voir avec celui-ci.
-          key={activeFilter}
-          songs={filteredSongs}
-          limit={SONGS_PER_PAGE}
-          bestBpm={bestBpm}
-          onSelect={setSelectedSong}
-          onStatusChange={handleStatusChange}
-        />
+        <div className="pt-4">
+          <button
+            type="button"
+            onClick={() => setActiveFilter("all")}
+            className="-ml-1 mb-2 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ChevronLeft className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
+            Tous les morceaux
+          </button>
+          <h2 className="mb-2 text-2xl font-extrabold tracking-[-0.01em]">
+            {listSection?.label}
+            <span className="tabular font-bold text-muted-foreground">
+              <span aria-hidden="true"> · </span>
+              {filteredSongs.length}
+            </span>
+          </h2>
+          <SongGroup
+            // Changer de statut repart du haut d'une liste repliee : la
+            // longueur depliee du precedent n'a rien a voir avec celui-ci.
+            key={activeFilter}
+            songs={filteredSongs}
+            limit={SONGS_PER_PAGE}
+            bestBpm={bestBpm}
+            onSelect={setSelectedSong}
+            onStatusChange={handleStatusChange}
+          />
+        </div>
       )}
 
       {/*
         Bouton flottant mobile : l'ajout est l'action la plus repetee de
         l'ecran, et la zone du pouce est en bas. Il se place au-dessus de
-        la barre d'onglets et de l'encoche.
+        la pilule de navigation et de l'encoche.
       */}
-      <div className="fixed bottom-0 right-0 z-30 p-4 pb-[calc(env(safe-area-inset-bottom)+5.5rem)] sm:hidden">
+      <div className="fixed bottom-0 right-0 z-30 flex flex-col items-center gap-3 p-4 pb-[calc(env(safe-area-inset-bottom)+5.5rem)] sm:hidden">
         {spotifyConnected && userPlan !== "free" && (
           <button
             onClick={() => setIsImportModalOpen(true)}
             aria-label="Importer une playlist Spotify"
-            className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-lg transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="glass flex h-11 w-11 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span aria-hidden="true" className="material-symbols-outlined">
-              playlist_add
-            </span>
+            <ListPlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
           </button>
         )}
         <button
           onClick={() => setIsAddModalOpen(true)}
           aria-label="Ajouter un morceau"
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          <span aria-hidden="true" className="material-symbols-outlined text-[28px]">
-            add
-          </span>
+          <Plus className="h-7 w-7" strokeWidth={2} aria-hidden="true" />
         </button>
       </div>
 

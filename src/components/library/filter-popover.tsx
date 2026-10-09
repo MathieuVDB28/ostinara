@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { SlidersHorizontal } from "lucide-react";
 import type { FilterState, SongDifficulty } from "@/types";
 
 interface FilterPopoverProps {
@@ -78,30 +79,24 @@ export function FilterPopover({
     <div className="relative" ref={popoverRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+        aria-expanded={isOpen}
+        className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
           activeCount > 0
-            ? "border-primary bg-primary/10 text-primary"
-            : "border-input bg-background hover:bg-accent"
+            ? "border-foreground bg-foreground text-background"
+            : "border-border text-muted-foreground hover:text-foreground"
         }`}
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-          />
-        </svg>
-        <span className="hidden sm:inline">Filtres</span>
+        <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+        <span>Filtres</span>
         {activeCount > 0 && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+          <span className="tabular flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[10px] text-foreground">
             {activeCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-50 mt-2 w-72 rounded-lg border border-border bg-background p-4 shadow-lg">
+        <div className="absolute left-0 z-50 mt-2 w-72 rounded-xl border border-border bg-card p-4 shadow-md">
           {/* Header */}
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-semibold">Filtres avancés</h3>

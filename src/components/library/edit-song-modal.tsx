@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { ListPlus, Music, Play, X } from "lucide-react";
 import { updateSong, deleteSong } from "@/lib/actions/songs";
 import { getCoversBySong, canUploadCover } from "@/lib/actions/covers";
 // AddCoverModal entraine video-upload → tus-js-client, et video-upload
@@ -255,66 +256,98 @@ export function EditSongModal({
   if (!isOpen || !song) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center sm:items-center sm:p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         onClick={handleClose}
       />
 
-      {/* Modal */}
-      <div className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-card shadow-xl">
-        {/* Header with cover */}
-        <div className="relative h-32 bg-gradient-to-b from-primary/20 to-transparent">
-          {song.cover_url && (
-            <img
-              src={song.cover_url}
-              alt={song.album || song.title}
-              className="absolute inset-0 h-full w-full object-cover opacity-30"
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-
-          {/* Close button */}
-          <button aria-label="Fermer"
-            onClick={handleClose}
-            className="absolute right-4 top-4 rounded-lg bg-background/50 p-2 backdrop-blur-sm transition-colors hover:bg-background"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Song info header */}
-        <div className="-mt-16 flex gap-4 px-6">
+      {/*
+        La fiche, style Etagere (docs/refonte-ui.md) : la pochette en grand
+        comme une page d'album, puis une seule action en ambre — jouer le
+        morceau. Plein ecran sur mobile, fenetre centree sur ordi.
+      */}
+      <div className="relative z-10 w-full overflow-y-auto bg-card sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl sm:border sm:border-border sm:shadow-md">
+        <div className="relative h-[300px] overflow-hidden sm:h-[260px] sm:rounded-t-2xl">
           {song.cover_url ? (
             <Image
               src={song.cover_url}
-              alt={song.album || song.title}
-              className="h-24 w-24 rounded-lg object-cover shadow-lg"
-              width={96}
-              height={96}
+              alt=""
+              fill
+              sizes="(min-width: 640px) 672px, 100vw"
+              className="object-cover"
+              priority
             />
           ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-muted shadow-lg">
-              <svg className="h-10 w-10 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-              </svg>
+            <div className="flex h-full w-full items-center justify-center bg-muted">
+              <Music className="h-16 w-16 text-muted-foreground" strokeWidth={1.25} aria-hidden="true" />
             </div>
           )}
-          <div className="flex-1 pt-8">
-            <h2 className="text-xl font-bold">{song.title}</h2>
-            <p className="text-muted-foreground">{song.artist}</p>
-            {song.album && (
-              <p className="text-sm text-muted-foreground">{song.album}</p>
-            )}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent via-40% to-card" />
+
+          <button
+            aria-label="Fermer"
+            onClick={handleClose}
+            className="absolute left-4 top-[calc(env(safe-area-inset-top)+12px)] flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70 sm:left-auto sm:right-4 sm:top-4"
+          >
+            <X className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="relative -mt-20 px-5 sm:px-6">
+          <h2 className="text-balance text-[28px] font-extrabold leading-tight tracking-[-0.02em]">
+            {song.title}
+          </h2>
+          <p className="font-semibold text-muted-foreground">
+            {song.artist}
+            {song.album && <span className="font-normal"> · {song.album}</span>}
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {[
+              statusOptions.find((option) => option.value === song.status)?.label,
+              song.tuning,
+              song.capo_position > 0 ? `Capo ${song.capo_position}` : null,
+              song.difficulty ? ({ beginner: "Débutant", intermediate: "Intermédiaire", advanced: "Avancé", expert: "Expert" } as const)[song.difficulty] : null,
+            ]
+              .filter(Boolean)
+              .map((label) => (
+                <span
+                  key={label}
+                  className="rounded-md border border-border px-2 py-1 font-mono text-[11.5px] font-semibold text-muted-foreground"
+                >
+                  {label}
+                </span>
+              ))}
+          </div>
+
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                router.push(`/jouer?song=${song.id}`);
+              }}
+              className="inline-flex min-h-[46px] flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card sm:flex-none"
+            >
+              <Play className="h-4 w-4 fill-current" strokeWidth={0} aria-hidden="true" />
+              Jouer ce morceau
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAddToPlaylist(true)}
+              aria-label="Ajouter à une playlist"
+              className="inline-flex min-h-[46px] w-[46px] items-center justify-center rounded-xl border border-border transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ListPlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+            </button>
           </div>
         </div>
 
         {/* Spotify embed player */}
         {song.spotify_id && userPlan !== "free" && (
-          <div className="mx-6 mt-4">
+          <div className="mx-5 mt-4 sm:mx-6">
             <iframe
               src={`https://open.spotify.com/embed/track/${song.spotify_id}?theme=0`}
               width="100%"
@@ -327,69 +360,59 @@ export function EditSongModal({
         )}
 
         {/* Tabs */}
-        <div className="mt-4 flex gap-1 overflow-x-auto border-b border-border px-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <button
-            onClick={() => setActiveTab("details")}
-            className={`shrink-0 px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === "details"
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Détails
-          </button>
-          <button
-            onClick={() => setActiveTab("tablatures")}
-            className={`shrink-0 px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === "tablatures"
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Tablatures
-          </button>
-          <button
-            onClick={() => setActiveTab("covers")}
-            className={`flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === "covers"
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Covers
-            {covers.length > 0 && (
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
-                {covers.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("sessions")}
-            className={`flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === "sessions"
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Sessions
-          </button>
+        <div
+          role="tablist"
+          aria-label="Sections de la fiche"
+          className="mt-5 flex gap-6 overflow-x-auto border-b border-border px-5 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
+        >
+          {(
+            [
+              ["details", "Détails"],
+              ["tablatures", "Tablatures"],
+              ["covers", "Covers"],
+              ["sessions", "Sessions"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              role="tab"
+              aria-selected={activeTab === value}
+              onClick={() => setActiveTab(value)}
+              className={`flex shrink-0 items-center gap-1.5 pb-2.5 pt-1 text-sm font-semibold transition-colors ${
+                activeTab === value
+                  ? "text-foreground shadow-[inset_0_-2px_0_var(--foreground)]"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+              {value === "covers" && covers.length > 0 && (
+                <span className="tabular text-xs text-muted-foreground">{covers.length}</span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* Details Tab */}
         {activeTab === "details" && (
         <div className="space-y-6 p-6">
           {/* Statut */}
-          <div className="rounded-xl bg-accent/50 p-4">
-            <label className="mb-3 block text-sm font-medium">Statut</label>
-            <div className="flex gap-2">
+          <div>
+            <span id="song-status-label" className="mb-2 block text-sm font-medium">Statut</span>
+            <div
+              role="radiogroup"
+              aria-labelledby="song-status-label"
+              className="grid grid-cols-3 gap-0.5 rounded-xl border border-border bg-card p-[3px]"
+            >
               {statusOptions.map((option) => (
                 <button
                   key={option.value}
+                  role="radio"
+                  aria-checked={status === option.value}
                   onClick={() => setStatus(option.value)}
-                  className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+                  className={`min-h-[36px] rounded-[9px] text-sm font-semibold transition-colors ${
                     status === option.value
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-background hover:bg-muted"
+                      ? "bg-secondary text-foreground shadow-[inset_0_0_0_1px_var(--border)]"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {option.label}
@@ -413,10 +436,6 @@ export function EditSongModal({
             onTargetBpmChange={setTargetBpm}
             bestBpm={bestBpm}
             points={bpmPoints}
-            onWorkOnSong={() => {
-              onClose();
-              router.push(`/jouer?song=${song.id}`);
-            }}
           />
 
           {/* Basic info */}
@@ -515,17 +534,6 @@ export function EditSongModal({
             />
           </div>
 
-          {/* Add to playlist */}
-          <button
-            onClick={() => setShowAddToPlaylist(true)}
-            className="flex w-full items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm transition-colors hover:bg-accent"
-          >
-            <svg className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            <span className="font-medium">Ajouter à une playlist</span>
-          </button>
-
           {error && (
             <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {error}
@@ -551,7 +559,9 @@ export function EditSongModal({
             <button
               onClick={handleSave}
               disabled={saving || !title || !artist}
-              className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+              // L'ambre est pris par « Jouer ce morceau » : l'enregistrement
+              // passe a l'encre, toujours lisible comme l'action du formulaire.
+              className="rounded-xl bg-foreground px-6 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {saving ? "Sauvegarde..." : "Sauvegarder"}
             </button>
@@ -797,7 +807,6 @@ interface TempoBlockProps {
   bestBpm: number | null;
   /** `null` tant que la courbe n'est pas revenue du serveur. */
   points: SongBpmPoint[] | null;
-  onWorkOnSong: () => void;
 }
 
 /**
@@ -813,7 +822,6 @@ function TempoBlock({
   onTargetBpmChange,
   bestBpm,
   points,
-  onWorkOnSong,
 }: TempoBlockProps) {
   const parsed = targetBpm ? parseInt(targetBpm, 10) : NaN;
   const effectiveTarget = !isNaN(parsed) && parsed > 0 ? parsed : null;
@@ -832,19 +840,8 @@ function TempoBlock({
 
   return (
     <div className="space-y-4 rounded-xl border border-border p-4">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-medium">Progression au tempo</h3>
-        <button
-          type="button"
-          onClick={onWorkOnSong}
-          className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <span aria-hidden="true" className="material-symbols-outlined text-[16px]">
-            play_arrow
-          </span>
-          Travailler
-        </button>
-      </div>
+      {/* « Travailler » doublonnait « Jouer ce morceau », en tete de fiche. */}
+      <h3 className="text-sm font-medium">Progression au tempo</h3>
 
       {ladderTarget ? (
         <TempoLadder
@@ -853,7 +850,7 @@ function TempoBlock({
           floorBpm={slowPracticeFloor(ladderTarget)}
         />
       ) : (
-        <p className="rounded-lg bg-accent/50 p-3 text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Donne-toi un tempo à atteindre : c&apos;est lui qui mesurera la
           progression, séance après séance.
         </p>

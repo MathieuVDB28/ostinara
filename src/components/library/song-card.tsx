@@ -1,5 +1,7 @@
 "use client";
 
+import { Check, FileText, Video } from "lucide-react";
+import { Cover } from "@/components/ui/cover";
 import { songTempoProgress } from "@/lib/song-progress";
 import type { Song, SongDifficulty } from "@/types";
 
@@ -61,20 +63,32 @@ function FretMarkers({ difficulty }: { difficulty: SongDifficulty }) {
   );
 }
 
+/**
+ * La lecture de l'avancee d'un morceau, partagee par la ligne et l'etagere.
+ *
+ * « 88/104 » se compare d'un morceau a l'autre, « 62 % » ne se compare a
+ * rien : le pourcentage saisi a la main ne revient que pour les morceaux
+ * sans tempo cible.
+ */
+export function songProgress(song: Song, bestBpm?: number | null) {
+  const tempo = songTempoProgress(song, bestBpm);
+  return {
+    tempo,
+    percent: tempo ? tempo.percent : song.progress_percent,
+  };
+}
+
+/**
+ * Une ligne de la bibliotheque (vue « Voir tout »).
+ *
+ * Plus de carte bordee par morceau ni de chevron (docs/refonte-ui.md,
+ * style Etagere) : les lignes reposent sur le fond, separees par un filet,
+ * et toute la ligne ouvre la fiche.
+ */
 export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
   const isLearning = song.status === "learning";
   const isMastered = song.status === "mastered";
-
-  /*
-   * La progression, en tempo.
-   *
-   * `progress_percent` etait saisi au curseur : un chiffre pose une fois,
-   * jamais revu, et faux des la deuxieme semaine. Le tempo tenu en session
-   * est mesure, compare a une cible qui existe deja. Quand aucune cible
-   * n'est connue, on retombe sur l'ancienne valeur plutot que d'inventer.
-   */
-  const tempo = songTempoProgress(song, bestBpm);
-  const percent = tempo ? tempo.percent : song.progress_percent;
+  const { tempo, percent } = songProgress(song, bestBpm);
 
   // Une seule ligne de metadonnees, dans l'ordre ou un guitariste en a
   // besoin avant de jouer : accordage, tempo, capo. Le tempo affiche est
@@ -90,82 +104,22 @@ export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
   return (
     <button
       onClick={onClick}
-      className="group flex w-full items-center gap-3.5 rounded-xl border border-border bg-card p-3 text-left transition-colors hover:border-primary/50 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="flex w-full items-center gap-3.5 border-b border-border px-1 py-2.5 text-left transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       {/* Pochette. La progression vit dessus plutot que dans un badge de plus. */}
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
-        {song.cover_url ? (
-          <img
-            src={song.cover_url}
-            alt=""
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <span
-            aria-hidden="true"
-            className="material-symbols-outlined flex h-full w-full items-center justify-center text-2xl text-muted-foreground"
-          >
-            music_note
-          </span>
-        )}
-
+      <Cover src={song.cover_url} className="h-12 w-12 rounded-[4px]">
         {isLearning && (
-          <span
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-1.5 bg-foreground/20"
-          >
-            <span
-              className="block h-full bg-primary"
-              style={{ width: `${percent}%` }}
-            />
+          <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1 bg-foreground/20">
+            <span className="block h-full bg-primary" style={{ width: `${percent}%` }} />
           </span>
         )}
-
-        {isMastered && (
-          <span
-            aria-hidden="true"
-            className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-success text-success-foreground"
-          >
-            <span className="material-symbols-outlined text-[14px]">check</span>
-          </span>
-        )}
-      </div>
+      </Cover>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2">
-          <h3 className="min-w-0 flex-1 truncate text-[15px] font-semibold">
-            {song.title}
-          </h3>
-          {/*
-            La lecture chiffree : « 88/104 » se compare d'une carte a
-            l'autre, « 62 % » ne se compare a rien. Le pourcentage ne
-            revient que pour les morceaux sans tempo cible.
-          */}
-          {isLearning && (
-            <span className="tabular shrink-0 text-xs font-semibold text-primary">
-              {tempo ? (
-                <>
-                  {tempo.achieved}
-                  <span className="text-muted-foreground">/{tempo.target}</span>
-                  <span className="sr-only"> BPM</span>
-                </>
-              ) : (
-                `${percent}%`
-              )}
-            </span>
-          )}
-          {isMastered && (
-            <span className="shrink-0 text-xs font-semibold text-success">
-              Maîtrisé
-            </span>
-          )}
-        </div>
+        <h3 className="truncate text-[15px] font-semibold">{song.title}</h3>
+        <p className="truncate text-[13px] text-muted-foreground">{song.artist}</p>
 
-        <p className="truncate text-[13px] text-muted-foreground">
-          {song.artist}
-        </p>
-
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
           {song.difficulty && <FretMarkers difficulty={song.difficulty} />}
 
           {meta.length > 0 && (
@@ -178,43 +132,43 @@ export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
               reserve a l'interactif et au tempo. */}
           {song.tabs_url && (
             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-              <span
-                aria-hidden="true"
-                className="material-symbols-outlined text-[14px]"
-              >
-                description
-              </span>
+              <FileText className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
               Tab
             </span>
           )}
 
           {coversCount > 0 && (
             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-              <span
-                aria-hidden="true"
-                className="material-symbols-outlined text-[14px]"
-              >
-                videocam
-              </span>
+              <Video className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
               {coversCount}
-              <span className="sr-only">
-                cover{coversCount > 1 ? "s" : ""}
-              </span>
+              <span className="sr-only">cover{coversCount > 1 ? "s" : ""}</span>
             </span>
           )}
         </div>
       </div>
 
-      {/*
-        C'etait un more_vert revele au survol : invisible au doigt, et il
-        promettait un menu alors que toute la carte ouvre la fiche.
-      */}
-      <span
-        aria-hidden="true"
-        className="material-symbols-outlined shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-      >
-        chevron_right
-      </span>
+      {isLearning && (
+        <span className="tabular shrink-0 font-display text-lg font-bold leading-none">
+          {tempo ? (
+            <>
+              {tempo.achieved}
+              <span className="text-sm text-muted-foreground">/{tempo.target}</span>
+              <span className="sr-only"> BPM</span>
+            </>
+          ) : (
+            <>
+              {percent}
+              <span className="text-sm text-muted-foreground"> %</span>
+            </>
+          )}
+        </span>
+      )}
+      {isMastered && (
+        <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-success">
+          <Check className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
+          <span className="sr-only">Maîtrisé</span>
+        </span>
+      )}
     </button>
   );
 }

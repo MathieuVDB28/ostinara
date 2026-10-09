@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Search } from "lucide-react";
 import { SearchResults } from "./search-results";
 import { useGlobalSearch } from "./use-global-search";
 
@@ -21,19 +22,18 @@ export function SearchPageView() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-extrabold lg:text-3xl">Recherche</h1>
+        <h1 className="text-2xl font-extrabold tracking-[-0.01em] lg:text-3xl">Recherche</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Morceaux, albums, covers, exercices, matos et amis — au même endroit.
         </p>
       </div>
 
       <div className="relative">
-        <span
+        <Search
+          className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
+          strokeWidth={1.75}
           aria-hidden="true"
-          className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-muted-foreground"
-        >
-          search
-        </span>
+        />
         <input
           // On vient sur cet ecran pour taper : le champ prend le focus.
           autoFocus
@@ -42,7 +42,7 @@ export function SearchPageView() {
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Chercher…"
           aria-label="Rechercher dans toute l'app"
-          className="min-h-[52px] w-full rounded-xl border border-input bg-card py-3 pl-11 pr-4 text-[15px] focus:border-primary focus:ring-1 focus:ring-primary/20"
+          className="min-h-[52px] w-full rounded-xl border border-border bg-card py-3 pl-11 pr-4 text-[15px] focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
         />
       </div>
 

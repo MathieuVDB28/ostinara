@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Disc3, Dumbbell, Guitar, Music, User, Video, type LucideIcon } from "lucide-react";
+import { Cover } from "@/components/ui/cover";
 import { EmptyState } from "@/components/ui/empty-state";
 import { MIN_QUERY_LENGTH } from "./use-global-search";
-import type { SearchResult, SearchResultGroup } from "@/types";
+import type { SearchResult, SearchResultGroup, SearchResultKind } from "@/types";
 
 interface SearchResultsProps {
   groups: SearchResultGroup[];
@@ -18,6 +20,16 @@ interface SearchResultsProps {
   /** Ce qu'on affiche avant la premiere frappe. */
   placeholder?: ReactNode;
 }
+
+/** Le repli sans image, par type de resultat (Lucide, cf. docs/refonte-ui.md). */
+const KIND_ICON: Record<SearchResultKind, LucideIcon> = {
+  song: Music,
+  album: Disc3,
+  cover: Video,
+  gear: Guitar,
+  friend: User,
+  exercise: Dumbbell,
+};
 
 function ResultRow({
   result,
@@ -41,17 +53,17 @@ function ResultRow({
         }`}
       >
         {result.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Cover
             src={result.imageUrl}
-            alt=""
-            className="h-10 w-10 shrink-0 rounded-lg object-cover"
+            className={`h-11 w-11 ${result.kind === "friend" ? "rounded-full" : "rounded-[4px]"}`}
           />
         ) : (
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-            <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-              {result.icon}
-            </span>
+          <span
+            className={`flex h-11 w-11 shrink-0 items-center justify-center bg-secondary text-muted-foreground ${
+              result.kind === "friend" ? "rounded-full" : "rounded-[4px]"
+            }`}
+          >
+            <KindIcon kind={result.kind} />
           </span>
         )}
 
@@ -64,12 +76,6 @@ function ResultRow({
           )}
         </span>
 
-        <span
-          aria-hidden="true"
-          className="material-symbols-outlined shrink-0 text-muted-foreground"
-        >
-          chevron_right
-        </span>
       </Link>
     </li>
   );
@@ -133,7 +139,7 @@ export function SearchResults({
         <section key={group.kind} aria-labelledby={`${idPrefix}-${group.kind}`}>
           <h2
             id={`${idPrefix}-${group.kind}`}
-            className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+            className="px-3 pb-1 text-base font-extrabold tracking-[-0.01em]"
           >
             {group.label}
           </h2>
@@ -155,4 +161,9 @@ export function SearchResults({
       ))}
     </div>
   );
+}
+
+function KindIcon({ kind }: { kind: SearchResultKind }) {
+  const Icon = KIND_ICON[kind];
+  return <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />;
 }

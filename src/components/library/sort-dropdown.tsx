@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { ArrowDownUp, ChevronDown } from "lucide-react";
 import type { SortOption } from "@/types";
 
 interface SortDropdownProps {
@@ -52,29 +53,21 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
+        aria-expanded={isOpen}
+        aria-label={`Trier : ${currentLabel}`}
+        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
-          />
-        </svg>
+        <ArrowDownUp className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
         <span className="hidden sm:inline">{currentLabel}</span>
-        <svg
-          className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        <ChevronDown
+          className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          strokeWidth={2}
+          aria-hidden="true"
+        />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-border bg-background py-1 shadow-lg">
+        <div className="absolute left-0 z-50 mt-2 w-48 rounded-xl border border-border bg-card py-1 shadow-md">
           {sortOptions.map((option) => (
             <button
               key={option.value}

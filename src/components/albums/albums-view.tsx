@@ -10,6 +10,23 @@ import { WeeklyAlbumsView } from "./weekly-albums-view";
 import { AddToAlbumWishlistModal } from "./add-to-album-wishlist-modal";
 import { removeFromAlbumWishlist } from "@/lib/actions/album-wishlist";
 import { useBiblioSearch } from "@/components/biblio/biblio-search";
+import Link from "next/link";
+import { Bookmark, Disc3, ListFilter, Plus, SearchX, Star } from "lucide-react";
+import { Cover } from "@/components/ui/cover";
+
+type AlbumsTab = "reviews" | "wishlist" | "week" | "recommendations";
+
+const TABS: { value: AlbumsTab; label: string }[] = [
+  { value: "reviews", label: "Mes écoutes" },
+  { value: "wishlist", label: "À écouter" },
+  { value: "week", label: "Semaine" },
+  { value: "recommendations", label: "Recos" },
+];
+
+const CHIP =
+  "inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const CHIP_IDLE = "border-border text-muted-foreground hover:text-foreground";
+const CHIP_ACTIVE = "border-border bg-secondary text-foreground";
 
 interface AlbumsViewProps {
   initialReviews: AlbumReview[];
@@ -28,7 +45,7 @@ export function AlbumsView({
   const [wishlist, setWishlist] = useState(initialWishlist);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"reviews" | "wishlist" | "week" | "recommendations">("reviews");
+  const [activeTab, setActiveTab] = useState<AlbumsTab>("reviews");
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [reviewFromWishlist, setReviewFromWishlist] = useState<AlbumWishlistItem | null>(null);
   const [starFilter, setStarFilter] = useState(0);
@@ -53,6 +70,9 @@ export function AlbumsView({
   );
 
   const filteredWishlist = wishlist.filter(matchesSearch);
+
+  // 10 en base = 5 etoiles
+  const favorites = reviews.filter((r) => r.rating === 10);
 
   const hasActiveFilters = query.length > 0 || starFilter > 0;
 
@@ -104,120 +124,123 @@ export function AlbumsView({
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Albums</h1>
-          <p className="mt-1 text-muted-foreground">
-            Tes écoutes et impressions
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {activeTab === "wishlist" ? (
-            <button
-              onClick={() => setIsWishlistModalOpen(true)}
-              className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              <span className="material-symbols-outlined text-[20px]">add</span>
-              Ajouter
-            </button>
-          ) : activeTab === "reviews" ? (
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              <span className="material-symbols-outlined text-[20px]">add</span>
-              Ajouter
-            </button>
-          ) : null}
-        </div>
-      </div>
+      {/*
+        Onglets, filtre par etoiles et ajout sur une seule rangee. Le titre
+        « Albums » et son sous-titre repetaient le segment juste au-dessus.
+      */}
+      <div className="flex items-center gap-1.5">
+        <div
+          role="group"
+          aria-label="Vues des albums"
+          className="-ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 pl-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:ml-0 lg:pl-0 [&::-webkit-scrollbar]:hidden"
+        >
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.value;
+            const count =
+              tab.value === "reviews" ? reviews.length : tab.value === "wishlist" ? wishlist.length : null;
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setActiveTab(tab.value)}
+                aria-pressed={isActive}
+                className={`${CHIP} ${isActive ? CHIP_ACTIVE : CHIP_IDLE}`}
+              >
+                {tab.label}
+                {count !== null && <span className="tabular opacity-70">{count}</span>}
+                {tab.value === "recommendations" && !isPaid && (
+                  <span className="rounded bg-primary/15 px-1 text-[10px] font-bold text-primary">PRO</span>
+                )}
+              </button>
+            );
+          })}
 
-      {/* Tabs */}
-      <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-accent/50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <button
-          onClick={() => setActiveTab("reviews")}
-          className={`flex-1 shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === "reviews"
-              ? "bg-card text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Mes écoutes ({reviews.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("wishlist")}
-          className={`flex-1 shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === "wishlist"
-              ? "bg-card text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          A écouter ({wishlist.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("week")}
-          className={`flex-1 shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === "week"
-              ? "bg-card text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Semaine
-        </button>
-        <button
-          onClick={() => setActiveTab("recommendations")}
-          className={`flex-1 shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === "recommendations"
-              ? "bg-card text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Recos
-          {!isPaid && (
-            <span className="ml-1.5 rounded bg-primary/20 px-1.5 py-0.5 text-xs text-primary">PRO</span>
-          )}
-        </button>
-      </div>
-
-      {/* Content - Reviews */}
-      {activeTab === "reviews" && (
-        <>
-          {reviews.length > 0 && (
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              {[0, 5, 4, 3, 2, 1].map((val) => {
+          {activeTab === "reviews" && reviews.length > 0 && (
+            <>
+              <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 self-center bg-border" />
+              {[5, 4, 3, 2, 1].map((val) => {
                 const isActive = starFilter === val;
                 return (
                   <button
                     key={val}
-                    onClick={() => setStarFilter(val)}
-                    className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
-                      isActive
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    }`}
+                    onClick={() => setStarFilter(isActive ? 0 : val)}
+                    aria-pressed={isActive}
+                    aria-label={`${val} étoile${val > 1 ? "s" : ""}`}
+                    className={`${CHIP} ${isActive ? CHIP_ACTIVE : CHIP_IDLE}`}
                   >
-                    {val === 0 ? (
-                      "Toutes"
-                    ) : (
-                      <>
-                        <span className="material-symbols-outlined text-[14px] text-primary">star</span>
-                        {val}
-                      </>
-                    )}
+                    <Star className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
+                    {val}
                   </button>
                 );
               })}
-              {hasActiveFilters && (
-                <span className="text-sm text-muted-foreground">
-                  {filteredReviews.length} résultat{filteredReviews.length !== 1 ? "s" : ""}
+            </>
+          )}
+        </div>
+
+        {(activeTab === "reviews" || activeTab === "wishlist") && (
+          <button
+            onClick={() => (activeTab === "wishlist" ? setIsWishlistModalOpen(true) : setIsAddModalOpen(true))}
+            aria-label={activeTab === "wishlist" ? "Ajouter un album à écouter" : "Ajouter une écoute"}
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-primary px-3.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+            <span className="hidden sm:inline">Ajouter</span>
+          </button>
+        )}
+      </div>
+
+      <div aria-hidden="true" className="-mx-4 mb-5 mt-3 h-px bg-border lg:mx-0" />
+
+      {/* Content - Reviews */}
+      {activeTab === "reviews" && (
+        <>
+          {hasActiveFilters && (
+            <p className="mb-3 text-sm text-muted-foreground">
+              {filteredReviews.length} résultat{filteredReviews.length !== 1 ? "s" : ""}
+            </p>
+          )}
+
+          {/* Les coups de coeur en etagere, avant la grille complete */}
+          {!hasActiveFilters && favorites.length > 1 && (
+            <section aria-labelledby="albums-favorites" className="mb-6">
+              <h2 id="albums-favorites" className="mb-2.5 text-lg font-extrabold tracking-[-0.01em]">
+                Tes 5 étoiles
+                <span className="tabular font-bold text-muted-foreground">
+                  <span aria-hidden="true"> · </span>
+                  {favorites.length}
                 </span>
-              )}
-            </div>
+              </h2>
+              <div className="-mx-4 flex snap-x snap-proximity scroll-pl-4 overflow-x-auto px-4 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:scroll-pl-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
+                {favorites.map((review, index) => (
+                  <Link
+                    key={review.id}
+                    href={review.spotify_id ? `/albums/${review.spotify_id}` : `/artists/by-name?q=${encodeURIComponent(review.artist_name)}`}
+                    className="w-[104px] shrink-0 snap-start lg:w-[132px]"
+                  >
+                    <Cover
+                      src={review.cover_url}
+                      alt=""
+                      className={`h-[104px] w-[104px] shadow-[-6px_0_12px_-4px_rgb(0_0_0/0.45)] lg:h-[132px] lg:w-[132px] ${index === 0 ? "rounded-l-md" : ""}`}
+                    />
+                    <span className="block truncate pr-2 pt-1.5 text-xs font-semibold">{review.album_name}</span>
+                    <span className="block truncate pr-2 text-[11.5px] text-muted-foreground">{review.artist_name}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {!hasActiveFilters && favorites.length > 1 && (
+            <h2 className="mb-2.5 text-lg font-extrabold tracking-[-0.01em]">
+              Toutes tes écoutes
+              <span className="tabular font-bold text-muted-foreground">
+                <span aria-hidden="true"> · </span>
+                {reviews.length}
+              </span>
+            </h2>
           )}
 
           {filteredReviews.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {filteredReviews.map((review) => (
                 <AlbumReviewCard
                   key={review.id}
@@ -228,10 +251,12 @@ export function AlbumsView({
               ))}
             </div>
           ) : reviews.length > 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12">
-              <span className="material-symbols-outlined mb-3 text-4xl text-muted-foreground">
-                {query ? "search_off" : "filter_list"}
-              </span>
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              {query ? (
+                <SearchX className="mb-3 h-8 w-8 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
+              ) : (
+                <ListFilter className="mb-3 h-8 w-8 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
+              )}
               <p className="text-muted-foreground">
                 {query
                   ? `Aucun album ne correspond a "${searchQuery.trim()}"`
@@ -245,17 +270,15 @@ export function AlbumsView({
               </button>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <span className="material-symbols-outlined text-3xl">album</span>
-              </div>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Disc3 className="mb-4 h-10 w-10 text-muted-foreground" strokeWidth={1.25} aria-hidden="true" />
               <h3 className="mb-2 text-lg font-semibold">Aucun album</h3>
               <p className="mb-6 max-w-sm text-center text-muted-foreground">
                 Ajoute les albums que tu as écoutés, note-les et partage ton avis
               </p>
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground"
+                className="rounded-xl bg-primary px-5 py-2.5 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
                 Ajouter un album
               </button>
@@ -280,8 +303,8 @@ export function AlbumsView({
               ))}
             </div>
           ) : wishlist.length > 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12">
-              <span className="material-symbols-outlined mb-3 text-4xl text-muted-foreground">search_off</span>
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <SearchX className="mb-3 h-8 w-8 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
               <p className="text-muted-foreground">
                 Aucun album ne correspond a &quot;{searchQuery.trim()}&quot;
               </p>
@@ -293,17 +316,15 @@ export function AlbumsView({
               </button>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <span className="material-symbols-outlined text-3xl">bookmark</span>
-              </div>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Bookmark className="mb-4 h-10 w-10 text-muted-foreground" strokeWidth={1.25} aria-hidden="true" />
               <h3 className="mb-2 text-lg font-semibold">Aucun album en attente</h3>
               <p className="mb-6 max-w-sm text-center text-muted-foreground">
                 Ajoute les albums que tu aimerais écouter pour ne pas les oublier
               </p>
               <button
                 onClick={() => setIsWishlistModalOpen(true)}
-                className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground"
+                className="rounded-xl bg-primary px-5 py-2.5 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
                 Ajouter un album
               </button>

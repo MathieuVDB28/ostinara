@@ -110,7 +110,33 @@ Ce qui sert à toutes les autres phases.
 
 Composants prêts mais pas encore utilisés : `Cover`, `Frets` (phases 2 et 3).
 
-### Phase 2 — Biblio (A · Étagère)
+### Phase 2 — Biblio (A · Étagère) ✅ (faite le 2026-10-09)
+
+Fait :
+- En-tête : « Biblio » + segmenté + recherche sur une ligne en ordi ; sur
+  mobile la recherche se replie en loupe.
+- Morceaux : une rangée de puces (Filtres, Tri, playlists), trois sections
+  (étagères « En cours » et « À apprendre », aperçu de 4 « Maîtrisés »),
+  le chevron ouvre la liste complète du statut (`activeFilter`).
+- `song-shelf.tsx` : étagère, regroupement par album (`album`, sinon
+  `cover_url`), un album « ×N » se déplie sur place.
+- `song-card.tsx` : ligne à filet, sans carte ni chevron ; `songProgress()`
+  partagé avec l'étagère.
+- Fiche (`edit-song-modal.tsx`) : grande pochette, puces, « Jouer ce
+  morceau » seul bouton ambre, statut en segmenté, « Sauvegarder » à
+  l'encre. **Pas encore repris** : le contenu des onglets Tablatures,
+  Covers et Sessions de la fiche.
+- Albums : une rangée de puces (vues + étoiles + Ajouter), étagère
+  « Tes 5 étoiles », grille de tuiles sans carte.
+- Covers : puces de visibilité, tuiles vidéo sans carte.
+- Recherche : icônes Lucide par type de résultat, pochettes avec liseré.
+- Bug SSR de `BiblioSearchProvider` corrigé (vérifié en A/B : l'ancienne
+  version reproduit l'erreur, la nouvelle non).
+
+Restes notés pour la phase 5 : `EmptyState` (icônes Material), le champ
+`SearchResult.icon` devenu inutile, les modales d'ajout.
+
+Plan initial :
 
 Écrans de la maquette : Biblio › Morceaux, Voir tout, Fiche morceau,
 Albums, Covers, Recherche.
