@@ -9,53 +9,50 @@ interface BottomTabBarProps {
   badges: BadgeCounts;
 }
 
+/**
+ * Pilule flottante, icones seules (docs/refonte-ui.md, decision « barre
+ * du bas »). Le libelle reste lu par les lecteurs d'ecran.
+ *
+ * L'onglet actif est porte par une forme — une pastille plus large et
+ * cernee — et non par l'ambre : l'ambre est reserve a l'action principale
+ * de chaque ecran, la navigation n'en est pas une.
+ */
 export function BottomTabBar({ badges }: BottomTabBarProps) {
   const pathname = usePathname();
 
   return (
     <nav
       aria-label="Navigation principale"
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="glass fixed bottom-[calc(env(safe-area-inset-bottom)+12px)] left-1/2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full p-1 lg:hidden"
     >
-      <div className="flex items-center justify-around px-2 py-1">
-        {NAV_TABS.map((tab) => {
-          const isActive = coversPath(tab.href, pathname);
-          const badge = tabBadgeTotal(tab, badges);
+      {NAV_TABS.map((tab) => {
+        const isActive = coversPath(tab.href, pathname);
+        const badge = tabBadgeTotal(tab, badges);
 
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              aria-current={isActive ? "page" : undefined}
-              className={`relative flex min-h-[44px] flex-1 flex-col items-center gap-0.5 rounded-xl py-2 transition-colors ${
-                isActive ? "text-primary" : "text-muted-foreground"
-              }`}
-            >
-              {/*
-                L'etat actif est porte par une forme — pastille pleine —
-                et pas seulement par la teinte : bg-primary/10 tombait a
-                1.03:1 sur fond sombre, l'onglet actif devenait invisible.
-              */}
-              <div
-                className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${
-                  isActive ? "bg-primary text-primary-foreground" : ""
-                }`}
+        return (
+          <Link
+            key={tab.href}
+            href={tab.href}
+            aria-current={isActive ? "page" : undefined}
+            className={`relative flex h-11 items-center justify-center rounded-full transition-[width,background-color,color] duration-200 ${
+              isActive
+                ? "w-16 bg-secondary text-foreground shadow-[inset_0_0_0_1px_var(--border)]"
+                : "w-[52px] text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <NavIcon icon={tab.icon} className="h-[22px] w-[22px]" />
+            <span className="sr-only">{tab.label}</span>
+            {badge > 0 && (
+              <span
+                className="absolute right-2 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground"
+                aria-label={`${badge} notification${badge > 1 ? "s" : ""}`}
               >
-                <NavIcon icon={tab.icon} className="h-5 w-5" />
-              </div>
-              <span className="text-[11px] font-medium">{tab.label}</span>
-              {badge > 0 && (
-                <span
-                  className="absolute right-1 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-bold text-destructive-foreground"
-                  aria-label={`${badge} notification${badge > 1 ? "s" : ""}`}
-                >
-                  {badge}
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </div>
+                {badge}
+              </span>
+            )}
+          </Link>
+        );
+      })}
     </nav>
   );
 }

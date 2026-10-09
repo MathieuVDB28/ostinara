@@ -22,7 +22,7 @@ export default async function ProfilLayout({
     <>
       <ProfileIdentity profile={profile} />
       <ProfileShowcase profile={profile} />
-      <SegmentedNav tab={profilTab} />
+      <SegmentedNav tab={profilTab} variant="underline" className="mb-6" />
       {children}
     </>
   );

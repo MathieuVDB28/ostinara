@@ -19,7 +19,7 @@ export default function BiblioLayout({
         <BiblioSearchInput />
       </div>
 
-      <SegmentedNav tab={biblioTab} />
+      <SegmentedNav tab={biblioTab} variant="segmented" className="mb-6" />
 
       {children}
     </BiblioSearchProvider>

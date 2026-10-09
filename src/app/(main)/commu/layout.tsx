@@ -25,7 +25,7 @@ export default async function CommuLayout({
 
   return (
     <>
-      <SectionHeader tab={commuTab} title="Communauté" badges={badges} />
+      <SectionHeader tab={commuTab} title="Commu" badges={badges} variant="pills" />
       {children}
     </>
   );

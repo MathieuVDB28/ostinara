@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LogoutButton } from "@/components/layout/logout-button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { NotificationSetting } from "./notification-setting";
 import { SubscriptionStatusBadge } from "@/components/subscription";
 import type { UserProfile } from "@/types";
 
@@ -116,6 +117,16 @@ export function SettingsList({ profile, spotifyConnected }: SettingsListProps) {
           {account.map((row) => (
             <Row key={row.href} row={row} />
           ))}
+        </div>
+      </section>
+
+      {/* Notifications : le bouton flottait sur toutes les pages, il vit ici */}
+      <section>
+        <h2 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Notifications
+        </h2>
+        <div className="overflow-hidden rounded-2xl border border-border bg-card">
+          <NotificationSetting />
         </div>
       </section>
 

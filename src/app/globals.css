@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
 /*
+ * `dark:` suit la classe posee par next-themes, pas la preference systeme.
+ * Sans cette ligne, Tailwind v4 applique `dark:` selon le systeme : un
+ * telephone en mode sombre affichait des bouts de theme sombre dans
+ * l'app reglee sur « Clair ».
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
  * Palette Ostinara — tons chauds ambrés/bois (cf. CLAUDE.md).
  * Regle d'emploi : --primary ne sert qu'a deux choses, ce qui est
  * interactif et ce qui touche au tempo. Partout ailleurs, de l'encre
@@ -111,6 +119,8 @@
   --color-chart-5: var(--chart-5);
   --font-sans: var(--font-plus-jakarta);
   --font-mono: var(--font-jetbrains-mono);
+  --font-display: var(--font-barlow-condensed);
+  --font-serif: var(--font-bitter);
 }
 
 html,

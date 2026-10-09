@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono, Barlow_Condensed, Bitter } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/pwa";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -25,6 +25,28 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   weight: ["400", "600"],
+  display: "swap",
+  preload: false,
+});
+
+/*
+ * Les deux voix ajoutees par la refonte (docs/refonte-ui.md) :
+ * Barlow Condensed pour les titres et les chiffres — BPM, durees,
+ * classements, titres poses sur les pochettes — et Bitter pour ce que
+ * les gens ecrivent eux-memes : avis d'album, notes de session, bio.
+ */
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-barlow-condensed",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  display: "swap",
+});
+
+const bitter = Bitter({
+  variable: "--font-bitter",
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  style: ["normal", "italic"],
   display: "swap",
   preload: false,
 });
@@ -77,7 +99,7 @@ export default function RootLayout({
         <link rel="stylesheet" href={MATERIAL_SYMBOLS_HREF} />
       </head>
       <body
-        className={`${plusJakarta.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-foreground overflow-x-hidden`}
+        className={`${plusJakarta.variable} ${jetbrainsMono.variable} ${barlowCondensed.variable} ${bitter.variable} font-sans antialiased bg-background text-foreground overflow-x-hidden`}
       >
         <ThemeProvider>
           <ServiceWorkerRegistration />

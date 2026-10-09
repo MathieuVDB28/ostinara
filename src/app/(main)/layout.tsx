@@ -85,7 +85,7 @@ export default async function MainLayout({
 
           <DesktopSidebar badges={badges} userInfo={userInfo} />
 
-          <main className="w-full min-w-0 flex-1 overflow-x-hidden p-4 pb-24 lg:ml-64 lg:p-8 lg:pb-8">
+          <main className="w-full min-w-0 flex-1 overflow-x-hidden p-4 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:ml-64 lg:p-8 lg:pb-8">
             {children}
           </main>
 

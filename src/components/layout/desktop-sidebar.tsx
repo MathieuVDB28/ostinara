@@ -9,7 +9,6 @@ import { ThemeToggle } from "./theme-toggle";
 import { useCommandPalette } from "@/components/search/command-palette";
 import {
   DESKTOP_TABS,
-  activeSegment,
   coversPath,
   tabBadgeTotal,
   type BadgeCounts,
@@ -26,7 +25,7 @@ interface DesktopSidebarProps {
 }
 
 /**
- * Meme structure que la barre du bas : quatre groupes, deux niveaux max.
+ * Meme structure que la barre du bas : quatre onglets, un seul niveau.
  * La sidebar listait 12 entrees a plat derriere des sections repliables,
  * ce qui ne correspondait a rien de ce que voyait l'utilisateur mobile.
  */
@@ -74,60 +73,32 @@ export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
         <div className="space-y-1.5">
           {DESKTOP_TABS.map((tab) => {
             const isTabActive = coversPath(tab.href, pathname);
-            const current = activeSegment(tab, pathname);
             const tabBadge = tabBadgeTotal(tab, badges);
 
+            /*
+              Un seul niveau ici : les sections de l'onglet vivent dans
+              l'en-tete de la page (SegmentedNav). Les lister aussi dans la
+              sidebar empilait deux navigations pour le meme choix.
+            */
             return (
-              <div key={tab.href}>
-                <Link
-                  href={tab.href}
-                  aria-current={isTabActive && tab.segments.length === 0 ? "page" : undefined}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${
-                    isTabActive
-                      ? "bg-primary/10 font-medium text-primary"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                  }`}
-                >
-                  <NavIcon icon={tab.icon} className="h-5 w-5" />
-                  <span className="flex-1">{tab.label}</span>
-                  {tabBadge > 0 && !isTabActive && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground">
-                      {tabBadge}
-                    </span>
-                  )}
-                </Link>
-
-                {/* Segments : visibles seulement dans l'onglet courant */}
-                {isTabActive && tab.segments.length > 0 && (
-                  <div className="ml-2 space-y-0.5 border-l border-border/50 pl-2 pt-1">
-                    {tab.segments.map((segment) => {
-                      const isActive = current?.href === segment.href;
-                      const badge = segment.badgeKey ? badges[segment.badgeKey] ?? 0 : 0;
-
-                      return (
-                        <Link
-                          key={segment.href}
-                          href={segment.href}
-                          aria-current={isActive ? "page" : undefined}
-                          className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors ${
-                            isActive
-                              ? "bg-primary/10 font-medium text-primary"
-                              : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                          }`}
-                        >
-                          <NavIcon icon={segment.icon} className="h-4 w-4" />
-                          <span>{segment.label}</span>
-                          {badge > 0 && (
-                            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground">
-                              {badge}
-                            </span>
-                          )}
-                        </Link>
-                      );
-                    })}
-                  </div>
+              <Link
+                key={tab.href}
+                href={tab.href}
+                aria-current={isTabActive ? "page" : undefined}
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition-colors ${
+                  isTabActive
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                }`}
+              >
+                <NavIcon icon={tab.icon} className="h-5 w-5" />
+                <span className="flex-1">{tab.label}</span>
+                {tabBadge > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground">
+                    {tabBadge}
+                  </span>
                 )}
-              </div>
+              </Link>
             );
           })}
         </div>

@@ -321,7 +321,7 @@ function OfflineBanner() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 lg:bottom-4 lg:left-64"
+      className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 lg:bottom-4 lg:left-64"
     >
       <p
         className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm shadow-lg ${

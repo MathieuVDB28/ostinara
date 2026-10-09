@@ -382,7 +382,7 @@ function SessionBar() {
     usePracticeSession();
 
   return (
-    <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 border-t border-border bg-card p-3 lg:bottom-0 lg:left-64">
+    <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 border-t border-border bg-card p-3 lg:bottom-0 lg:left-64">
       <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span
