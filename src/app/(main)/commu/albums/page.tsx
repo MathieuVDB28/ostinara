@@ -17,15 +17,7 @@ export default async function CommuAlbumsPage() {
     return null;
   }
 
-  return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-bold">Albums de la semaine</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Ce que la communauté a écouté, classé par note moyenne
-        </p>
-      </div>
-      <WeeklyAlbumsView initial={week} />
-    </div>
-  );
+  // Le titre de la semaine porte deja le contexte ; la pastille « Albums »
+  // au-dessus dit le reste.
+  return <WeeklyAlbumsView initial={week} />;
 }

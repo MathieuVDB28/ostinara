@@ -1,6 +1,7 @@
 "use client";
 
 import { useOptimistic, useRef, useState, useTransition } from "react";
+import { AudioLines, Reply, SmilePlus, Video } from "lucide-react";
 import { toggleCoverReaction } from "@/lib/actions/activities";
 import { ActivityComments } from "@/components/social/activity-comments";
 import { ReactionPicker } from "@/components/social/reaction-picker";
@@ -114,62 +115,56 @@ export function CoverFeedCard({
   const authorName =
     item.author.display_name || item.author.username || "Guitariste";
 
+  const chip =
+    "inline-flex min-h-[38px] items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+  /*
+   * Style Fanzine (docs/refonte-ui.md) : plus de carte. La video occupe
+   * toute la largeur, le titre du morceau est pose en capitales
+   * condensees, la description est en serif — c'est la voix du musicien.
+   */
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-card">
-      {/* Auteur */}
-      <header className="flex items-center gap-3 p-3">
+    <article className="border-b border-border pb-4">
+      <header className="flex items-center gap-2.5 px-4 py-3 sm:px-0">
         {item.author.avatar_url ? (
-          <img
-            src={item.author.avatar_url}
-            alt=""
-            className="h-10 w-10 rounded-full object-cover"
-          />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.author.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
         ) : (
           <span
             aria-hidden="true"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary font-display text-sm font-extrabold text-muted-foreground"
           >
             {authorName[0]?.toUpperCase()}
           </span>
         )}
-
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">
-            {item.isOwn ? "Toi" : authorName}
-          </p>
-          <p className="truncate text-xs text-muted-foreground">
-            {item.song?.title ?? "Morceau inconnu"}
-            {item.song?.artist ? ` · ${item.song.artist}` : ""}
-          </p>
-        </div>
-
-        <time
-          dateTime={item.created_at}
-          className="shrink-0 text-xs text-muted-foreground"
-        >
+        <p className="min-w-0 flex-1 truncate text-[13px]">
+          <span className="font-bold">{item.isOwn ? "Toi" : authorName}</span>{" "}
+          <span className="text-muted-foreground">a posté une cover</span>
+        </p>
+        <time dateTime={item.created_at} className="shrink-0 text-xs text-muted-foreground">
           {formatRelative(item.created_at)}
         </time>
       </header>
 
-      {/* Ce a quoi cette cover repond */}
-      {item.replyTo && (
-        <p className="mx-3 mb-2 flex items-center gap-2 rounded-lg bg-accent/60 px-3 py-2 text-xs text-muted-foreground">
-          <span
-            aria-hidden="true"
-            className="material-symbols-outlined text-[16px]"
-          >
-            reply
-          </span>
-          En réponse à {item.replyTo.authorName} sur «&nbsp;
-          {item.replyTo.songTitle}&nbsp;»
+      <div className="px-4 pb-2.5 sm:px-0">
+        <p className="font-display text-[34px] font-extrabold uppercase leading-[0.9]">
+          {item.song?.title ?? "Morceau inconnu"}
         </p>
-      )}
+        {item.song?.artist && (
+          <p className="font-display text-[13px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            {item.song.artist}
+          </p>
+        )}
+        {item.replyTo && (
+          <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Reply className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+            En réponse à {item.replyTo.authorName} sur «&nbsp;{item.replyTo.songTitle}&nbsp;»
+          </p>
+        )}
+      </div>
 
       {/* Le media */}
-      <div
-        className="relative bg-muted"
-        onPointerDown={handleMediaPointer}
-      >
+      <div className="relative bg-black sm:overflow-hidden sm:rounded-md" onPointerDown={handleMediaPointer}>
         {item.media_type === "video" ? (
           <video
             src={item.media_url}
@@ -180,13 +175,8 @@ export function CoverFeedCard({
             className="max-h-[70vh] w-full bg-black object-contain"
           />
         ) : (
-          <div className="flex flex-col items-center gap-3 p-6">
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined text-4xl text-muted-foreground"
-            >
-              audiotrack
-            </span>
+          <div className="flex flex-col items-center gap-3 bg-secondary p-6">
+            <AudioLines className="h-8 w-8 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
             <audio src={item.media_url} controls className="w-full" />
           </div>
         )}
@@ -203,21 +193,22 @@ export function CoverFeedCard({
       </div>
 
       {item.description && (
-        <p className="px-3 pt-3 text-sm">{item.description}</p>
+        <p className="px-4 pt-3 font-serif text-[15px] italic leading-relaxed sm:px-0">
+          <span className="mr-1 font-sans text-[13px] font-bold not-italic">
+            {item.isOwn ? "Toi" : authorName}
+          </span>
+          {item.description}
+        </p>
       )}
 
       {/* Les gestes */}
-      <div className="flex flex-wrap items-center gap-2 p-3">
+      <div className="flex flex-wrap items-center gap-2 px-4 pt-3 sm:px-0">
         <button
           type="button"
           onClick={() => react(QUICK_EMOJI)}
           disabled={isPending}
           aria-pressed={liked}
-          className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            liked
-              ? "bg-primary/15 text-primary ring-1 ring-primary/30"
-              : "border border-input hover:bg-accent"
-          }`}
+          className={`${chip} ${liked ? "border-foreground bg-secondary" : "border-border hover:bg-accent"}`}
         >
           <span aria-hidden="true">{QUICK_EMOJI}</span>
           <span>{liked ? "Réagi" : "Réagir"}</span>
@@ -230,11 +221,9 @@ export function CoverFeedCard({
             onClick={() => setShowPalette((open) => !open)}
             aria-label="Autres réactions"
             aria-expanded={showPalette}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-input text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-              add_reaction
-            </span>
+            <SmilePlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
           </button>
 
           {showPalette && (
@@ -246,14 +235,8 @@ export function CoverFeedCard({
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => onReply(item)}
-          className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-input px-3 py-2 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-            videocam
-          </span>
+        <button type="button" onClick={() => onReply(item)} className={`${chip} border-border hover:bg-accent`}>
+          <Video className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
           Répondre en cover
         </button>
 
@@ -261,12 +244,7 @@ export function CoverFeedCard({
 
         {item.replyCount > 0 && (
           <span className="tabular inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined text-[16px]"
-            >
-              reply
-            </span>
+            <Reply className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
             {item.replyCount} réponse{item.replyCount > 1 ? "s" : ""}
           </span>
         )}
@@ -274,34 +252,33 @@ export function CoverFeedCard({
 
       {/* Les pastilles de reaction */}
       {state.reactions.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 px-3 pb-3">
+        <div className="flex flex-wrap gap-1.5 px-4 pt-2.5 sm:px-0">
           {state.reactions.map((reaction) => (
             <button
               key={reaction.emoji}
               type="button"
               onClick={() => react(reaction.emoji)}
               disabled={isPending}
-              className={`tabular flex items-center gap-1 rounded-full px-2.5 py-1 text-sm transition-colors ${
+              aria-pressed={reaction.reacted}
+              className={`tabular flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm transition-colors ${
                 reaction.reacted
-                  ? "bg-primary/15 text-primary ring-1 ring-primary/30"
-                  : "bg-accent/50 text-muted-foreground hover:bg-accent"
+                  ? "border-foreground bg-secondary text-foreground"
+                  : "border-border text-muted-foreground hover:bg-accent"
               }`}
             >
               <span aria-hidden="true">{reaction.emoji}</span>
-              <span className="text-xs font-medium">{reaction.count}</span>
+              <span className="text-xs font-semibold">{reaction.count}</span>
             </button>
           ))}
         </div>
       )}
 
-      {error && (
-        <p className="px-3 pb-3 text-xs text-destructive">{error}</p>
-      )}
+      {error && <p className="px-4 pt-2 text-xs text-destructive sm:px-0">{error}</p>}
 
       {/* Les commentaires portent leur propre depliage : un feed se
           parcourt, il ne se lit pas en entier. */}
       {item.activityId && (
-        <div className="border-t border-border px-3 py-2">
+        <div className="px-4 pt-2.5 sm:px-0">
           <ActivityComments
             activityId={item.activityId}
             commentCount={item.commentCount}

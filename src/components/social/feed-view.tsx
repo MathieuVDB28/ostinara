@@ -18,35 +18,32 @@ export function FeedView({ initialActivities, currentUserId }: FeedViewProps) {
     setActivities(initialActivities);
   }, [initialActivities]);
 
+  /*
+   * Style Fanzine (docs/refonte-ui.md) : une colonne, pochettes bord a
+   * bord sur mobile, comme un fil Instagram. Le titre « Feed » et son
+   * sous-titre repetaient la pastille juste au-dessus.
+   */
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Feed</h1>
-        <p className="mt-1 text-muted-foreground">
-          Activité récente de tes amis
-        </p>
-      </div>
-
-      {/* Activities list */}
+    <div className="-mx-4 sm:mx-auto sm:max-w-xl">
       {activities.length > 0 ? (
-        <div className="space-y-4">
+        <div>
           {activities.map((activity) => (
             <ActivityCard key={activity.id} activity={activity} currentUserId={currentUserId} />
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <span className="material-symbols-outlined text-3xl">feed</span>
-          </div>
-          <h3 className="mb-2 text-lg font-semibold">Aucune activité</h3>
-          <p className="mb-6 max-w-sm text-center text-muted-foreground">
-            Ajoute des amis pour voir leur activité dans ton feed
+        <div className="flex flex-col items-center px-4 py-16 text-center">
+          <p className="font-display text-4xl font-extrabold uppercase leading-[0.9]">
+            Ton feed
+            <br />
+            est <span className="text-primary">vide</span>
+          </p>
+          <p className="mb-6 mt-3 max-w-xs font-serif text-[15px] italic text-muted-foreground">
+            Ajoute des amis pour voir ce qu&apos;ils écoutent, apprennent et jouent.
           </p>
           <button
             onClick={() => router.push("/commu/amis")}
-            className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground"
+            className="min-h-[44px] rounded-xl bg-primary px-5 font-bold text-primary-foreground transition-opacity hover:opacity-90"
           >
             Trouver des amis
           </button>

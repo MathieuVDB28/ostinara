@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { SegmentedNav, type SegmentedNavVariant } from "./segmented-nav";
-import { coversPath, type BadgeCounts, type NavTab } from "@/lib/navigation";
+import { activeSegment, type BadgeCounts, type NavTab } from "@/lib/navigation";
 
 interface SectionHeaderProps {
   tab: NavTab;
@@ -33,10 +33,11 @@ export function SectionHeader({ tab, title, badges, variant = "segmented" }: Sec
   const pathname = usePathname();
 
   // Un chemin plus profond que le segment le plus specifique est une
-  // vue de detail.
-  const isDetailView = tab.segments.some(
-    (segment) => pathname !== segment.href && coversPath(segment.href, pathname)
-  );
+  // vue de detail. Le plus specifique, pas n'importe lequel : « /commu »
+  // couvre aussi « /commu/albums », qui est une section et non un detail —
+  // l'en-tete disparaissait sur tous les segments sauf le premier.
+  const current = activeSegment(tab, pathname);
+  const isDetailView = current !== undefined && pathname !== current.href;
 
   if (isDetailView) return null;
 

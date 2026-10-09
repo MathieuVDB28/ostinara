@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { UserMinus } from "lucide-react";
 import type { Friend } from "@/types";
 import { removeFriend } from "@/lib/actions/friends";
 
@@ -29,62 +30,55 @@ export function FriendCard({ friend, onViewProfile, onRefresh }: FriendCardProps
     });
   };
 
+  const name = friend.profile.display_name || friend.profile.username;
+
+  /*
+   * Une ligne par ami (style Fanzine, docs/refonte-ui.md) : l'avatar,
+   * le nom en condense, depuis quand. « Voir le profil » est l'action ;
+   * la suppression reste a portee, mais en icone, pas en bouton jumeau.
+   */
   return (
-    <div className="group overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/40">
-      {/* Cover image / gradient header */}
-      <div className="relative h-32 overflow-hidden">
-        {friend.profile.avatar_url ? (
-          <img
-            src={friend.profile.avatar_url}
-            alt={friend.profile.username}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-primary/70">
-            <span className="text-4xl font-bold text-white">
-              {(friend.profile.display_name?.[0] || friend.profile.username[0]).toUpperCase()}
+    <div className="flex items-center gap-3 border-b border-border py-3">
+      {friend.profile.avatar_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={friend.profile.avatar_url} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
+      ) : (
+        <span
+          aria-hidden="true"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary font-display text-xl font-extrabold text-muted-foreground"
+        >
+          {name[0]?.toUpperCase()}
+        </span>
+      )}
+
+      <div className="min-w-0 flex-1">
+        <p className="flex items-center gap-2">
+          <span className="truncate font-display text-xl font-extrabold uppercase leading-tight">{name}</span>
+          {friend.profile.plan !== "free" && (
+            <span className="shrink-0 rounded bg-primary px-1.5 py-px font-display text-[10px] font-bold tracking-[0.08em] text-primary-foreground">
+              {friend.profile.plan.toUpperCase()}
             </span>
-          </div>
-        )}
-        {/* Plan badge */}
-        {friend.profile.plan !== "free" && (
-          <span className="absolute right-3 top-3 rounded-full bg-primary/80 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
-            {friend.profile.plan.toUpperCase()}
-          </span>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="p-5">
-        <h3 className="truncate text-lg font-semibold">
-          {friend.profile.display_name || friend.profile.username}
-        </h3>
-        <p className="mt-0.5 truncate text-sm text-primary">
-          @{friend.profile.username}
+          )}
         </p>
-
-        <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span className="material-symbols-outlined text-[14px]">calendar_today</span>
-          Ami depuis le {formatDate(friend.since)}
-        </div>
-
-        {/* Actions */}
-        <div className="mt-4 flex gap-2">
-          <button
-            onClick={onViewProfile}
-            className="flex-1 rounded-lg bg-primary py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
-          >
-            Voir le profil
-          </button>
-          <button
-            onClick={handleRemove}
-            disabled={removing}
-            className="flex-1 rounded-lg border border-border py-2 text-sm text-muted-foreground transition-colors hover:border-destructive hover:text-destructive disabled:opacity-50"
-          >
-            {removing ? "..." : "Supprimer"}
-          </button>
-        </div>
+        <p className="truncate text-xs text-muted-foreground">
+          @{friend.profile.username} · ami depuis le {formatDate(friend.since)}
+        </p>
       </div>
+
+      <button
+        onClick={onViewProfile}
+        className="min-h-[36px] shrink-0 rounded-full border border-border px-3.5 text-xs font-semibold transition-colors hover:bg-accent"
+      >
+        Profil
+      </button>
+      <button
+        onClick={handleRemove}
+        disabled={removing}
+        aria-label={`Retirer ${name} de tes amis`}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-destructive disabled:opacity-50"
+      >
+        <UserMinus className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+      </button>
     </div>
   );
 }

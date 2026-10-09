@@ -214,7 +214,34 @@ session.
 - Fin de session (`add-session-modal.tsx`) : 3 chiffres, humeur en un appui,
   note en serif.
 
-### Phase 4 — Commu (C · Fanzine)
+### Phase 4 — Commu (C · Fanzine) ✅ (faite le 2026-10-09)
+
+Fait :
+- Feed (`activity-card.tsx` réécrit) : album noté, cover et morceau
+  maîtrisé en **affiche** plein cadre (titre en capitales condensées, note
+  posée sur l'image), avis en serif coupé à 2 lignes ; les autres activités
+  en ligne compacte. Une colonne, bord à bord sur mobile.
+- Réactions et commentaires : puces neutres, commentaires en serif,
+  Lucide.
+- Covers : même logique (double-tap 🔥, répondre en cover), vidéo bord à
+  bord, titre en condensé, description en serif, filtres en puces.
+- Albums de la semaine : n° 1 en affiche, la suite en liste numérotée.
+  Vue partagée avec Biblio › Albums › Semaine.
+- Amis, demandes : lignes avec nom en condensé, « Profil » en puce,
+  suppression en icône.
+- Défis : état vide en affiche avec les **trois vrais types** de défi
+  (minutes, maîtrise, série — l'ancien texte promettait un « tempo
+  atteint » qui n'existe pas).
+- Groupes et setlists : lignes à filets, initiales du groupe en tampon ;
+  `setlist-card.tsx` perd sa barre ambrée latérale.
+- **Bug existant corrigé** : `SectionHeader` prenait toute section autre
+  que la première pour une vue de détail (« /commu » couvre
+  « /commu/albums ») et masquait l'en-tête Commu. Il compare maintenant
+  au segment le plus spécifique.
+- Jouer, retouche : sur mobile, « Reprendre » passe avant les dernières
+  sessions (ordre du DOM, placement explicite en grille sur ordi).
+
+Plan initial :
 
 Écrans : Feed, Covers, Albums de la semaine, Amis, Défis, Groupes.
 

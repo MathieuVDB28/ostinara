@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +8,8 @@ import { CreateSetlistModal } from "./create-setlist-modal";
 import { CreateBandModal } from "./create-band-modal";
 import { BandInvitationCard } from "./band-invitation-card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ChevronRight, Plus } from "lucide-react";
+import { Cover } from "@/components/ui/cover";
 import type {
   SetlistWithDetails,
   BandWithMembers,
@@ -68,7 +69,7 @@ export function GroupsView({
       {/* Invitations : une action en attente passe avant le reste */}
       {invitations.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
             Invitations en attente
           </h2>
           {invitations.map((invitation) => (
@@ -82,29 +83,24 @@ export function GroupsView({
       )}
 
       {/* Groupes */}
-      <section>
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-bold">
-            Mes groupes
-            {bands.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                {bands.length}
-              </span>
-            )}
+      <section className="space-y-0">
+        <div className="flex items-baseline justify-between gap-3 border-b border-border pb-2">
+          <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
+            Mes groupes{bands.length > 0 && <span className="tabular"> · {bands.length}</span>}
           </h2>
           {hasBandPlan && (
             <button
               onClick={() => setShowCreateBand(true)}
-              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
+              <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
               Groupe
             </button>
           )}
         </div>
 
         {bands.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="max-w-2xl">
             {bands.map((band) => {
               const nextRehearsal = nextRehearsalByBand.get(band.id);
               const bandSetlists = setlists.filter((s) => s.band_id === band.id);
@@ -113,45 +109,40 @@ export function GroupsView({
                 <Link
                   key={band.id}
                   href={`/commu/groupes/${band.id}`}
-                  className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
+                  className="flex items-center gap-3.5 border-b border-border py-3 transition-colors hover:bg-accent/50"
                 >
                   {band.cover_url ? (
-                    <Image
-                      src={band.cover_url}
-                      alt=""
-                      className="h-14 w-14 shrink-0 rounded-xl object-cover"
-                      width={56}
-                      height={56}
-                    />
+                    <Cover src={band.cover_url} className="h-14 w-14 rounded-[4px]" />
                   ) : (
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                      <span className="material-symbols-outlined text-primary">
-                        groups
-                      </span>
-                    </div>
+                    // Les initiales du groupe, comme un logo tampon.
+                    <span
+                      aria-hidden="true"
+                      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[4px] bg-secondary font-display text-xl font-extrabold uppercase"
+                    >
+                      {band.name
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((word) => word[0])
+                        .join("")}
+                    </span>
                   )}
 
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-bold">{band.name}</h3>
-                    <p className="truncate text-sm text-muted-foreground">
+                    <h3 className="truncate font-display text-2xl font-extrabold uppercase leading-none">{band.name}</h3>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {band.members.length} membre
                       {band.members.length > 1 ? "s" : ""}
                       {bandSetlists.length > 0 &&
                         ` • ${bandSetlists.length} setlist${bandSetlists.length > 1 ? "s" : ""}`}
                     </p>
                     {nextRehearsal && (
-                      <p className="mt-1 truncate text-xs font-medium text-primary">
+                      <p className="mt-0.5 truncate text-xs font-semibold">
                         Répét. {formatRehearsalDate(nextRehearsal.date)}
                       </p>
                     )}
                   </div>
 
-                  <span
-                    aria-hidden="true"
-                    className="material-symbols-outlined shrink-0 text-muted-foreground"
-                  >
-                    chevron_right
-                  </span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2} aria-hidden="true" />
                 </Link>
               );
             })}
@@ -192,26 +183,21 @@ export function GroupsView({
 
       {/* Setlists perso : elles n'appartiennent a aucun groupe */}
       <section>
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-bold">
-            Mes setlists
-            {personalSetlists.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                {personalSetlists.length}
-              </span>
-            )}
+        <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
+          <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
+            Mes setlists{personalSetlists.length > 0 && <span className="tabular"> · {personalSetlists.length}</span>}
           </h2>
           <button
             onClick={() => setShowCreateSetlist(true)}
-            className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
+            <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
             Setlist
           </button>
         </div>
 
         {personalSetlists.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="-mt-3 max-w-2xl">
             {personalSetlists.map((setlist) => (
               <SetlistCard
                 key={setlist.id}

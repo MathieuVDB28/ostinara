@@ -68,8 +68,14 @@ export function CarnetView({
   const focusPercent = focusTempo ? focusTempo.percent : focusSong?.progress_percent ?? 0;
 
   return (
-    <div className="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <div className="min-w-0 space-y-6">
+    /*
+      Quatre blocs places explicitement : sur mobile ils s'empilent dans
+      l'ordre de lecture (chiffres, reprendre, journal, semaine) — le
+      bouton principal reste au-dessus de la ligne de flottaison. Sur ordi,
+      ce qu'on a fait a gauche, ce qu'on va faire a droite.
+    */
+    <div className="grid items-start gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+      <div className="min-w-0 space-y-6 lg:col-start-1 lg:row-start-1">
         <dl className="grid grid-cols-3 gap-3 sm:grid-cols-4">
           <Stat label="sessions" value={<>{stats.totalSessions}</>} />
           <Stat
@@ -104,44 +110,9 @@ export function CarnetView({
         </dl>
 
         <PracticeCalendar data={calendar} />
-
-        {recentSessions.length > 0 && (
-          <section aria-labelledby="recent-sessions">
-            <h2
-              id="recent-sessions"
-              className="flex justify-between border-b border-border pb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
-            >
-              <span>Dernières sessions</span>
-              <span aria-hidden="true">durée</span>
-            </h2>
-            <ul>
-              {recentSessions.map((session) => (
-                <li
-                  key={session.id}
-                  className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-2.5"
-                >
-                  <Cover src={session.song?.cover_url} className="h-11 w-11 rounded-[3px]" />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">
-                      {session.song?.title ?? "Session libre"}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {formatWhen(session.practiced_at)}
-                      {session.bpm_achieved ? ` · ${session.bpm_achieved} bpm` : ""}
-                    </p>
-                  </div>
-                  <span className="tabular font-display text-lg font-bold leading-none">
-                    {session.duration_minutes}
-                    <small className="text-xs font-semibold text-muted-foreground"> min</small>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
       </div>
 
-      <div className="min-w-0 space-y-8">
+      <div className="min-w-0 lg:col-start-2 lg:row-start-1">
         {resume}
 
         {/* Sans session a reprendre : le morceau en cours, et « Demarrer ». */}
@@ -175,9 +146,49 @@ export function CarnetView({
             </button>
           </section>
         )}
-
-        {weeklyPlan && <WeeklyPlanCard plan={weeklyPlan} onWorkOnSong={onWorkOnSong} />}
       </div>
+
+
+      {recentSessions.length > 0 && (
+        <section aria-labelledby="recent-sessions" className="min-w-0 lg:col-start-1 lg:row-start-2">
+          <h2
+            id="recent-sessions"
+            className="flex justify-between border-b border-border pb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+          >
+            <span>Dernières sessions</span>
+            <span aria-hidden="true">durée</span>
+          </h2>
+          <ul>
+            {recentSessions.map((session) => (
+              <li
+                key={session.id}
+                className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-2.5"
+              >
+                <Cover src={session.song?.cover_url} className="h-11 w-11 rounded-[3px]" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">
+                    {session.song?.title ?? "Session libre"}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {formatWhen(session.practiced_at)}
+                    {session.bpm_achieved ? ` · ${session.bpm_achieved} bpm` : ""}
+                  </p>
+                </div>
+                <span className="tabular font-display text-lg font-bold leading-none">
+                  {session.duration_minutes}
+                  <small className="text-xs font-semibold text-muted-foreground"> min</small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {weeklyPlan && (
+        <div className="min-w-0 lg:col-start-2 lg:row-start-2">
+          <WeeklyPlanCard plan={weeklyPlan} onWorkOnSong={onWorkOnSong} />
+        </div>
+      )}
     </div>
   );
 }

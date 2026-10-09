@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { getWeeklyAlbums } from "@/lib/actions/albums";
-import { StarRating } from "@/components/ui/star-rating";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { Cover } from "@/components/ui/cover";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { WeeklyAlbum, WeeklyAlbums } from "@/types";
 
@@ -78,7 +79,7 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
     );
 
   return (
-    <div>
+    <div className="max-w-2xl">
       {/* Semaine */}
       <div className="mb-4 flex items-center justify-between gap-2">
         <button
@@ -86,15 +87,15 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
           onClick={() => goToWeek(week.week_offset + 1)}
           disabled={isPending}
           aria-label="Semaine précédente"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-accent disabled:opacity-50"
         >
-          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-            chevron_left
-          </span>
+          <ChevronLeft className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
         </button>
 
         <div className={`text-center transition-opacity ${isPending ? "opacity-50" : ""}`}>
-          <p className="font-semibold">{weekTitle(week.week_offset)}</p>
+          <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[0.02em]">
+            {weekTitle(week.week_offset)}
+          </p>
           <p className="text-sm text-muted-foreground">
             du {formatDay(week.week_start)} au {formatDay(week.week_end)}
           </p>
@@ -105,11 +106,9 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
           onClick={() => goToWeek(week.week_offset - 1)}
           disabled={isPending || week.week_offset === 0}
           aria-label="Semaine suivante"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-30"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-accent disabled:opacity-30"
         >
-          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-            chevron_right
-          </span>
+          <ChevronRight className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
         </button>
       </div>
 
@@ -128,10 +127,9 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
               key={mode}
               type="button"
               onClick={() => setSort(mode)}
-              className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
-                sort === mode
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground"
+              aria-pressed={sort === mode}
+              className={`inline-flex h-8 items-center rounded-full border border-border px-3 text-xs font-semibold transition-colors ${
+                sort === mode ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {label}
@@ -155,10 +153,14 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
           Aucun album de la semaine ne correspond à ta recherche
         </p>
       ) : (
-        <ol className={`flex flex-col gap-2 transition-opacity ${isPending ? "opacity-50" : ""}`}>
+        <ol className={`transition-opacity ${isPending ? "opacity-50" : ""}`}>
           {albums.map((album, index) => (
             <li key={album.key}>
-              <WeeklyAlbumRow album={album} rank={index + 1} />
+              {index === 0 ? (
+                <WeeklyTopAlbum album={album} />
+              ) : (
+                <WeeklyAlbumRow album={album} rank={index + 1} />
+              )}
             </li>
           ))}
         </ol>
@@ -167,51 +169,74 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
   );
 }
 
+/**
+ * Le n° 1 de la semaine en affiche (style Fanzine, docs/refonte-ui.md) :
+ * la pochette plein cadre, le titre en capitales condensees posees dessus.
+ */
+function WeeklyTopAlbum({ album }: { album: WeeklyAlbum }) {
+  const poster = (
+    <Cover src={album.cover_url} alt="" className="aspect-[16/10] w-full sm:rounded-md">
+      <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-transparent from-35% to-black/85" />
+      <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 font-display text-[13px] font-bold text-white">
+        <Star className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
+        {formatStars(album.avg_rating)}
+      </span>
+      <span className="absolute inset-x-4 bottom-3.5 text-white">
+        <span className="block font-display text-[11px] font-bold uppercase tracking-[0.08em] opacity-85">
+          N° 1 de la semaine
+        </span>
+        <span className="block text-balance font-display text-[40px] font-extrabold uppercase leading-[0.9] sm:text-5xl">
+          {album.album_name}
+        </span>
+        <span className="block font-display text-[13px] font-bold uppercase tracking-[0.06em] opacity-85">
+          {album.artist_name} · {album.review_count} écoute{album.review_count > 1 ? "s" : ""}
+          {album.user_rating !== null && <> · ta note {formatStars(album.user_rating)}</>}
+        </span>
+      </span>
+    </Cover>
+  );
+
+  return (
+    <div className="-mx-4 mb-1 sm:mx-0">
+      {album.spotify_id ? (
+        <Link href={`/albums/${album.spotify_id}`} className="block">
+          {poster}
+        </Link>
+      ) : (
+        poster
+      )}
+    </div>
+  );
+}
+
 function WeeklyAlbumRow({ album, rank }: { album: WeeklyAlbum; rank: number }) {
   const content = (
     <>
-      <span className="w-6 shrink-0 text-center text-sm font-bold text-muted-foreground">
+      <span className="tabular w-8 shrink-0 text-center font-display text-3xl font-extrabold leading-none text-muted-foreground">
         {rank}
       </span>
 
-      {album.cover_url ? (
-        <img
-          src={album.cover_url}
-          alt={album.album_name}
-          className="h-14 w-14 shrink-0 rounded-lg object-cover"
-        />
-      ) : (
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-muted">
-          <span className="material-symbols-outlined text-2xl text-muted-foreground">album</span>
-        </div>
-      )}
+      <Cover src={album.cover_url} alt="" className="h-14 w-14 rounded-[3px]" />
 
       <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold">{album.album_name}</p>
-        <p className="truncate text-sm text-muted-foreground">{album.artist_name}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          {album.review_count} écoute{album.review_count > 1 ? "s" : ""}
+        <p className="truncate font-display text-lg font-extrabold uppercase leading-tight">{album.album_name}</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {album.artist_name} · {album.review_count} écoute{album.review_count > 1 ? "s" : ""}
           {album.user_rating !== null && <> · ta note {formatStars(album.user_rating)}</>}
         </p>
       </div>
 
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <span className="flex items-center gap-1 text-sm font-bold">
-          <span className="material-symbols-outlined text-[14px] text-primary">star</span>
-          {formatStars(album.avg_rating)}
-        </span>
-        <div className="hidden sm:block">
-          <StarRating value={Math.round(album.avg_rating) / 2} size="sm" />
-        </div>
-      </div>
+      <span className="tabular shrink-0 font-display text-xl font-bold text-primary">
+        {formatStars(album.avg_rating)}
+        <span className="sr-only"> sur 5</span>
+      </span>
     </>
   );
 
-  const className =
-    "flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors";
+  const className = "flex items-center gap-3 border-b border-border py-2.5 transition-colors";
 
   return album.spotify_id ? (
-    <Link href={`/albums/${album.spotify_id}`} className={`${className} hover:border-primary/40`}>
+    <Link href={`/albums/${album.spotify_id}`} className={`${className} hover:bg-accent/50`}>
       {content}
     </Link>
   ) : (

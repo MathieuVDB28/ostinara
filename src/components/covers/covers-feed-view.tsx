@@ -8,6 +8,7 @@ import { CoverFeedCard } from "./cover-feed-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ensureSongForCoverReply } from "@/lib/actions/covers";
 import type { CoverFeedItem, Song } from "@/types";
+import { ArrowUpRight, LoaderCircle } from "lucide-react";
 
 // AddCoverModal entraine video-upload → tus-js-client → @ffmpeg. Rien de
 // cela n'est necessaire pour *lire* le feed : on ne le charge qu'au moment
@@ -140,44 +141,33 @@ export function CoversFeedView({
 
   return (
     <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold lg:text-3xl">Covers</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ce que ton cercle joue en ce moment
-          </p>
-        </div>
-
-        <Link
-          href="/biblio/covers"
-          className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-input px-3 py-2 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-            video_library
-          </span>
-          Mes covers
-        </Link>
-      </div>
-
-      {items.length > 0 && (
-        <div className="mb-5 flex gap-1 rounded-xl bg-accent/50 p-1">
-          {FILTERS.map((option) => (
+      {/*
+        Filtres et lien vers l'archive sur une rangee. Le titre « Covers »
+        repetait la pastille juste au-dessus.
+      */}
+      <div className="mb-3 flex items-center gap-1.5">
+        {items.length > 0 &&
+          FILTERS.map((option) => (
             <button
               key={option.value}
               type="button"
               onClick={() => setFilter(option.value)}
-              aria-current={filter === option.value ? "true" : undefined}
-              className={`flex min-h-[40px] flex-1 items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                filter === option.value
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+              aria-pressed={filter === option.value}
+              className={`inline-flex h-8 shrink-0 items-center rounded-full border border-border px-3 text-xs font-semibold transition-colors ${
+                filter === option.value ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {option.label}
             </button>
           ))}
-        </div>
-      )}
+        <Link
+          href="/biblio/covers"
+          className="ml-auto inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Mes covers
+          <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+        </Link>
+      </div>
 
       {replyError && (
         <p className="mb-4 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -187,18 +177,13 @@ export function CoversFeedView({
 
       {preparingReply && (
         <p className="mb-4 flex items-center gap-2 rounded-xl bg-accent/50 px-4 py-3 text-sm text-muted-foreground">
-          <span
-            aria-hidden="true"
-            className="material-symbols-outlined animate-spin text-[18px]"
-          >
-            progress_activity
-          </span>
+          <LoaderCircle className="h-[18px] w-[18px] animate-spin" strokeWidth={2} aria-hidden="true" />
           Préparation de ta réponse…
         </p>
       )}
 
       {visible.length > 0 ? (
-        <div className="mx-auto flex max-w-2xl flex-col gap-5">
+        <div className="-mx-4 sm:mx-auto sm:max-w-xl">
           {visible.map((item) => (
             <CoverFeedCard
               key={item.id}

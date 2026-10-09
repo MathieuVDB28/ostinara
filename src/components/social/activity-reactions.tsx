@@ -4,6 +4,7 @@ import { useState, useOptimistic, useTransition } from "react";
 import { toggleReaction } from "@/lib/actions/activities";
 import { ReactionPicker } from "./reaction-picker";
 import type { ReactionSummary } from "@/types";
+import { SmilePlus } from "lucide-react";
 
 interface ActivityReactionsProps {
   activityId: string;
@@ -61,14 +62,15 @@ export function ActivityReactions({
           key={r.emoji}
           onClick={() => handleReaction(r.emoji)}
           disabled={isPending}
-          className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-sm transition-colors ${
+          aria-pressed={r.reacted}
+          className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm transition-colors ${
             r.reacted
-              ? "bg-primary/15 text-primary ring-1 ring-primary/30"
-              : "bg-accent/50 text-muted-foreground hover:bg-accent"
+              ? "border-foreground bg-secondary text-foreground"
+              : "border-border text-muted-foreground hover:bg-accent"
           }`}
         >
           <span>{r.emoji}</span>
-          <span className="text-xs font-medium">{r.count}</span>
+          <span className="tabular text-xs font-semibold">{r.count}</span>
         </button>
       ))}
 
@@ -76,9 +78,11 @@ export function ActivityReactions({
       <div className="relative">
         <button
           onClick={() => setShowPicker(!showPicker)}
+          aria-label="Réagir"
+          aria-expanded={showPicker}
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
-          <span className="material-symbols-outlined text-[20px]">add_reaction</span>
+          <SmilePlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
         </button>
 
         {/* Picker d'emoji */}

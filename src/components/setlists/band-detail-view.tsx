@@ -178,7 +178,7 @@ export function BandDetailView({
         </div>
 
         {setlists.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="max-w-2xl">
             {setlists.map((setlist) => (
               <SetlistCard
                 key={setlist.id}

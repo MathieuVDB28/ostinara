@@ -12,6 +12,7 @@ import { ChallengeInvitationCard } from "./challenge-invitation-card";
 import { CreateChallengeModal } from "./create-challenge-modal";
 import { LeaderboardView } from "./leaderboard-view";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Plus } from "lucide-react";
 
 interface ChallengesViewProps {
   initialChallenges: ChallengeWithDetails[];
@@ -50,84 +51,98 @@ export function ChallengesView({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Défis</h1>
-          <p className="text-muted-foreground">
-            Lance des défis à tes amis et grimpe dans le classement
-          </p>
-        </div>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          disabled={friends.length === 0}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
-        >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+      {/*
+        Onglets en puces et creation sur une rangee (style Fanzine). Le
+        titre « Défis » et sa phrase repetaient la pastille du dessus ; la
+        phrase vit desormais dans l'affiche de l'etat vide.
+      */}
+      <div className="flex items-center gap-1.5">
+        {(
+          [
+            ["challenges", "Mes défis", myChallenges.length, false],
+            ["invitations", "Invitations", pendingCount, true],
+            ["leaderboard", "Classement", 0, false],
+          ] as const
+        ).map(([value, label, count, alert]) => (
+          <button
+            key={value}
+            onClick={() => setActiveTab(value)}
+            aria-pressed={activeTab === value}
+            className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold transition-colors ${
+              activeTab === value ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Nouveau defi
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-6 border-b border-border">
-        <button
-          onClick={() => setActiveTab("challenges")}
-          className={`border-b-2 pb-3 text-sm font-medium transition-colors ${
-            activeTab === "challenges"
-              ? "border-primary text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Mes défis
-          {myChallenges.length > 0 && (
-            <span className="ml-2 rounded-full bg-primary/15 px-2 py-0.5 text-xs text-primary">
-              {myChallenges.length}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("invitations")}
-          className={`border-b-2 pb-3 text-sm font-medium transition-colors ${
-            activeTab === "invitations"
-              ? "border-primary text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Invitations
-          {pendingCount > 0 && (
-            <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
-              {pendingCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("leaderboard")}
-          className={`border-b-2 pb-3 text-sm font-medium transition-colors ${
-            activeTab === "leaderboard"
-              ? "border-primary text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Classement
-        </button>
+            {label}
+            {count > 0 && (
+              <span
+                className={`tabular ${
+                  alert ? "rounded-full bg-destructive px-1.5 text-[10px] text-destructive-foreground" : "opacity-70"
+                }`}
+              >
+                {count}
+              </span>
+            )}
+          </button>
+        ))}
+        {myChallenges.length > 0 && (
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            disabled={friends.length === 0}
+            className="ml-auto inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-primary px-3.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+            Défi
+          </button>
+        )}
       </div>
 
       {/* Content */}
       {activeTab === "challenges" && (
         <div className="space-y-4">
-          {myChallenges.length === 0 ? (
+          {myChallenges.length === 0 && friends.length > 0 ? (
+            /*
+              L'etat vide en affiche (style Fanzine) : c'est une invitation
+              a jouer, pas une erreur. Les trois natures de defi sont
+              celles que gere l'app.
+            */
+            <div className="space-y-4">
+              <div className="rounded-[4px] bg-secondary px-5 pb-5 pt-6">
+                <p className="font-display text-[52px] font-extrabold uppercase leading-[0.86]">
+                  Lance
+                  <br />
+                  un <span className="text-primary">défi</span>
+                  <br />
+                  à tes amis
+                </p>
+                <p className="mt-3 max-w-[32ch] font-serif text-[15px] italic leading-relaxed">
+                  Un objectif de pratique sur une période. Celui qui va le plus loin gagne.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {["Minutes jouées", "Morceaux maîtrisés", "Série"].map((kind) => (
+                    <span
+                      key={kind}
+                      className="rounded border border-border px-2 py-1 font-display text-[11px] font-bold uppercase tracking-[0.06em]"
+                    >
+                      {kind}
+                    </span>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="mt-5 inline-flex min-h-[46px] items-center gap-2 rounded-xl bg-primary px-5 font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                  Créer un défi
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Tes sessions de pratique alimentent tes défis toutes seules : rien à cocher en plus.{" "}
+                <button onClick={() => setActiveTab("leaderboard")} className="font-semibold text-foreground underline underline-offset-2">
+                  Voir le classement
+                </button>
+              </p>
+            </div>
+          ) : myChallenges.length === 0 ? (
             /*
               Un defi se joue a deux : sans ami, le bouton « Creer » ne
               mene nulle part. L'etat vide propose alors l'etape d'avant
