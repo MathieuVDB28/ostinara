@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { SpotifyArtist, SpotifyAlbum, AlbumCommunityStats } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface Props {
   artist: SpotifyArtist;
@@ -32,7 +33,7 @@ export function ArtistDetailView({ artist, albums, communityStats }: Props) {
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted">
-            <span className="material-symbols-outlined text-8xl text-muted-foreground">person</span>
+            <Icon name="person" className="h-6 w-6 text-8xl text-muted-foreground" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
@@ -42,7 +43,7 @@ export function ArtistDetailView({ artist, albums, communityStats }: Props) {
           onClick={() => router.back()}
           className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60"
         >
-          <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+          <Icon name="arrow_back" className="h-[20px] w-[20px]" />
         </button>
 
         {/* Artist info overlay */}
@@ -51,13 +52,13 @@ export function ArtistDetailView({ artist, albums, communityStats }: Props) {
           <div className="mt-1.5 flex flex-wrap items-center gap-3">
             {(artist.followers?.total ?? 0) > 0 && (
               <span className="flex items-center gap-1 text-sm text-white/80">
-                <span className="material-symbols-outlined text-[15px]">person</span>
+                <Icon name="person" className="h-[15px] w-[15px]" />
                 {formatFollowers(artist.followers!.total)} abonnés Spotify
               </span>
             )}
             {artist.popularity > 0 && (
               <span className="flex items-center gap-1 text-sm text-white/80">
-                <span className="material-symbols-outlined text-[15px]">trending_up</span>
+                <Icon name="trending_up" className="h-[15px] w-[15px]" />
                 Popularité {artist.popularity}/100
               </span>
             )}
@@ -85,9 +86,7 @@ export function ArtistDetailView({ artist, albums, communityStats }: Props) {
 
         {albums.length === 0 ? (
           <div className="flex flex-col items-center py-12 text-center">
-            <span className="material-symbols-outlined mb-2 text-4xl text-muted-foreground">
-              library_music
-            </span>
+            <Icon name="library_music" className="h-9 w-9 mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">Aucun album disponible</p>
           </div>
         ) : (
@@ -111,18 +110,14 @@ export function ArtistDetailView({ artist, albums, communityStats }: Props) {
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">
-                        <span className="material-symbols-outlined text-4xl text-muted-foreground">
-                          album
-                        </span>
+                        <Icon name="album" className="h-9 w-9 text-muted-foreground" />
                       </div>
                     )}
 
                     {/* Community rating badge */}
                     {stats && stats.review_count > 0 && (
                       <div className="absolute right-2 top-2 flex items-center gap-0.5 rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">
-                        <span className="material-symbols-outlined text-[11px] text-primary">
-                          star
-                        </span>
+                        <Icon name="star" className="h-[11px] w-[11px] text-primary" />
                         {(stats.avg_rating / 2).toFixed(1)}
                       </div>
                     )}

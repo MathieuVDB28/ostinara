@@ -8,6 +8,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
+import { Icon } from "@/components/ui/icon";
 
 /**
  * Une ligne de liste qui decouvre ses actions par glissement.
@@ -37,7 +38,7 @@ export type SwipeActionTone = "neutral" | "primary" | "success" | "destructive";
 export interface SwipeAction {
   key: string;
   label: string;
-  /** Nom d'icone Material Symbols. Relancer `npm run icons` apres ajout. */
+  /** Nom d'icone (table de src/components/ui/icon.tsx). */
   icon: string;
   tone?: SwipeActionTone;
   /** Action irreversible : le premier appui demande confirmation. */
@@ -221,9 +222,7 @@ export function SwipeRow({
                   : TONE_CLASSES[action.tone ?? "neutral"]
               }`}
             >
-              <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-                {isConfirming ? "check" : action.icon}
-              </span>
+              <Icon name={isConfirming ? "check" : action.icon} className="h-5 w-5" />
               <span aria-hidden="true">
                 {isConfirming ? "Confirmer" : action.label}
               </span>

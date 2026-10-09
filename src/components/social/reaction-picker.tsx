@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { EmojiPicker } from "frimousse";
+import { Icon } from "@/components/ui/icon";
 
 /** Les reactions d'un geste, en tete du selecteur. */
 export const QUICK_REACTIONS = ["🔥", "👏", "🎸", "❤️", "😍", "🤘"];
@@ -53,9 +54,7 @@ export function ReactionPicker({ selected, onSelect, onClose }: ReactionPickerPr
               showAll ? "bg-accent text-foreground" : ""
             }`}
           >
-            <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-              {showAll ? "expand_less" : "expand_more"}
-            </span>
+            <Icon name={showAll ? "expand_less" : "expand_more"} className="h-5 w-5" />
           </button>
         </div>
 

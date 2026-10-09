@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
 import type { SpotifyAlbum, CreateAlbumWishlistInput } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface AddToAlbumWishlistModalProps {
   isOpen: boolean;
@@ -114,7 +115,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <Icon name="close" className="h-[20px] w-[20px]" />
           </button>
         </div>
 
@@ -122,9 +123,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
         <div className="flex-1 overflow-y-auto p-5">
           {/* Search input */}
           <div className="relative mb-4">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-muted-foreground">
-              search
-            </span>
+            <Icon name="search" className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
               placeholder="Rechercher un album..."
@@ -166,7 +165,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
                   />
                 ) : (
                   <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-muted">
-                    <span className="material-symbols-outlined text-xl text-muted-foreground">album</span>
+                    <Icon name="album" className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
@@ -179,7 +178,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
                     {album.total_tracks ? ` - ${album.total_tracks} titres` : ""}
                   </div>
                 </div>
-                <span className="material-symbols-outlined text-[20px] text-muted-foreground">add</span>
+                <Icon name="add" className="h-[20px] w-[20px] text-muted-foreground" />
               </button>
             ))}
           </div>

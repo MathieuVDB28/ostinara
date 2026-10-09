@@ -2,6 +2,7 @@
 
 import type { RehearsalWithDetails, RehearsalRsvpStatus } from "@/types";
 import { RSVP_COLORS, RSVP_LABELS } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface RehearsalCardProps {
   rehearsal: RehearsalWithDetails;
@@ -112,8 +113,9 @@ export function RehearsalCard({ rehearsal, currentUserId, onClick }: RehearsalCa
               </span>
             )}
             {rehearsal.recurrence !== "none" && (
-              <span className="material-symbols-outlined text-[14px] text-muted-foreground" title="Recurrente">
-                repeat
+              <span title="Récurrente" className="inline-flex">
+                <Icon name="repeat" className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="sr-only">Récurrente</span>
               </span>
             )}
           </div>
@@ -121,23 +123,23 @@ export function RehearsalCard({ rehearsal, currentUserId, onClick }: RehearsalCa
           {/* Meta */}
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px]">schedule</span>
+              <Icon name="schedule" className="h-[14px] w-[14px]" />
               {formatTime(rehearsal.date)}
               {rehearsal.end_date && ` - ${formatTime(rehearsal.end_date)}`}
             </span>
             {rehearsal.location && (
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">location_on</span>
+                <Icon name="location_on" className="h-[14px] w-[14px]" />
                 {rehearsal.location}
               </span>
             )}
             <span className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px]">group</span>
+              <Icon name="group" className="h-[14px] w-[14px]" />
               {acceptedCount}/{totalCount}
             </span>
             {rehearsal.setlist && (
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">queue_music</span>
+                <Icon name="queue_music" className="h-[14px] w-[14px]" />
                 {rehearsal.setlist.name}
               </span>
             )}

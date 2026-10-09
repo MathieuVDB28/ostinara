@@ -68,6 +68,7 @@ const difficultyOptions: { value: SongDifficulty | ""; label: string }[] = [
 ];
 
 import { TUNING_GROUPS } from "@/lib/tunings";
+import { Icon } from "@/components/ui/icon";
 
 export function EditSongModal({
   song,
@@ -996,9 +997,7 @@ function TabStructureSummary({
         onClick={() => onUseAsTarget(structure.bpm)}
         className="mt-3 inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-input px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span aria-hidden="true" className="material-symbols-outlined text-[16px]">
-          speed
-        </span>
+        <Icon name="speed" className="h-[16px] w-[16px]" />
         Prendre {structure.bpm} BPM comme cible
       </button>
     </div>

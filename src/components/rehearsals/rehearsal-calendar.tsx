@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import type { RehearsalWithDetails } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface RehearsalCalendarProps {
   rehearsals: RehearsalWithDetails[];
@@ -94,7 +95,7 @@ export function RehearsalCalendar({
           onClick={prevMonth}
           className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
-          <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+          <Icon name="chevron_left" className="h-[20px] w-[20px]" />
         </button>
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-semibold capitalize">
@@ -111,7 +112,7 @@ export function RehearsalCalendar({
           onClick={nextMonth}
           className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
-          <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+          <Icon name="chevron_right" className="h-[20px] w-[20px]" />
         </button>
       </div>
 

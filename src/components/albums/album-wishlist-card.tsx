@@ -1,6 +1,7 @@
 "use client";
 
 import type { AlbumWishlistItem } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface AlbumWishlistCardProps {
   album: AlbumWishlistItem;
@@ -22,7 +23,7 @@ export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: Alb
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <span className="material-symbols-outlined text-5xl text-muted-foreground">album</span>
+            <Icon name="album" className="h-12 w-12 text-muted-foreground" />
           </div>
         )}
 
@@ -51,7 +52,7 @@ export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: Alb
             onClick={onListen}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
           >
-            <span className="material-symbols-outlined text-[16px]">rate_review</span>
+            <Icon name="rate_review" className="h-[16px] w-[16px]" />
             Écouté
           </button>
           <button
@@ -65,7 +66,7 @@ export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: Alb
             {isRemoving ? (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
             ) : (
-              <span className="material-symbols-outlined text-[18px]">delete</span>
+              <Icon name="delete" className="h-[18px] w-[18px]" />
             )}
           </button>
         </div>

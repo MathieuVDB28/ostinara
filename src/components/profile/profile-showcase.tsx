@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GEAR_TYPE_LABELS } from "@/types";
 import type { UserProfile } from "@/types";
+import { Icon } from "@/components/ui/icon";
+import { Cover } from "@/components/ui/cover";
 
 interface ProfileShowcaseProps {
   profile: UserProfile;
@@ -23,9 +25,7 @@ interface ShowcaseItem {
 const KIND_ICON: Record<ShowcaseKind, string> = {
   song: "music_note",
   album: "album",
-  // Material Symbols n'a pas de « guitar » : le nom etait rendu tel quel,
-  // en toutes lettres, dans la police d'icones.
-  gear: "tune",
+  gear: "guitar",
 };
 
 /** Singulier, pluriel — un rang d'un seul element ne s'annonce pas au pluriel. */
@@ -105,26 +105,16 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
     return (
       <Link
         href="/profile/edit?tab=favorites"
-        className="mb-5 flex min-h-[44px] items-center gap-3 rounded-2xl border border-dashed border-border p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="mb-5 flex min-h-[44px] items-center gap-3 border-b border-border py-3 transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span
-          aria-hidden="true"
-          className="material-symbols-outlined text-muted-foreground"
-        >
-          favorite
-        </span>
+        <Icon name="favorite" className="h-6 w-6 text-muted-foreground" />
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-medium">Compose ta vitrine</span>
           <span className="block text-xs text-muted-foreground">
             Tes morceaux, albums et matos favoris — visibles sur ton profil
           </span>
         </span>
-        <span
-          aria-hidden="true"
-          className="material-symbols-outlined text-muted-foreground"
-        >
-          chevron_right
-        </span>
+        <Icon name="chevron_right" className="h-6 w-6 text-muted-foreground" />
       </Link>
     );
   }
@@ -139,13 +129,13 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
       <div className="mb-2.5 flex items-baseline gap-3">
         <h2
           id="showcase-heading"
-          className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+          className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground"
         >
           Ma vitrine
         </h2>
         <Link
           href="/profile/edit?tab=favorites"
-          className="text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="text-xs font-semibold text-foreground underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           Modifier
         </Link>
@@ -166,7 +156,7 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
               */}
               <h3
                 id={headingId}
-                className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground"
+                className="mb-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
               >
                 {label}
               </h3>
@@ -178,24 +168,14 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
                 {group.items.map((item) => (
                   <li key={item.key} className="w-[88px] shrink-0">
                     {item.coverUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.coverUrl}
-                        alt=""
-                        className="h-[88px] w-[88px] rounded-xl object-cover"
-                      />
+                      <Cover src={item.coverUrl} className="h-[88px] w-[88px] rounded-[4px]" />
                     ) : (
-                      <div className="flex h-[88px] w-[88px] items-center justify-center rounded-xl bg-accent">
-                        <span
-                          aria-hidden="true"
-                          className="material-symbols-outlined text-muted-foreground"
-                        >
-                          {KIND_ICON[group.kind]}
-                        </span>
+                      <div className="flex h-[88px] w-[88px] items-center justify-center rounded-[4px] bg-secondary">
+                        <Icon name={KIND_ICON[group.kind]} className="h-6 w-6 text-muted-foreground" />
                       </div>
                     )}
 
-                    <p className="mt-1.5 truncate text-xs font-medium">
+                    <p className="mt-1.5 truncate text-xs font-semibold">
                       {item.title}
                     </p>
                     <p className="truncate text-[11px] text-muted-foreground">

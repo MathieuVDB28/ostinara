@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Icon } from "@/components/ui/icon";
 
 /**
  * Un etat vide dit trois choses : ce qui manque, a quoi ca sert, et le
@@ -17,7 +18,7 @@ import type { ReactNode } from "react";
 
 export interface EmptyStateAction {
   label: string;
-  /** Nom d'icone Material Symbols. Relancer `npm run icons` apres ajout. */
+  /** Nom d'icone (table de src/components/ui/icon.tsx). */
   icon?: string;
   href?: string;
   onClick?: () => void;
@@ -53,9 +54,7 @@ function ActionButton({ action }: { action: EmptyStateAction }) {
   const content = (
     <>
       {action.icon && (
-        <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-          {action.icon}
-        </span>
+        <Icon name={action.icon} className="h-5 w-5" />
       )}
       {action.label}
     </>
@@ -109,16 +108,10 @@ export function EmptyState({
       } ${className}`}
     >
       <div
-        className={`mb-4 flex items-center justify-center rounded-full bg-primary/10 text-primary ${
-          compact ? "h-12 w-12" : "h-16 w-16"
-        }`}
+        className="mb-3 flex items-center justify-center text-muted-foreground"
       >
-        <span
-          aria-hidden="true"
-          className={`material-symbols-outlined ${compact ? "text-2xl" : "text-3xl"}`}
-        >
-          {icon}
-        </span>
+        {/* Plus de pastille arrondie autour de l'icone (docs/refonte-ui.md) */}
+        <Icon name={icon} className={compact ? "h-8 w-8" : "h-10 w-10"} strokeWidth={1.25} />
       </div>
 
       <h3 className={`mb-2 font-semibold ${compact ? "text-base" : "text-lg"}`}>

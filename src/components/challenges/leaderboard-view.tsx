@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import type { LeaderboardEntry, LeaderboardPeriod } from "@/types";
 import { getLeaderboard } from "@/lib/actions/challenges";
+import { Icon } from "@/components/ui/icon";
 
 interface LeaderboardViewProps {
   initialLeaderboard: LeaderboardEntry[];
@@ -75,9 +76,7 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
       ) : leaderboard.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-            <span className="material-symbols-outlined text-3xl text-muted-foreground">
-              emoji_events
-            </span>
+            <Icon name="emoji_events" className="h-8 w-8 text-muted-foreground" />
           </div>
           <h3 className="mb-2 font-semibold">Pas encore de classement</h3>
           <p className="text-sm text-muted-foreground">
@@ -118,16 +117,12 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
                 </p>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-base">
-                      play_circle
-                    </span>
+                    <Icon name="play_circle" className="h-4 w-4" />
                     {entry.sessions_count} session
                     {entry.sessions_count > 1 ? "s" : ""}
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-base">
-                      schedule
-                    </span>
+                    <Icon name="schedule" className="h-4 w-4" />
                     {formatMinutes(entry.total_minutes)}
                   </span>
                 </div>
@@ -135,9 +130,7 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
 
               {/* Trophy icon for top 3 */}
               {entry.rank <= 3 && (
-                <span className="material-symbols-outlined text-primary">
-                  emoji_events
-                </span>
+                <Icon name="emoji_events" className="h-6 w-6 text-primary" />
               )}
             </div>
           ))}

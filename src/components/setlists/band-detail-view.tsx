@@ -17,6 +17,7 @@ import type {
   RehearsalWithDetails,
   JamSessionWithDetails,
 } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface BandDetailViewProps {
   band: BandWithMembers;
@@ -60,9 +61,7 @@ export function BandDetailView({
           href="/commu/groupes"
           className="mb-4 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-            chevron_left
-          </span>
+          <Icon name="chevron_left" className="h-[20px] w-[20px]" />
           Groupes
         </Link>
 
@@ -77,9 +76,7 @@ export function BandDetailView({
             />
           ) : (
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
-              <span className="material-symbols-outlined text-2xl text-primary">
-                groups
-              </span>
+              <Icon name="groups" className="h-6 w-6 text-primary" />
             </div>
           )}
           <div className="min-w-0 flex-1">
@@ -106,9 +103,7 @@ export function BandDetailView({
               Rejoins la session du groupe
             </p>
           </div>
-          <span aria-hidden="true" className="material-symbols-outlined text-primary">
-            chevron_right
-          </span>
+          <Icon name="chevron_right" className="h-6 w-6 text-primary" />
         </Link>
       )}
 
@@ -118,9 +113,7 @@ export function BandDetailView({
           onClick={() => setShowJam(true)}
           className="flex min-h-[44px] flex-col items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-3 text-sm font-medium transition-colors hover:bg-accent"
         >
-          <span aria-hidden="true" className="material-symbols-outlined text-primary">
-            music_note
-          </span>
+          <Icon name="music_note" className="h-6 w-6 text-primary" />
           Lancer un jam
         </button>
 
@@ -128,9 +121,7 @@ export function BandDetailView({
           onClick={() => setShowCreateRehearsal(true)}
           className="flex min-h-[44px] flex-col items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-3 text-sm font-medium transition-colors hover:bg-accent"
         >
-          <span aria-hidden="true" className="material-symbols-outlined text-primary">
-            event
-          </span>
+          <Icon name="event" className="h-6 w-6 text-primary" />
           Planifier une répète
         </button>
 
@@ -138,9 +129,7 @@ export function BandDetailView({
           href={`/setlists/tech-rider/${band.id}`}
           className="flex min-h-[44px] flex-col items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-3 text-center text-sm font-medium transition-colors hover:bg-accent"
         >
-          <span aria-hidden="true" className="material-symbols-outlined text-primary">
-            description
-          </span>
+          <Icon name="description" className="h-6 w-6 text-primary" />
           Fiche technique
         </Link>
 
@@ -149,9 +138,7 @@ export function BandDetailView({
             onClick={() => setShowInvite(true)}
             className="flex min-h-[44px] flex-col items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-3 text-sm font-medium transition-colors hover:bg-accent"
           >
-            <span aria-hidden="true" className="material-symbols-outlined text-primary">
-              person_add
-            </span>
+            <Icon name="person_add" className="h-6 w-6 text-primary" />
             Inviter
           </button>
         )}
@@ -172,7 +159,7 @@ export function BandDetailView({
             onClick={() => setShowCreateSetlist(true)}
             className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
+            <Icon name="add" className="h-[18px] w-[18px]" />
             Setlist
           </button>
         </div>
@@ -218,9 +205,7 @@ export function BandDetailView({
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <span aria-hidden="true" className="material-symbols-outlined text-[16px]">
-                  {view === "list" ? "list" : "calendar_month"}
-                </span>
+                <Icon name={view === "list" ? "list" : "calendar_month"} className="h-4 w-4" />
                 {view === "list" ? "Liste" : "Calendrier"}
               </button>
             ))}

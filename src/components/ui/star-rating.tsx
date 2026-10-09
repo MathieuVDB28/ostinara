@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Star } from "lucide-react";
 
 interface StarRatingProps {
   value: number; // 0 to 5, 0.5 increments
@@ -14,7 +15,7 @@ export function StarRating({ value, onChange, size = "md", className }: StarRati
   const displayValue = onChange ? (hovered ?? value) : value;
 
   const sizeClass =
-    size === "sm" ? "text-[16px]" : size === "lg" ? "text-[36px]" : "text-[28px]";
+    size === "sm" ? "h-4 w-4" : size === "lg" ? "h-9 w-9" : "h-7 w-7";
   const gapClass = size === "sm" ? "gap-0.5" : size === "lg" ? "gap-1.5" : "gap-1";
 
   return (
@@ -29,20 +30,20 @@ export function StarRating({ value, onChange, size = "md", className }: StarRati
         return (
           <div key={star} className="relative">
             {/* Base (empty) star */}
-            <span
-              className={`material-symbols-outlined ${sizeClass} select-none text-muted-foreground/25`}
-            >
-              star
-            </span>
+            <Star
+              className={`${sizeClass} select-none fill-current text-muted-foreground/25`}
+              strokeWidth={0}
+              aria-hidden="true"
+            />
 
             {/* Filled portion */}
             {(isFull || isHalf) && (
-              <span
-                className={`material-symbols-outlined ${sizeClass} absolute inset-0 select-none text-primary`}
+              <Star
+                className={`${sizeClass} absolute inset-0 select-none fill-current text-primary`}
+                strokeWidth={0}
                 style={isHalf ? { clipPath: "inset(0 50% 0 0)" } : undefined}
-              >
-                star
-              </span>
+                aria-hidden="true"
+              />
             )}
 
             {/* Interactive click zones */}

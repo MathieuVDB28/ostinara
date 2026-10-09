@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { StarRating } from "@/components/ui/star-rating";
 import { updateAlbumReview, deleteAlbumReview } from "@/lib/actions/albums";
 import type { SpotifyAlbumDetails, AlbumReview, AlbumCommunityStats } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface Props {
   album: SpotifyAlbumDetails;
@@ -83,7 +84,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
         onClick={() => router.back()}
         className="mb-6 flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
-        <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+        <Icon name="arrow_back" className="h-[18px] w-[18px]" />
         Retour
       </button>
 
@@ -100,7 +101,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
             />
           ) : (
             <div className="flex h-36 w-36 items-center justify-center rounded-xl bg-muted sm:h-44 sm:w-44">
-              <span className="material-symbols-outlined text-5xl text-muted-foreground">album</span>
+              <Icon name="album" className="h-12 w-12 text-muted-foreground" />
             </div>
           )}
         </div>
@@ -121,17 +122,17 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
             {year && (
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[15px]">calendar_today</span>
+                <Icon name="calendar_today" className="h-[15px] w-[15px]" />
                 {year}
               </span>
             )}
             <span className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-[15px]">music_note</span>
+              <Icon name="music_note" className="h-[15px] w-[15px]" />
               {album.total_tracks} titre{album.total_tracks > 1 ? "s" : ""}
             </span>
             {album.label && (
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[15px]">label</span>
+                <Icon name="label" className="h-[15px] w-[15px]" />
                 {album.label}
               </span>
             )}
@@ -238,7 +239,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
                       onClick={() => setIsEditing(true)}
                       className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent"
                     >
-                      <span className="material-symbols-outlined text-[15px]">edit</span>
+                      <Icon name="edit" className="h-[15px] w-[15px]" />
                       Modifier
                     </button>
                     <button
@@ -246,7 +247,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
                       disabled={isDeleting}
                       className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm text-destructive transition-colors hover:bg-accent disabled:opacity-50"
                     >
-                      <span className="material-symbols-outlined text-[15px]">delete</span>
+                      <Icon name="delete" className="h-[15px] w-[15px]" />
                       {isDeleting ? "..." : "Supprimer"}
                     </button>
                   </div>
@@ -262,9 +263,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
           </div>
         ) : (
           <div className="flex flex-col items-center rounded-2xl border border-dashed border-border py-10 text-center">
-            <span className="material-symbols-outlined mb-2 text-4xl text-muted-foreground">
-              rate_review
-            </span>
+            <Icon name="rate_review" className="h-9 w-9 mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">Tu n&apos;as pas encore reviewé cet album</p>
             <Link
               href="/biblio/albums"

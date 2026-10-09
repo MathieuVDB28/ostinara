@@ -8,6 +8,7 @@ import { EllipsisVertical, Pencil, Star, Trash2 } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { StarRating } from "@/components/ui/star-rating";
 import type { AlbumReview } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface AlbumReviewCardProps {
   review: AlbumReview;
@@ -191,7 +192,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
-                  <span className="material-symbols-outlined text-7xl text-muted-foreground">album</span>
+                  <Icon name="album" className="h-16 w-16 text-muted-foreground" />
                 </div>
               )}
               {/* Gradient overlay */}
@@ -202,7 +203,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                 onClick={() => { setShowDetail(false); setIsEditing(false); }}
                 className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <Icon name="close" className="h-[20px] w-[20px]" />
               </button>
 
               {/* Album info overlay */}
@@ -291,7 +292,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                         onClick={() => handleEdit()}
                         className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent"
                       >
-                        <span className="material-symbols-outlined text-[16px]">edit</span>
+                        <Icon name="edit" className="h-[16px] w-[16px]" />
                         Modifier
                       </button>
                     </div>
@@ -302,13 +303,13 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                     <div className="mb-5 flex flex-wrap gap-3 text-sm text-muted-foreground">
                       {review.release_date && (
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                          <Icon name="calendar_today" className="h-[16px] w-[16px]" />
                           {review.release_date.split("-")[0]}
                         </span>
                       )}
                       {review.total_tracks && (
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">music_note</span>
+                          <Icon name="music_note" className="h-[16px] w-[16px]" />
                           {review.total_tracks} titres
                         </span>
                       )}

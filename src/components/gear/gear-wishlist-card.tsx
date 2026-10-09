@@ -17,25 +17,25 @@ export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
   const title = [item.brand, item.model].filter(Boolean).join(" ");
 
   return (
-    <div className="group flex items-start gap-3 rounded-xl border border-border/50 bg-card p-4 transition-all hover:border-primary/40 hover:bg-primary/[0.02]">
+    <div className="group flex items-start gap-3 border-b border-border py-3 transition-colors hover:bg-accent/50">
       {/* Type icon */}
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-muted/50">
+      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[4px] bg-secondary">
         <GearTypeIcon type={item.type} className="h-5 w-5 text-muted-foreground/60" />
       </div>
 
       {/* Content */}
       <div className="min-w-0 flex-1">
         {/* Title */}
-        <h3 className="truncate text-sm font-semibold">{title || "Sans nom"}</h3>
+        <h3 className="truncate font-display text-xl font-extrabold uppercase leading-tight">{title || "Sans nom"}</h3>
 
         {/* Badges */}
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-          <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium">
+          <span className="rounded border border-border px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em]">
             {GEAR_TYPE_LABELS[item.type]}
           </span>
           {item.priority && (
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${GEAR_PRIORITY_COLORS[item.priority]}`}
+              className={`rounded border border-border px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em] ${GEAR_PRIORITY_COLORS[item.priority]}`}
             >
               {GEAR_PRIORITY_LABELS[item.priority]}
             </span>

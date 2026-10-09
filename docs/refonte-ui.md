@@ -259,7 +259,34 @@ Plan initial :
 - `src/components/friends/*`, `src/components/challenges/*` (état vide en
   « affiche »), groupes et setlists.
 
-### Phase 5 — Profil (C + B) et finitions
+### Phase 5 — Profil (C + B) et finitions ✅ (faite le 2026-10-09)
+
+Fait :
+- Profil : bannière faite des pochettes de la vitrine (albums favoris,
+  puis morceaux), avatar en surimpression, nom en condensé, bio en serif ;
+  chiffres en ligne Atelier. Vitrine en pochettes avec liseré.
+- Progression : résumé chiffré en condensé, onglets soulignés, journal en
+  lignes (la frise verticale à points a disparu), colonne latérale à filets.
+- Matos : onglets en puces, matériel / setups / wishlist en lignes, nom en
+  condensé, états en étiquettes. Titre en double retiré.
+- Réglages : sections à filets.
+- **Material Symbols supprimé** : plus aucun usage. `src/components/ui/icon.tsx`
+  traduit les noms historiques (encore passés en chaîne à `EmptyState`,
+  `SwipeRow`, la palette ⌘K, la recherche) vers Lucide. 114 usages convertis
+  par script, 20 à la main. `<link>` de la police, `src/lib/material-symbols.ts`,
+  `scripts/extract-icons.mjs` et `npm run icons` retirés.
+- `EmptyState` perd sa pastille arrondie ; `StarRating` passe sur Lucide.
+
+Pas repris en profondeur (icônes converties, mise en page d'origine) :
+pages setlist, répètes, fiche technique, jam, pricing, auth, landing,
+détail album / artiste, modales d'ajout. Les animations décoratives de
+`globals.css` servent encore à la landing.
+
+À savoir : la recherche d'artiste (`/artists/by-name`) renvoie
+« introuvable » en dev parce que Spotify répond 401 — jeton à renouveler,
+sans rapport avec la refonte.
+
+Plan initial :
 
 - `src/components/profile/profile-identity.tsx` + `profile-showcase.tsx` :
   bannière faite des 4 albums favoris, nom en condensé, bio en serif.

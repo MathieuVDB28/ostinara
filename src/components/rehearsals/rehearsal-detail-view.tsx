@@ -16,6 +16,7 @@ import type {
   RehearsalRsvpStatus,
   BandMessageWithProfile,
 } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface RehearsalDetailViewProps {
   rehearsal: RehearsalWithDetails;
@@ -112,7 +113,7 @@ export function RehearsalDetailView({
           href="/commu/groupes"
           className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <Icon name="arrow_back" className="h-[18px] w-[18px]" />
           Retour
         </Link>
 
@@ -198,7 +199,7 @@ export function RehearsalDetailView({
           <div className="rounded-xl border border-border bg-card divide-y divide-border">
             {/* Date & time */}
             <div className="flex items-center gap-3 p-4">
-              <span className="material-symbols-outlined text-primary">calendar_today</span>
+              <Icon name="calendar_today" className="h-6 w-6 text-primary" />
               <div>
                 <p className="font-medium capitalize">
                   {formatFullDate(rehearsal.date)}
@@ -215,16 +216,14 @@ export function RehearsalDetailView({
                 className="ml-auto rounded-lg border border-border p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                 title="Ajouter au calendrier"
               >
-                <span className="material-symbols-outlined text-[20px]">
-                  calendar_add_on
-                </span>
+                <Icon name="calendar_add_on" className="h-[20px] w-[20px]" />
               </a>
             </div>
 
             {/* Location */}
             {rehearsal.location && (
               <div className="flex items-center gap-3 p-4">
-                <span className="material-symbols-outlined text-primary">location_on</span>
+                <Icon name="location_on" className="h-6 w-6 text-primary" />
                 <div>
                   <p className="font-medium">{rehearsal.location}</p>
                   {rehearsal.location_url && (
@@ -244,7 +243,7 @@ export function RehearsalDetailView({
             {/* Setlist */}
             {rehearsal.setlist && (
               <div className="flex items-center gap-3 p-4">
-                <span className="material-symbols-outlined text-primary">queue_music</span>
+                <Icon name="queue_music" className="h-6 w-6 text-primary" />
                 <div>
                   <p className="font-medium">{rehearsal.setlist.name}</p>
                   <p className="text-sm text-muted-foreground">Setlist liee</p>
@@ -255,7 +254,7 @@ export function RehearsalDetailView({
             {/* Recurrence */}
             {rehearsal.recurrence !== "none" && (
               <div className="flex items-center gap-3 p-4">
-                <span className="material-symbols-outlined text-primary">repeat</span>
+                <Icon name="repeat" className="h-6 w-6 text-primary" />
                 <div>
                   <p className="font-medium">{RECURRENCE_LABELS[rehearsal.recurrence]}</p>
                   {rehearsal.recurrence_end_date && (
@@ -371,7 +370,7 @@ export function RehearsalDetailView({
                   onClick={handleComplete}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-sm font-medium text-success-foreground hover:opacity-90"
                 >
-                  <span className="material-symbols-outlined text-[16px]">check</span>
+                  <Icon name="check" className="h-[16px] w-[16px]" />
                   Marquer comme terminee
                 </button>
               )}

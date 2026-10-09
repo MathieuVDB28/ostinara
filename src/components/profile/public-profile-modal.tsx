@@ -22,6 +22,7 @@ import { FavoritesGrid } from "./favorites-grid";
 import { PrivacyBadge } from "./privacy-badge";
 import { getPublicProfile } from "@/lib/actions/profile";
 import { CoverInteractions } from "@/components/social/cover-interactions";
+import { Icon } from "@/components/ui/icon";
 
 interface PublicProfileModalProps {
   userId: string;
@@ -439,7 +440,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                               <circle cx="11" cy="17" r="1.5"/>
                             </svg>
                           ) : (
-                            <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
+                            <Icon name={tab.icon} className="h-[18px] w-[18px]" />
                           )}
                           {tab.label}
                         </button>
@@ -591,7 +592,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                             </div>
                             <div className="rounded-xl bg-accent/50 p-3 text-center">
                               <div className="flex items-center justify-center gap-1">
-                                <span className="material-symbols-outlined text-primary text-[18px]">local_fire_department</span>
+                                <Icon name="local_fire_department" className="h-[18px] w-[18px] text-primary" />
                                 <span className="text-lg font-bold">{profile.practice_stats.currentStreak}</span>
                               </div>
                               <div className="text-xs text-muted-foreground">Jours de streak</div>
@@ -676,7 +677,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                   />
                 ) : (
                   <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-primary/10">
-                    <span className="material-symbols-outlined text-primary text-3xl">music_note</span>
+                    <Icon name="music_note" className="h-8 w-8 text-primary" />
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
@@ -757,9 +758,9 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                   rel="noopener noreferrer"
                   className="mb-5 flex items-center gap-2 rounded-lg border border-border p-3 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
                 >
-                  <span className="material-symbols-outlined text-[18px]">description</span>
+                  <Icon name="description" className="h-[18px] w-[18px]" />
                   Voir la tablature
-                  <span className="material-symbols-outlined ml-auto text-[16px]">open_in_new</span>
+                  <Icon name="open_in_new" className="h-[16px] w-[16px] ml-auto" />
                 </a>
               )}
 
@@ -830,7 +831,7 @@ function StatCard({
   return (
     <div className="rounded-xl bg-accent/50 p-3 text-center">
       <div className={`mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-lg ${iconBg}`}>
-        <span className={`material-symbols-outlined text-[18px] ${iconColor}`}>{icon}</span>
+        <Icon name={icon} className={`h-[18px] w-[18px] ${iconColor}`} />
       </div>
       <div className="text-lg font-extrabold">{value}</div>
       <div className="text-[11px] text-muted-foreground">{label}</div>
@@ -858,7 +859,7 @@ function SongList({ songs, onSongClick }: { songs: Song[]; onSongClick: (song: S
             />
           ) : (
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
-              <span className="material-symbols-outlined text-muted-foreground">music_note</span>
+              <Icon name="music_note" className="h-6 w-6 text-muted-foreground" />
             </div>
           )}
           <div className="min-w-0 flex-1">
@@ -896,9 +897,7 @@ function SongList({ songs, onSongClick }: { songs: Song[]; onSongClick: (song: S
               {difficultyLabels[song.difficulty]}
             </span>
           )}
-          <span className="material-symbols-outlined text-[18px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-            chevron_right
-          </span>
+          <Icon name="chevron_right" className="h-[18px] w-[18px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
         </button>
       ))}
     </div>
@@ -935,7 +934,7 @@ function PlaylistList({
               />
             ) : (
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                <span className="material-symbols-outlined text-primary">queue_music</span>
+                <Icon name="queue_music" className="h-6 w-6 text-primary" />
               </div>
             )}
             <div className="min-w-0 flex-1">
@@ -944,13 +943,12 @@ function PlaylistList({
                 {playlist.song_count} morceau{playlist.song_count > 1 ? "x" : ""}
               </div>
             </div>
-            <span
-              className={`material-symbols-outlined text-muted-foreground transition-transform ${
+            <Icon
+              name="expand_more"
+              className={`h-6 w-6 text-muted-foreground transition-transform ${
                 expandedPlaylist === playlist.id ? "rotate-180" : ""
               }`}
-            >
-              expand_more
-            </span>
+            />
           </button>
 
           {expandedPlaylist === playlist.id && playlist.songs.length > 0 && (
@@ -969,7 +967,7 @@ function PlaylistList({
                     />
                   ) : (
                     <div className="flex h-8 w-8 items-center justify-center rounded bg-muted">
-                      <span className="material-symbols-outlined text-sm text-muted-foreground">music_note</span>
+                      <Icon name="music_note" className="h-3.5 w-3.5 text-muted-foreground" />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
@@ -1009,7 +1007,7 @@ function AlbumReviewList({ reviews }: { reviews: AlbumReview[] }) {
               />
             ) : (
               <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
-                <span className="material-symbols-outlined text-2xl text-muted-foreground">album</span>
+                <Icon name="album" className="h-6 w-6 text-muted-foreground" />
               </div>
             )}
             <div className="min-w-0 flex-1">
@@ -1046,7 +1044,7 @@ function SessionCard({ session }: { session: PracticeSessionWithSong }) {
         />
       ) : (
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-          <span className="material-symbols-outlined text-primary text-[18px]">headphones</span>
+          <Icon name="headphones" className="h-[18px] w-[18px] text-primary" />
         </div>
       )}
       <div className="min-w-0 flex-1">
@@ -1086,7 +1084,7 @@ function CoverCard({ cover }: { cover: CoverWithSong }) {
           )
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/10">
-            <span className="material-symbols-outlined text-3xl text-primary/50">audiotrack</span>
+            <Icon name="audiotrack" className="h-8 w-8 text-primary/50" />
           </div>
         )}
         {/* Play overlay */}
@@ -1120,7 +1118,7 @@ function DetailItem({
   return (
     <div className="rounded-lg bg-accent/50 p-3">
       <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-        <span className="material-symbols-outlined text-[14px]">{icon}</span>
+        <Icon name={icon} className="h-3.5 w-3.5" />
         {label}
       </div>
       <div className={`text-sm font-semibold ${valueClass ? `inline-block rounded-full px-2 py-0.5 text-xs ${valueClass}` : ""}`}>
@@ -1133,7 +1131,7 @@ function DetailItem({
 function EmptyState({ icon, message }: { icon: string; message: string }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12 text-center">
-      <span className="material-symbols-outlined mb-2 text-3xl text-muted-foreground/50">{icon}</span>
+      <Icon name={icon} className="mb-2 h-8 w-8 text-muted-foreground/50" />
       <p className="text-sm text-muted-foreground">{message}</p>
     </div>
   );

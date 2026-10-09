@@ -1,5 +1,7 @@
 "use client";
 
+import { CircleCheck } from "lucide-react";
+import { Cover } from "@/components/ui/cover";
 import type { PracticeSessionWithSong } from "@/types";
 import { getMoodEmoji } from "./mood-selector";
 import { getSectionsLabels } from "./sections-selector";
@@ -45,107 +47,56 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
   const sectionsLabel = getSectionsLabels(session.sections_worked);
   const moodEmoji = getMoodEmoji(session.mood);
 
+  const meta = [
+    formatRelativeTime(session.practiced_at),
+    formatTime(session.practiced_at),
+    session.bpm_achieved ? `${session.bpm_achieved} bpm` : null,
+    sectionsLabel || null,
+  ].filter(Boolean);
+
+  /*
+   * Une ligne du journal, style Atelier (docs/refonte-ui.md) : la duree
+   * en condense a droite comme dans le Carnet, la note du guitariste en
+   * serif sous le titre. Plus de carte ni d'ombre au survol.
+   */
   return (
     <button
       onClick={onClick}
-      className="group w-full text-left rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-lg"
+      className="grid w-full grid-cols-[48px_minmax(0,1fr)_auto] items-start gap-3 border-b border-border py-3 text-left transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="flex items-start gap-4">
-        {/* Cover du morceau ou icône générique */}
-        <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
-          {session.song?.cover_url ? (
-            <img
-              src={session.song.cover_url}
-              alt={session.song.title}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
-              </svg>
-            </div>
+      <Cover src={session.song?.cover_url} className="h-12 w-12 rounded-[3px]" />
+
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-semibold">
+          {session.song?.title || "Session libre"}
+          {session.song?.artist && (
+            <span className="font-normal text-muted-foreground"> · {session.song.artist}</span>
           )}
-        </div>
+        </span>
+        <span className="tabular block truncate text-xs text-muted-foreground">{meta.join(" · ")}</span>
+        {session.notes && (
+          <span className="mt-1 line-clamp-1 block font-serif text-[13.5px] italic text-foreground/80">
+            {session.notes}
+          </span>
+        )}
+        {session.goals_achieved && session.session_goals && (
+          <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-success">
+            <CircleCheck className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+            Objectifs atteints
+          </span>
+        )}
+      </span>
 
-        {/* Infos principales */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <h3 className="font-semibold truncate">
-                {session.song?.title || "Session libre"}
-              </h3>
-              {session.song?.artist && (
-                <p className="text-sm text-muted-foreground truncate">
-                  {session.song.artist}
-                </p>
-              )}
-            </div>
-
-            {/* Mood emoji */}
-            {moodEmoji && (
-              <span className="text-xl flex-shrink-0" title={session.mood || ""}>
-                {moodEmoji}
-              </span>
-            )}
-          </div>
-
-          {/* Détails */}
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            {/* Durée */}
-            <span className="flex items-center gap-1">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {formatDuration(session.duration_minutes)}
-            </span>
-
-            {/* BPM */}
-            {session.bpm_achieved && (
-              <span className="flex items-center gap-1">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-                </svg>
-                {session.bpm_achieved} BPM
-              </span>
-            )}
-
-            {/* Heure */}
-            <span>{formatTime(session.practiced_at)}</span>
-
-            {/* Date relative */}
-            <span className="text-muted-foreground/70">
-              {formatRelativeTime(session.practiced_at)}
-            </span>
-          </div>
-
-          {/* Sections */}
-          {sectionsLabel && (
-            <div className="mt-2">
-              <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
-                {sectionsLabel}
-              </span>
-            </div>
-          )}
-
-          {/* Notes preview */}
-          {session.notes && (
-            <p className="mt-2 text-sm text-muted-foreground line-clamp-1">
-              {session.notes}
-            </p>
-          )}
-
-          {/* Objectifs atteints */}
-          {session.goals_achieved && session.session_goals && (
-            <div className="mt-2 flex items-center gap-1 text-xs text-success">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Objectifs atteints
-            </div>
-          )}
-        </div>
-      </div>
+      <span className="flex flex-col items-end gap-1">
+        <span className="tabular font-display text-xl font-bold leading-none">
+          {formatDuration(session.duration_minutes)}
+        </span>
+        {moodEmoji && (
+          <span className="text-base" title={session.mood || ""}>
+            {moodEmoji}
+          </span>
+        )}
+      </span>
     </button>
   );
 }

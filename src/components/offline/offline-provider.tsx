@@ -27,6 +27,7 @@ import type {
   OfflineSnapshot,
   QueuedPracticeSession,
 } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 /**
  * Le hors-ligne, pour de vrai.
@@ -330,14 +331,10 @@ function OfflineBanner() {
             : "border-border bg-card text-muted-foreground"
         }`}
       >
-        <span
-          aria-hidden="true"
-          className={`material-symbols-outlined text-[18px] ${
-            isSyncing ? "animate-spin" : ""
-          }`}
-        >
-          {isSyncing ? "progress_activity" : isOnline ? "cloud_upload" : "cloud_off"}
-        </span>
+        <Icon
+          name={isSyncing ? "progress_activity" : isOnline ? "cloud_upload" : "cloud_off"}
+          className={`h-[18px] w-[18px] ${isSyncing ? "animate-spin" : ""}`}
+        />
         <span>{label}</span>
 
         {isOnline && !isSyncing && (pending.length > 0 || stuck.length > 0) && (

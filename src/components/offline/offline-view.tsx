@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MAX_SYNC_ATTEMPTS, readQueue, readSnapshot } from "@/lib/offline/db";
 import { songTempoProgress } from "@/lib/song-progress";
 import type { OfflineSnapshot, QueuedPracticeSession } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 /**
  * Ce qu'on peut faire sans reseau.
@@ -79,9 +80,7 @@ export function OfflineView() {
     <main className="mx-auto max-w-2xl p-4 pb-16">
       <header className="mb-6">
         <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-            cloud_off
-          </span>
+          <Icon name="cloud_off" className="h-[20px] w-[20px]" />
           Hors ligne
         </p>
         <h1 className="mt-1 text-2xl font-extrabold">Ostinara</h1>
@@ -99,9 +98,7 @@ export function OfflineView() {
 
       {queue.length > 0 && (
         <p className="mb-5 flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm">
-          <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-primary">
-            cloud_upload
-          </span>
+          <Icon name="cloud_upload" className="h-[18px] w-[18px] text-primary" />
           <span className="tabular">
             {pending.length} session{pending.length > 1 ? "s" : ""} en attente —
             elles partiront au retour du réseau.
@@ -214,9 +211,7 @@ export function OfflineView() {
         onClick={() => window.location.reload()}
         className="mt-8 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-input px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-          refresh
-        </span>
+        <Icon name="refresh" className="h-[20px] w-[20px]" />
         Réessayer la connexion
       </button>
     </main>

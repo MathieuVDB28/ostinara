@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { NotificationSetting } from "./notification-setting";
 import { SubscriptionStatusBadge } from "@/components/subscription";
 import type { UserProfile } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface SettingsListProps {
   profile: UserProfile;
@@ -24,14 +25,9 @@ function Row({ row }: { row: SettingsRow }) {
   return (
     <Link
       href={row.href}
-      className="flex min-h-[56px] items-center gap-4 px-4 py-3 transition-colors hover:bg-accent"
+      className="flex min-h-[56px] items-center gap-4 py-3 transition-colors hover:bg-accent/50"
     >
-      <span
-        aria-hidden="true"
-        className="material-symbols-outlined shrink-0 text-[22px] text-muted-foreground"
-      >
-        {row.icon}
-      </span>
+      <Icon name={row.icon} className="h-[22px] w-[22px] shrink-0 text-muted-foreground" />
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-medium">{row.label}</span>
         <span className="block truncate text-xs text-muted-foreground">
@@ -43,12 +39,7 @@ function Row({ row }: { row: SettingsRow }) {
           {row.value}
         </span>
       )}
-      <span
-        aria-hidden="true"
-        className="material-symbols-outlined shrink-0 text-[20px] text-muted-foreground"
-      >
-        chevron_right
-      </span>
+      <Icon name="chevron_right" className="h-[20px] w-[20px] shrink-0 text-muted-foreground" />
     </Link>
   );
 }
@@ -85,13 +76,13 @@ export function SettingsList({ profile, spotifyConnected }: SettingsListProps) {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-2xl space-y-7">
       {/* Abonnement */}
       <section>
-        <h2 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           Abonnement
         </h2>
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="py-3">
           <div className="mb-3">
             <SubscriptionStatusBadge
               plan={profile.plan}
@@ -110,10 +101,10 @@ export function SettingsList({ profile, spotifyConnected }: SettingsListProps) {
 
       {/* Compte */}
       <section>
-        <h2 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           Compte
         </h2>
-        <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="divide-y divide-border border-b border-border">
           {account.map((row) => (
             <Row key={row.href} row={row} />
           ))}
@@ -122,20 +113,20 @@ export function SettingsList({ profile, spotifyConnected }: SettingsListProps) {
 
       {/* Notifications : le bouton flottait sur toutes les pages, il vit ici */}
       <section>
-        <h2 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           Notifications
         </h2>
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border">
           <NotificationSetting />
         </div>
       </section>
 
       {/* Apparence : le bouton de theme n'existait que dans la sidebar desktop */}
       <section>
-        <h2 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           Apparence
         </h2>
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="py-3">
           <ThemeToggle />
         </div>
       </section>
@@ -144,7 +135,7 @@ export function SettingsList({ profile, spotifyConnected }: SettingsListProps) {
       <section>
         <LogoutButton
           label="Se déconnecter"
-          className="min-h-[44px] w-full rounded-2xl border border-border px-4 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
+          className="min-h-[44px] w-full rounded-xl border border-border px-4 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
         />
       </section>
 

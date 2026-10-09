@@ -113,32 +113,23 @@ export function SessionList({
     <div className="space-y-6">
       {groupedSessions.map((group) => (
         <div key={group.date}>
-          {/* Header du groupe */}
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="font-semibold capitalize">{group.label}</h3>
-            <span className="text-sm text-muted-foreground">
-              Total: {formatDuration(group.totalMinutes)}
+          {/*
+            Un jour, un filet : style Atelier (docs/refonte-ui.md). La frise
+            verticale a points decorait sans rien dire de plus que la date.
+          */}
+          <div className="flex items-baseline justify-between border-b border-border pb-1.5">
+            <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              {group.label}
+            </h3>
+            <span className="tabular font-mono text-[10.5px] text-muted-foreground">
+              {formatDuration(group.totalMinutes)}
             </span>
           </div>
 
-          {/* Timeline */}
-          <div className="relative">
-            {/* Ligne verticale */}
-            <div className="absolute left-[19px] top-0 bottom-0 w-0.5 bg-border" />
-
-            {/* Sessions */}
-            <div className="space-y-3">
-              {group.sessions.map((session, index) => (
-                <div key={session.id} className="relative flex gap-4">
-                  {/* Point sur la timeline */}
-                  <div className="relative z-10 flex h-10 w-10 flex-shrink-0 items-center justify-center">
-                    <div
-                      className={`
-                        h-3 w-3 rounded-full
-                        ${index === 0 ? "bg-primary" : "bg-muted-foreground/50"}
-                      `}
-                    />
-                  </div>
+          <div>
+            <div>
+              {group.sessions.map((session) => (
+                <div key={session.id}>
 
                   {/*
                     Carte de session. Modifier et supprimer passaient tous
@@ -146,7 +137,7 @@ export function SessionList({
                     confirmation dans le tiroir meme — pas de boite de
                     dialogue native qui gele la page.
                   */}
-                  <div className="flex-1 pb-1">
+                  <div>
                     <SwipeRow
                       label={`session du ${new Date(session.practiced_at).toLocaleDateString("fr-FR")}`}
                       actions={[

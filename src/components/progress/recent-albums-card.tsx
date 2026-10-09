@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { AlbumReview } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 /**
  * Les derniers albums ecoutes.
@@ -35,7 +36,7 @@ export function RecentAlbumsCard({ albums }: RecentAlbumsCardProps) {
       <section aria-labelledby="recent-albums">
         <h2
           id="recent-albums"
-          className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground"
+          className="mb-3 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
         >
           Derniers albums écoutés
         </h2>
@@ -57,24 +58,24 @@ export function RecentAlbumsCard({ albums }: RecentAlbumsCardProps) {
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <h2
           id="recent-albums"
-          className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
+          className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
         >
           Derniers albums écoutés
         </h2>
         <Link
           href="/biblio/albums"
-          className="shrink-0 text-xs font-medium text-primary hover:underline"
+          className="shrink-0 text-xs font-semibold text-foreground underline-offset-2 hover:underline"
         >
           Tout voir
         </Link>
       </div>
 
-      <ul className="flex flex-col gap-1 rounded-2xl border border-border bg-card p-2">
+      <ul className="flex flex-col border-t border-border">
         {albums.map((album) => (
           <li key={album.id}>
             <Link
               href={`/biblio/albums?q=${encodeURIComponent(album.album_name)}`}
-              className="flex min-h-[56px] items-center gap-3 rounded-xl px-2 py-1.5 transition-colors hover:bg-accent"
+              className="flex min-h-[56px] items-center gap-3 border-b border-border py-1.5 transition-colors hover:bg-accent/50"
             >
               {album.cover_url ? (
                 <Image
@@ -82,13 +83,11 @@ export function RecentAlbumsCard({ albums }: RecentAlbumsCardProps) {
                   alt=""
                   width={44}
                   height={44}
-                  className="h-11 w-11 shrink-0 rounded-lg object-cover"
+                  className="h-11 w-11 shrink-0 rounded-[3px] object-cover"
                 />
               ) : (
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-                    album
-                  </span>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] bg-secondary text-muted-foreground">
+                  <Icon name="album" className="h-[20px] w-[20px]" />
                 </span>
               )}
 

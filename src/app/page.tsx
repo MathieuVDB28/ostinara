@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Icon } from "@/components/ui/icon";
 
 const features = [
   {
@@ -100,9 +101,7 @@ export default function Home() {
           <div className="flex flex-col items-center text-center">
             {/* Badge */}
             <div className="animate-fade-in-up mb-8 inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-5 py-2 text-sm backdrop-blur-sm">
-              <span className="material-symbols-outlined text-[18px] text-primary">
-                auto_awesome
-              </span>
+              <Icon name="auto_awesome" className="h-[18px] w-[18px] text-primary" />
               <span className="text-muted-foreground">
                 L&apos;app des guitaristes passionnés
               </span>
@@ -129,9 +128,7 @@ export default function Home() {
                 className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-lg font-semibold text-primary-foreground transition-all hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(55,19,236,0.4)]"
               >
                 <span>Créer mon compte</span>
-                <span className="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1">
-                  arrow_forward
-                </span>
+                <Icon name="arrow_forward" className="h-[20px] w-[20px] transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 href="#features"
@@ -202,9 +199,7 @@ export default function Home() {
                 <div className="relative">
                   {/* Icon */}
                   <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary/20">
-                    <span className="material-symbols-outlined text-[28px] text-primary">
-                      {feature.icon}
-                    </span>
+                    <Icon name={feature.icon} className="h-7 w-7 text-primary" />
                   </div>
 
                   {/* Title */}
@@ -237,9 +232,7 @@ export default function Home() {
 
         <div className="relative mx-auto max-w-4xl px-6 text-center">
           <div className="mb-8 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-            <span className="material-symbols-outlined text-[32px] text-primary">
-              format_quote
-            </span>
+            <Icon name="format_quote" className="h-[32px] w-[32px] text-primary" />
           </div>
           <blockquote className="text-2xl leading-relaxed font-medium sm:text-3xl">
             &ldquo;Depuis que j&apos;utilise Ostinara, je vois enfin ma
@@ -280,9 +273,7 @@ export default function Home() {
                   className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-lg font-semibold text-primary-foreground transition-all hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(55,19,236,0.4)]"
                 >
                   Commencer gratuitement
-                  <span className="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1">
-                    arrow_forward
-                  </span>
+                  <Icon name="arrow_forward" className="h-[20px] w-[20px] transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
               <p className="mt-4 text-sm text-muted-foreground">

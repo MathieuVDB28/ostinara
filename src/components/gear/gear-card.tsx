@@ -142,10 +142,10 @@ export function GearCard({ gear, onClick }: GearCardProps) {
   return (
     <div
       onClick={onClick}
-      className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border/50 bg-card p-4 transition-all hover:border-primary/40 hover:bg-primary/[0.02]"
+      className="group flex cursor-pointer items-center gap-3 border-b border-border py-3 transition-colors hover:bg-accent/50"
     >
       {/* Thumbnail */}
-      <div className="flex h-[80px] w-[80px] flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted/50">
+      <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center overflow-hidden rounded-[4px] bg-secondary">
         {gear.image_url ? (
           <img
             src={gear.image_url}
@@ -161,20 +161,20 @@ export function GearCard({ gear, onClick }: GearCardProps) {
 
       {/* Center content */}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <h3 className="truncate text-sm font-semibold">{title || "Sans nom"}</h3>
+        <h3 className="truncate font-display text-xl font-extrabold uppercase leading-tight">{title || "Sans nom"}</h3>
         {subtitle && (
           <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
         )}
         <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
           {gear.condition && (
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${GEAR_CONDITION_COLORS[gear.condition]}`}
+              className={`rounded border border-border px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em] ${GEAR_CONDITION_COLORS[gear.condition]}`}
             >
               {GEAR_CONDITION_LABELS[gear.condition]}
             </span>
           )}
           {gear.is_active && (
-            <span className="rounded-full bg-success/10 px-2.5 py-0.5 text-[11px] font-medium text-success dark:text-success">
+            <span className="rounded border border-success px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em] text-success">
               Actif
             </span>
           )}
@@ -187,7 +187,7 @@ export function GearCard({ gear, onClick }: GearCardProps) {
           e.stopPropagation();
           setShowMenu(!showMenu);
         }}
-        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-muted group-hover:opacity-100"
+        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground transition-all hover:bg-muted lg:opacity-0 lg:group-hover:opacity-100"
       >
         <svg
           className="h-5 w-5"

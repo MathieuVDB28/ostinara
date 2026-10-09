@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SearchResults } from "./search-results";
 import { flattenGroups, useGlobalSearch } from "./use-global-search";
+import { Icon } from "@/components/ui/icon";
 
 /**
  * La palette de commande — cmd-K, ou ctrl-K.
@@ -174,12 +175,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
         className="relative flex max-h-[70vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-popover shadow-2xl"
       >
         <div className="flex items-center gap-3 border-b border-border px-4">
-          <span
-            aria-hidden="true"
-            className="material-symbols-outlined text-muted-foreground"
-          >
-            search
-          </span>
+          <Icon name="search" className="h-6 w-6 text-muted-foreground" />
           <input
             ref={inputRef}
             type="text"
@@ -226,12 +222,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
                         onClick={onClose}
                         className="flex min-h-[44px] items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors hover:bg-accent"
                       >
-                        <span
-                          aria-hidden="true"
-                          className="material-symbols-outlined text-[20px] text-muted-foreground"
-                        >
-                          {link.icon}
-                        </span>
+                        <Icon name={link.icon} className="h-5 w-5 text-muted-foreground" />
                         {link.label}
                       </Link>
                     </li>

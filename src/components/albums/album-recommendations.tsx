@@ -6,6 +6,7 @@ import { getAlbumRecommendations } from "@/lib/actions/albums";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
 import { AddAlbumModal } from "./add-album-modal";
 import type { AlbumReview, AlbumWishlistItem, SpotifyRecommendation } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface AlbumRecommendationsProps {
   isPaid: boolean;
@@ -90,7 +91,7 @@ export function AlbumRecommendations({
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <span className="material-symbols-outlined text-3xl">stars</span>
+          <Icon name="stars" className="h-8 w-8" />
         </div>
         <h3 className="mb-2 text-lg font-semibold">Fonctionnalité Pro</h3>
         <p className="mb-6 max-w-sm text-center text-muted-foreground">
@@ -107,7 +108,7 @@ export function AlbumRecommendations({
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <span className="material-symbols-outlined text-3xl">recommend</span>
+          <Icon name="recommend" className="h-8 w-8" />
         </div>
         <h3 className="mb-2 text-lg font-semibold">Pas encore de recommandations</h3>
         <p className="max-w-sm text-center text-muted-foreground">
@@ -132,7 +133,7 @@ export function AlbumRecommendations({
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <span className="material-symbols-outlined text-3xl">recommend</span>
+          <Icon name="recommend" className="h-8 w-8" />
         </div>
         <h3 className="mb-2 text-lg font-semibold">
           {error ? "Erreur de chargement" : "Aucune recommandation"}
@@ -162,7 +163,7 @@ export function AlbumRecommendations({
             disabled={loading}
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
           >
-            <span className="material-symbols-outlined text-[16px]">refresh</span>
+            <Icon name="refresh" className="h-[16px] w-[16px]" />
             Rafraîchir
           </button>
         </div>
@@ -189,7 +190,7 @@ export function AlbumRecommendations({
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
-                      <span className="material-symbols-outlined text-5xl text-muted-foreground">album</span>
+                      <Icon name="album" className="h-12 w-12 text-muted-foreground" />
                     </div>
                   )}
 
@@ -197,7 +198,7 @@ export function AlbumRecommendations({
                   {status === "done" && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-success-foreground">
-                        <span className="material-symbols-outlined text-[24px]">check</span>
+                        <Icon name="check" className="h-[24px] w-[24px]" />
                       </div>
                     </div>
                   )}
@@ -205,7 +206,7 @@ export function AlbumRecommendations({
                   {/* Hover overlay with hint */}
                   {status !== "done" && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                      <span className="material-symbols-outlined text-[32px] text-white">add_circle</span>
+                      <Icon name="add_circle" className="h-[32px] w-[32px] text-white" />
                     </div>
                   )}
                 </div>
@@ -255,7 +256,7 @@ export function AlbumRecommendations({
                 />
               ) : (
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-muted">
-                  <span className="material-symbols-outlined text-2xl text-muted-foreground">album</span>
+                  <Icon name="album" className="h-6 w-6 text-muted-foreground" />
                 </div>
               )}
               <div className="min-w-0">
@@ -274,7 +275,7 @@ export function AlbumRecommendations({
                 onClick={() => setSelectedAlbum(null)}
                 className="ml-auto shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-accent"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <Icon name="close" className="h-[20px] w-[20px]" />
               </button>
             </div>
 
@@ -289,7 +290,7 @@ export function AlbumRecommendations({
                   {wishlistStatus[selectedAlbum.id] === "loading" ? (
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   ) : (
-                    <span className="material-symbols-outlined text-[20px]">bookmark_add</span>
+                    <Icon name="bookmark_add" className="h-[20px] w-[20px]" />
                   )}
                 </div>
                 <div>
@@ -303,7 +304,7 @@ export function AlbumRecommendations({
                 className="flex w-full items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3.5 text-left font-medium transition-colors hover:bg-primary/20"
               >
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
-                  <span className="material-symbols-outlined text-[20px]">star</span>
+                  <Icon name="star" className="h-[20px] w-[20px]" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold">J&apos;ai écouté — noter</div>

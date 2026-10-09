@@ -18,11 +18,11 @@ export function GearSetupCard({
   onRemoveItem,
 }: GearSetupCardProps) {
   return (
-    <div className="rounded-xl border border-border/50 bg-card p-4 transition-all hover:border-primary/40 hover:bg-primary/[0.02]">
+    <div className="border-b border-border py-3 transition-colors hover:bg-accent/50">
       {/* Header */}
       <div className="mb-3 flex items-start justify-between">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-semibold">{setup.name}</h3>
+          <h3 className="truncate font-display text-xl font-extrabold uppercase leading-tight">{setup.name}</h3>
           {setup.description && (
             <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
               {setup.description}

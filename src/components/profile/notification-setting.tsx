@@ -28,7 +28,7 @@ export function NotificationSetting() {
   const Icon = on ? Bell : BellOff;
 
   return (
-    <div className="px-4 py-3">
+    <div className="py-3">
       <div className="flex min-h-[44px] items-center gap-4">
         <Icon className="h-[22px] w-[22px] shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
         <span className="min-w-0 flex-1">

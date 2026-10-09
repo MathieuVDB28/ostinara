@@ -19,6 +19,7 @@ import { StatsTab } from "./charts";
 import { usePracticeSession } from "@/components/providers/practice-session-provider";
 import { getPracticeSessions } from "@/lib/actions/practice";
 import { SESSIONS_PER_PAGE } from "@/lib/pagination";
+import { Icon } from "@/components/ui/icon";
 
 type TabType = "journal" | "stats";
 
@@ -143,30 +144,26 @@ export function ProgressView({
             role="tab"
             aria-selected={activeTab === "journal"}
             onClick={() => setActiveTab("journal")}
-            className={`flex min-h-[44px] items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+            className={`flex min-h-[44px] items-center gap-2 pb-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               activeTab === "journal"
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "text-foreground shadow-[inset_0_-2px_0_var(--foreground)]"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
-              menu_book
-            </span>
+            <Icon name="menu_book" className="h-[18px] w-[18px]" />
             Journal
           </button>
           <button
             role="tab"
             aria-selected={activeTab === "stats"}
             onClick={() => setActiveTab("stats")}
-            className={`flex min-h-[44px] items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+            className={`flex min-h-[44px] items-center gap-2 pb-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               activeTab === "stats"
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "text-foreground shadow-[inset_0_-2px_0_var(--foreground)]"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
-              bar_chart
-            </span>
+            <Icon name="bar_chart" className="h-[18px] w-[18px]" />
             Statistiques
           </button>
         </div>
@@ -175,9 +172,7 @@ export function ProgressView({
           onClick={openManualEntry}
           className="mb-2 inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
-            add
-          </span>
+          <Icon name="add" className="h-[18px] w-[18px]" />
           <span className="hidden sm:inline">Ajouter une session</span>
           <span className="sm:hidden">Session</span>
         </button>
@@ -221,12 +216,7 @@ export function ProgressView({
                     "Chargement…"
                   ) : (
                     <>
-                      <span
-                        aria-hidden="true"
-                        className="material-symbols-outlined text-[20px]"
-                      >
-                        expand_more
-                      </span>
+                      <Icon name="expand_more" className="h-[20px] w-[20px]" />
                       Charger {Math.min(SESSIONS_PER_PAGE, remaining)} sessions de
                       plus
                     </>
@@ -250,8 +240,8 @@ export function ProgressView({
           */}
           <aside className="order-2 flex flex-col gap-6 lg:sticky lg:top-6">
             {stats.mostPracticedSong && (
-              <div className="rounded-2xl border border-border bg-card p-4">
-                <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <div>
+                <p className="mb-2 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                   Morceau le plus pratiqué
                 </p>
                 <div className="flex items-center gap-3">
@@ -259,25 +249,20 @@ export function ProgressView({
                     <Image
                       src={stats.mostPracticedSong.song.cover_url}
                       alt=""
-                      className="h-12 w-12 rounded-lg object-cover"
+                      className="h-12 w-12 rounded-[3px] object-cover"
                       width={48}
                       height={48}
                     />
                   ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
-                      <span
-                        aria-hidden="true"
-                        className="material-symbols-outlined text-muted-foreground"
-                      >
-                        music_note
-                      </span>
+                      <Icon name="music_note" className="h-6 w-6 text-muted-foreground" />
                     </div>
                   )}
                   <div className="min-w-0">
                     <p className="truncate font-medium">
                       {stats.mostPracticedSong.song.title}
                     </p>
-                    <p className="tabular text-sm text-muted-foreground">
+                    <p className="tabular font-display text-lg font-bold leading-none">
                       {stats.mostPracticedSong.count} session
                       {stats.mostPracticedSong.count > 1 ? "s" : ""}
                     </p>

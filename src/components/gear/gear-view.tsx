@@ -38,6 +38,7 @@ import { GearDetailModal } from "@/components/gear/gear-detail-modal";
 import { GearSetupCard } from "@/components/gear/gear-setup-card";
 import { GearWishlistCard } from "@/components/gear/gear-wishlist-card";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
+import { Icon } from "@/components/ui/icon";
 
 interface GearViewProps {
   initialGearItems: GearItem[];
@@ -333,48 +334,40 @@ export function GearView({
       key: "setups",
       label: "Setups",
       count: gearSetups.length,
-      icon: <span className="material-symbols-outlined text-base">settings</span>,
+      icon: <Icon name="settings" className="h-4 w-4" />,
     },
     {
       key: "wishlist",
       label: "Wishlist",
       count: wishlistItems.length,
-      icon: <span className="material-symbols-outlined text-base">favorite</span>,
+      icon: <Icon name="favorite" className="h-4 w-4" />,
     },
   ];
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 px-4 py-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold">Mon Matos</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Gerez votre equipement, vos setups et votre wishlist
-          </p>
-        </div>
-      </div>
+    /*
+      Le titre « Mon Matos » et son sous-titre repetaient l'onglet du profil
+      juste au-dessus ; les marges propres doublaient celles de la page.
+    */
+    <div className="max-w-3xl space-y-5">
 
       {/* Tabs */}
-      <div className="flex gap-2">
+      <div className="flex gap-1.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setMainTab(tab.key)}
-            className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
+            aria-pressed={mainTab === tab.key}
+            className={`flex h-8 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold transition-colors [&_svg]:h-3.5 [&_svg]:w-3.5 ${
               mainTab === tab.key
-                ? "bg-primary text-primary-foreground"
-                : "bg-accent text-muted-foreground hover:text-foreground"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab.icon}
             <span>{tab.label}</span>
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-                mainTab === tab.key
-                  ? "bg-primary-foreground/20 text-primary-foreground"
-                  : "bg-muted text-muted-foreground"
-              }`}
+              className="tabular opacity-70"
             >
               {tab.count}
             </span>
@@ -388,7 +381,7 @@ export function GearView({
           {/* Search + Filter bar */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative flex-1">
-              <span className="material-symbols-outlined text-base absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">search</span>
+              <Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Rechercher par marque ou modele..."
@@ -401,7 +394,7 @@ export function GearView({
                   onClick={() => setSearchQuery("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  <span className="material-symbols-outlined text-base">close</span>
+                  <Icon name="close" className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -415,7 +408,7 @@ export function GearView({
                     : "bg-card text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <span className="material-symbols-outlined text-base">tune</span>
+                <Icon name="tune" className="h-4 w-4" />
                 <span className="hidden sm:inline">Filtres</span>
               </button>
 
@@ -436,7 +429,7 @@ export function GearView({
                   onClick={() => setShowAddModal(true)}
                   className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                  <span className="material-symbols-outlined text-base">add</span>
+                  <Icon name="add" className="h-4 w-4" />
                   <span className="hidden sm:inline">Ajouter</span>
                 </button>
               ) : (
@@ -533,7 +526,7 @@ export function GearView({
 
           {/* Gear items list */}
           {filteredGearItems.length > 0 ? (
-            <div className="space-y-3">
+            <div className="border-t border-border">
               {filteredGearItems.map((item) => (
                 <GearCard
                   key={item.id}
@@ -544,8 +537,8 @@ export function GearView({
             </div>
           ) : gearItems.length > 0 ? (
             // Has items but filters hide them
-            <div className="flex flex-col items-center justify-center rounded-xl border border-border/50 bg-card py-16 text-center">
-              <span className="material-symbols-outlined text-5xl text-muted-foreground/40 mb-4">search</span>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Icon name="search" className="h-12 w-12 text-muted-foreground/40 mb-4" />
               <h3 className="text-lg font-semibold">Aucun resultat</h3>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
                 Aucun equipement ne correspond a vos criteres de recherche.
@@ -565,7 +558,7 @@ export function GearView({
             </div>
           ) : (
             // Empty state
-            <div className="flex flex-col items-center justify-center rounded-xl border border-border/50 bg-card py-16 text-center">
+            <div className="flex flex-col items-center justify-center py-16 text-center">
               <svg className="mb-4 h-12 w-12 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11.5 2l1 2.5L14 6l-1.5 1.5L14 9l-2 1-1 3.5c-.3 1-.8 2-1.8 2.8-1.5 1.2-2.5 2.2-2.5 3.7a3 3 0 006 0c0-1-.3-1.7-.7-2.3" />
                 <circle cx="10.5" cy="18" r="1" />
@@ -582,7 +575,7 @@ export function GearView({
                   onClick={() => setShowAddModal(true)}
                   className="mt-4 flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
-                  <span className="material-symbols-outlined text-base">add</span>
+                  <Icon name="add" className="h-4 w-4" />
                   Ajouter mon premier equipement
                 </button>
               ) : (
@@ -620,7 +613,7 @@ export function GearView({
                 onClick={() => setShowSetupForm(!showSetupForm)}
                 className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                <span className="material-symbols-outlined text-base">add</span>
+                <Icon name="add" className="h-4 w-4" />
                 <span className="hidden sm:inline">Creer un setup</span>
               </button>
             ) : (
@@ -676,7 +669,7 @@ export function GearView({
 
           {/* Setups list */}
           {gearSetups.length > 0 ? (
-            <div className="space-y-3">
+            <div className="border-t border-border">
               {gearSetups.map((setup) => (
                 <GearSetupCard
                   key={setup.id}
@@ -696,8 +689,8 @@ export function GearView({
             </div>
           ) : (
             // Empty state
-            <div className="flex flex-col items-center justify-center rounded-xl border border-border/50 bg-card py-16 text-center">
-              <span className="material-symbols-outlined text-5xl text-muted-foreground/40 mb-4">layers</span>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Icon name="layers" className="h-12 w-12 text-muted-foreground/40 mb-4" />
               <h3 className="text-lg font-semibold">Aucun setup</h3>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
                 Creez des setups pour regrouper vos equipements par
@@ -708,7 +701,7 @@ export function GearView({
                   onClick={() => setShowSetupForm(true)}
                   className="mt-4 flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
-                  <span className="material-symbols-outlined text-base">add</span>
+                  <Icon name="add" className="h-4 w-4" />
                   Creer mon premier setup
                 </button>
               ) : (
@@ -745,7 +738,7 @@ export function GearView({
                 onClick={() => setShowWishlistForm(!showWishlistForm)}
                 className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                <span className="material-symbols-outlined text-base">add</span>
+                <Icon name="add" className="h-4 w-4" />
                 <span className="hidden sm:inline">Ajouter</span>
               </button>
             ) : (
@@ -855,7 +848,7 @@ export function GearView({
 
           {/* Wishlist items */}
           {wishlistItems.length > 0 ? (
-            <div className="space-y-3">
+            <div className="border-t border-border">
               {wishlistItems.map((item) => (
                 <GearWishlistCard
                   key={item.id}
@@ -866,8 +859,8 @@ export function GearView({
             </div>
           ) : (
             // Empty state
-            <div className="flex flex-col items-center justify-center rounded-xl border border-border/50 bg-card py-16 text-center">
-              <span className="material-symbols-outlined text-5xl text-muted-foreground/40 mb-4">shopping_bag</span>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Icon name="shopping_bag" className="h-12 w-12 text-muted-foreground/40 mb-4" />
               <h3 className="text-lg font-semibold">Wishlist vide</h3>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
                 Ajoutez les equipements que vous souhaitez acquerir pour garder
@@ -878,7 +871,7 @@ export function GearView({
                   onClick={() => setShowWishlistForm(true)}
                   className="mt-4 flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
-                  <span className="material-symbols-outlined text-base">add</span>
+                  <Icon name="add" className="h-4 w-4" />
                   Ajouter mon premier souhait
                 </button>
               ) : (

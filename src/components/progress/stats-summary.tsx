@@ -54,13 +54,15 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
   ];
 
   return (
-    <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl border border-border bg-card px-4 py-3.5 sm:grid-cols-4 sm:divide-x sm:divide-border sm:gap-x-0">
-      {items.map((item, index) => (
-        <div key={item.label} className={index > 0 ? "sm:pl-4" : ""}>
-          <dt className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+    // Style Atelier (docs/refonte-ui.md) : les chiffres en condense, des
+    // libelles en mono, une ligne a filets plutot qu'une carte.
+    <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-y border-border py-3 sm:grid-cols-4">
+      {items.map((item) => (
+        <div key={item.label} className="flex flex-col">
+          <dt className="order-2 mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
             {item.label}
           </dt>
-          <dd className="tabular mt-0.5 text-xl font-extrabold leading-tight">
+          <dd className="tabular order-1 font-display text-[30px] font-bold leading-none">
             {item.value}
           </dd>
           {item.hint && (

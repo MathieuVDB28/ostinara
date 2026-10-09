@@ -3,7 +3,6 @@ import { Plus_Jakarta_Sans, JetBrains_Mono, Barlow_Condensed, Bitter } from "nex
 import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/pwa";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { MATERIAL_SYMBOLS_HREF } from "@/lib/material-symbols";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -89,14 +88,11 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/ios/180.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/*
-          Police sous-ensemblee aux icones reellement utilisees : 8 Ko au lieu
-          des 3,9 Mo de la police variable complete. Liste generee par
-          scripts/extract-icons.mjs — relancer `npm run icons` apres ajout.
+          Plus de police d'icones : les icones sont des SVG Lucide, inclus
+          dans le bundle (docs/refonte-ui.md). Les polices de texte passent
+          par next/font, auto-hebergees : rien a precharger chez Google.
         */}
-        <link rel="stylesheet" href={MATERIAL_SYMBOLS_HREF} />
       </head>
       <body
         className={`${plusJakarta.variable} ${jetbrainsMono.variable} ${barlowCondensed.variable} ${bitter.variable} font-sans antialiased bg-background text-foreground overflow-x-hidden`}

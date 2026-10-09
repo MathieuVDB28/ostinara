@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useBandChat } from "@/lib/hooks/use-band-chat";
 import type { BandMessageWithProfile } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface BandChatPanelProps {
   bandId: string;
@@ -101,9 +102,7 @@ export function BandChatPanel({
       <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <span className="material-symbols-outlined mb-2 text-3xl text-muted-foreground">
-              chat_bubble_outline
-            </span>
+            <Icon name="chat_bubble_outline" className="h-8 w-8 mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
               Aucun message pour l&apos;instant
             </p>

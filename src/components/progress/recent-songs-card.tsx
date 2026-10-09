@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { Song, SongStatus } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 /**
  * Les derniers morceaux ajoutes a la bibliotheque.
@@ -29,7 +30,7 @@ export function RecentSongsCard({ songs }: RecentSongsCardProps) {
       <section aria-labelledby="recent-songs">
         <h2
           id="recent-songs"
-          className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground"
+          className="mb-3 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
         >
           Derniers morceaux ajoutés
         </h2>
@@ -51,24 +52,24 @@ export function RecentSongsCard({ songs }: RecentSongsCardProps) {
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <h2
           id="recent-songs"
-          className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
+          className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
         >
           Derniers morceaux ajoutés
         </h2>
         <Link
           href="/biblio"
-          className="shrink-0 text-xs font-medium text-primary hover:underline"
+          className="shrink-0 text-xs font-semibold text-foreground underline-offset-2 hover:underline"
         >
           Tout voir
         </Link>
       </div>
 
-      <ul className="flex flex-col gap-1 rounded-2xl border border-border bg-card p-2">
+      <ul className="flex flex-col border-t border-border">
         {songs.map((song) => (
           <li key={song.id}>
             <Link
               href={`/biblio?song=${song.id}`}
-              className="flex min-h-[56px] items-center gap-3 rounded-xl px-2 py-1.5 transition-colors hover:bg-accent"
+              className="flex min-h-[56px] items-center gap-3 border-b border-border py-1.5 transition-colors hover:bg-accent/50"
             >
               {song.cover_url ? (
                 <Image
@@ -76,13 +77,11 @@ export function RecentSongsCard({ songs }: RecentSongsCardProps) {
                   alt=""
                   width={44}
                   height={44}
-                  className="h-11 w-11 shrink-0 rounded-lg object-cover"
+                  className="h-11 w-11 shrink-0 rounded-[3px] object-cover"
                 />
               ) : (
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-                    music_note
-                  </span>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] bg-secondary text-muted-foreground">
+                  <Icon name="music_note" className="h-[20px] w-[20px]" />
                 </span>
               )}
 

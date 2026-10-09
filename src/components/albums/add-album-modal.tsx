@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { createAlbumReview } from "@/lib/actions/albums";
 import { StarRating } from "@/components/ui/star-rating";
 import type { AlbumReview, SpotifyAlbum } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface AddAlbumModalProps {
   isOpen: boolean;
@@ -120,7 +121,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                 onClick={() => setStep("search")}
                 className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent"
               >
-                <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+                <Icon name="arrow_back" className="h-[20px] w-[20px]" />
               </button>
             )}
             <h2 className="text-lg font-bold">
@@ -131,7 +132,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <Icon name="close" className="h-[20px] w-[20px]" />
           </button>
         </div>
 
@@ -141,9 +142,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
             <div>
               {/* Search input */}
               <div className="relative mb-4">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-muted-foreground">
-                  search
-                </span>
+                <Icon name="search" className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Rechercher un album..."
@@ -177,7 +176,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                       />
                     ) : (
                       <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-muted">
-                        <span className="material-symbols-outlined text-xl text-muted-foreground">album</span>
+                        <Icon name="album" className="h-5 w-5 text-muted-foreground" />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
@@ -216,7 +215,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                   />
                 ) : (
                   <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-muted">
-                    <span className="material-symbols-outlined text-3xl text-muted-foreground">album</span>
+                    <Icon name="album" className="h-8 w-8 text-muted-foreground" />
                   </div>
                 )}
                 <div className="min-w-0 flex-1">

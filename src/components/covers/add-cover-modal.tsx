@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { VideoUpload } from "./video-upload";
 import { createCover, canUploadCover } from "@/lib/actions/covers";
 import type { Song, CoverVisibility } from "@/types";
+import { Icon } from "@/components/ui/icon";
 
 interface AddCoverModalProps {
   song: Song;
@@ -135,12 +136,7 @@ export function AddCoverModal({
             </p>
             {replyToLabel && (
               <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span
-                  aria-hidden="true"
-                  className="material-symbols-outlined text-[14px]"
-                >
-                  reply
-                </span>
+                <Icon name="reply" className="h-[14px] w-[14px]" />
                 En réponse à {replyToLabel}
               </p>
             )}

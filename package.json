@@ -7,7 +7,6 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "icons": "node scripts/extract-icons.mjs",
     "check:colors": "node scripts/check-colors.mjs"
   },
   "dependencies": {

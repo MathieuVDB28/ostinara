@@ -12,6 +12,7 @@ import { SubscriptionStatusBadge } from "@/components/subscription";
 import { PLANS } from "@/lib/stripe/config";
 import { getSpotifyConnectionStatus } from "@/lib/actions/spotify";
 import Link from "next/link";
+import { Icon } from "@/components/ui/icon";
 
 type Tab = "profile" | "favorites" | "privacy" | "integrations" | "subscription";
 
@@ -328,7 +329,7 @@ function EditProfilePageContent() {
             {uploadingAvatar ? (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
             ) : (
-              <span className="material-symbols-outlined text-[16px]">photo_camera</span>
+              <Icon name="photo_camera" className="h-[16px] w-[16px]" />
             )}
           </button>
           <input
