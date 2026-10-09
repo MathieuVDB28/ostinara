@@ -4,8 +4,10 @@ import { getExercises } from "@/lib/actions/exercises";
 import {
   getAllSongPracticeStats,
   getLastPracticeSession,
+  getPracticeCalendar,
+  getPracticeSessions,
+  getPracticeStats,
 } from "@/lib/actions/practice";
-import { getMyProfile } from "@/lib/actions/profile";
 import { requirePaidPlan } from "@/lib/actions/spotify";
 import { getWeeklyPlan } from "@/lib/actions/weekly-plan";
 import { PlayView } from "@/components/play/play-view";
@@ -32,15 +34,16 @@ export default async function JouerPage({
   const [
     songs,
     exercises,
-    profile,
     planCheck,
     songPracticeStats,
     lastSession,
     weeklyPlan,
+    practiceStats,
+    calendar,
+    recentSessions,
   ] = await Promise.all([
     getSongs(),
     getExercises(),
-    getMyProfile(),
     requirePaidPlan(),
     getAllSongPracticeStats(),
     getLastPracticeSession(),
@@ -48,6 +51,11 @@ export default async function JouerPage({
     // que l'app est ouverte, pas dans un cron qui ecrirait pour des
     // comptes dormants.
     getWeeklyPlan(),
+    // Le Carnet : les chiffres de Progression remontent la ou l'on decide
+    // de jouer, avec 15 semaines de calendrier et les dernieres sessions.
+    getPracticeStats(),
+    getPracticeCalendar(105),
+    getPracticeSessions(undefined, 3),
   ]);
 
   // Le morceau en cours ouvre la page : c'est la raison pour laquelle
@@ -66,13 +74,15 @@ export default async function JouerPage({
       songs={songs}
       exercises={exercises}
       songPracticeStats={songPracticeStats}
-      displayName={profile?.display_name || profile?.username || "Guitariste"}
       currentFocus={currentFocus}
       focusBestBpm={focusBestBpm}
       lastSession={lastSession}
       initialExerciseId={initialExerciseId}
       initialSongId={initialSongId}
       weeklyPlan={weeklyPlan}
+      practiceStats={practiceStats}
+      calendar={calendar}
+      recentSessions={recentSessions}
       userPlan={planCheck.plan}
       isPaid={planCheck.allowed}
     />

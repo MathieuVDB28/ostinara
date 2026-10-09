@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown, Mic } from "lucide-react";
 import { usePitchDetection } from "@/lib/hooks/use-pitch-detection";
 import { TUNING_GROUPS, pitchToFrequency } from "@/lib/tunings";
 import { TunerGauge } from "./tuner-gauge";
@@ -61,114 +62,105 @@ export function GuitarTuner() {
     }
   }
 
+  // Les cordes de la grave a l'aigue, numerotees comme on les nomme : 6e a 1re.
+  const strings = preset.notes.map((note, i) => ({
+    note,
+    number: preset.notes.length - i,
+    isHighlighted: closestString?.index === i,
+  }));
+
+  /*
+   * Style Atelier (docs/refonte-ui.md) : la note jouee en tres grand, le
+   * cadran a graduations, les six cordes en grille. L'ambre n'apparait que
+   * sur le bouton qui active le micro.
+   */
   return (
-    <div className="flex flex-col items-center px-4 py-6">
-      {/* Tuning preset selector */}
-      <select
-        value={preset.name}
-        onChange={(e) =>
-          setSelectedPreset(TUNING_PRESETS.findIndex((p) => p.name === e.target.value))
-        }
-        aria-label="Accordage"
-        className="mb-6 w-full max-w-xs rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
-      >
-        {TUNING_GROUPS.map((group) => (
-          <optgroup key={group.label} label={group.label}>
-            {group.tunings.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label} ({t.notes})
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
+    <div className="flex flex-col items-center gap-5 py-2">
+      <label className="relative">
+        <span className="sr-only">Accordage</span>
+        <select
+          value={preset.name}
+          onChange={(e) =>
+            setSelectedPreset(TUNING_PRESETS.findIndex((p) => p.name === e.target.value))
+          }
+          className="h-9 appearance-none rounded-full border border-border bg-card pl-4 pr-9 font-mono text-xs font-semibold focus:border-primary focus:outline-none"
+        >
+          {TUNING_GROUPS.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {group.tunings.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label} ({t.notes})
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" strokeWidth={2} aria-hidden="true" />
+      </label>
 
-      {/* String reference */}
-      <div className="mb-6 flex gap-3">
-        {preset.notes.map((note, i) => {
-          const isHighlighted = closestString?.index === i;
-          return (
-            <div
-              key={`${preset.name}-${i}`}
-              className={`flex h-12 w-12 items-center justify-center rounded-lg border text-sm font-bold transition-all ${
-                isHighlighted
-                  ? `border-primary bg-primary/20 ${statusColor}`
-                  : "border-border bg-card text-muted-foreground"
-              }`}
-            >
-              {note}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Main display */}
       {isActive ? (
-        <div className="flex w-full max-w-sm flex-col items-center gap-4">
-          {/* Detected note */}
-          <div className="text-center">
-            <div className={`text-6xl font-bold ${result ? statusColor : "text-muted-foreground"}`}>
-              {result ? `${result.note}${result.octave}` : "—"}
-            </div>
-            {result && (
-              <div className="mt-1 text-sm text-muted-foreground">
-                {result.frequency} Hz
-              </div>
-            )}
-          </div>
-
-          {/* Gauge */}
+        <>
           <TunerGauge cents={closestString?.cents ?? 0} />
 
-          {/* Status */}
-          <p className={`text-sm font-medium ${statusColor}`}>{statusText}</p>
-
-          {/* Stop button */}
-          <button
-            onClick={stop}
-            className="mt-4 rounded-full border border-border px-6 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            Arrêter
-          </button>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-6">
-          {/* Inactive tuner icon */}
-          <div className="flex h-32 w-32 items-center justify-center rounded-full bg-primary/10">
-            <svg
-              className="h-16 w-16 text-primary"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
+          <div className="text-center" aria-live="polite">
+            <p
+              className={`font-display text-[96px] font-extrabold leading-[0.85] ${
+                result ? "text-foreground" : "text-muted-foreground"
+              }`}
             >
-              <path d="M2 12h4m12 0h4" strokeLinecap="round" />
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 2v4m0 12v4" strokeLinecap="round" />
-              <path d="M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83" strokeLinecap="round" />
-              <path d="M19.07 4.93l-2.83 2.83M7.76 16.24l-2.83 2.83" strokeLinecap="round" />
-            </svg>
-          </div>
-
-          <div className="text-center">
-            <h2 className="text-xl font-semibold">Accordeur guitare</h2>
-            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Joue une corde à vide. L&apos;accordeur détectera la note et t&apos;indiquera si tu es juste.
+              {result ? (
+                <>
+                  {result.note}
+                  <sub className="align-baseline text-[28px] text-muted-foreground">{result.octave}</sub>
+                </>
+              ) : (
+                "—"
+              )}
+            </p>
+            <p className={`mt-2 text-sm font-semibold ${statusColor}`}>
+              {statusText}
+              {result && <span className="tabular font-mono text-xs text-muted-foreground"> · {result.frequency} Hz</span>}
             </p>
           </div>
-
-          <button
-            onClick={start}
-            className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 hover:shadow-lg hover:shadow-primary/25"
-          >
-            Activer l&apos;accordeur
-          </button>
-
-          {error && (
-            <p className="max-w-sm text-center text-sm text-destructive">{error}</p>
-          )}
-        </div>
+        </>
+      ) : (
+        <p className="max-w-xs text-center text-sm text-muted-foreground">
+          Joue une corde à vide : l&apos;accordeur reconnaît la note et t&apos;indique si tu es juste.
+        </p>
       )}
+
+      <div className="grid w-full grid-cols-6 gap-1.5">
+        {strings.map((string) => (
+          <div
+            key={`${preset.name}-${string.number}`}
+            className={`flex h-14 flex-col items-center justify-center rounded-xl border transition-colors ${
+              string.isHighlighted ? `border-primary shadow-[inset_0_0_0_1px_var(--primary)] ${statusColor}` : "border-border"
+            }`}
+          >
+            <span className="font-display text-xl font-extrabold leading-none">{string.note}</span>
+            <span className="font-mono text-[9.5px] text-muted-foreground">{string.number}e</span>
+          </div>
+        ))}
+      </div>
+
+      {isActive ? (
+        <button
+          onClick={stop}
+          className="min-h-[40px] rounded-full border border-border px-6 text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          Arrêter
+        </button>
+      ) : (
+        <button
+          onClick={start}
+          className="flex min-h-[46px] items-center gap-2 rounded-xl bg-primary px-6 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          <Mic className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+          Activer l&apos;accordeur
+        </button>
+      )}
+
+      {error && <p className="max-w-sm text-center text-sm text-destructive">{error}</p>}
     </div>
   );
 }

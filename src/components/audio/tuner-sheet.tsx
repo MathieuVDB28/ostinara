@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { X } from "lucide-react";
 import { GuitarTuner } from "./guitar-tuner";
 import { SongIdentifier } from "./song-identifier";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
@@ -69,7 +70,7 @@ export function TunerSheet({ isOpen, onClose, isPaid }: TunerSheetProps) {
         aria-modal="true"
         aria-labelledby="tuner-sheet-title"
         tabIndex={-1}
-        className="relative z-10 flex max-h-[92vh] w-full flex-col overflow-y-auto rounded-t-2xl border border-border bg-card shadow-xl outline-none sm:max-w-lg sm:rounded-2xl"
+        className="relative z-10 flex max-h-[92vh] w-full flex-col overflow-y-auto rounded-t-2xl border border-border bg-background shadow-md outline-none sm:max-w-lg sm:rounded-2xl"
       >
         {/* Poignee : elle annonce qu'on peut chasser la feuille vers le bas */}
         <div className="flex justify-center pt-2.5 sm:hidden">
@@ -80,7 +81,10 @@ export function TunerSheet({ isOpen, onClose, isPaid }: TunerSheetProps) {
         </div>
 
         <div className="flex items-center justify-between gap-3 px-5 pb-3 pt-4">
-          <h2 id="tuner-sheet-title" className="text-lg font-bold">
+          <h2
+            id="tuner-sheet-title"
+            className="font-display text-3xl font-extrabold uppercase leading-none tracking-[0.01em]"
+          >
             Accordeur
           </h2>
           <button
@@ -88,20 +92,16 @@ export function TunerSheet({ isOpen, onClose, isPaid }: TunerSheetProps) {
             aria-label="Fermer l'accordeur"
             className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span aria-hidden="true" className="material-symbols-outlined">
-              close
-            </span>
+            <X className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
           </button>
         </div>
 
         <div className="space-y-5 px-4 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] sm:pb-5">
-          <div className="rounded-2xl border border-border">
-            <GuitarTuner />
-          </div>
+          <GuitarTuner />
 
           {/* L'identification de morceau reste une fonction payante */}
           {isPaid ? (
-            <div className="rounded-2xl border border-border">
+            <div className="border-t border-border pt-4">
               <SongIdentifier />
             </div>
           ) : (

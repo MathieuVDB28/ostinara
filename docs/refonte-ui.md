@@ -130,8 +130,15 @@ Fait :
   « Tes 5 étoiles », grille de tuiles sans carte.
 - Covers : puces de visibilité, tuiles vidéo sans carte.
 - Recherche : icônes Lucide par type de résultat, pochettes avec liseré.
-- Bug SSR de `BiblioSearchProvider` corrigé (vérifié en A/B : l'ancienne
-  version reproduit l'erreur, la nouvelle non).
+- ~~Bug SSR de `BiblioSearchProvider`~~ : **ce n'était pas un bug**. Le
+  message « useBiblioSearch doit être utilisé dans BiblioSearchProvider »
+  venait du cache de Turbopack après des rechargements à chaud. Vérifié à
+  froid (`rm -rf .next/dev`) : l'ancien code ne le produit pas. La
+  modification a été annulée en phase 3. Même chose observée pour
+  `usePracticeSession` sur /jouer.
+
+> **Si une erreur « … doit être utilisé dans …Provider » apparaît en dev**,
+> vider `.next/dev` et relancer avant de chercher plus loin.
 
 Restes notés pour la phase 5 : `EmptyState` (icônes Material), le champ
 `SearchResult.icon` devenu inutile, les modales d'ajout.
@@ -142,12 +149,8 @@ Plan initial :
 Albums, Covers, Recherche.
 
 - `src/app/(main)/biblio/layout.tsx` : titre + segmenté sur une ligne en ordi.
-- **Bug existant à corriger au passage** : `BiblioSearchProvider` appelle
-  `useSearchParams()` sans frontière `<Suspense>`. Le rendu serveur de
-  `/biblio` échoue (« useBiblioSearch doit être utilisé dans
-  BiblioSearchProvider » dans la console) et la page se rattrape côté
-  client. Envelopper la lecture de `?q=` dans un `<Suspense>`, ou passer
-  la valeur initiale autrement.
+- (Le « bug SSR » de `BiblioSearchProvider` soupçonné ici était un
+  artefact du cache de Turbopack, voir ci-dessus.)
 - `src/components/library/library-view.tsx` : trois étagères (en cours,
   à apprendre, maîtrisés) à la place des onglets de statut ; playlists,
   filtres et tri sur **une seule** rangée de puces.
@@ -163,7 +166,36 @@ Albums, Covers, Recherche.
   étagère « Récemment », filtres par étoiles en puces.
 - `src/app/(main)/recherche/page.tsx` + `src/components/search/*`.
 
-### Phase 3 — Jouer (B · Atelier)
+### Phase 3 — Jouer (B · Atelier) ✅ (faite le 2026-10-09)
+
+Fait :
+- En-tête « JOUER » en condensé, bouton « Accorder », bouton de session
+  (devient le chrono pendant une session). Onglets soulignés
+  **Carnet / Morceau / Exercices**.
+- **L'accordeur reste une feuille**, pas un onglet comme dans la maquette :
+  c'est un choix déjà documenté dans `tuner-sheet.tsx` (outil de trente
+  secondes, micro libéré à la fermeture).
+- Carnet (`carnet-view.tsx`) : 4 chiffres, calendrier de 15 semaines
+  (`practice-calendar.tsx` + nouvelle action légère `getPracticeCalendar`),
+  dernières sessions, « Reprendre » (seul bouton ambre), plan de la semaine.
+- Le métronome reste monté sur le Carnet (masqué) : il continue de battre.
+- Métronome : BPM en 112 px condensé, temps en points (accent = anneau),
+  réglages en grille à filets, bouton rond ambre / encre.
+- Exercices : une rangée de puces, lignes à filets, progression en frettes.
+- Accordeur : cadran gradué, note en très grand, cordes en grille de 6.
+- Session : **mode plein écran** (`SessionFocus` dans
+  `practice-session-provider.tsx`), ouvert au démarrage depuis Jouer ;
+  « Réduire » rend la barre du bas, elle aussi restylée.
+- Fin de session : « BIEN JOUÉ », 3 chiffres, humeur en 5 cases, sections
+  à filets, note en serif.
+- Onglet Morceau : sélecteur, indicateur de tempo et tablature en lignes.
+
+À savoir : la table `weekly_goals` n'existe pas dans la base de dev
+(« Could not find the table 'public.weekly_goals' ») : le plan de la
+semaine ne s'affiche donc pas. Migration à appliquer, sans rapport avec
+la refonte.
+
+Plan initial :
 
 Écrans : Carnet, Métronome, Exercices, Accordeur, Session en cours, Fin de
 session.

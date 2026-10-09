@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useCallback } from "react";
+import { Gauge, Timer } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Metronome } from "@/components/practice/metronome/metronome";
 import { ExerciseList } from "@/components/practice/exercises/exercise-list";
@@ -12,23 +12,23 @@ import { SongSelector } from "@/components/practice/song-practice/song-selector"
 import { BpmTargetIndicator } from "@/components/practice/song-practice/bpm-target-indicator";
 import { TunerSheet } from "@/components/audio/tuner-sheet";
 import { SongTabPanel } from "@/components/practice/song-practice/song-tab-panel";
-import { WeeklyPlanCard } from "@/components/plan/weekly-plan-card";
 import { ResumeCard } from "./resume-card";
+import { CarnetView } from "./carnet-view";
 import { usePracticeSession } from "@/components/providers/practice-session-provider";
-import { TempoLadder, ProgressBar } from "@/components/ui/tempo-ladder";
-import { NavIcon } from "@/components/layout/nav-icon";
 import { updateSong } from "@/lib/actions/songs";
 import { songTargetBpm, slowPracticeFloor } from "@/lib/song-progress";
 import type {
   Song,
   ExerciseWithProgress,
+  HeatmapData,
   SongPracticeStats,
   PracticeSessionWithSong,
+  PracticeStats,
   UserPlan,
   WeeklyPlan,
 } from "@/types";
 
-type PlayTab = "song" | "exercises";
+type PlayTab = "carnet" | "song" | "exercises";
 
 /*
  * Deux segments, pas trois. L'accordeur etait le seul onglet qui ne
@@ -37,16 +37,22 @@ type PlayTab = "song" | "exercises";
  * trente secondes. Il vit maintenant dans une feuille (TunerSheet),
  * atteignable depuis l'en-tete quel que soit le segment actif.
  */
-const TABS: { value: PlayTab; label: string; icon: string }[] = [
-  { value: "song", label: "Morceau", icon: "library" },
-  { value: "exercises", label: "Exercices", icon: "exercise" },
+const TABS: { value: PlayTab; label: string }[] = [
+  // Le Carnet ouvre l'onglet : ce qu'on a joue, et ce qu'on va jouer.
+  { value: "carnet", label: "Carnet" },
+  { value: "song", label: "Morceau" },
+  { value: "exercises", label: "Exercices" },
 ];
+
+/** Ce que la session plein ecran affiche du morceau. */
+function sessionSong(song: Song | null) {
+  return song ? { title: song.title, artist: song.artist, cover_url: song.cover_url ?? null } : null;
+}
 
 interface PlayViewProps {
   songs: Song[];
   exercises: ExerciseWithProgress[];
   songPracticeStats: Record<string, SongPracticeStats>;
-  displayName: string;
   currentFocus: Song | null;
   focusBestBpm: number | null;
   /** La derniere session enregistree, pour reprendre sans rien ressaisir. */
@@ -62,6 +68,11 @@ interface PlayViewProps {
   initialSongId?: string;
   /** Le plan de la semaine — la raison de revenir le lundi. */
   weeklyPlan: WeeklyPlan | null;
+  /** Les chiffres du Carnet. */
+  practiceStats: PracticeStats;
+  /** Quinze semaines de calendrier de pratique. */
+  calendar: HeatmapData;
+  recentSessions: PracticeSessionWithSong[];
   userPlan: UserPlan;
   isPaid: boolean;
 }
@@ -81,13 +92,15 @@ export function PlayView({
   songs,
   exercises,
   songPracticeStats,
-  displayName,
   currentFocus,
   focusBestBpm,
   lastSession,
   initialExerciseId,
   initialSongId,
   weeklyPlan,
+  practiceStats,
+  calendar,
+  recentSessions,
   userPlan,
   isPaid,
 }: PlayViewProps) {
@@ -100,9 +113,13 @@ export function PlayView({
 
   // Les segments de "Jouer" sont du state, pas des routes : le metronome
   // et le chrono doivent survivre au passage d'un segment a l'autre.
-  const [activeTab, setActiveTab] = useState<PlayTab>(
-    initialExercise ? "exercises" : "song"
-  );
+  const [activeTab, setActiveTab] = useState<PlayTab>(() => {
+    if (initialExercise) return "exercises";
+    // `/jouer?song=<id>` vient de la bibliotheque ou du plan : on veut
+    // jouer ce morceau, pas relire le carnet.
+    if (initialSongId && songs.some((song) => song.id === initialSongId)) return "song";
+    return "carnet";
+  });
 
   // Le chrono vient du contexte : il survit a la navigation et sa barre
   // de controle le suit d'un ecran a l'autre.
@@ -161,13 +178,6 @@ export function PlayView({
     deepLinkedSong && initialBpm ? { bpm: initialBpm, id: 0 } : null
   );
 
-  const firstName = displayName.split(" ")[0];
-
-  // La cible passe par le meme helper partout : reglage manuel, puis
-  // tempo de la tablature, puis Spotify. La tablature manquait ici.
-  const focusTargetBpm = currentFocus
-    ? songTargetBpm(currentFocus)?.bpm
-    : undefined;
 
   /*
    * Le morceau qu'on reprend vient de la derniere session enregistree,
@@ -206,14 +216,21 @@ export function PlayView({
       songId: resumeSong.id,
       exerciseId: null,
       bpm: resumeBpm ?? currentBpm,
+      song: sessionSong(resumeSong),
+      focus: true,
     });
   }, [practiceSession, resumeSong, resumeBpm, currentBpm]);
 
   const startSession = useCallback(() => {
+    // Depuis le Carnet, la session porte le morceau ouvert dans
+    // « Morceau » : c'est celui qu'on va jouer.
+    const song = activeTab === "exercises" ? null : selectedSong;
     practiceSession.start({
-      songId: activeTab === "song" ? selectedSong?.id ?? null : null,
+      songId: song?.id ?? null,
       exerciseId: activeTab === "exercises" ? selectedExercise?.id ?? null : null,
       bpm: currentBpm,
+      song: sessionSong(song),
+      focus: true,
     });
   }, [practiceSession, activeTab, selectedSong, selectedExercise, currentBpm]);
 
@@ -253,7 +270,7 @@ export function PlayView({
       }
       // Le chrono deja lance doit suivre le morceau qu'on regarde.
       if (practiceSession.isActive) {
-        practiceSession.setSongId(song.id);
+        practiceSession.setSongId(song.id, sessionSong(song));
         if (bpm !== null) practiceSession.setBpm(bpm);
       }
     },
@@ -277,150 +294,127 @@ export function PlayView({
     [songs, handleSelectSong]
   );
 
+  const resumeCard =
+    resumeSong && lastSession ? (
+      <ResumeCard
+        session={lastSession}
+        song={resumeSong}
+        bpm={resumeBpm}
+        bestBpm={songPracticeStats[resumeSong.id]?.bestBpm ?? null}
+        targetBpm={resumeTargetBpm}
+        disabled={isPracticing}
+        onResume={handleResume}
+      />
+    ) : null;
+
   return (
     <div className="space-y-6">
-      {/* En-tete */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold lg:text-3xl">
-            Salut, {firstName}
+      {/*
+        En-tete, style Atelier (docs/refonte-ui.md) : le titre en condense,
+        l'accordeur et la session a droite. L'accordeur reste une feuille,
+        pas un onglet : c'est un outil de trente secondes, pas une facon de
+        travailler.
+      */}
+      <div>
+        <div className="flex items-end justify-between gap-3">
+          <h1 className="font-display text-[40px] font-extrabold uppercase leading-none tracking-[0.01em] lg:text-5xl">
+            Jouer
           </h1>
-          <p className="mt-1 text-muted-foreground">
-            Métronome, exercices et accordeur
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* L'accordeur : une action sur la vue, pas une destination */}
-          <button
-            onClick={() => setTunerOpen(true)}
-            aria-haspopup="dialog"
-            className="flex min-h-[44px] items-center gap-2 rounded-xl border border-input px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <NavIcon icon="tuner" className="h-5 w-5 shrink-0" />
-            Accordeur
-          </button>
-
-          {!isPracticing ? (
+          <div className="flex items-center gap-2">
             <button
-              onClick={startSession}
-              className="flex min-h-[44px] items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-medium text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              onClick={() => setTunerOpen(true)}
+              aria-haspopup="dialog"
+              className="flex min-h-[38px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <span aria-hidden="true" className="material-symbols-outlined text-[20px]">timer</span>
-              Démarrer une session
+              <Gauge className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+              Accorder
             </button>
-          ) : (
-            /*
-              Session en cours : le chrono et ses commandes sont dans la
-              barre du bas, qui suit d'un ecran a l'autre. Les dupliquer
-              ici donnerait deux boutons "Terminer" pour une seule session.
-            */
-            <p className="flex min-h-[44px] items-center gap-2 rounded-xl bg-primary/15 px-3.5 py-2 text-sm font-medium text-primary">
-              <span
-                aria-hidden="true"
-                className="material-symbols-outlined text-[18px]"
+
+            {isPracticing ? (
+              /*
+                Session en cours : le chrono rouvre le plein ecran. Les
+                commandes sont la-bas et dans la barre du bas, pas ici.
+              */
+              <button
+                onClick={practiceSession.openFocus}
+                className="flex min-h-[38px] items-center gap-1.5 rounded-full bg-foreground px-3.5 text-background"
               >
-                timer
-              </span>
-              <span className="tabular">
-                {formatDuration(practiceSession.elapsedSeconds)}
-              </span>
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/*
-        Le plan de la semaine ouvre l'ecran.
-
-        « Reprendre » dit quoi refaire ; le plan dit quoi viser. C'est la
-        seule chose de cette page qui regarde devant, et la raison de
-        rouvrir l'app un lundi matin.
-      */}
-      {weeklyPlan && (
-        <WeeklyPlanCard plan={weeklyPlan} onWorkOnSong={handleWorkOnSong} />
-      )}
-
-      {/*
-        Reprendre passe avant « En cours » : c'est la meme place a l'ecran,
-        mais avec le tempo, les sections et un bouton qui fait tout.
-      */}
-      {resumeSong && lastSession ? (
-        <ResumeCard
-          session={lastSession}
-          song={resumeSong}
-          bpm={resumeBpm}
-          bestBpm={songPracticeStats[resumeSong.id]?.bestBpm ?? null}
-          targetBpm={resumeTargetBpm}
-          disabled={isPracticing}
-          onResume={handleResume}
-        />
-      ) : null}
-
-      {/* Morceau en cours : la carte qui ouvrait le dashboard */}
-      {!resumeSong && currentFocus && (
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            En cours
-          </p>
-          <div className="flex items-center gap-4">
-            {currentFocus.cover_url ? (
-              <Image
-                src={currentFocus.cover_url}
-                alt=""
-                className="h-16 w-16 rounded-xl object-cover"
-                width={64}
-                height={64}
-              />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
-                <span className="material-symbols-outlined text-2xl text-primary">
-                  music_note
+                <span aria-hidden="true" className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />
+                <span className="tabular font-display text-lg font-bold leading-none">
+                  {formatDuration(practiceSession.elapsedSeconds)}
                 </span>
-              </div>
+                <span className="sr-only">Afficher la session en plein écran</span>
+              </button>
+            ) : (
+              activeTab !== "carnet" && (
+                <button
+                  onClick={startSession}
+                  className="hidden min-h-[38px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex"
+                >
+                  <Timer className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                  Démarrer une session
+                </button>
+              )
             )}
-            <div className="min-w-0 flex-1">
-              <h2 className="truncate text-lg font-bold">{currentFocus.title}</h2>
-              <p className="truncate text-sm text-muted-foreground">
-                {currentFocus.artist}
-              </p>
-              <div className="mt-2">
-                {focusTargetBpm ? (
-                  <TempoLadder
-                    targetBpm={focusTargetBpm}
-                    achievedBpm={focusBestBpm}
-                    showScale={false}
-                  />
-                ) : (
-                  <ProgressBar percent={currentFocus.progress_percent} />
-                )}
-              </div>
-            </div>
           </div>
         </div>
-      )}
 
-      {/* Segments */}
-      <div className="flex gap-1 overflow-x-auto rounded-xl bg-accent/50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {TABS.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setActiveTab(tab.value)}
-            aria-current={activeTab === tab.value ? "page" : undefined}
-            className={`flex min-h-[40px] flex-1 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-              activeTab === tab.value
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <NavIcon icon={tab.icon} className="h-4 w-4 shrink-0" />
-            <span>{tab.label}</span>
-          </button>
-        ))}
+        <div
+          role="tablist"
+          aria-label="Sections Jouer"
+          className="-mx-4 mt-4 flex gap-6 overflow-x-auto border-b border-border px-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden"
+        >
+          {TABS.map((tab) => (
+            <button
+              key={tab.value}
+              role="tab"
+              aria-selected={activeTab === tab.value}
+              onClick={() => setActiveTab(tab.value)}
+              className={`min-h-[40px] shrink-0 whitespace-nowrap pb-2.5 pt-1 text-sm font-semibold transition-colors ${
+                activeTab === tab.value
+                  ? "text-foreground shadow-[inset_0_-2px_0_var(--foreground)]"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Contenu */}
-      <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
+      {activeTab === "carnet" && (
+        <CarnetView
+          stats={practiceStats}
+          calendar={calendar}
+          recentSessions={recentSessions}
+          weeklyPlan={weeklyPlan}
+          resume={resumeCard}
+          focusSong={currentFocus}
+          focusBestBpm={focusBestBpm}
+          isPracticing={isPracticing}
+          onStartSession={startSession}
+          onWorkOnSong={handleWorkOnSong}
+        />
+      )}
+
+      {/*
+        Morceau et Exercices. Le metronome reste monte sur le Carnet,
+        seulement masque : il continue de battre d'un onglet a l'autre.
+      */}
+      <div
+        hidden={activeTab === "carnet"}
+        className="grid gap-x-10 gap-y-6 lg:grid-cols-[400px_1fr]"
+      >
+        {!isPracticing && (
+          <button
+            onClick={startSession}
+            className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold transition-colors hover:bg-accent sm:hidden"
+          >
+            <Timer className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+            Démarrer une session
+          </button>
+        )}
         <Metronome
           initialBpm={currentBpm}
           bpmRequest={bpmRequest}
@@ -428,9 +422,9 @@ export function PlayView({
           onPlayingChange={() => {}}
         />
 
-        <div className="rounded-2xl border border-border bg-card/50 p-4">
+        <div className="min-w-0">
           {activeTab === "song" && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {selectedSong ? (
                 <>
                   <BpmTargetIndicator
@@ -451,9 +445,9 @@ export function PlayView({
                   />
                 </>
               ) : (
-                <div className="rounded-lg bg-accent/50 p-4 text-center text-sm text-muted-foreground">
+                <p className="py-4 text-center text-sm text-muted-foreground">
                   Sélectionne un morceau pour voir ta progression
-                </div>
+                </p>
               )}
 
               <SongSelector

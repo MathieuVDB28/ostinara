@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { ChevronDown, Volume2, VolumeX } from "lucide-react";
 import { TIME_SIGNATURES, SUBDIVISION_LABELS } from "@/types";
 import type { TimeSignature, Subdivision } from "@/types";
 
@@ -16,8 +17,21 @@ interface MetronomeControlsProps {
   onSubdivisionChange: (sub: Subdivision) => void;
   onVolumeChange: (vol: number) => void;
   onSilentModeChange: (enabled: boolean) => void;
+  /** Les temps de la mesure, places juste sous le tempo. */
+  beats?: ReactNode;
+  /** Le tap tempo, sur la rangee des pas de -5 / +5. */
+  tap?: ReactNode;
 }
 
+const SUBDIVISIONS: Subdivision[] = ["none", "eighth", "triplet", "sixteenth"];
+
+/**
+ * Les reglages du metronome, style Atelier (docs/refonte-ui.md).
+ *
+ * Le tempo d'abord, en tres grand : c'est le seul chiffre qu'on lit en
+ * jouant. Le reste — mesure, subdivision, volume, silence — tient dans
+ * une grille a filets qu'on regle une fois.
+ */
 export function MetronomeControls({
   bpm,
   timeSignature,
@@ -30,228 +44,221 @@ export function MetronomeControls({
   onSubdivisionChange,
   onVolumeChange,
   onSilentModeChange,
+  beats,
+  tap,
 }: MetronomeControlsProps) {
-  const [showTimeSignatures, setShowTimeSignatures] = useState(false);
-  const [showSubdivisions, setShowSubdivisions] = useState(false);
+  const [open, setOpen] = useState<"signature" | "subdivision" | null>(null);
 
-  const subdivisions: Subdivision[] = ["none", "eighth", "triplet", "sixteenth"];
+  const step =
+    "flex h-9 min-w-[44px] items-center justify-center rounded-lg border border-border px-2.5 font-mono text-xs font-semibold transition-colors hover:bg-accent";
 
   return (
-    <div className="space-y-4">
-      {/* BPM Control */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-center gap-2">
-          {/* Boutons -5 et -1 */}
-          <button
-            onClick={() => onBpmIncrement(-5)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-sm font-medium transition-colors hover:bg-accent"
-          >
-            -5
-          </button>
-          <button
-            onClick={() => onBpmIncrement(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-sm font-medium transition-colors hover:bg-accent"
-          >
-            -1
-          </button>
-
-          {/* Affichage BPM */}
-          <div className="flex min-w-[100px] flex-col items-center px-2">
-            <input
-              type="number"
-              value={bpm}
-              onChange={(e) => onBpmChange(parseInt(e.target.value) || 120)}
-              min={20}
-              max={300}
-              className="w-20 bg-transparent text-center text-3xl font-bold"
-            />
-            <span className="text-xs text-muted-foreground">BPM</span>
-          </div>
-
-          {/* Boutons +1 et +5 */}
-          <button
-            onClick={() => onBpmIncrement(1)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-sm font-medium transition-colors hover:bg-accent"
-          >
-            +1
-          </button>
-          <button
-            onClick={() => onBpmIncrement(5)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-sm font-medium transition-colors hover:bg-accent"
-          >
-            +5
-          </button>
-        </div>
-
-        {/* Slider BPM */}
-        <input
-          type="range"
-          min={20}
-          max={300}
-          value={bpm}
-          onChange={(e) => onBpmChange(parseInt(e.target.value))}
-          className="w-full accent-primary"
-        />
+    <div className="flex w-full flex-col items-center gap-5">
+      {/* Tempo */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => onBpmIncrement(-1)}
+          aria-label="Moins 1 BPM"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-border text-2xl transition-colors hover:bg-accent"
+        >
+          −
+        </button>
+        <label className="flex flex-col items-center">
+          <span className="sr-only">Tempo en BPM</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            value={bpm}
+            onChange={(e) => onBpmChange(parseInt(e.target.value) || 120)}
+            min={20}
+            max={300}
+            className="tabular w-[3.2ch] bg-transparent text-center font-display text-[112px] font-extrabold leading-[0.85] tracking-[-0.01em] focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          <span aria-hidden="true" className="mt-1 font-mono text-[11px] font-semibold tracking-[0.12em] text-muted-foreground">
+            BPM
+          </span>
+        </label>
+        <button
+          onClick={() => onBpmIncrement(1)}
+          aria-label="Plus 1 BPM"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-border text-2xl transition-colors hover:bg-accent"
+        >
+          +
+        </button>
       </div>
 
-      {/* Signature temporelle et Subdivisions */}
-      <div className="flex gap-2">
-        {/* Time Signature Dropdown */}
-        <div className="relative flex-1">
-          <button
-            onClick={() => {
-              setShowTimeSignatures(!showTimeSignatures);
-              setShowSubdivisions(false);
-            }}
-            className="flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm transition-colors hover:bg-accent"
-          >
-            <span>
-              {timeSignature.beats}/{timeSignature.noteValue}
-            </span>
-            <svg
-              className={`h-4 w-4 transition-transform ${showTimeSignatures ? "rotate-180" : ""}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </button>
+      {beats}
 
-          {showTimeSignatures && (
-            <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-lg border border-border bg-card p-1 shadow-lg">
-              {TIME_SIGNATURES.map((ts) => (
-                <button
+      <div className="flex flex-wrap items-center justify-center gap-1.5">
+        <button onClick={() => onBpmIncrement(-5)} aria-label="Moins 5 BPM" className={step}>
+          −5
+        </button>
+        <button onClick={() => onBpmIncrement(5)} aria-label="Plus 5 BPM" className={step}>
+          +5
+        </button>
+        {tap}
+      </div>
+
+      <input
+        type="range"
+        min={20}
+        max={300}
+        value={bpm}
+        onChange={(e) => onBpmChange(parseInt(e.target.value))}
+        aria-label="Tempo"
+        className="w-full max-w-sm accent-primary"
+      />
+
+      {/* Reglages : une grille a filets, chaque case un reglage */}
+      <div className="grid w-full grid-cols-2 gap-px overflow-visible border-y border-border bg-border">
+        <Setting label="Mesure">
+          <Dropdown
+            isOpen={open === "signature"}
+            onToggle={() => setOpen(open === "signature" ? null : "signature")}
+            value={`${timeSignature.beats}/${timeSignature.noteValue}`}
+          >
+            {TIME_SIGNATURES.map((ts) => {
+              const isCurrent =
+                ts.beats === timeSignature.beats && ts.noteValue === timeSignature.noteValue;
+              return (
+                <DropdownItem
                   key={`${ts.beats}/${ts.noteValue}`}
-                  onClick={() => {
+                  isCurrent={isCurrent}
+                  onSelect={() => {
                     onTimeSignatureChange(ts);
-                    setShowTimeSignatures(false);
+                    setOpen(null);
                   }}
-                  className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent ${
-                    ts.beats === timeSignature.beats &&
-                    ts.noteValue === timeSignature.noteValue
-                      ? "bg-primary/20 text-primary"
-                      : ""
-                  }`}
                 >
                   {ts.beats}/{ts.noteValue}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+                </DropdownItem>
+              );
+            })}
+          </Dropdown>
+        </Setting>
 
-        {/* Subdivisions Dropdown */}
-        <div className="relative flex-1">
-          <button
-            onClick={() => {
-              setShowSubdivisions(!showSubdivisions);
-              setShowTimeSignatures(false);
-            }}
-            className="flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm transition-colors hover:bg-accent"
+        <Setting label="Subdivision">
+          <Dropdown
+            isOpen={open === "subdivision"}
+            onToggle={() => setOpen(open === "subdivision" ? null : "subdivision")}
+            value={SUBDIVISION_LABELS[subdivision]}
           >
-            <span>{SUBDIVISION_LABELS[subdivision]}</span>
-            <svg
-              className={`h-4 w-4 transition-transform ${showSubdivisions ? "rotate-180" : ""}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+            {SUBDIVISIONS.map((sub) => (
+              <DropdownItem
+                key={sub}
+                isCurrent={sub === subdivision}
+                onSelect={() => {
+                  onSubdivisionChange(sub);
+                  setOpen(null);
+                }}
+              >
+                {SUBDIVISION_LABELS[sub]}
+              </DropdownItem>
+            ))}
+          </Dropdown>
+        </Setting>
+
+        <Setting label="Volume">
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(volume * 100)}
+              onChange={(e) => onVolumeChange(parseInt(e.target.value) / 100)}
+              aria-label="Volume"
+              className="min-w-0 flex-1 accent-primary"
+            />
+            <span className="tabular w-9 text-right text-xs font-semibold">
+              {Math.round(volume * 100)}%
+            </span>
+          </div>
+        </Setting>
+
+        <Setting label="Silence">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={silentMode}
+            onClick={() => onSilentModeChange(!silentMode)}
+            className="flex items-center gap-1.5 text-sm font-bold"
+          >
+            {silentMode ? (
+              <VolumeX className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+            ) : (
+              <Volume2 className="h-4 w-4 text-muted-foreground" strokeWidth={2} aria-hidden="true" />
+            )}
+            {silentMode ? "Temps muets" : "Désactivé"}
           </button>
-
-          {showSubdivisions && (
-            <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-lg border border-border bg-card p-1 shadow-lg">
-              {subdivisions.map((sub) => (
-                <button
-                  key={sub}
-                  onClick={() => {
-                    onSubdivisionChange(sub);
-                    setShowSubdivisions(false);
-                  }}
-                  className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent ${
-                    sub === subdivision ? "bg-primary/20 text-primary" : ""
-                  }`}
-                >
-                  {SUBDIVISION_LABELS[sub]}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        </Setting>
       </div>
-
-      {/* Volume */}
-      <div className="flex items-center gap-3">
-        <svg
-          className="h-5 w-5 text-muted-foreground"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-          />
-        </svg>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={Math.round(volume * 100)}
-          onChange={(e) => onVolumeChange(parseInt(e.target.value) / 100)}
-          className="flex-1 accent-primary"
-        />
-        <span className="w-10 text-right text-sm text-muted-foreground">
-          {Math.round(volume * 100)}%
-        </span>
-      </div>
-
-      {/* Silent Mode Toggle */}
-      <button
-        onClick={() => onSilentModeChange(!silentMode)}
-        className={`flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${
-          silentMode
-            ? "border-primary bg-primary/20 text-primary"
-            : "border-border bg-card hover:bg-accent"
-        }`}
-      >
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          {silentMode ? (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-            />
-          ) : (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
-            />
-          )}
-        </svg>
-        <span>Mode silencieux {silentMode ? "activé" : ""}</span>
-      </button>
     </div>
+  );
+}
+
+function Setting({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="relative flex flex-col gap-1 bg-background px-4 py-2.5">
+      <span className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+function Dropdown({
+  isOpen,
+  onToggle,
+  value,
+  children,
+}: {
+  isOpen: boolean;
+  onToggle: () => void;
+  value: string;
+  children: ReactNode;
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        className="flex items-center justify-between gap-2 text-left text-sm font-bold"
+      >
+        {value}
+        <ChevronDown
+          className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
+          strokeWidth={2}
+          aria-hidden="true"
+        />
+      </button>
+      {isOpen && (
+        <div className="absolute left-2 right-2 top-full z-20 mt-1 rounded-xl border border-border bg-card p-1 shadow-md">
+          {children}
+        </div>
+      )}
+    </>
+  );
+}
+
+function DropdownItem({
+  isCurrent,
+  onSelect,
+  children,
+}: {
+  isCurrent: boolean;
+  onSelect: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-accent ${
+        isCurrent ? "font-bold text-foreground" : "text-muted-foreground"
+      }`}
+    >
+      {children}
+    </button>
   );
 }

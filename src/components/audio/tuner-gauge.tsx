@@ -4,130 +4,70 @@ interface TunerGaugeProps {
   cents: number; // -50 to 50
 }
 
-export function TunerGauge({ cents }: TunerGaugeProps) {
-  // Map cents (-50 to 50) to angle (-90 to 90 degrees)
-  const clampedCents = Math.max(-50, Math.min(50, cents));
-  const angle = (clampedCents / 50) * 90;
+// Une graduation tous les 10 cents, de -50 a +50.
+const TICKS = [-50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50];
+const CX = 145;
+const CY = 150;
 
-  // Trois zones : juste, approchant, faux. Les jetons du theme portent
-  // deja cette semantique et s'adaptent aux deux appearances — les
-  // teintes Tailwind etaient calees sur le sombre et tombaient sous
-  // 2:1 en clair.
+function polar(cents: number, radius: number) {
+  const rad = ((cents * 0.9 - 90) * Math.PI) / 180;
+  return { x: CX + Math.cos(rad) * radius, y: CY + Math.sin(rad) * radius };
+}
+
+/**
+ * Le cadran de l'accordeur, style Atelier (docs/refonte-ui.md) : des
+ * graduations comme sur un accordeur a aiguille, le zero en vert.
+ *
+ * Trois zones : juste, approchant, faux. Les jetons du theme portent deja
+ * cette semantique et s'adaptent aux deux apparences ; l'aiguille et la
+ * lecture en cents les prennent, la forme (position de l'aiguille) porte
+ * l'information avant la teinte.
+ */
+export function TunerGauge({ cents }: TunerGaugeProps) {
+  const clampedCents = Math.max(-50, Math.min(50, cents));
+  const angle = clampedCents * 0.9;
+
   const absCents = Math.abs(clampedCents);
-  let color: string;
-  if (absCents <= 5) {
-    color = "text-success";
-  } else if (absCents <= 15) {
-    color = "text-primary";
-  } else {
-    color = "text-destructive";
-  }
+  const color = absCents <= 5 ? "text-success" : absCents <= 15 ? "text-primary" : "text-destructive";
 
   return (
-    <div className="flex flex-col items-center">
-      <svg viewBox="0 0 200 120" className="w-full max-w-xs">
-        {/* Background arc */}
-        <path
-          d="M 20 110 A 80 80 0 0 1 180 110"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="3"
-          className="text-muted/50"
-        />
+    <div className="flex w-full flex-col items-center">
+      <svg viewBox="0 0 290 162" className="w-full max-w-[290px]" aria-hidden="true">
+        {TICKS.map((tick) => {
+          const major = tick % 50 === 0 || tick === 0;
+          const outer = polar(tick, 118);
+          const inner = polar(tick, major ? 98 : 108);
+          return (
+            <line
+              key={tick}
+              x1={outer.x}
+              y1={outer.y}
+              x2={inner.x}
+              y2={inner.y}
+              stroke="currentColor"
+              strokeWidth={tick === 0 ? 3 : 1.5}
+              strokeLinecap="round"
+              className={tick === 0 ? "text-success" : "text-muted-foreground"}
+            />
+          );
+        })}
 
-        {/* Red zone left */}
-        <path
-          d="M 20 110 A 80 80 0 0 1 47 52"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="6"
-          className="text-destructive/40"
-        />
+        <text x="22" y="158" className="fill-muted-foreground font-mono text-[10px]">−50</text>
+        <text x="246" y="158" className="fill-muted-foreground font-mono text-[10px]">+50</text>
 
-        {/* Yellow zone left */}
-        <path
-          d="M 47 52 A 80 80 0 0 1 72 36"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="6"
-          className="text-primary/40"
-        />
-
-        {/* Green zone center */}
-        <path
-          d="M 72 36 A 80 80 0 0 1 128 36"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="6"
-          className="text-success/40"
-        />
-
-        {/* Yellow zone right */}
-        <path
-          d="M 128 36 A 80 80 0 0 1 153 52"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="6"
-          className="text-primary/40"
-        />
-
-        {/* Red zone right */}
-        <path
-          d="M 153 52 A 80 80 0 0 1 180 110"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="6"
-          className="text-destructive/40"
-        />
-
-        {/* Center tick mark */}
-        <line
-          x1="100"
-          y1="28"
-          x2="100"
-          y2="38"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="text-success"
-        />
-
-        {/* Needle */}
         <g
-          transform={`rotate(${angle}, 100, 110)`}
-          className="transition-transform duration-150 ease-out"
+          transform={`rotate(${angle}, ${CX}, ${CY})`}
+          className={`transition-transform duration-150 ease-out ${color}`}
         >
-          <line
-            x1="100"
-            y1="110"
-            x2="100"
-            y2="38"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            className={color}
-          />
-          <circle cx="100" cy="110" r="5" fill="currentColor" className={color} />
+          <line x1={CX} y1={CY} x2={CX} y2={44} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
         </g>
-
-        {/* Labels */}
-        <text x="15" y="118" className="fill-muted-foreground text-[11px]">
-          ♭
-        </text>
-        <text x="95" y="22" className="fill-success text-[11px]" textAnchor="middle">
-          ✓
-        </text>
-        <text x="183" y="118" className="fill-muted-foreground text-[11px]">
-          ♯
-        </text>
+        <circle cx={CX} cy={CY} r="6" className="fill-foreground" />
       </svg>
 
-      {/* Cents display */}
-      <div className="mt-2 text-center">
-        <span className={`text-sm font-medium ${color}`}>
-          {clampedCents > 0 ? "+" : ""}
-          {clampedCents} cents
-        </span>
-      </div>
+      <p className={`tabular mt-1 font-mono text-xs font-semibold ${color}`}>
+        {clampedCents > 0 ? "+" : ""}
+        {clampedCents} cents
+      </p>
     </div>
   );
 }

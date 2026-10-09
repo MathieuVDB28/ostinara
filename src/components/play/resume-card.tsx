@@ -1,7 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import { TempoLadder, ProgressBar } from "@/components/ui/tempo-ladder";
+import { Play } from "lucide-react";
+import { Cover } from "@/components/ui/cover";
+import { Frets } from "@/components/ui/frets";
+import { songTempoProgress } from "@/lib/song-progress";
 import { getSectionsLabels } from "@/components/progress/sections-selector";
 import type { PracticeSessionWithSong, Song } from "@/types";
 
@@ -57,58 +59,46 @@ export function ResumeCard({
     sections || null,
   ].filter(Boolean) as string[];
 
+  const tempo = songTempoProgress(song, bestBpm);
+  const percent = tempo ? tempo.percent : song.progress_percent;
+
   return (
-    <section
-      aria-labelledby="resume-title"
-      className="rounded-2xl border border-primary/30 bg-card p-5"
-    >
-      <p className="mb-3 text-xs font-medium uppercase tracking-wider text-primary">
-        Reprendre
-      </p>
-
-      <div className="flex items-start gap-4">
-        {song.cover_url ? (
-          <Image
-            src={song.cover_url}
-            alt=""
-            className="h-16 w-16 shrink-0 rounded-xl object-cover"
-            width={64}
-            height={64}
-          />
-        ) : (
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined text-2xl text-primary"
-            >
-              music_note
-            </span>
-          </div>
-        )}
-
-        <div className="min-w-0 flex-1">
-          <h2 id="resume-title" className="truncate text-lg font-bold">
-            {song.title}
-          </h2>
-          <p className="truncate text-sm text-muted-foreground">{song.artist}</p>
-
-          <p className="tabular mt-1 text-[13px] text-muted-foreground">
-            {recap.join(" · ")}
-          </p>
-
-          <div className="mt-3">
-            {targetBpm ? (
-              <TempoLadder
-                targetBpm={targetBpm}
-                achievedBpm={bestBpm}
-                showScale={false}
-              />
+    <section aria-labelledby="resume-title" className="border-t border-border pt-4">
+      <div className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-x-3.5 gap-y-1">
+        <Cover src={song.cover_url} className="row-span-2 h-14 w-14 rounded-[4px]" />
+        <p className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+          Reprendre
+        </p>
+        <span className="row-span-2 grid justify-items-end gap-1">
+          <span className="tabular font-display text-xl font-bold leading-none">
+            {tempo ? (
+              <>
+                {tempo.achieved}
+                <span className="text-sm text-muted-foreground">/{tempo.target}</span>
+              </>
             ) : (
-              <ProgressBar percent={song.progress_percent} />
+              <>
+                {percent}
+                <span className="text-sm text-muted-foreground"> %</span>
+              </>
             )}
-          </div>
-        </div>
+          </span>
+          <Frets value={percent} label={tempo ? `${tempo.achieved} sur ${tempo.target} BPM` : `${percent} %`} />
+        </span>
+        <h2 id="resume-title" className="min-w-0 truncate text-[15px] font-bold">
+          {song.title}
+          <span className="font-medium text-muted-foreground"> · {song.artist}</span>
+        </h2>
       </div>
+
+      <p className="tabular mt-2 text-[13px] text-muted-foreground">{recap.join(" · ")}</p>
+
+      {/* Sans tempo cible, la progression n'est qu'un pourcentage saisi. */}
+      {!targetBpm && (
+        <p className="mt-1 text-[13px] text-muted-foreground">
+          Pas de tempo cible : fixe-le dans la fiche du morceau pour suivre ta courbe de BPM.
+        </p>
+      )}
 
       {/*
         Le bouton porte la valeur qu'il applique. « Reprendre » seul
@@ -118,11 +108,9 @@ export function ResumeCard({
         type="button"
         onClick={onResume}
         disabled={disabled}
-        className="mt-4 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-          play_arrow
-        </span>
+        <Play className="h-4 w-4 fill-current" strokeWidth={0} aria-hidden="true" />
         {disabled
           ? "Session en cours"
           : bpm

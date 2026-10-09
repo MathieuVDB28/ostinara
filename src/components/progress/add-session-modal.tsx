@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronDown, CloudOff, Pencil, X } from "lucide-react";
+import { Cover } from "@/components/ui/cover";
 import { useOffline } from "@/components/offline/offline-provider";
 import { MoodSelector } from "./mood-selector";
 import { SectionsSelector } from "./sections-selector";
@@ -159,21 +161,40 @@ export function AddSessionModal({
         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         onClick={handleClose}
       />
-      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-xl">
+      {/*
+        Fin de session, style Atelier (docs/refonte-ui.md) : le recapitulatif
+        tient en chiffres, l'humeur en un appui, la note en serif — c'est la
+        voix du guitariste, pas un champ de formulaire.
+      */}
+      <div className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-background p-5 shadow-md sm:p-6">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold">
-            {mode === "timer" ? "Enregistrer la session" : "Ajouter une session"}
-          </h2>
+        <div className="mb-5 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-display text-4xl font-extrabold uppercase leading-none tracking-[0.01em]">
+              {mode === "timer" ? "Bien joué" : "Ajouter une session"}
+            </h2>
+            {mode === "timer" && (
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                Session du{" "}
+                {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
+              </p>
+            )}
+          </div>
           <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
           </button>
         </div>
+
+        {mode === "timer" && (
+          <dl className="mb-6 grid grid-cols-3 gap-3 border-y border-border py-3">
+            <RecapStat label="durée" value={<>{durationMinutes || 0}<small className="text-base text-muted-foreground"> min</small></>} />
+            <RecapStat label="bpm tenu" value={bpmAchieved ? <>{bpmAchieved}</> : <span className="text-muted-foreground">—</span>} />
+            <RecapStat label="sections" value={<>{sectionsWorked.length}</>} />
+          </dl>
+        )}
 
         {/* Erreur */}
         {error && (
@@ -189,12 +210,7 @@ export function AddSessionModal({
         */}
         {!isOnline && (
           <p className="mb-4 flex items-center gap-2 rounded-lg bg-accent/60 px-4 py-3 text-sm text-muted-foreground">
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined text-[18px]"
-            >
-              cloud_off
-            </span>
+            <CloudOff className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
             Pas de réseau : la session sera gardée et envoyée automatiquement
             au retour de la connexion.
           </p>
@@ -205,22 +221,8 @@ export function AddSessionModal({
           <div>
             <label className="mb-2 block text-sm font-medium">Morceau</label>
             {selectedSong ? (
-              <div className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3">
-                {selectedSong.cover_url ? (
-                  <Image
-                    src={selectedSong.cover_url}
-                    alt={selectedSong.title}
-                    className="h-12 w-12 rounded-lg object-cover"
-                    width={48}
-                    height={48}
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent">
-                    <svg className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
-                    </svg>
-                  </div>
-                )}
+              <div className="flex items-center gap-3 border-b border-border pb-3">
+                <Cover src={selectedSong.cover_url} className="h-12 w-12 rounded-[4px]" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{selectedSong.title}</p>
                   <p className="text-sm text-muted-foreground truncate">{selectedSong.artist}</p>
@@ -228,26 +230,25 @@ export function AddSessionModal({
                 <button
                   type="button"
                   onClick={() => setShowSongSearch(true)}
+                  aria-label="Changer de morceau"
                   className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
                 >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                  </svg>
+                  <Pencil className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => setShowSongSearch(true)}
-                className="w-full rounded-lg border border-dashed border-border p-4 text-center text-muted-foreground hover:border-primary hover:bg-primary/5"
+                className="w-full rounded-xl border border-dashed border-border p-4 text-center text-sm font-medium text-muted-foreground hover:border-foreground hover:text-foreground"
               >
                 Choisir un morceau (optionnel)
               </button>
             )}
           </div>
 
-          {/* Durée et Date */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Durée et Date : le chrono les a deja, on ne les montre qu'en saisie manuelle */}
+          <div className={`grid grid-cols-2 gap-4 ${mode === "timer" ? "hidden" : ""}`}>
             <div>
               <label className="mb-2 block text-sm font-medium">Durée (minutes)</label>
               <input
@@ -276,30 +277,26 @@ export function AddSessionModal({
 
           {/* Humeur */}
           <div>
-            <label className="mb-3 block text-sm font-medium">Comment te sentais-tu ?</label>
+            <label className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Comment ça s&apos;est passé ?</label>
             <MoodSelector value={mood} onChange={setMood} />
           </div>
 
           {/* Section Performance (collapsible) */}
-          <div className="rounded-lg border border-border">
+          <div className="border-b border-border">
             <button
               type="button"
               onClick={() => setShowPerformance(!showPerformance)}
-              className="flex w-full items-center justify-between p-4"
+              className="flex w-full items-center justify-between py-3"
             >
-              <span className="font-medium">Performance</span>
-              <svg
-                className={`h-5 w-5 transition-transform ${showPerformance ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
+              <span className="text-sm font-semibold">Performance</span>
+              <ChevronDown
+                className={`h-4 w-4 text-muted-foreground transition-transform ${showPerformance ? "rotate-180" : ""}`}
+                strokeWidth={2}
+                aria-hidden="true"
+              />
             </button>
             {showPerformance && (
-              <div className="border-t border-border p-4 space-y-4">
+              <div className="space-y-4 pb-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium">BPM atteint</label>
                   <input
@@ -321,50 +318,42 @@ export function AddSessionModal({
           </div>
 
           {/* Section Ressenti (collapsible) */}
-          <div className="rounded-lg border border-border">
+          <div className="border-b border-border">
             <button
               type="button"
               onClick={() => setShowFeeling(!showFeeling)}
-              className="flex w-full items-center justify-between p-4"
+              className="flex w-full items-center justify-between py-3"
             >
-              <span className="font-medium">Niveau d'énergie</span>
-              <svg
-                className={`h-5 w-5 transition-transform ${showFeeling ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
+              <span className="text-sm font-semibold">Niveau d&apos;énergie</span>
+              <ChevronDown
+                className={`h-4 w-4 text-muted-foreground transition-transform ${showFeeling ? "rotate-180" : ""}`}
+                strokeWidth={2}
+                aria-hidden="true"
+              />
             </button>
             {showFeeling && (
-              <div className="border-t border-border p-4">
+              <div className="pb-4">
                 <EnergySelector value={energyLevel} onChange={setEnergyLevel} />
               </div>
             )}
           </div>
 
           {/* Section Objectifs (collapsible) */}
-          <div className="rounded-lg border border-border">
+          <div className="border-b border-border">
             <button
               type="button"
               onClick={() => setShowGoals(!showGoals)}
-              className="flex w-full items-center justify-between p-4"
+              className="flex w-full items-center justify-between py-3"
             >
-              <span className="font-medium">Objectifs</span>
-              <svg
-                className={`h-5 w-5 transition-transform ${showGoals ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
+              <span className="text-sm font-semibold">Objectifs</span>
+              <ChevronDown
+                className={`h-4 w-4 text-muted-foreground transition-transform ${showGoals ? "rotate-180" : ""}`}
+                strokeWidth={2}
+                aria-hidden="true"
+              />
             </button>
             {showGoals && (
-              <div className="border-t border-border p-4 space-y-4">
+              <div className="space-y-4 pb-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium">Objectifs de la session</label>
                   <textarea
@@ -398,7 +387,7 @@ export function AddSessionModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
+              className="w-full resize-none rounded-xl border border-border bg-card px-3 py-2.5 font-serif text-[15px] italic leading-relaxed focus:border-primary focus:outline-none"
             />
           </div>
 
@@ -406,7 +395,7 @@ export function AddSessionModal({
           <button
             onClick={handleSubmit}
             disabled={loading || !durationMinutes || durationMinutes < 1}
-            className="w-full rounded-lg bg-primary py-3 font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+            className="min-h-[48px] w-full rounded-xl bg-primary py-3 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -512,6 +501,17 @@ export function AddSessionModal({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function RecapStat({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex flex-col-reverse gap-1">
+      <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="tabular font-display text-[32px] font-bold leading-none">{value}</dd>
     </div>
   );
 }

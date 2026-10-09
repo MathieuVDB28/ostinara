@@ -23,42 +23,40 @@ interface MoodSelectorProps {
   size?: "sm" | "md" | "lg";
 }
 
+/**
+ * L'humeur en un appui (style Atelier, docs/refonte-ui.md) : cinq cases
+ * de meme largeur, l'emoji et son mot. Le choix se lit au cadre encre,
+ * pas a un zoom ni a une teinte.
+ */
 export function MoodSelector({ value, onChange, size = "md" }: MoodSelectorProps) {
-  const sizeClasses = {
-    sm: "text-xl p-1.5",
-    md: "text-2xl p-2",
-    lg: "text-3xl p-3",
-  };
+  const emojiSize = { sm: "text-lg", md: "text-xl", lg: "text-2xl" }[size];
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-center gap-1 sm:gap-2">
-        {moods.map((mood) => (
+    <div role="radiogroup" aria-label="Humeur" className="grid grid-cols-5 gap-1.5">
+      {moods.map((mood) => {
+        const isActive = value === mood.value;
+        return (
           <button
             key={mood.value}
             type="button"
-            onClick={() => onChange(value === mood.value ? null : mood.value)}
-            className={`
-              ${sizeClasses[size]}
-              rounded-xl transition-all duration-200
-              ${value === mood.value
-                ? "bg-primary/20 ring-2 ring-primary scale-110"
-                : "bg-muted hover:bg-accent hover:scale-105"
-              }
-            `}
-            title={mood.label}
+            role="radio"
+            aria-checked={isActive}
+            onClick={() => onChange(isActive ? null : mood.value)}
+            className={`flex min-h-[58px] flex-col items-center justify-center gap-0.5 rounded-xl border transition-colors ${
+              isActive
+                ? "border-foreground bg-secondary shadow-[inset_0_0_0_1px_var(--foreground)]"
+                : "border-border hover:bg-accent"
+            }`}
           >
-            <span role="img" aria-label={mood.label}>
+            <span aria-hidden="true" className={emojiSize}>
               {mood.emoji}
             </span>
+            <span className={`text-[11px] font-semibold ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
+              {mood.label}
+            </span>
           </button>
-        ))}
-      </div>
-      {value && (
-        <p className={`text-center text-sm font-medium ${moods.find(m => m.value === value)?.color}`}>
-          {moods.find(m => m.value === value)?.label}
-        </p>
-      )}
+        );
+      })}
     </div>
   );
 }

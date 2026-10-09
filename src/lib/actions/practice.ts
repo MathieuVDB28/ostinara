@@ -705,6 +705,39 @@ export async function getChartData(daysBack: number = 365): Promise<ChartData> {
   };
 }
 
+/**
+ * Le calendrier de pratique seul, pour le Carnet de « Jouer ».
+ *
+ * getChartData calcule aussi les courbes de tempo et les repartitions,
+ * et joint chaque morceau : trop pour une grille de 15 semaines. Ici, deux
+ * colonnes et le meme calcul de niveaux que l'onglet Statistiques.
+ */
+export async function getPracticeCalendar(daysBack: number = 105): Promise<HeatmapData> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  const empty: HeatmapData = { days: [], maxMinutes: 0, totalDays: daysBack, activeDays: 0 };
+  if (!user) return empty;
+
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - daysBack);
+  startDate.setHours(0, 0, 0, 0);
+
+  const { data, error } = await supabase
+    .from("practice_sessions")
+    .select("practiced_at, duration_minutes")
+    .eq("user_id", user.id)
+    .gte("practiced_at", startDate.toISOString());
+
+  if (error || !data) {
+    console.error("Error fetching practice calendar:", error);
+    return empty;
+  }
+
+  // generateHeatmapData ne lit que ces deux colonnes.
+  return generateHeatmapData(data as PracticeSessionWithSong[], daysBack);
+}
+
 function generateHeatmapData(
   sessions: PracticeSessionWithSong[],
   daysBack: number

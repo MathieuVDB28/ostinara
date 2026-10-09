@@ -14,6 +14,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { getSongs } from "@/lib/actions/songs";
 import { updateUserExerciseProgress } from "@/lib/actions/exercises";
 import { AddSessionModal } from "@/components/progress/add-session-modal";
+import { Maximize2, Minimize2, Pause, Play } from "lucide-react";
+import { Cover } from "@/components/ui/cover";
 import type { Song } from "@/types";
 
 /**
@@ -44,6 +46,18 @@ interface StoredSession {
   songId: string | null;
   exerciseId: string | null;
   bpm: number | null;
+  /**
+   * De quoi afficher le morceau en plein ecran sans recharger la
+   * bibliotheque. Optionnel : une session sans morceau reste une session.
+   */
+  song?: SessionSong | null;
+}
+
+/** Le strict necessaire pour nommer le morceau travaille. */
+export interface SessionSong {
+  title: string;
+  artist: string;
+  cover_url?: string | null;
 }
 
 const IDLE: StoredSession = {
@@ -53,6 +67,7 @@ const IDLE: StoredSession = {
   songId: null,
   exerciseId: null,
   bpm: null,
+  song: null,
 };
 
 const STORAGE_KEY = "ostinara_practice_session";
@@ -133,6 +148,9 @@ export interface StartOptions {
   songId?: string | null;
   exerciseId?: string | null;
   bpm?: number | null;
+  song?: SessionSong | null;
+  /** Ouvre la session en plein ecran (depuis « Jouer »). */
+  focus?: boolean;
 }
 
 interface PracticeSessionValue {
@@ -150,8 +168,13 @@ interface PracticeSessionValue {
   stop: () => void;
   /** Arrete le chrono et jette la session. */
   cancel: () => void;
-  setSongId: (songId: string | null) => void;
+  song: SessionSong | null;
+  setSongId: (songId: string | null, song?: SessionSong | null) => void;
   setBpm: (bpm: number | null) => void;
+  /** Le mode plein ecran : chrono en grand, sans la barre d'onglets. */
+  isFocused: boolean;
+  openFocus: () => void;
+  closeFocus: () => void;
   /** Ouvre la modale vide, pour une saisie manuelle. */
   openManualEntry: () => void;
 }
@@ -184,6 +207,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
   const [tick, setTick] = useState(0);
   const [pending, setPending] = useState<PendingEntry | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
+  const [focused, setFocused] = useState(false);
 
   // Le chrono n'est pas dans le state : on le recalcule a partir des
   // timestamps. Un onglet en arriere-plan ne fait pas deriver l'affichage,
@@ -220,7 +244,9 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       songId: options?.songId ?? null,
       exerciseId: options?.exerciseId ?? null,
       bpm: options?.bpm ?? null,
+      song: options?.song ?? null,
     }));
+    if (options?.focus) setFocused(true);
   }, []);
 
   const pause = useCallback(() => {
@@ -252,6 +278,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
     const durationMinutes = Math.max(1, Math.round(elapsedOf(current) / 60000));
 
     setSession(() => IDLE);
+    setFocused(false);
     void loadSongs();
     setPending({
       mode: "timer",
@@ -264,11 +291,19 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
 
   const cancel = useCallback(() => {
     setSession(() => IDLE);
+    setFocused(false);
   }, []);
 
-  const setSongId = useCallback((songId: string | null) => {
-    setSession((current) => ({ ...current, songId }));
+  const setSongId = useCallback((songId: string | null, song?: SessionSong | null) => {
+    setSession((current) => ({
+      ...current,
+      songId,
+      song: song === undefined ? current.song : song,
+    }));
   }, []);
+
+  const openFocus = useCallback(() => setFocused(true), []);
+  const closeFocus = useCallback(() => setFocused(false), []);
 
   const setBpm = useCallback((bpm: number | null) => {
     setSession((current) => ({ ...current, bpm }));
@@ -288,6 +323,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       songId: session.songId,
       exerciseId: session.exerciseId,
       bpm: session.bpm,
+      song: session.song ?? null,
       start,
       pause,
       resume,
@@ -295,6 +331,9 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       cancel,
       setSongId,
       setBpm,
+      isFocused: focused && session.status !== "idle",
+      openFocus,
+      closeFocus,
       openManualEntry,
     }),
     [
@@ -302,6 +341,10 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       session.songId,
       session.exerciseId,
       session.bpm,
+      session.song,
+      focused,
+      openFocus,
+      closeFocus,
       elapsedMs,
       start,
       pause,
@@ -321,13 +364,15 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
 
   // Progression affiche deja le chrono en grand : y superposer la barre
   // dirait deux fois la meme chose au meme moment.
-  const showBar = session.status !== "idle" && pathname !== "/profil";
+  const showBar = session.status !== "idle" && pathname !== "/profil" && !focused;
+  const showFocus = session.status !== "idle" && focused;
 
   return (
     <PracticeSessionContext.Provider value={value}>
       {children}
 
       {showBar && <SessionBar />}
+      {showFocus && <SessionFocus />}
 
       {pending && (
         <AddSessionModal
@@ -378,57 +423,159 @@ function formatElapsed(seconds: number): string {
  * avec elle le seul moyen d'arreter le chrono.
  */
 function SessionBar() {
-  const { status, elapsedSeconds, bpm, pause, resume, stop, cancel } =
+  const { status, elapsedSeconds, bpm, song, pause, resume, stop, cancel, openFocus } =
     usePracticeSession();
 
   return (
-    <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 border-t border-border bg-card p-3 lg:bottom-0 lg:left-64">
-      <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+    <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 border-t border-border bg-card px-4 py-2.5 lg:bottom-0 lg:left-64">
+      <div className="mx-auto flex max-w-4xl items-center gap-3">
+        {/* Toute la partie gauche agrandit la session : c'est la plus grande cible. */}
+        <button
+          type="button"
+          onClick={openFocus}
+          aria-label="Afficher la session en plein écran"
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
           <span
             aria-hidden="true"
-            className={`h-2 w-2 rounded-full ${
-              status === "running"
-                ? "animate-pulse bg-success"
-                : "bg-muted-foreground"
+            className={`h-2 w-2 shrink-0 rounded-full ${
+              status === "running" ? "animate-pulse bg-destructive" : "bg-muted-foreground"
             }`}
           />
-          <span className="tabular font-mono text-lg font-semibold">
+          <span className="tabular font-display text-2xl font-bold leading-none">
             {formatElapsed(elapsedSeconds)}
           </span>
           <span className="sr-only">
             Session de pratique {status === "paused" ? "en pause" : "en cours"}
           </span>
-          {status === "paused" && (
-            <span className="text-sm text-muted-foreground">En pause</span>
-          )}
-          {bpm !== null && (
-            <span className="tabular text-sm font-medium text-primary">
-              {bpm} BPM
-            </span>
-          )}
-        </div>
+          <span className="min-w-0 truncate text-sm text-muted-foreground">
+            {status === "paused" ? "En pause" : song?.title ?? "Session"}
+            {bpm !== null && (
+              <span className="tabular font-semibold text-primary"> · {bpm} BPM</span>
+            )}
+          </span>
+          <Maximize2 className="hidden h-4 w-4 shrink-0 text-muted-foreground sm:block" strokeWidth={2} aria-hidden="true" />
+        </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
           <button
             onClick={status === "running" ? pause : resume}
-            className="min-h-[44px] rounded-xl border border-input px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
+            aria-label={status === "running" ? "Mettre en pause" : "Reprendre"}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-border transition-colors hover:bg-accent"
           >
-            {status === "running" ? "Pause" : "Reprendre"}
+            {status === "running" ? (
+              <Pause className="h-4 w-4 fill-current" strokeWidth={0} aria-hidden="true" />
+            ) : (
+              <Play className="ml-0.5 h-4 w-4 fill-current" strokeWidth={0} aria-hidden="true" />
+            )}
           </button>
           <button
             onClick={cancel}
-            className="min-h-[44px] rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent"
+            className="hidden min-h-[40px] rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent sm:block"
           >
             Annuler
           </button>
           <button
             onClick={stop}
-            className="min-h-[44px] rounded-xl bg-success px-4 py-2 text-sm font-medium text-success-foreground transition-opacity hover:opacity-90"
+            className="min-h-[40px] rounded-xl bg-foreground px-4 text-sm font-semibold text-background transition-opacity hover:opacity-90"
           >
             Terminer
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * La session en plein ecran (style Atelier, docs/refonte-ui.md).
+ *
+ * On joue : la barre d'onglets et la page s'effacent, le chrono prend
+ * l'ecran et se lit a un metre du pupitre. « Reduire » rend la page
+ * (le metronome est dessous) sans arreter quoi que ce soit.
+ */
+function SessionFocus() {
+  const { status, elapsedSeconds, bpm, song, pause, resume, stop, cancel, closeFocus } =
+    usePracticeSession();
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeFocus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [closeFocus]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Session de pratique"
+      className="fixed inset-0 z-[60] flex flex-col bg-background px-5 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-[calc(env(safe-area-inset-top)+16px)]"
+    >
+      <div className="flex items-center justify-between">
+        <span className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-destructive">
+          <span
+            aria-hidden="true"
+            className={`h-2 w-2 rounded-full bg-current ${status === "running" ? "animate-pulse" : "opacity-50"}`}
+          />
+          {status === "paused" ? "En pause" : "Session"}
+        </span>
+        <button
+          type="button"
+          onClick={closeFocus}
+          className="flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <Minimize2 className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+          Réduire
+        </button>
+      </div>
+
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+        <p className="tabular font-display text-[min(30vw,9rem)] font-extrabold leading-none" aria-live="off">
+          {formatElapsed(elapsedSeconds)}
+        </p>
+        {bpm !== null && (
+          <p className="tabular font-display text-2xl font-bold text-primary">
+            {bpm} <span className="text-base text-muted-foreground">BPM</span>
+          </p>
+        )}
+
+        {song && (
+          <div className="mt-6 flex items-center gap-3 text-left">
+            <Cover src={song.cover_url} className="h-12 w-12 rounded-[4px]" />
+            <div className="min-w-0">
+              <p className="truncate font-semibold">{song.title}</p>
+              <p className="truncate text-sm text-muted-foreground">{song.artist}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mx-auto grid w-full max-w-md grid-cols-[auto_1fr] gap-2">
+        <button
+          onClick={status === "running" ? pause : resume}
+          aria-label={status === "running" ? "Mettre en pause" : "Reprendre"}
+          className="flex h-14 w-14 items-center justify-center rounded-xl border border-border transition-colors hover:bg-accent"
+        >
+          {status === "running" ? (
+            <Pause className="h-5 w-5 fill-current" strokeWidth={0} aria-hidden="true" />
+          ) : (
+            <Play className="ml-0.5 h-5 w-5 fill-current" strokeWidth={0} aria-hidden="true" />
+          )}
+        </button>
+        <button
+          onClick={stop}
+          className="h-14 rounded-xl bg-primary text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          Terminer la session
+        </button>
+        <button
+          onClick={cancel}
+          className="col-span-2 min-h-[40px] text-sm font-medium text-muted-foreground hover:text-foreground"
+        >
+          Annuler sans enregistrer
+        </button>
       </div>
     </div>
   );

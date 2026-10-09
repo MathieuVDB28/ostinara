@@ -1,10 +1,8 @@
 "use client";
 
 import {
-  Suspense,
   createContext,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -29,43 +27,22 @@ const BiblioSearchContext = createContext<BiblioSearchValue | null>(null);
  * plutot que de repasser par le serveur a chaque frappe.
  */
 export function BiblioSearchProvider({ children }: { children: ReactNode }) {
-  const [query, setQuery] = useState("");
+  const searchParams = useSearchParams();
+
+  /*
+   * `?q=` amorce le champ. Les albums n'ont pas de fiche propre : un
+   * resultat de la recherche globale atterrit donc sur le segment Albums
+   * deja filtre sur son nom. L'amorce ne vaut qu'au montage — ensuite,
+   * c'est le champ qui mene, pas l'URL.
+   */
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   const value = useMemo(() => ({ query, setQuery }), [query]);
 
   return (
     <BiblioSearchContext.Provider value={value}>
-      {/*
-        La lecture de `?q=` est isolee dans sa propre frontiere Suspense.
-        Quand c'etait le fournisseur lui-meme qui appelait
-        useSearchParams(), le rendu serveur de /biblio echouait
-        (« useBiblioSearch doit etre utilise dans BiblioSearchProvider »)
-        et toute la page se rattrapait cote client.
-      */}
-      <Suspense fallback={null}>
-        <QuerySeed onSeed={setQuery} />
-      </Suspense>
       {children}
     </BiblioSearchContext.Provider>
   );
-}
-
-/**
- * `?q=` amorce le champ. Les albums n'ont pas de fiche propre : un
- * resultat de la recherche globale atterrit donc sur le segment Albums
- * deja filtre sur son nom. L'amorce ne vaut qu'une fois — ensuite, c'est
- * le champ qui mene, pas l'URL.
- */
-function QuerySeed({ onSeed }: { onSeed: (value: string) => void }) {
-  const seed = useSearchParams().get("q");
-  const seeded = useRef(false);
-
-  useEffect(() => {
-    if (seeded.current || !seed) return;
-    seeded.current = true;
-    onSeed(seed);
-  }, [seed, onSeed]);
-
-  return null;
 }
 
 export function useBiblioSearch(): BiblioSearchValue {

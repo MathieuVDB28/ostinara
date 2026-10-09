@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ChevronDown, Plus, Search } from "lucide-react";
 import { ExerciseCard } from "./exercise-card";
 import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type { ExerciseWithProgress, ExerciseCategory, ExerciseDifficulty } from "@/types";
@@ -86,169 +87,99 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
     return grouped;
   }, [filteredExercises, selectedCategory]);
 
+  const chip = (active: boolean) =>
+    `inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-border px-3 text-xs font-semibold transition-colors ${
+      active ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+    }`;
+
+  const sources: { value: SourceFilter; label: string; show: boolean }[] = [
+    { value: "all", label: "Tous", show: true },
+    { value: "system", label: "Officiels", show: true },
+    { value: "mine", label: "Mes exercices", show: hasCustomExercises },
+    { value: "friends", label: "De mes amis", show: hasFriendExercises },
+  ];
+
+  /*
+   * Style Atelier (docs/refonte-ui.md) : quatre rangees de filtres en
+   * pastilles ambrees devenaient une seule rangee de puces neutres, la
+   * difficulte passe dans un menu. Les exercices sont des lignes a filet,
+   * groupees par technique.
+   */
   return (
-    <div className="flex flex-col gap-4">
-      {/* Header with create button */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-muted-foreground">
-          {filteredExercises.length} exercice{filteredExercises.length !== 1 ? "s" : ""}
-        </h2>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <label className="relative min-w-0 flex-1">
+          <span className="sr-only">Rechercher un exercice</span>
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
+          <input
+            type="search"
+            placeholder="Rechercher un exercice…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="min-h-[38px] w-full rounded-xl border border-border bg-card py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
+          />
+        </label>
         <button
           onClick={onCreateExercise}
-          className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:opacity-90"
+          className="inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-xl border border-border px-3 text-[13px] font-semibold transition-colors hover:bg-accent"
         >
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          Créer un exercice
+          <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+          Créer
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <svg
-          className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-        <input
-          type="text"
-          placeholder="Rechercher un exercice..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 text-sm transition-colors focus:border-primary"
-        />
-      </div>
-
-      {/* Source filter */}
-      <div className="flex flex-wrap gap-1.5">
-        <button
-          onClick={() => setSelectedSource("all")}
-          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-            selectedSource === "all"
-              ? "bg-primary text-primary-foreground"
-              : "bg-accent hover:bg-accent/80"
-          }`}
-        >
-          Tous
-        </button>
-        <button
-          onClick={() => setSelectedSource("system")}
-          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-            selectedSource === "system"
-              ? "bg-primary text-primary-foreground"
-              : "bg-accent hover:bg-accent/80"
-          }`}
-        >
-          Officiels
-        </button>
-        {hasCustomExercises && (
-          <button
-            onClick={() => setSelectedSource("mine")}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              selectedSource === "mine"
-                ? "bg-primary text-primary-foreground"
-                : "bg-primary/20 text-primary hover:bg-primary/30"
-            }`}
-          >
-            Mes exercices
-          </button>
-        )}
-        {hasFriendExercises && (
-          <button
-            onClick={() => setSelectedSource("friends")}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              selectedSource === "friends"
-                ? "bg-primary text-primary-foreground"
-                : "bg-primary/20 text-primary hover:bg-primary/30"
-            }`}
-          >
-            <span className="flex items-center gap-1">
-              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              De mes amis
-            </span>
-          </button>
-        )}
-      </div>
-
-      {/* Category filter */}
-      <div className="flex flex-wrap gap-2">
-        <div className="flex flex-wrap gap-1.5">
-          <button
-            onClick={() => setSelectedCategory("all")}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              selectedCategory === "all"
-                ? "bg-primary text-primary-foreground"
-                : "bg-accent hover:bg-accent/80"
-            }`}
-          >
-            Toutes catégories
-          </button>
-          {categories.map((cat) => (
+      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
+        {sources
+          .filter((source) => source.show)
+          .map((source) => (
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                selectedCategory === cat
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-accent hover:bg-accent/80"
-              }`}
+              key={source.value}
+              onClick={() => setSelectedSource(source.value)}
+              aria-pressed={selectedSource === source.value}
+              className={chip(selectedSource === source.value)}
             >
-              {EXERCISE_CATEGORY_LABELS[cat]}
+              {source.label}
             </button>
           ))}
-        </div>
+        <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 self-center bg-border" />
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(selectedCategory === cat ? "all" : cat)}
+            aria-pressed={selectedCategory === cat}
+            className={chip(selectedCategory === cat)}
+          >
+            {EXERCISE_CATEGORY_LABELS[cat]}
+          </button>
+        ))}
+        <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 self-center bg-border" />
+        <label className={`${chip(selectedDifficulty !== "all")} relative pr-7`}>
+          <span className="sr-only">Difficulté</span>
+          {selectedDifficulty === "all" ? "Difficulté" : DIFFICULTY_LABELS[selectedDifficulty]}
+          <ChevronDown className="pointer-events-none absolute right-2 h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+          <select
+            value={selectedDifficulty}
+            onChange={(e) => setSelectedDifficulty(e.target.value as ExerciseDifficulty | "all")}
+            className="absolute inset-0 cursor-pointer opacity-0"
+          >
+            <option value="all">Toutes difficultés</option>
+            {(["beginner", "intermediate", "advanced", "expert"] as ExerciseDifficulty[]).map((diff) => (
+              <option key={diff} value={diff}>
+                {DIFFICULTY_LABELS[diff]}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
-      {/* Difficulty filter */}
-      <div className="flex flex-wrap gap-1.5">
-        <button
-          onClick={() => setSelectedDifficulty("all")}
-          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-            selectedDifficulty === "all"
-              ? "bg-primary/20 text-primary"
-              : "bg-muted hover:bg-accent"
-          }`}
-        >
-          Toutes difficultés
-        </button>
-        {(["beginner", "intermediate", "advanced", "expert"] as ExerciseDifficulty[]).map(
-          (diff) => (
-            <button
-              key={diff}
-              onClick={() => setSelectedDifficulty(diff)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                selectedDifficulty === diff
-                  ? "bg-primary/20 text-primary"
-                  : "bg-muted hover:bg-accent"
-              }`}
-            >
-              {DIFFICULTY_LABELS[diff]}
-            </button>
-          )
-        )}
-      </div>
-
-      {/* Exercise list */}
-      <div className="space-y-6">
+      <div className="space-y-5">
         {Object.entries(groupedExercises).map(([category, categoryExercises]) => (
-          <div key={category}>
-            {selectedCategory === "all" && (
-              <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
-                {EXERCISE_CATEGORY_LABELS[category as ExerciseCategory]}
-              </h3>
-            )}
-            <div className="grid gap-3 sm:grid-cols-2">
+          <section key={category} aria-label={EXERCISE_CATEGORY_LABELS[category as ExerciseCategory]}>
+            <h3 className="flex justify-between border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              <span>{EXERCISE_CATEGORY_LABELS[category as ExerciseCategory]}</span>
+              <span aria-hidden="true">bpm</span>
+            </h3>
+            <div>
               {categoryExercises.map((exercise) => (
                 <ExerciseCard
                   key={exercise.id}
@@ -257,7 +188,7 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
                 />
               ))}
             </div>
-          </div>
+          </section>
         ))}
 
         {filteredExercises.length === 0 && (
@@ -265,7 +196,7 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
             <p>Aucun exercice trouvé</p>
             {selectedSource === "friends" && (
               <p className="mt-1 text-xs">
-                Vos amis n&apos;ont pas encore partagé d&apos;exercices
+                Tes amis n&apos;ont pas encore partagé d&apos;exercices
               </p>
             )}
           </div>

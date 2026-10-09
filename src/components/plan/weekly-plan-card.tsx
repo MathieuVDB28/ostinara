@@ -3,6 +3,21 @@
 import { useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toggleWeeklyGoal, regenerateWeeklyPlan } from "@/lib/actions/weekly-plan";
+import {
+  CalendarDays,
+  Check,
+  CirclePlay,
+  CircleCheck,
+  Gauge,
+  Play,
+  RefreshCw,
+  Repeat,
+  Timer,
+  Trophy,
+  Video,
+  type LucideIcon,
+} from "lucide-react";
+import { Frets } from "@/components/ui/frets";
 import type { WeeklyGoalWithProgress, WeeklyPlan } from "@/types";
 
 /**
@@ -24,21 +39,15 @@ interface WeeklyPlanCardProps {
   className?: string;
 }
 
-/**
- * Les icones du plan : une par nature d'objectif, jamais decoratives.
- *
- * Les noms sont ecrits sous la cle `icon` et non en valeurs nues :
- * `scripts/extract-icons.mjs` ne ramasse que cette forme, et une icone
- * absente du sous-ensemble de la police s'afficherait en texte brut.
- */
-const KIND_ICONS: Record<WeeklyGoalWithProgress["kind"], { icon: string }> = {
-  tempo: { icon: "speed" },
-  mastery: { icon: "check_circle" },
-  minutes: { icon: "timer" },
-  days: { icon: "calendar_month" },
-  section: { icon: "repeat" },
-  cover: { icon: "videocam" },
-  song_start: { icon: "play_circle" },
+/** Les icones du plan : une par nature d'objectif, jamais decoratives. */
+const KIND_ICONS: Record<WeeklyGoalWithProgress["kind"], LucideIcon> = {
+  tempo: Gauge,
+  mastery: CircleCheck,
+  minutes: Timer,
+  days: CalendarDays,
+  section: Repeat,
+  cover: Video,
+  song_start: CirclePlay,
 };
 
 function formatWeekRange(weekStart: string, weekEnd: string): string {
@@ -106,34 +115,26 @@ export function WeeklyPlanCard({
   if (goals.length === 0) return null;
 
   return (
-    <section
-      aria-labelledby="weekly-plan-title"
-      className={`rounded-2xl border border-border bg-card p-5 ${className}`}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <section aria-labelledby="weekly-plan-title" className={className}>
+      <div className="flex items-end justify-between gap-3 border-b border-border pb-2">
         <div>
           <h2
             id="weekly-plan-title"
-            className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
+            className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
           >
-            Ta semaine
+            Ta semaine · {formatWeekRange(plan.weekStart, plan.weekEnd)}
           </h2>
-          <p className="mt-1 flex items-baseline gap-2">
-            <span className="tabular text-2xl font-extrabold">
-              {completed}
-              <span className="text-muted-foreground">/{goals.length}</span>
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {formatWeekRange(plan.weekStart, plan.weekEnd)}
-            </span>
+          <p className="tabular mt-1 font-display text-3xl font-bold leading-none">
+            {completed}
+            <span className="text-lg text-muted-foreground">/{goals.length}</span>
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <p className="tabular text-xs text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <p className="tabular font-mono text-[10.5px] text-muted-foreground">
             {remaining === 0
-              ? "Dernier jour"
-              : `${remaining} jour${remaining > 1 ? "s" : ""} restant${remaining > 1 ? "s" : ""}`}
+              ? "dernier jour"
+              : `${remaining} jour${remaining > 1 ? "s" : ""}`}
           </p>
           <button
             type="button"
@@ -142,19 +143,16 @@ export function WeeklyPlanCard({
             aria-label="Régénérer le plan de la semaine"
             className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span
+            <RefreshCw
+              className={`h-4 w-4 ${regenerating ? "animate-spin" : ""}`}
+              strokeWidth={2}
               aria-hidden="true"
-              className={`material-symbols-outlined text-[20px] ${
-                regenerating ? "animate-spin" : ""
-              }`}
-            >
-              refresh
-            </span>
+            />
           </button>
         </div>
       </div>
 
-      <ul className="mt-4 space-y-2">
+      <ul>
         {goals.map((goal) => (
           <WeeklyGoalRow
             key={goal.id}
@@ -167,10 +165,8 @@ export function WeeklyPlanCard({
       </ul>
 
       {completed === goals.length && (
-        <p className="mt-4 flex items-center gap-2 rounded-xl bg-success/10 px-3 py-2.5 text-sm font-medium text-success">
-          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-            emoji_events
-          </span>
+        <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-success">
+          <Trophy className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
           Semaine bouclée. Le prochain plan arrive lundi.
         </p>
       )}
@@ -203,8 +199,10 @@ function WeeklyGoalRow({
       ? `${goal.current} / ${target} ${goal.unit}`
       : null;
 
+  const Icon = KIND_ICONS[goal.kind];
+
   return (
-    <li className="rounded-xl border border-border bg-background/40 p-3">
+    <li className="border-b border-border py-3">
       <div className="flex items-start gap-3">
         <button
           type="button"
@@ -214,81 +212,52 @@ function WeeklyGoalRow({
           onClick={onToggle}
           className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
             goal.checked
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-input hover:border-primary"
+              ? "border-foreground bg-foreground text-background"
+              : "border-input hover:border-foreground"
           }`}
         >
-          {goal.checked && (
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined text-[16px]"
-            >
-              check
-            </span>
-          )}
+          {goal.checked && <Check className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />}
           <span className="sr-only">{goal.title}</span>
         </button>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start gap-2">
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined mt-px text-[18px] text-muted-foreground"
-            >
-              {KIND_ICONS[goal.kind].icon}
-            </span>
+            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
             <p
-              className={`min-w-0 flex-1 text-sm font-medium ${
+              className={`min-w-0 flex-1 text-sm font-semibold ${
                 goal.done ? "text-muted-foreground line-through" : ""
               }`}
             >
               {goal.title}
             </p>
             {reading && (
-              <span className="tabular shrink-0 text-xs font-semibold text-primary">
+              <span className="tabular shrink-0 font-display text-base font-bold leading-tight">
                 {reading}
               </span>
             )}
           </div>
 
           {goal.detail && (
-            <p className="mt-1 pl-6 text-xs text-muted-foreground">
-              {goal.detail}
-            </p>
+            <p className="mt-0.5 pl-6 text-xs text-muted-foreground">{goal.detail}</p>
           )}
 
-          {/* La barre n'apparait que quand elle mesure quelque chose :
+          {/* La mesure n'apparait que quand elle mesure quelque chose :
               un objectif binaire a deja sa case a cocher. */}
           {target > 1 && (
-            <div
-              className="mt-2 ml-6 h-1.5 overflow-hidden rounded-full bg-muted"
-              role="progressbar"
-              aria-valuenow={goal.percent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Progression : ${goal.percent} %`}
-            >
-              <div
-                className={`h-full rounded-full transition-all ${
-                  goal.done ? "bg-success" : "bg-primary"
-                }`}
-                style={{ width: `${goal.percent}%` }}
-              />
-            </div>
+            <Frets
+              value={goal.percent}
+              label={`Progression : ${goal.percent} %`}
+              className="ml-6 mt-2"
+            />
           )}
 
           {goal.song_id && onWorkOnSong && !goal.done && (
             <button
               type="button"
               onClick={() => onWorkOnSong(goal.song_id!)}
-              className="mt-2 ml-6 inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border border-input px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="ml-6 mt-2 inline-flex min-h-[32px] items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <span
-                aria-hidden="true"
-                className="material-symbols-outlined text-[16px]"
-              >
-                play_arrow
-              </span>
+              <Play className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
               Travailler
             </button>
           )}

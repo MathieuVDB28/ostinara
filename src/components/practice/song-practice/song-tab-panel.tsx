@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { ExternalLink, Gauge, Search } from "lucide-react";
 import { isSongsterrUrl } from "@/lib/songsterr-url";
 import type { PlayedSection, Song, UserPlan } from "@/types";
 
@@ -79,35 +80,27 @@ export function SongTabPanel({
   };
 
   return (
-    <div className={`rounded-xl border border-border bg-card p-4 ${className}`}>
+    <div className={`border-t border-border pt-4 ${className}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-medium">Tablature</h3>
+        <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          Tablature
+        </h3>
 
         {song.tabs_url ? (
           <button
             type="button"
             onClick={openTab}
-            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-input px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined text-[16px]"
-            >
-              open_in_new
-            </span>
+            <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
             Ouvrir la tab
           </button>
         ) : (
           <Link
             href={`/biblio?song=${song.id}`}
-            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-input px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined text-[16px]"
-            >
-              search
-            </span>
+            <Search className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
             Chercher une tab
           </Link>
         )}
@@ -133,14 +126,9 @@ export function SongTabPanel({
         <button
           type="button"
           onClick={() => onRequestBpm(song.tab_bpm!)}
-          className="tabular mt-3 inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="tabular mt-3 inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <span
-            aria-hidden="true"
-            className="material-symbols-outlined text-[16px]"
-          >
-            speed
-          </span>
+          <Gauge className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
           Caler le métronome sur la partition · {song.tab_bpm} BPM
         </button>
       )}
@@ -156,7 +144,7 @@ export function SongTabPanel({
             {timeline.map((section) => (
               <li
                 key={`${section.name}-${section.startMeasure}`}
-                className="tabular rounded-lg bg-accent px-2.5 py-1.5 text-xs"
+                className="tabular rounded-md border border-border px-2 py-1 font-mono text-[11px]"
               >
                 <span className="font-medium">{section.name}</span>
                 <span className="ml-1.5 text-muted-foreground">
