@@ -51,10 +51,10 @@ export function StartJamModal({ isOpen, onClose, band }: StartJamModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div
-        className="w-full max-w-md rounded-2xl bg-card p-6 shadow-xl"
+        className="w-full max-w-md rounded-2xl bg-card p-6 shadow-md"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-bold mb-2">Demarrer une Jam Session</h2>
+        <h2 className="mb-2 font-display text-3xl font-extrabold uppercase leading-none">Démarrer une jam</h2>
         <p className="text-sm text-muted-foreground mb-6">
           Lance une session collaborative avec les membres de{" "}
           <span className="font-medium text-foreground">{band.name}</span>
@@ -106,7 +106,7 @@ export function StartJamModal({ isOpen, onClose, band }: StartJamModalProps) {
               .map((member) => (
                 <div
                   key={member.id}
-                  className="h-8 w-8 rounded-full border-2 border-card bg-primary/20 flex items-center justify-center text-xs font-medium text-primary overflow-hidden"
+                  className="h-8 w-8 rounded-full border-2 border-card bg-secondary flex items-center justify-center font-display text-xs font-extrabold text-primary overflow-hidden"
                   title={member.profile.display_name || member.profile.username}
                 >
                   {member.profile.avatar_url ? (
@@ -148,7 +148,7 @@ export function StartJamModal({ isOpen, onClose, band }: StartJamModalProps) {
             disabled={loading || loadingSetlists}
             className="flex-1 rounded-lg bg-primary py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
           >
-            {loading ? "Demarrage..." : "Demarrer"}
+            {loading ? "Démarrage…" : "Démarrer"}
           </button>
         </div>
       </div>

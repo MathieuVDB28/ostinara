@@ -199,8 +199,8 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
             </svg>
           </button>
           <div>
-            <h1 className="text-2xl font-bold">Fiche Technique</h1>
-            <p className="text-sm text-muted-foreground">{band.name}</p>
+            <h1 className="font-display text-[40px] font-extrabold uppercase leading-[0.9]">Fiche technique</h1>
+            <p className="mt-1 font-display text-sm font-bold uppercase tracking-[0.06em] text-muted-foreground">{band.name}</p>
           </div>
         </div>
 
@@ -217,30 +217,30 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
 
       {/* Summary stats */}
       {(musicians.length > 0 || channels.length > 0) && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border border-border bg-card p-3 text-center">
-            <p className="text-2xl font-bold text-primary">
+        <div className="grid grid-cols-2 gap-3 border-y border-border py-3 sm:grid-cols-4">
+          <div className="flex flex-col">
+            <p className="tabular font-display text-[30px] font-bold leading-none">
               {musicians.length}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
               Musicien{musicians.length > 1 ? "s" : ""}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-3 text-center">
-            <p className="text-2xl font-bold text-primary">{micCount}</p>
-            <p className="text-xs text-muted-foreground">
+          <div className="flex flex-col">
+            <p className="tabular font-display text-[30px] font-bold leading-none">{micCount}</p>
+            <p className="mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
               Micro{micCount > 1 ? "s" : ""}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-3 text-center">
-            <p className="text-2xl font-bold text-primary">{diCount}</p>
-            <p className="text-xs text-muted-foreground">
+          <div className="flex flex-col">
+            <p className="tabular font-display text-[30px] font-bold leading-none">{diCount}</p>
+            <p className="mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
               Ligne{diCount > 1 ? "s" : ""} DI
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-3 text-center">
-            <p className="text-2xl font-bold text-primary">{monitorCount}</p>
-            <p className="text-xs text-muted-foreground">
+          <div className="flex flex-col">
+            <p className="tabular font-display text-[30px] font-bold leading-none">{monitorCount}</p>
+            <p className="mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
               Retour{monitorCount > 1 ? "s" : ""}
             </p>
           </div>
@@ -248,10 +248,10 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
       )}
 
       {/* Sound Engineer */}
-      <section className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+      <section className="border-t border-border pt-5">
+        <h2 className="mb-4 flex items-center gap-2 font-display text-2xl font-extrabold uppercase leading-none">
           <svg
-            className="h-5 w-5 text-primary"
+            className="h-5 w-5 text-muted-foreground"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -263,7 +263,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
               d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
             />
           </svg>
-          Contact Ingenieur Son
+          Contact ingénieur son
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -274,14 +274,14 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
               type="text"
               value={engineerName}
               onChange={(e) => setEngineerName(e.target.value)}
-              placeholder="Nom de l'inge son"
+              placeholder="Nom de l'ingé son"
               className={inputClasses}
               disabled={!canEdit}
             />
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-              Telephone
+              Téléphone
             </label>
             <input
               type="tel"
@@ -296,11 +296,11 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
       </section>
 
       {/* Musicians */}
-      <section className="rounded-xl border border-border bg-card p-4 sm:p-6">
+      <section className="border-t border-border pt-5">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <h2 className="flex items-center gap-2 font-display text-2xl font-extrabold uppercase leading-none">
             <svg
-              className="h-5 w-5 text-primary"
+              className="h-5 w-5 text-muted-foreground"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -317,7 +317,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
           {canEdit && (
             <button aria-label="Ajouter un musicien"
               onClick={addMusician}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent"
             >
               <svg
                 className="h-4 w-4"
@@ -339,7 +339,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
 
         {musicians.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            Aucun musicien ajoute. Clique sur &quot;Ajouter&quot; pour
+            Aucun musicien ajouté. Clique sur &quot;Ajouter&quot; pour
             commencer.
           </p>
         ) : (
@@ -351,7 +351,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
               >
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20 text-sm font-bold text-primary">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary font-display text-base font-extrabold text-muted-foreground">
                       {musician.name?.[0]?.toUpperCase() || "?"}
                     </div>
                     <input
@@ -459,11 +459,11 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
       </section>
 
       {/* Patch / Input List */}
-      <section className="rounded-xl border border-border bg-card p-4 sm:p-6">
+      <section className="border-t border-border pt-5">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <h2 className="flex items-center gap-2 font-display text-2xl font-extrabold uppercase leading-none">
             <svg
-              className="h-5 w-5 text-primary"
+              className="h-5 w-5 text-muted-foreground"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -480,7 +480,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
           {canEdit && (
             <button aria-label="Ajouter un canal"
               onClick={addChannel}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent"
             >
               <svg
                 className="h-4 w-4"
@@ -664,7 +664,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                   className="rounded-lg border border-border/50 bg-accent/30 p-3"
                 >
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="rounded bg-primary/20 px-2 py-0.5 font-mono text-xs font-bold text-primary">
+                    <span className="rounded border border-border px-1.5 py-0.5 font-mono text-xs font-bold">
                       CH {ch.number}
                     </span>
                     {canEdit && (
@@ -788,10 +788,10 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
       </section>
 
       {/* Stage Plot */}
-      <section className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+      <section className="border-t border-border pt-5">
+        <h2 className="mb-4 flex items-center gap-2 font-display text-2xl font-extrabold uppercase leading-none">
           <svg
-            className="h-5 w-5 text-primary"
+            className="h-5 w-5 text-muted-foreground"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -803,7 +803,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
               d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
             />
           </svg>
-          Plan de Scene
+          Plan de scène
         </h2>
         <TechRiderStagePlot
           musicians={musicians}
@@ -817,10 +817,10 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
       </section>
 
       {/* General notes */}
-      <section className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+      <section className="border-t border-border pt-5">
+        <h2 className="mb-4 flex items-center gap-2 font-display text-2xl font-extrabold uppercase leading-none">
           <svg
-            className="h-5 w-5 text-primary"
+            className="h-5 w-5 text-muted-foreground"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -850,7 +850,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
           <button
             onClick={handleSave}
             disabled={saving}
-            className={`inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold shadow-lg transition-all ${
+            className={`inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold shadow-md transition-all ${
               saved
                 ? "bg-success text-success-foreground"
                 : "bg-primary text-primary-foreground hover:opacity-90"

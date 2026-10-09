@@ -74,7 +74,7 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       ) : leaderboard.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12 text-center">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <Icon name="emoji_events" className="h-8 w-8 text-muted-foreground" />
           </div>
@@ -105,7 +105,7 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
                   height={48}
                 />
               ) : (
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-lg font-semibold text-muted-foreground">
                   {(entry.display_name || entry.username)[0]?.toUpperCase()}
                 </div>
               )}

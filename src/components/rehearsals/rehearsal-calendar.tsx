@@ -98,7 +98,7 @@ export function RehearsalCalendar({
           <Icon name="chevron_left" className="h-[20px] w-[20px]" />
         </button>
         <div className="flex items-center gap-3">
-          <h3 className="text-lg font-semibold capitalize">
+          <h3 className="font-display text-xl font-extrabold uppercase">
             {MONTHS_FR[currentMonth]} {currentYear}
           </h3>
           <button

@@ -707,8 +707,8 @@ export function EditSongModal({
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12">
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
                   <svg className="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <rect x="2" y="4" width="20" height="16" rx="2"/>
                     <path d="M10 9L15 12L10 15V9Z" fill="currentColor" stroke="none"/>

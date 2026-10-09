@@ -1,6 +1,6 @@
 "use client";
 
-import type { RehearsalWithDetails, RehearsalRsvpStatus } from "@/types";
+import type { RehearsalWithDetails } from "@/types";
 import { RSVP_COLORS, RSVP_LABELS } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
@@ -10,33 +10,11 @@ interface RehearsalCardProps {
   onClick: () => void;
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("fr-FR", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-}
-
 function formatTime(dateString: string): string {
   return new Date(dateString).toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function getStatusColor(status: string): string {
-  switch (status) {
-    case "scheduled":
-      return "border-l-blue-400";
-    case "cancelled":
-      return "border-l-red-400";
-    case "completed":
-      return "border-l-green-400";
-    default:
-      return "border-l-primary";
-  }
 }
 
 function isToday(dateString: string): boolean {
@@ -64,97 +42,69 @@ export function RehearsalCard({ rehearsal, currentUserId, onClick }: RehearsalCa
   const acceptedCount = rehearsal.participants.filter((p) => p.status === "accepted").length;
   const totalCount = rehearsal.participants.length;
   const myRsvp = rehearsal.participants.find((p) => p.user_id === currentUserId);
-  const isPast = new Date(rehearsal.date) < new Date();
   const dateIsToday = isToday(rehearsal.date);
   const dateIsTomorrow = isTomorrow(rehearsal.date);
 
+  const date = new Date(rehearsal.date);
+  const tag = "rounded border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]";
+
+  /*
+   * Une repete en ligne, style Atelier (docs/refonte-ui.md) : la date en
+   * tampon a gauche, le titre en condense, les etats en etiquettes. La
+   * barre coloree sur le flanc de la carte a disparu.
+   */
   return (
     <button
       onClick={onClick}
-      className={`group w-full overflow-hidden rounded-xl border-l-4 ${getStatusColor(rehearsal.status)} border border-border bg-card p-4 text-left transition-all hover:bg-primary/[0.02] hover:border-primary/40 ${
+      className={`flex w-full items-start gap-3.5 border-b border-border py-3 text-left transition-colors hover:bg-accent/50 ${
         rehearsal.status === "cancelled" ? "opacity-60" : ""
       }`}
     >
-      <div className="flex items-start gap-3">
-        {/* Date block */}
-        <div className={`flex h-12 w-12 flex-shrink-0 flex-col items-center justify-center rounded-lg ${
-          dateIsToday ? "bg-primary/20 text-primary" : "bg-accent text-foreground"
-        }`}>
-          <span className="text-xs font-medium uppercase leading-none">
-            {new Date(rehearsal.date).toLocaleDateString("fr-FR", { weekday: "short" })}
-          </span>
-          <span className="text-lg font-bold leading-tight">
-            {new Date(rehearsal.date).getDate()}
-          </span>
-        </div>
+      <span
+        className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-[4px] ${
+          dateIsToday ? "bg-foreground text-background" : "bg-secondary"
+        }`}
+      >
+        <span className="font-mono text-[10px] font-semibold uppercase leading-none tracking-[0.06em] opacity-70">
+          {date.toLocaleDateString("fr-FR", { weekday: "short" })}
+        </span>
+        <span className="tabular font-display text-2xl font-extrabold leading-none">{date.getDate()}</span>
+      </span>
 
-        {/* Content */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="truncate text-base font-semibold">{rehearsal.title}</h3>
-            {dateIsToday && (
-              <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
-                Aujourd&apos;hui
-              </span>
-            )}
-            {dateIsTomorrow && (
-              <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
-                Demain
-              </span>
-            )}
-            {rehearsal.status === "cancelled" && (
-              <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-xs font-medium text-destructive">
-                Annulee
-              </span>
-            )}
-            {rehearsal.status === "completed" && (
-              <span className="rounded-full bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
-                Terminee
-              </span>
-            )}
-            {rehearsal.recurrence !== "none" && (
-              <span title="Récurrente" className="inline-flex">
-                <Icon name="repeat" className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="sr-only">Récurrente</span>
-              </span>
-            )}
-          </div>
-
-          {/* Meta */}
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Icon name="schedule" className="h-[14px] w-[14px]" />
-              {formatTime(rehearsal.date)}
-              {rehearsal.end_date && ` - ${formatTime(rehearsal.end_date)}`}
+      <span className="min-w-0 flex-1">
+        <span className="flex flex-wrap items-center gap-1.5">
+          <span className="truncate font-display text-xl font-extrabold uppercase leading-tight">{rehearsal.title}</span>
+          {dateIsToday && <span className={`${tag} border-foreground`}>Aujourd&apos;hui</span>}
+          {dateIsTomorrow && <span className={`${tag} border-border`}>Demain</span>}
+          {rehearsal.status === "cancelled" && <span className={`${tag} border-destructive text-destructive`}>Annulée</span>}
+          {rehearsal.status === "completed" && <span className={`${tag} border-success text-success`}>Terminée</span>}
+          {rehearsal.recurrence !== "none" && (
+            <span title="Récurrente" className="inline-flex">
+              <Icon name="repeat" className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="sr-only">Récurrente</span>
             </span>
-            {rehearsal.location && (
-              <span className="flex items-center gap-1">
-                <Icon name="location_on" className="h-[14px] w-[14px]" />
-                {rehearsal.location}
-              </span>
-            )}
-            <span className="flex items-center gap-1">
-              <Icon name="group" className="h-[14px] w-[14px]" />
-              {acceptedCount}/{totalCount}
-            </span>
-            {rehearsal.setlist && (
-              <span className="flex items-center gap-1">
-                <Icon name="queue_music" className="h-[14px] w-[14px]" />
-                {rehearsal.setlist.name}
-              </span>
-            )}
-          </div>
-
-          {/* RSVP badges row */}
-          {myRsvp && (
-            <div className="mt-2">
-              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${RSVP_COLORS[myRsvp.status]}`}>
-                {RSVP_LABELS[myRsvp.status]}
-              </span>
-            </div>
           )}
-        </div>
-      </div>
+        </span>
+
+        <span className="tabular mt-0.5 block truncate text-xs text-muted-foreground">
+          {[
+            `${formatTime(rehearsal.date)}${rehearsal.end_date ? ` – ${formatTime(rehearsal.end_date)}` : ""}`,
+            rehearsal.location,
+            `${acceptedCount}/${totalCount} présents`,
+            rehearsal.setlist?.name,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </span>
+
+        {myRsvp && (
+          <span className={`mt-1.5 inline-flex rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase ${RSVP_COLORS[myRsvp.status]}`}>
+            {RSVP_LABELS[myRsvp.status]}
+          </span>
+        )}
+      </span>
+
+      <Icon name="chevron_right" className="mt-4 h-4 w-4 shrink-0 text-muted-foreground" />
     </button>
   );
 }

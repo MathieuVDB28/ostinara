@@ -1,9 +1,10 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserPlan } from "@/types";
-import { BillingInterval, PLANS } from "@/lib/stripe/config";
+import { BillingInterval } from "@/lib/stripe/config";
 import { PlanToggle, PricingCard } from "@/components/subscription";
 
 export default function PricingPage() {
@@ -53,17 +54,19 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      {/* Header */}
-      <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold md:text-4xl">Choisissez votre plan</h1>
+    <div className="mx-auto max-w-5xl">
+      {/* En-tete, style Fanzine : le titre en capitales condensees, a gauche */}
+      <div className="mb-8">
+        <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.9] sm:text-6xl">
+          Choisis ton <span className="text-primary">plan</span>
+        </h1>
         <p className="mt-3 text-muted-foreground">
-          Débloquez tout le potentiel d'Ostinara pour progresser plus vite
+          Débloque tout Ostinara pour progresser plus vite.
         </p>
       </div>
 
       {/* Toggle mensuel/annuel */}
-      <div className="mb-10">
+      <div className="mb-8">
         <PlanToggle interval={interval} onIntervalChange={setInterval} />
       </div>
 
@@ -75,7 +78,7 @@ export default function PricingPage() {
       )}
 
       {/* Plans */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-3 md:gap-6">
         <PricingCard
           plan="free"
           interval={interval}
@@ -100,46 +103,45 @@ export default function PricingPage() {
       </div>
 
       {/* FAQ ou infos supplémentaires */}
-      <div className="mt-12 text-center">
-        <h2 className="mb-4 text-xl font-semibold">Questions fréquentes</h2>
-        <div className="mx-auto max-w-2xl space-y-4 text-left">
-          <details className="group rounded-lg border border-border bg-card p-4">
-            <summary className="cursor-pointer font-medium">
+      <div className="mt-14 max-w-2xl">
+        <h2 className="mb-2 font-display text-3xl font-extrabold uppercase leading-none">Questions fréquentes</h2>
+        <div className="border-t border-border">
+          <details className="group border-b border-border py-3.5">
+            <summary className="cursor-pointer list-none font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
               Puis-je changer de plan à tout moment ?
             </summary>
             <p className="mt-2 text-sm text-muted-foreground">
-              Oui ! Vous pouvez upgrader ou downgrader votre abonnement quand vous
-              le souhaitez. Le prorata est calculé automatiquement.
+              Oui. Tu peux monter ou descendre de plan quand tu veux. Le prorata est calculé automatiquement.
             </p>
           </details>
 
-          <details className="group rounded-lg border border-border bg-card p-4">
-            <summary className="cursor-pointer font-medium">
+          <details className="group border-b border-border py-3.5">
+            <summary className="cursor-pointer list-none font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
               Comment fonctionne le remboursement si je downgrade ?
             </summary>
             <p className="mt-2 text-sm text-muted-foreground">
-              Si vous passez à un plan inférieur, la différence est créditée sur
-              votre prochaine facture. Le changement est effectif immédiatement.
+              Si tu passes à un plan inférieur, la différence est créditée sur
+              ta prochaine facture. Le changement est effectif immédiatement.
             </p>
           </details>
 
-          <details className="group rounded-lg border border-border bg-card p-4">
-            <summary className="cursor-pointer font-medium">
-              Que se passe-t-il si j'annule mon abonnement ?
+          <details className="group border-b border-border py-3.5">
+            <summary className="cursor-pointer list-none font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
+              Que se passe-t-il si j&apos;annule mon abonnement ?
             </summary>
             <p className="mt-2 text-sm text-muted-foreground">
-              Vous gardez l'accès à toutes les fonctionnalités payantes jusqu'à
-              la fin de votre période de facturation. Ensuite, vous repassez au
+              Tu gardes l&apos;accès à toutes les fonctionnalités payantes jusqu&apos;à
+              la fin de ta période de facturation. Ensuite, tu repasses au
               plan Free.
             </p>
           </details>
 
-          <details className="group rounded-lg border border-border bg-card p-4">
-            <summary className="cursor-pointer font-medium">
+          <details className="group border-b border-border py-3.5">
+            <summary className="cursor-pointer list-none font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
               Quels moyens de paiement acceptez-vous ?
             </summary>
             <p className="mt-2 text-sm text-muted-foreground">
-              Nous acceptons toutes les cartes bancaires (Visa, Mastercard,
+              Toutes les cartes bancaires sont acceptées (Visa, Mastercard,
               American Express) via notre partenaire sécurisé Stripe.
             </p>
           </details>
@@ -147,15 +149,8 @@ export default function PricingPage() {
       </div>
 
       {/* Security badge */}
-      <div className="mt-10 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-          />
-        </svg>
+      <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
+        <Lock className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
         <span>Paiement sécurisé par Stripe</span>
       </div>
     </div>

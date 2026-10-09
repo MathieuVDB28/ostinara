@@ -33,7 +33,7 @@ export function BandInvitationCard({
   return (
     <div className="flex items-center gap-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
       {/* Band icon */}
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground">
         <svg
           className="h-6 w-6"
           fill="none"

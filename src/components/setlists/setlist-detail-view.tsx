@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/icon";
 import dynamic from "next/dynamic";
 
 import { useState, useEffect } from "react";
@@ -76,6 +77,18 @@ function formatDate(dateString: string): string {
     month: "long",
     year: "numeric",
   });
+}
+
+const ACTION =
+  "inline-flex min-h-[38px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent";
+
+function SetStat({ label, value, small = false }: { label: string; value: string; small?: boolean }) {
+  return (
+    <div className="flex min-w-0 flex-col-reverse gap-1">
+      <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{label}</dt>
+      <dd className={`tabular truncate font-display font-bold leading-none ${small ? "text-lg" : "text-[30px]"}`}>{value}</dd>
+    </div>
+  );
 }
 
 export function SetlistDetailView({
@@ -203,29 +216,16 @@ export function SetlistDetailView({
 
   return (
     <div>
-      {/* Back button */}
       <button
         onClick={() => router.push("/commu/groupes")}
-        className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        className="-ml-1 mb-3 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
       >
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-        Retour aux setlists
+        <Icon name="chevron_left" className="h-4 w-4" strokeWidth={2.25} />
+        Groupes et setlists
       </button>
 
       {/* Header */}
-      <div className="mb-8 rounded-2xl border border-border bg-card p-6">
+      <div className="mb-8 max-w-3xl">
         {isEditingHeader ? (
           <div className="space-y-4">
             <div>
@@ -289,199 +289,67 @@ export function SetlistDetailView({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold sm:text-3xl">{setlist.name}</h1>
-                {setlist.band && (
-                  <span className="rounded-full bg-primary/20 px-3 py-1 text-sm font-medium text-primary">
-                    {setlist.band.name}
-                  </span>
-                )}
-              </div>
-              {setlist.description && (
-                <p className="mt-2 text-muted-foreground">
-                  {setlist.description}
-                </p>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              {setlist.band && (
+                <span className="rounded border border-border px-1.5 py-0.5 font-display text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+                  {setlist.band.name}
+                </span>
               )}
-              <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                {setlist.concert_date && (
-                  <div className="flex items-center gap-1.5">
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    <span>{formatDate(setlist.concert_date)}</span>
-                  </div>
-                )}
-                {setlist.venue && (
-                  <div className="flex items-center gap-1.5">
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                    <span>{setlist.venue}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-1.5">
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                    />
-                  </svg>
-                  <span>
-                    {songCount} morceau{songCount > 1 ? "x" : ""}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span>{formatDuration(totalDuration)}</span>
-                </div>
-              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {/* Launch Jam button - for all setlists (band needs band plan) */}
+            <h1 className="mt-1 text-balance font-display text-[44px] font-extrabold uppercase leading-[0.88] sm:text-6xl">
+              {setlist.name}
+            </h1>
+            {setlist.description && (
+              <p className="mt-2 font-serif text-[15px] italic text-muted-foreground">{setlist.description}</p>
+            )}
+
+            {/* Les chiffres du set, style Atelier */}
+            <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-border py-3 sm:grid-cols-4">
+              <SetStat label="morceaux" value={String(songCount)} />
+              <SetStat label="durée" value={formatDuration(totalDuration)} />
+              {setlist.concert_date && <SetStat label="concert" value={formatDate(setlist.concert_date)} small />}
+              {setlist.venue && <SetStat label="lieu" value={setlist.venue} small />}
+            </dl>
+
+            <div className="mt-4 flex flex-wrap gap-1.5">
               {(!setlist.band_id || userPlan === "band") && (
                 <button
                   onClick={handleLaunchJam}
                   disabled={launchingJam}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
                 >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                    />
-                  </svg>
-                  {launchingJam
-                    ? "Lancement..."
-                    : setlist.band_id
-                    ? "Lancer un Jam"
-                    : "Lancer un Jam Solo"}
+                  <Icon name="music_note" className="h-4 w-4" />
+                  {launchingJam ? "Lancement…" : setlist.band_id ? "Lancer un jam" : "Lancer un jam solo"}
                 </button>
               )}
-              <button
-                onClick={() => setIsEditingHeader(true)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                  />
-                </svg>
+              <button onClick={() => setIsEditingHeader(true)} className={ACTION}>
+                <Icon name="edit" className="h-4 w-4" />
                 Modifier
               </button>
               <SetlistPDFExport setlist={setlist} />
-              <button
-                onClick={handleDuplicate}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
-                </svg>
+              <button onClick={handleDuplicate} className={ACTION}>
+                <Icon name="layers" className="h-4 w-4" />
                 Dupliquer
               </button>
               {confirmDelete ? (
-                <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5">
                   <button
                     onClick={handleDeleteSetlist}
-                    className="rounded-lg bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition-all hover:opacity-90"
+                    className="inline-flex min-h-[38px] items-center rounded-full bg-destructive px-3.5 text-[13px] font-semibold text-destructive-foreground hover:opacity-90"
                   >
-                    Confirmer
+                    Confirmer la suppression
                   </button>
-                  <button
-                    onClick={() => setConfirmDelete(false)}
-                    className="rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
-                  >
+                  <button onClick={() => setConfirmDelete(false)} className={ACTION}>
                     Annuler
                   </button>
-                </div>
+                </span>
               ) : (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold text-destructive transition-colors hover:bg-destructive/10"
                 >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
+                  <Icon name="delete" className="h-4 w-4" />
                   Supprimer
                 </button>
               )}
@@ -490,27 +358,17 @@ export function SetlistDetailView({
         )}
       </div>
 
-      {/* Items list */}
+      {/* Programme */}
       <div className="mb-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Programme</h2>
+        <div className="mb-1 flex items-baseline justify-between border-b border-border pb-2">
+          <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
+            Programme
+          </h2>
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
+            <Icon name="add" className="h-3.5 w-3.5" strokeWidth={2} />
             Ajouter
           </button>
         </div>
@@ -525,7 +383,7 @@ export function SetlistDetailView({
               items={items.map((i) => i.id)}
               strategy={verticalListSortingStrategy}
             >
-              <div className="space-y-2">
+              <div className="max-w-3xl">
                 {items.map((item, index) => (
                   <SetlistItemCard
                     key={item.id}
@@ -539,27 +397,13 @@ export function SetlistDetailView({
             </SortableContext>
           </DndContext>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              <svg
-                className="h-6 w-6 text-muted-foreground"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                />
-              </svg>
-            </div>
-            <p className="text-muted-foreground">Aucun morceau dans cette setlist</p>
+          <div className="flex flex-col items-start gap-2 py-8">
+            <p className="text-muted-foreground">Aucun morceau dans cette setlist.</p>
             <button
               onClick={() => setShowAddModal(true)}
-              className="mt-2 text-sm text-primary hover:underline"
+              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-border px-4 text-sm font-semibold transition-colors hover:bg-accent"
             >
+              <Icon name="add" className="h-4 w-4" />
               Ajouter ton premier morceau
             </button>
           </div>

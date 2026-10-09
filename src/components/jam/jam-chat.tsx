@@ -61,7 +61,7 @@ export function JamChat({
                 className={`flex gap-2 ${isOwn ? "flex-row-reverse" : ""}`}
               >
                 {/* Avatar */}
-                <div className="h-8 w-8 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-xs font-medium text-primary overflow-hidden">
+                <div className="h-8 w-8 shrink-0 rounded-full bg-secondary flex items-center justify-center font-display text-xs font-extrabold text-muted-foreground overflow-hidden">
                   {msg.profile.avatar_url ? (
                     <img
                       src={msg.profile.avatar_url}

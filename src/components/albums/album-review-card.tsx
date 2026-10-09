@@ -181,7 +181,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
             className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             onClick={() => setShowDetail(false)}
           />
-          <div className="relative z-10 flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+          <div className="relative z-10 flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md">
             {/* Header image */}
             <div className="relative h-64 shrink-0 overflow-hidden bg-muted">
               {review.cover_url ? (

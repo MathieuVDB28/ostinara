@@ -28,11 +28,8 @@ export default function CGU() {
     <div className="relative">
       {/* Hero */}
       <div className="relative overflow-hidden border-b border-border py-20">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="animate-pulse-glow absolute -top-1/2 right-1/3 h-[600px] w-[600px] rounded-full bg-chart-5/15 blur-[120px]" />
-        </div>
         <div className="relative mx-auto max-w-4xl px-6">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
+          <div className="mb-4 inline-flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             <svg
               className="h-3.5 w-3.5 text-primary"
               viewBox="0 0 24 24"
@@ -51,7 +48,7 @@ export default function CGU() {
             </svg>
             Document légal
           </div>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.92] sm:text-7xl">
             Conditions Générales d&apos;Utilisation
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
@@ -92,7 +89,7 @@ export default function CGU() {
                 href={`#${section.id}`}
                 className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <span className="tabular w-6 shrink-0 font-display text-base font-extrabold text-muted-foreground transition-colors group-hover:text-foreground">
                   {i + 1}
                 </span>
                 {section.label}
@@ -106,7 +103,7 @@ export default function CGU() {
           {/* 1. Objet */}
           <section id="objet" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 1
               </span>
               Objet
@@ -130,7 +127,7 @@ export default function CGU() {
           {/* 2. Acceptation */}
           <section id="acceptation" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 2
               </span>
               Acceptation des conditions
@@ -152,7 +149,7 @@ export default function CGU() {
           {/* 3. Description du service */}
           <section id="description" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 3
               </span>
               Description du service
@@ -187,7 +184,7 @@ export default function CGU() {
           {/* 4. Inscription et compte */}
           <section id="inscription" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 4
               </span>
               Inscription et compte utilisateur
@@ -216,7 +213,7 @@ export default function CGU() {
           {/* 5. Offres et tarification */}
           <section id="offres" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 5
               </span>
               Offres et tarification
@@ -270,7 +267,7 @@ export default function CGU() {
           {/* 6. Contenu utilisateur */}
           <section id="contenu" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 6
               </span>
               Contenu utilisateur
@@ -312,7 +309,7 @@ export default function CGU() {
           {/* 7. Propriété intellectuelle */}
           <section id="propriete" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 7
               </span>
               Propriété intellectuelle
@@ -337,7 +334,7 @@ export default function CGU() {
           {/* 8. Obligations de l'utilisateur */}
           <section id="obligations" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 8
               </span>
               Obligations de l&apos;utilisateur
@@ -365,7 +362,7 @@ export default function CGU() {
           {/* 9. Responsabilité */}
           <section id="responsabilite" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 9
               </span>
               Responsabilité
@@ -396,7 +393,7 @@ export default function CGU() {
           {/* 10. Données personnelles */}
           <section id="donnees" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 10
               </span>
               Données personnelles
@@ -425,7 +422,7 @@ export default function CGU() {
           {/* 11. Modification des CGU */}
           <section id="modification" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 11
               </span>
               Modification des CGU
@@ -449,7 +446,7 @@ export default function CGU() {
           {/* 12. Résiliation */}
           <section id="resiliation" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 12
               </span>
               Résiliation
@@ -474,7 +471,7 @@ export default function CGU() {
           {/* 13. Droit applicable */}
           <section id="droit" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 13
               </span>
               Droit applicable et litiges
@@ -499,16 +496,16 @@ export default function CGU() {
         </div>
 
         {/* Cross-links */}
-        <div className="mt-16 rounded-2xl border border-border bg-gradient-to-br from-primary/5 via-card to-card p-8">
+        <div className="mt-16 border-t border-border pt-8">
           <h3 className="mb-4 text-lg font-semibold">Voir aussi</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <Link
               href="/mentions-legales"
               className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.1)]"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground">
                 <svg
-                  className="h-5 w-5 text-primary"
+                  className="h-5 w-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -531,9 +528,9 @@ export default function CGU() {
               href="/politique-confidentialite"
               className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.1)]"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground">
                 <svg
-                  className="h-5 w-5 text-primary"
+                  className="h-5 w-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

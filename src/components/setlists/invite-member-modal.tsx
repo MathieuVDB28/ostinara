@@ -106,11 +106,11 @@ export function InviteMemberModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold">Inviter un membre</h2>
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Inviter un membre</h2>
             <p className="mt-1 text-sm text-muted-foreground">{bandName}</p>
           </div>
           <button aria-label="Fermer"
@@ -198,7 +198,7 @@ export function InviteMemberModal({
               className="flex items-center gap-3 rounded-lg border border-border p-3"
             >
               {/* Avatar */}
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-sm font-medium text-primary">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
                 {user.avatar_url ? (
                   <img
                     src={user.avatar_url}

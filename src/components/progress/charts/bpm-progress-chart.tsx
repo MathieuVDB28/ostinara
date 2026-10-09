@@ -146,7 +146,7 @@ export function BpmProgressChart({ data }: BpmProgressChartProps) {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bg-popover text-popover-foreground rounded-lg shadow-lg border border-border px-3 py-2">
+                        <div className="bg-popover text-popover-foreground rounded-lg shadow-md border border-border px-3 py-2">
                           <p className="font-medium">{formatDate(data.date)}</p>
                           <p className="text-lg font-bold text-primary">{data.bpm} BPM</p>
                         </div>

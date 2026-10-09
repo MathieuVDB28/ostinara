@@ -132,7 +132,7 @@ export function BandChatPanel({
                       className={`flex gap-2 ${isOwn ? "flex-row-reverse" : ""}`}
                     >
                       {/* Avatar */}
-                      <div className="h-8 w-8 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-xs font-medium text-primary overflow-hidden">
+                      <div className="h-8 w-8 shrink-0 rounded-full bg-secondary flex items-center justify-center font-display text-xs font-extrabold text-muted-foreground overflow-hidden">
                         {msg.profile.avatar_url ? (
                           <img
                             src={msg.profile.avatar_url}
@@ -162,10 +162,10 @@ export function BandChatPanel({
                           </span>
                         </div>
                         <p
-                          className={`mt-1 rounded-lg px-3 py-1.5 text-sm ${
+                          className={`mt-1 rounded-xl px-3 py-1.5 font-serif text-[14px] italic leading-snug ${
                             isOwn
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-accent"
+                              ? "bg-foreground text-background"
+                              : "bg-secondary"
                           }`}
                         >
                           {msg.content}
@@ -195,7 +195,7 @@ export function BandChatPanel({
           <button aria-label="Envoyer le message"
             type="submit"
             disabled={!input.trim() || sending}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+            className="rounded-xl bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             <svg
               className="h-4 w-4"

@@ -107,10 +107,10 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+      <div className="relative z-10 flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-border p-5">
-          <h2 className="text-lg font-bold">Ajouter à la wishlist</h2>
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Ajouter à la wishlist</h2>
           <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"

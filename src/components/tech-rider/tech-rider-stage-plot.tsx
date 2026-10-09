@@ -176,7 +176,7 @@ export function TechRiderStagePlot({
 
         {/* Labels */}
         <div className="pointer-events-none absolute left-1/2 top-1 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          Fond de scene
+          Fond de scène
         </div>
         <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
           Public
@@ -192,7 +192,7 @@ export function TechRiderStagePlot({
         {musicians.length === 0 && stageElements.length === 0 && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <p className="text-sm text-muted-foreground">
-              Ajoute des musiciens et des elements pour construire ton plan
+              Ajoute des musiciens et des éléments pour construire ton plan
             </p>
           </div>
         )}
@@ -212,7 +212,7 @@ export function TechRiderStagePlot({
             onPointerDown={(e) => handlePointerDown("musician", m.id, e)}
           >
             <div
-              className={`flex h-10 w-10 items-center justify-center rounded-full bg-primary/90 text-sm font-bold text-primary-foreground shadow-lg transition-all ${
+              className={`flex h-10 w-10 items-center justify-center rounded-full bg-primary/90 text-sm font-bold text-primary-foreground shadow-md transition-all ${
                 selected === m.id
                   ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-900"
                   : ""

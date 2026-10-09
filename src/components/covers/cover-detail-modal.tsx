@@ -115,7 +115,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
         onClick={handleClose}
       />
 
-      <div className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-card shadow-xl">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-card shadow-md">
         {/* Lecteur vidéo/audio */}
         <div className="relative aspect-video bg-black">
           {cover.media_type === "video" ? (
@@ -147,7 +147,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
         {/* Infos et formulaire */}
         <div className="p-6 space-y-6">
           <div>
-            <h2 className="text-xl font-bold">{cover.song.title}</h2>
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{cover.song.title}</h2>
             <p className="text-muted-foreground">{cover.song.artist}</p>
             <p className="mt-1 text-sm text-muted-foreground">
               Ajouté le {formatDate(cover.created_at)}

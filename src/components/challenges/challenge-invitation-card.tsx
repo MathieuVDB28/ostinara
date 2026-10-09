@@ -72,7 +72,7 @@ export function ChallengeInvitationCard({ challenge }: ChallengeInvitationCardPr
             height={48}
           />
         ) : (
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-lg font-semibold text-muted-foreground">
             {creatorName[0]?.toUpperCase()}
           </div>
         )}

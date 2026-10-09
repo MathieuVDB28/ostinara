@@ -176,10 +176,10 @@ export function EditSessionModal({
         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         onClick={handleClose}
       />
-      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold">
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
             {isEditing ? "Modifier la session" : "Détail de la session"}
           </h2>
           <div className="flex items-center gap-2">
@@ -418,7 +418,7 @@ export function EditSessionModal({
         {showSongSearch && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setShowSongSearch(false)} />
-            <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
+            <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-md">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-bold">Choisir un morceau</h3>
                 <button onClick={() => setShowSongSearch(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-accent">
@@ -462,7 +462,7 @@ export function EditSessionModal({
         {showDeleteConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
-            <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
+            <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-md">
               <h3 className="text-lg font-bold mb-2">Supprimer la session ?</h3>
               <p className="text-sm text-muted-foreground mb-6">Cette action est irréversible.</p>
               <div className="flex gap-3 justify-end">

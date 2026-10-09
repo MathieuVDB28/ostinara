@@ -28,12 +28,8 @@ export default function PolitiqueConfidentialite() {
     <div className="relative">
       {/* Hero */}
       <div className="relative overflow-hidden border-b border-border py-20">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="animate-pulse-glow absolute -top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-primary/15 blur-[120px]" />
-          <div className="absolute top-1/4 right-0 h-[300px] w-[300px] rounded-full bg-chart-5/10 blur-[100px]" />
-        </div>
         <div className="relative mx-auto max-w-4xl px-6">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
+          <div className="mb-4 inline-flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             <svg
               className="h-3.5 w-3.5 text-primary"
               viewBox="0 0 24 24"
@@ -46,7 +42,7 @@ export default function PolitiqueConfidentialite() {
             </svg>
             Protection des données
           </div>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.92] sm:text-7xl">
             Politique de confidentialité
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
@@ -87,7 +83,7 @@ export default function PolitiqueConfidentialite() {
                 href={`#${section.id}`}
                 className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <span className="tabular w-6 shrink-0 font-display text-base font-extrabold text-muted-foreground transition-colors group-hover:text-foreground">
                   {i + 1}
                 </span>
                 {section.label}
@@ -101,7 +97,7 @@ export default function PolitiqueConfidentialite() {
           {/* 1. Introduction */}
           <section id="introduction" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 1
               </span>
               Introduction
@@ -126,7 +122,7 @@ export default function PolitiqueConfidentialite() {
           {/* 2. Responsable du traitement */}
           <section id="responsable" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 2
               </span>
               Responsable du traitement
@@ -158,7 +154,7 @@ export default function PolitiqueConfidentialite() {
           {/* 3. Données collectées */}
           <section id="donnees" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 3
               </span>
               Données collectées
@@ -228,7 +224,7 @@ export default function PolitiqueConfidentialite() {
           {/* 4. Finalités du traitement */}
           <section id="finalites" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 4
               </span>
               Finalités du traitement
@@ -262,7 +258,7 @@ export default function PolitiqueConfidentialite() {
           {/* 5. Base légale */}
           <section id="base-legale" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 5
               </span>
               Base légale du traitement
@@ -310,7 +306,7 @@ export default function PolitiqueConfidentialite() {
           {/* 6. Durée de conservation */}
           <section id="conservation" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 6
               </span>
               Durée de conservation
@@ -371,7 +367,7 @@ export default function PolitiqueConfidentialite() {
           {/* 7. Partage des données */}
           <section id="partage" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 7
               </span>
               Partage des données
@@ -424,7 +420,7 @@ export default function PolitiqueConfidentialite() {
           {/* 8. Transferts internationaux */}
           <section id="transferts" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 8
               </span>
               Transferts internationaux
@@ -448,7 +444,7 @@ export default function PolitiqueConfidentialite() {
           {/* 9. Cookies */}
           <section id="cookies" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 9
               </span>
               Cookies et technologies similaires
@@ -485,7 +481,7 @@ export default function PolitiqueConfidentialite() {
                         {cookie.name}
                       </span>
                       {cookie.essential && (
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                        <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em]">
                           Essentiel
                         </span>
                       )}
@@ -506,7 +502,7 @@ export default function PolitiqueConfidentialite() {
           {/* 10. Vos droits */}
           <section id="droits" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 10
               </span>
               Vos droits
@@ -580,7 +576,7 @@ export default function PolitiqueConfidentialite() {
           {/* 11. Sécurité */}
           <section id="securite" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 11
               </span>
               Sécurité des données
@@ -620,7 +616,7 @@ export default function PolitiqueConfidentialite() {
           {/* 12. Modifications */}
           <section id="modifications" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 12
               </span>
               Modifications de la politique
@@ -644,7 +640,7 @@ export default function PolitiqueConfidentialite() {
           {/* 13. Contact */}
           <section id="contact" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 13
               </span>
               Contact
@@ -683,16 +679,16 @@ export default function PolitiqueConfidentialite() {
         </div>
 
         {/* Cross-links */}
-        <div className="mt-16 rounded-2xl border border-border bg-gradient-to-br from-primary/5 via-card to-card p-8">
+        <div className="mt-16 border-t border-border pt-8">
           <h3 className="mb-4 text-lg font-semibold">Voir aussi</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <Link
               href="/mentions-legales"
               className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.1)]"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground">
                 <svg
-                  className="h-5 w-5 text-primary"
+                  className="h-5 w-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -715,9 +711,9 @@ export default function PolitiqueConfidentialite() {
               href="/cgu"
               className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.1)]"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground">
                 <svg
-                  className="h-5 w-5 text-primary"
+                  className="h-5 w-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

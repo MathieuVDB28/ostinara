@@ -240,7 +240,7 @@ export function AddSessionModal({
               <button
                 type="button"
                 onClick={() => setShowSongSearch(true)}
-                className="w-full rounded-xl border border-dashed border-border p-4 text-center text-sm font-medium text-muted-foreground hover:border-foreground hover:text-foreground"
+                className="w-full p-4 text-center text-sm font-medium text-muted-foreground hover:border-foreground hover:text-foreground"
               >
                 Choisir un morceau (optionnel)
               </button>
@@ -417,7 +417,7 @@ export function AddSessionModal({
               className="absolute inset-0 bg-background/80 backdrop-blur-sm"
               onClick={() => setShowSongSearch(false)}
             />
-            <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
+            <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-md">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-bold">Choisir un morceau</h3>
                 <button

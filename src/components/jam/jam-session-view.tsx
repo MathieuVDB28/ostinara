@@ -85,11 +85,11 @@ export function JamSessionView({
             />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold mb-2">Session terminee</h2>
+        <h2 className="mb-2 font-display text-5xl font-extrabold uppercase leading-none">Session terminée</h2>
         <p className="text-muted-foreground mb-6">
           {isPersonalJam
-            ? "Ta session de pratique est terminee."
-            : "La Jam Session a ete terminee par le host."}
+            ? "Ta session de pratique est terminée."
+            : "La jam a été terminée par l'hôte."}
         </p>
         <button
           onClick={() => router.push("/commu/groupes")}
@@ -108,11 +108,11 @@ export function JamSessionView({
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold">
+              <h1 className="font-display text-3xl font-extrabold uppercase leading-none">
                 {isPersonalJam ? "Jam Solo" : "Jam Session"}
               </h1>
               {session.band && (
-                <span className="rounded-full bg-primary/20 px-3 py-1 text-sm font-medium text-primary">
+                <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
                   {session.band.name}
                 </span>
               )}

@@ -216,7 +216,7 @@ export function PracticeHeatmap({ data }: PracticeHeatmapProps) {
             transform: "translate(-50%, -100%)",
           }}
         >
-          <div className="bg-popover text-popover-foreground rounded-lg shadow-lg border border-border px-3 py-2 text-sm">
+          <div className="bg-popover text-popover-foreground rounded-lg shadow-md border border-border px-3 py-2 text-sm">
             <p className="font-medium capitalize">{formatDate(hoveredDay.date)}</p>
             {hoveredDay.minutes > 0 ? (
               <p className="text-muted-foreground">

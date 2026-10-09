@@ -154,8 +154,8 @@ export function SetlistItemCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors ${
-        isDragging ? "border-primary shadow-lg" : "border-border"
+      className={`group flex items-center gap-3 border-b py-2.5 transition-colors ${
+        isDragging ? "relative z-10 border-foreground bg-background shadow-md" : "border-border"
       }`}
     >
       {/* Drag handle */}
@@ -180,7 +180,8 @@ export function SetlistItemCard({
       </button>
 
       {/* Position number */}
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium">
+      {/* L'ordre du set : c'est l'information, en grand */}
+      <div className="tabular w-7 shrink-0 text-center font-display text-2xl font-extrabold leading-none text-muted-foreground">
         {index + 1}
       </div>
 
@@ -188,7 +189,7 @@ export function SetlistItemCard({
       {isSong ? (
         <>
           {/* Song cover */}
-          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
+          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-[3px] bg-muted">
             {item.song_cover_url ? (
               <img
                 src={item.song_cover_url}
@@ -216,7 +217,7 @@ export function SetlistItemCard({
 
           {/* Song info */}
           <div className="flex-1 min-w-0">
-            <p className="truncate font-medium">{item.song_title}</p>
+            <p className="truncate font-semibold">{item.song_title}</p>
             <p className="truncate text-sm text-muted-foreground">
               {item.song_artist}
             </p>
@@ -244,8 +245,8 @@ export function SetlistItemCard({
       {/* Tabs badge */}
       {isSong && item.tabs_url && (
         <div
-          className="shrink-0 rounded-full bg-chart-2/20 px-2 py-0.5 text-xs font-medium text-chart-2"
-          title="Tablature liee"
+          className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase"
+          title="Tablature liée"
         >
           Tab
         </div>
@@ -256,7 +257,7 @@ export function SetlistItemCard({
         item.played_sections &&
         item.played_sections.length > 0 && (
           <div
-            className="shrink-0 rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary"
+            className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase"
             title={item.played_sections.map((s) => s.name).join(", ")}
           >
             {item.played_sections.length} sect.
@@ -265,28 +266,28 @@ export function SetlistItemCard({
 
       {/* BPM badge */}
       {isSong && item.bpm && item.bpm > 0 && (
-        <div className="shrink-0 text-xs text-muted-foreground">
-          {item.bpm} bpm
+        <div className="tabular shrink-0 font-display text-base font-bold">
+          {item.bpm}<span className="text-xs text-muted-foreground"> bpm</span>
         </div>
       )}
 
       {/* Duration */}
       {item.duration_seconds && (
-        <div className="shrink-0 text-sm text-muted-foreground">
+        <div className="tabular shrink-0 font-mono text-xs text-muted-foreground">
           {formatDuration(item.duration_seconds)}
         </div>
       )}
 
       {/* Transition badge */}
       {item.transition_seconds > 0 && (
-        <div className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+        <div className="tabular shrink-0 font-mono text-[10.5px] text-muted-foreground">
           +{item.transition_seconds}s
         </div>
       )}
 
       {/* Notes indicator */}
       {item.notes && (
-        <div className="shrink-0 text-primary" title={item.notes}>
+        <div className="shrink-0 text-muted-foreground" title={item.notes}>
           <svg
             className="h-4 w-4"
             fill="none"
@@ -304,7 +305,7 @@ export function SetlistItemCard({
       )}
 
       {/* Actions (visible on hover) */}
-      <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="flex shrink-0 gap-1 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
         <button aria-label="Modifier le morceau"
           onClick={onEdit}
           className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"

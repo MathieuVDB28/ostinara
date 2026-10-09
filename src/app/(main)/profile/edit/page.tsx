@@ -324,7 +324,7 @@ function EditProfilePageContent() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingAvatar}
-            className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-colors hover:opacity-90 disabled:opacity-50"
+            className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-colors hover:opacity-90 disabled:opacity-50"
           >
             {uploadingAvatar ? (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -340,7 +340,7 @@ function EditProfilePageContent() {
             className="hidden"
           />
         </div>
-        <h2 className="text-xl font-bold">{profile.display_name || profile.username}</h2>
+        <h2 className="font-display text-4xl font-extrabold uppercase leading-none">{profile.display_name || profile.username}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Guitariste {profile.plan !== "free" ? `• Ostinara ${profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1)}` : "amateur"}
         </p>
@@ -354,7 +354,7 @@ function EditProfilePageContent() {
             onClick={() => setActiveTab(tab.value)}
             className={`whitespace-nowrap border-b-2 pb-3 text-sm font-medium transition-colors ${
               activeTab === tab.value
-                ? "border-primary text-foreground"
+                ? "border-foreground text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -375,7 +375,7 @@ function EditProfilePageContent() {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Ton nom d'affichage"
-                className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+                className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
               />
             </div>
 
@@ -392,7 +392,7 @@ function EditProfilePageContent() {
                 maxLength={160}
                 placeholder="Parle-nous de toi..."
                 rows={3}
-                className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+                className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
               />
               <p className="text-xs text-muted-foreground">
                 Max 160 caractères
@@ -414,7 +414,7 @@ function EditProfilePageContent() {
                   value={instagramUrl}
                   onChange={(e) => setInstagramUrl(e.target.value)}
                   placeholder="https://instagram.com/ton_compte"
-                  className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+                  className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
                 />
               </div>
 
@@ -430,7 +430,7 @@ function EditProfilePageContent() {
                   value={tiktokUrl}
                   onChange={(e) => setTiktokUrl(e.target.value)}
                   placeholder="https://tiktok.com/@ton_compte"
-                  className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+                  className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
                 />
               </div>
 
@@ -446,7 +446,7 @@ function EditProfilePageContent() {
                   value={twitterUrl}
                   onChange={(e) => setTwitterUrl(e.target.value)}
                   placeholder="https://twitter.com/ton_compte"
-                  className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+                  className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
                 />
               </div>
 
@@ -462,7 +462,7 @@ function EditProfilePageContent() {
                   value={facebookUrl}
                   onChange={(e) => setFacebookUrl(e.target.value)}
                   placeholder="https://facebook.com/ton_compte"
-                  className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+                  className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
                 />
               </div>
             </div>

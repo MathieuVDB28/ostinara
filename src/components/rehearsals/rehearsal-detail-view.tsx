@@ -111,26 +111,26 @@ export function RehearsalDetailView({
       <div>
         <Link
           href="/commu/groupes"
-          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="-ml-1 mb-3 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
-          <Icon name="arrow_back" className="h-[18px] w-[18px]" />
-          Retour
+          <Icon name="chevron_left" className="h-4 w-4" strokeWidth={2.25} />
+          Groupes
         </Link>
 
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">{rehearsal.title}</h1>
-            <p className="text-sm text-muted-foreground">{rehearsal.band.name}</p>
+            <h1 className="font-display text-[40px] font-extrabold uppercase leading-[0.9]">{rehearsal.title}</h1>
+            <p className="mt-1 font-display text-sm font-bold uppercase tracking-[0.06em] text-muted-foreground">{rehearsal.band.name}</p>
           </div>
           {rehearsal.status !== "scheduled" && (
             <span
-              className={`rounded-full px-3 py-1 text-sm font-medium ${
+              className={`shrink-0 rounded border px-1.5 py-0.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] ${
                 rehearsal.status === "cancelled"
-                  ? "bg-destructive/20 text-destructive"
-                  : "bg-success/20 text-success"
+                  ? "border-destructive text-destructive"
+                  : "border-success text-success"
               }`}
             >
-              {rehearsal.status === "cancelled" ? "Annulee" : "Terminee"}
+              {rehearsal.status === "cancelled" ? "Annulée" : "Terminée"}
             </span>
           )}
         </div>
@@ -138,24 +138,25 @@ export function RehearsalDetailView({
 
       {/* RSVP Buttons (if active) */}
       {isActive && myParticipant && (
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="mb-3 text-sm font-medium">Ta presence :</p>
-          <div className="flex gap-2">
+        <div className="border-y border-border py-3">
+          <p className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Ta présence</p>
+          <div className="grid grid-cols-3 gap-1.5">
             {(["accepted", "maybe", "declined"] as RehearsalRsvpStatus[]).map(
               (status) => (
                 <button
                   key={status}
                   onClick={() => handleRsvp(status)}
                   disabled={rsvpLoading}
-                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                  aria-pressed={myParticipant.status === status}
+                  className={`min-h-[40px] rounded-xl border text-sm font-semibold transition-colors ${
                     myParticipant.status === status
-                      ? RSVP_COLORS[status]
-                      : "border border-border hover:bg-accent"
+                      ? "border-foreground bg-secondary"
+                      : "border-border text-muted-foreground hover:bg-accent"
                   } disabled:opacity-50`}
                 >
-                  {status === "accepted" && "Presente"}
-                  {status === "maybe" && "Peut-etre"}
-                  {status === "declined" && "Absente"}
+                  {status === "accepted" && "Présent·e"}
+                  {status === "maybe" && "Peut-être"}
+                  {status === "declined" && "Absent·e"}
                 </button>
               )
             )}
@@ -164,28 +165,28 @@ export function RehearsalDetailView({
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-border">
+      <div className="flex gap-6 border-b border-border">
         <button
           onClick={() => setActiveTab("details")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`pb-2.5 pt-1 text-sm font-semibold transition-colors ${
             activeTab === "details"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "text-foreground shadow-[inset_0_-2px_0_var(--foreground)]"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          Details
+          Détails
         </button>
         <button
           onClick={() => setActiveTab("chat")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
+          className={`flex items-center gap-1.5 pb-2.5 pt-1 text-sm font-semibold transition-colors ${
             activeTab === "chat"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "text-foreground shadow-[inset_0_-2px_0_var(--foreground)]"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           Discussion
           {(rehearsal.message_count ?? 0) > 0 && (
-            <span className="rounded-full bg-primary/20 px-1.5 text-xs text-primary">
+            <span className="tabular text-xs text-muted-foreground">
               {rehearsal.message_count}
             </span>
           )}
@@ -196,10 +197,10 @@ export function RehearsalDetailView({
       {activeTab === "details" && (
         <div className="space-y-4">
           {/* Info card */}
-          <div className="rounded-xl border border-border bg-card divide-y divide-border">
+          <div className="divide-y divide-border border-y border-border">
             {/* Date & time */}
-            <div className="flex items-center gap-3 p-4">
-              <Icon name="calendar_today" className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-3 py-3">
+              <Icon name="calendar_today" className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="font-medium capitalize">
                   {formatFullDate(rehearsal.date)}
@@ -222,8 +223,8 @@ export function RehearsalDetailView({
 
             {/* Location */}
             {rehearsal.location && (
-              <div className="flex items-center gap-3 p-4">
-                <Icon name="location_on" className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-3 py-3">
+                <Icon name="location_on" className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium">{rehearsal.location}</p>
                   {rehearsal.location_url && (
@@ -231,7 +232,7 @@ export function RehearsalDetailView({
                       href={rehearsal.location_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline"
+                      className="text-sm font-semibold text-foreground underline underline-offset-2"
                     >
                       Voir sur la carte
                     </a>
@@ -242,19 +243,19 @@ export function RehearsalDetailView({
 
             {/* Setlist */}
             {rehearsal.setlist && (
-              <div className="flex items-center gap-3 p-4">
-                <Icon name="queue_music" className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-3 py-3">
+                <Icon name="queue_music" className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium">{rehearsal.setlist.name}</p>
-                  <p className="text-sm text-muted-foreground">Setlist liee</p>
+                  <p className="text-sm text-muted-foreground">Setlist liée</p>
                 </div>
               </div>
             )}
 
             {/* Recurrence */}
             {rehearsal.recurrence !== "none" && (
-              <div className="flex items-center gap-3 p-4">
-                <Icon name="repeat" className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-3 py-3">
+                <Icon name="repeat" className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium">{RECURRENCE_LABELS[rehearsal.recurrence]}</p>
                   {rehearsal.recurrence_end_date && (
@@ -268,31 +269,31 @@ export function RehearsalDetailView({
 
             {/* Description */}
             {rehearsal.description && (
-              <div className="p-4">
-                <p className="text-sm text-muted-foreground">{rehearsal.description}</p>
+              <div className="py-3">
+                <p className="font-serif text-[15px] italic text-muted-foreground">{rehearsal.description}</p>
               </div>
             )}
           </div>
 
           {/* Participants */}
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-semibold">
-                Participants ({rehearsal.participants.length})
+          <div>
+            <div className="mb-1 flex items-center justify-between border-b border-border pb-1.5">
+              <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                Participants · {rehearsal.participants.length}
               </h3>
               <div className="flex gap-2 text-xs">
                 <span className="text-success">{acceptedCount} oui</span>
-                <span className="text-primary">{maybeCount} peut-etre</span>
+                <span className="text-muted-foreground">{maybeCount} peut-être</span>
                 <span className="text-destructive">{declinedCount} non</span>
               </div>
             </div>
-            <div className="space-y-2">
+            <div>
               {rehearsal.participants.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center gap-3 rounded-lg bg-accent/50 p-2"
+                  className="flex items-center gap-3 border-b border-border py-2"
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-medium text-primary overflow-hidden">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary font-display text-sm font-extrabold text-muted-foreground">
                     {p.profile.avatar_url ? (
                       <img
                         src={p.profile.avatar_url}
@@ -307,7 +308,7 @@ export function RehearsalDetailView({
                     {p.profile.display_name || p.profile.username}
                   </span>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase ${
                       RSVP_COLORS[p.status]
                     }`}
                   >
@@ -319,13 +320,13 @@ export function RehearsalDetailView({
           </div>
 
           {/* Notes (post-rehearsal) */}
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-semibold">Notes</h3>
+          <div>
+            <div className="mb-2 flex items-center justify-between border-b border-border pb-1.5">
+              <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Notes</h3>
               {!editingNotes && (
                 <button
                   onClick={() => setEditingNotes(true)}
-                  className="text-sm text-primary hover:underline"
+                  className="text-xs font-semibold text-foreground hover:underline"
                 >
                   Modifier
                 </button>
@@ -336,7 +337,7 @@ export function RehearsalDetailView({
                 <textarea
                   value={notesText}
                   onChange={(e) => setNotesText(e.target.value)}
-                  placeholder="Notes sur cette repet (morceaux bosses, points a revoir...)"
+                  placeholder="Notes sur cette répète (morceaux bossés, points à revoir…)"
                   rows={4}
                   className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
@@ -356,7 +357,7 @@ export function RehearsalDetailView({
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className={rehearsal.notes ? "font-serif text-[15px] italic leading-relaxed" : "text-sm text-muted-foreground"}>
                 {rehearsal.notes || "Aucune note pour l'instant"}
               </p>
             )}
@@ -368,17 +369,17 @@ export function RehearsalDetailView({
               {isPast && (
                 <button
                   onClick={handleComplete}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-sm font-medium text-success-foreground hover:opacity-90"
+                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-foreground px-3.5 text-sm font-semibold text-background hover:opacity-90"
                 >
                   <Icon name="check" className="h-[16px] w-[16px]" />
-                  Marquer comme terminee
+                  Marquer comme terminée
                 </button>
               )}
               <button
                 onClick={handleCancel}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10"
               >
-                Annuler la repet
+                Annuler la répète
               </button>
               {(isCreator || rehearsal.band.owner_id === currentUserId) && (
                 confirmDelete ? (

@@ -118,7 +118,7 @@ export function JamSongQueue({
                     </span>
                   )}
                   {item.played_sections && item.played_sections.length > 0 && (
-                    <span className="shrink-0 rounded-full bg-primary/20 px-1.5 py-0.5 text-[11px] font-medium text-primary">
+                    <span className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
                       {item.played_sections.length} sect.
                     </span>
                   )}

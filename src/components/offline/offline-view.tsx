@@ -83,7 +83,7 @@ export function OfflineView() {
           <Icon name="cloud_off" className="h-[20px] w-[20px]" />
           Hors ligne
         </p>
-        <h1 className="mt-1 text-2xl font-extrabold">Ostinara</h1>
+        <h1 className="mt-1 font-display text-5xl font-extrabold uppercase leading-none">Ostinara</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {snapshot
             ? `Copie du ${new Date(snapshot.generatedAt).toLocaleString("fr-FR", {
@@ -97,8 +97,8 @@ export function OfflineView() {
       </header>
 
       {queue.length > 0 && (
-        <p className="mb-5 flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm">
-          <Icon name="cloud_upload" className="h-[18px] w-[18px] text-primary" />
+        <p className="mb-5 flex items-center gap-2 border-y border-border py-2.5 text-sm">
+          <Icon name="cloud_upload" className="h-[18px] w-[18px] text-muted-foreground" />
           <span className="tabular">
             {pending.length} session{pending.length > 1 ? "s" : ""} en attente —
             elles partiront au retour du réseau.
@@ -109,7 +109,7 @@ export function OfflineView() {
       {!loaded ? (
         <div className="h-40 animate-pulse rounded-2xl bg-muted" />
       ) : !snapshot ? (
-        <div className="rounded-2xl border border-dashed border-border p-6 text-center">
+        <div className="p-6 text-center">
           <p className="font-semibold">Rien en cache</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Ouvre l&apos;app une fois connecté : ta bibliothèque et ton journal
@@ -119,22 +119,22 @@ export function OfflineView() {
       ) : (
         <>
           {/* Le resume : ce que le journal dit, meme sans serveur. */}
-          <dl className="mb-6 grid grid-cols-3 gap-3">
-            <div className="rounded-xl border border-border bg-card p-3">
-              <dt className="text-xs text-muted-foreground">Série</dt>
-              <dd className="tabular text-xl font-bold">
+          <dl className="mb-6 grid grid-cols-3 gap-3 border-y border-border py-3">
+            <div className="flex flex-col-reverse gap-1">
+              <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Série</dt>
+              <dd className="tabular font-display text-[28px] font-bold leading-none">
                 {snapshot.stats.currentStreak} j
               </dd>
             </div>
-            <div className="rounded-xl border border-border bg-card p-3">
-              <dt className="text-xs text-muted-foreground">Cette semaine</dt>
-              <dd className="tabular text-xl font-bold">
+            <div className="flex flex-col-reverse gap-1">
+              <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Cette semaine</dt>
+              <dd className="tabular font-display text-[28px] font-bold leading-none">
                 {formatMinutes(snapshot.stats.minutesThisWeek)}
               </dd>
             </div>
-            <div className="rounded-xl border border-border bg-card p-3">
-              <dt className="text-xs text-muted-foreground">Morceaux</dt>
-              <dd className="tabular text-xl font-bold">
+            <div className="flex flex-col-reverse gap-1">
+              <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Morceaux</dt>
+              <dd className="tabular font-display text-[28px] font-bold leading-none">
                 {snapshot.songs.length}
               </dd>
             </div>
@@ -181,7 +181,7 @@ export function OfflineView() {
               {snapshot.sessions.slice(0, 50).map((session) => (
                 <li
                   key={session.id}
-                  className="flex items-baseline justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2.5"
+                  className="flex items-baseline justify-between gap-3 border-b border-border py-2.5"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">
@@ -239,7 +239,7 @@ function OfflineSongList({ title, songs, bestBpm }: OfflineSongListProps) {
           return (
             <li
               key={song.id}
-              className="flex items-center gap-3 rounded-xl border border-border bg-card p-3"
+              className="flex items-center gap-3 border-b border-border py-2.5"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{song.title}</p>

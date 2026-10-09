@@ -103,7 +103,7 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
-      className={`flex flex-col items-center justify-center rounded-2xl border border-dashed border-border px-6 text-center ${
+      className={`flex flex-col items-center justify-center px-6 text-center ${
         compact ? "py-10" : "py-14"
       } ${className}`}
     >

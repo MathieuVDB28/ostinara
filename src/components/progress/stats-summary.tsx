@@ -75,30 +75,3 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
     </dl>
   );
 }
-
-export function StatsSummaryCompact({ stats }: StatsSummaryProps) {
-  return (
-    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-      <span className="flex items-center gap-1">
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5" />
-        </svg>
-        {stats.totalSessions} sessions
-      </span>
-      <span className="flex items-center gap-1">
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        {formatDuration(stats.totalMinutes)}
-      </span>
-      {stats.currentStreak > 0 && (
-        <span className="flex items-center gap-1 text-primary">
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
-          </svg>
-          {stats.currentStreak} jours
-        </span>
-      )}
-    </div>
-  );
-}

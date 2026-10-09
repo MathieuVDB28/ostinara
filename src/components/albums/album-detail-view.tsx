@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,6 +7,7 @@ import { StarRating } from "@/components/ui/star-rating";
 import { updateAlbumReview, deleteAlbumReview } from "@/lib/actions/albums";
 import type { SpotifyAlbumDetails, AlbumReview, AlbumCommunityStats } from "@/types";
 import { Icon } from "@/components/ui/icon";
+import { Cover } from "@/components/ui/cover";
 
 interface Props {
   album: SpotifyAlbumDetails;
@@ -78,43 +78,30 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6">
-      {/* Back */}
+    <div className="mx-auto max-w-2xl">
+      {/* Retour */}
       <button
         onClick={() => router.back()}
-        className="mb-6 flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        className="-ml-1 mb-4 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
       >
-        <Icon name="arrow_back" className="h-[18px] w-[18px]" />
+        <Icon name="chevron_left" className="h-4 w-4" strokeWidth={2.25} />
         Retour
       </button>
 
       {/* Album header */}
-      <div className="flex gap-5 sm:gap-7">
-        <div className="shrink-0">
-          {album.images[0] ? (
-            <Image
-              src={album.images[0].url}
-              alt={album.name}
-              className="h-36 w-36 rounded-xl object-cover shadow-lg sm:h-44 sm:w-44"
-              width={144}
-              height={144}
-            />
-          ) : (
-            <div className="flex h-36 w-36 items-center justify-center rounded-xl bg-muted sm:h-44 sm:w-44">
-              <Icon name="album" className="h-12 w-12 text-muted-foreground" />
-            </div>
-          )}
-        </div>
+      {/* En-tete, style Etagere : la pochette avec son lisere, le titre en gras serre */}
+      <div className="flex items-end gap-5 sm:gap-7">
+        <Cover src={album.images[0]?.url} alt={album.name} className="h-36 w-36 rounded-md sm:h-44 sm:w-44" priority />
 
         <div className="min-w-0 flex-1">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="mb-1 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             {album.album_type === "single" ? "Single" : "Album"}
           </p>
-          <h1 className="text-2xl font-bold leading-tight sm:text-3xl">{album.name}</h1>
+          <h1 className="text-balance text-[26px] font-extrabold leading-tight tracking-[-0.02em] sm:text-4xl">{album.name}</h1>
 
           <Link
             href={`/artists/${mainArtist.id}`}
-            className="mt-1 block text-base font-medium text-primary transition-colors hover:text-primary/80"
+            className="mt-1 block text-base font-semibold text-foreground underline-offset-2 hover:underline"
           >
             {mainArtist.name}
           </Link>
@@ -142,11 +129,11 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
 
       {/* Community rating */}
       {stats && stats.review_count > 0 && (
-        <div className="mt-6 flex items-center gap-4 rounded-2xl border border-border bg-card p-5">
-          <div className="flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-primary">{avgStars!.toFixed(1)}</span>
-            <span className="text-xs text-muted-foreground">/ 5</span>
-          </div>
+        <div className="mt-6 flex items-center gap-4 border-y border-border py-4">
+          <p className="tabular font-display text-5xl font-extrabold leading-none">
+            {avgStars!.toFixed(1).replace(".", ",")}
+            <span className="text-lg text-muted-foreground">/5</span>
+          </p>
           <div className="flex flex-col gap-1">
             <StarRating value={avgStars!} size="md" />
             <p className="text-sm text-muted-foreground">
@@ -162,9 +149,9 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
           href={album.external_urls.spotify}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 flex items-center gap-2 rounded-xl bg-[#1DB954]/10 px-4 py-3 text-sm font-medium text-[#1DB954] transition-colors hover:bg-[#1DB954]/20"
+          className="mt-4 inline-flex min-h-[40px] items-center gap-2 rounded-full border border-border px-4 text-sm font-semibold transition-colors hover:bg-accent"
         >
-          <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="h-5 w-5 shrink-0 text-[#1DB954]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
           </svg>
           Écouter sur Spotify
@@ -173,17 +160,17 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
 
       {/* User review section */}
       <div className="mt-6">
-        <h2 className="mb-3 text-base font-semibold">Ma review</h2>
+        <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Ma review</h2>
 
         {userReview ? (
-          <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="py-3">
             {isEditing ? (
               <>
                 <div className="mb-5">
                   <div className="mb-2.5 flex items-center justify-between">
                     <label className="text-sm font-medium">Ta note</label>
-                    <span className="text-sm font-semibold text-primary">
-                      {editRating > 0 ? `${editRating} / 5` : "—"}
+                    <span className="tabular font-display text-lg font-bold">
+                      {editRating > 0 ? `${String(editRating).replace(".", ",")} / 5` : "—"}
                     </span>
                   </div>
                   <StarRating value={editRating} onChange={setEditRating} size="lg" />
@@ -230,8 +217,8 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <StarRating value={starsFromDb(userReview.rating)} size="sm" />
-                    <span className="font-semibold text-primary">
-                      {starsFromDb(userReview.rating)} / 5
+                    <span className="tabular font-display text-xl font-bold">
+                      {String(starsFromDb(userReview.rating)).replace(".", ",")} / 5
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -254,7 +241,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
                 </div>
 
                 {userReview.review ? (
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{userReview.review}</p>
+                  <p className="whitespace-pre-wrap font-serif text-[15px] italic leading-relaxed">{userReview.review}</p>
                 ) : (
                   <p className="text-sm italic text-muted-foreground">Aucune impression ajoutée</p>
                 )}
@@ -262,12 +249,11 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
             )}
           </div>
         ) : (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-border py-10 text-center">
-            <Icon name="rate_review" className="h-9 w-9 mb-2 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">Tu n&apos;as pas encore reviewé cet album</p>
+          <div className="flex flex-col items-start gap-3 py-5">
+            <p className="text-sm text-muted-foreground">Tu n&apos;as pas encore noté cet album.</p>
             <Link
               href="/biblio/albums"
-              className="mt-4 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex min-h-[40px] items-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
             >
               Ajouter une review
             </Link>

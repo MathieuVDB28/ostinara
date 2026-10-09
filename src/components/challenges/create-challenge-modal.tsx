@@ -129,7 +129,7 @@ export function CreateChallengeModal({
           </svg>
         </button>
 
-        <h2 className="mb-6 text-xl font-bold">Nouveau défi</h2>
+        <h2 className="mb-6 font-display text-3xl font-extrabold uppercase leading-none">Nouveau défi</h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Sélection de l'ami */}

@@ -108,10 +108,10 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold">Ajouter un ami</h2>
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Ajouter un ami</h2>
           <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
@@ -169,7 +169,7 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
                 className="flex items-center gap-3 rounded-lg p-3 hover:bg-accent"
               >
                 {/* Avatar */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary font-semibold text-muted-foreground">
                   {user.avatar_url ? (
                     <Image
                       src={user.avatar_url}

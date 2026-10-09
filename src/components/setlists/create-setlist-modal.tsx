@@ -99,10 +99,10 @@ export function CreateSetlistModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold">Nouvelle setlist</h2>
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Nouvelle setlist</h2>
           <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"

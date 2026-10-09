@@ -142,7 +142,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
       <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-4">
-          <h2 className="text-lg font-semibold">Créer un exercice</h2>
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Créer un exercice</h2>
           <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-1 transition-colors hover:bg-accent"
@@ -287,7 +287,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
               <div className="space-y-2">
                 {instructions.map((instruction, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-medium text-primary">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium text-muted-foreground">
                       {index + 1}
                     </span>
                     <input

@@ -201,11 +201,11 @@ export function EditItemModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold">
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
               {isSong ? "Modifier le morceau" : "Modifier la section"}
             </h2>
             {isSong && (

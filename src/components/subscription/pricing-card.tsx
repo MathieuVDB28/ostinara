@@ -1,7 +1,8 @@
 "use client";
 
+import { Check, LoaderCircle } from "lucide-react";
 import { UserPlan } from "@/types";
-import { PLANS, BillingInterval, formatPrice } from "@/lib/stripe/config";
+import { PLANS, BillingInterval } from "@/lib/stripe/config";
 
 interface PricingCardProps {
   plan: UserPlan;
@@ -52,104 +53,76 @@ export function PricingCard({
     }
   }
 
+  /*
+   * Une colonne de tarif, style Atelier (docs/refonte-ui.md) : le nom en
+   * condense, le prix en grand, les fonctions en lignes. Pro se distingue
+   * par un trait d'encre en tete et le seul bouton ambre de la page.
+   */
   return (
     <div
-      className={`relative flex flex-col rounded-2xl border p-6 transition-all ${
-        isPro
-          ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
-          : "border-border bg-card"
-      } ${isCurrentPlan ? "ring-2 ring-primary" : ""}`}
+      className={`relative flex flex-col border-t-2 pt-5 ${
+        isPro ? "border-foreground" : "border-border"
+      }`}
     >
-      {/* Badge populaire */}
-      {isPro && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-            Populaire
+      <div className="mb-4 flex items-baseline justify-between gap-2">
+        <h3 className="font-display text-3xl font-extrabold uppercase leading-none">{config.name}</h3>
+        {isCurrentPlan ? (
+          <span className="rounded border border-foreground px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
+            Ton plan
           </span>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="mb-4">
-        <h3 className="text-xl font-bold">{config.name}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{config.description}</p>
-      </div>
-
-      {/* Prix */}
-      <div className="mb-6">
-        {isFree ? (
-          <div className="flex items-baseline">
-            <span className="text-4xl font-bold">Gratuit</span>
-          </div>
         ) : (
-          <div className="flex items-baseline">
-            <span className="text-4xl font-bold">{price}€</span>
-            <span className="ml-1 text-muted-foreground">
+          isPro && (
+            <span className="rounded bg-foreground px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-background">
+              Populaire
+            </span>
+          )
+        )}
+      </div>
+      <p className="text-sm text-muted-foreground">{config.description}</p>
+
+      <div className="mb-5 mt-5">
+        {isFree ? (
+          <span className="font-display text-6xl font-extrabold leading-none">0€</span>
+        ) : (
+          <p className="tabular flex items-baseline">
+            <span className="font-display text-6xl font-extrabold leading-none">{price}€</span>
+            <span className="ml-1 text-sm font-semibold text-muted-foreground">
               /{interval === "monthly" ? "mois" : "an"}
             </span>
-          </div>
+          </p>
         )}
         {monthlyEquivalent && (
-          <p className="mt-1 text-sm text-muted-foreground">
-            soit {monthlyEquivalent.toFixed(2)}€/mois
+          <p className="tabular mt-1 text-sm text-muted-foreground">
+            soit {monthlyEquivalent.toFixed(2).replace(".", ",")}€/mois
           </p>
         )}
       </div>
 
-      {/* Features */}
-      <ul className="mb-6 flex-1 space-y-3">
+      <ul className="mb-6 flex-1 border-t border-border">
         {config.features.map((feature, index) => (
-          <li key={index} className="flex items-start gap-2 text-sm">
-            <svg
-              className="mt-0.5 h-4 w-4 shrink-0 text-success"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            <span className="text-muted-foreground">{feature}</span>
+          <li key={index} className="flex items-start gap-2 border-b border-border py-2.5 text-sm">
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" strokeWidth={2.25} aria-hidden="true" />
+            <span>{feature}</span>
           </li>
         ))}
       </ul>
 
-      {/* CTA Button */}
       <button
         type="button"
         onClick={() => onSelect(plan)}
         disabled={isCurrentPlan || loading || disabled}
-        className={`w-full rounded-lg px-4 py-3 text-sm font-semibold transition-all ${
+        className={`min-h-[46px] w-full rounded-xl px-4 text-sm font-bold transition-opacity ${
           isCurrentPlan
-            ? "cursor-default bg-muted text-muted-foreground"
+            ? "cursor-default border border-border text-muted-foreground"
             : isPro
-            ? "bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            : "bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50"
+              ? "bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              : "border border-border hover:bg-accent disabled:opacity-50"
         }`}
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">
-            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-                fill="none"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-            Chargement...
+            <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2} aria-hidden="true" />
+            Chargement…
           </span>
         ) : (
           buttonText

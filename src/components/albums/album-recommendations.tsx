@@ -89,8 +89,8 @@ export function AlbumRecommendations({
 
   if (!isPaid) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-muted-foreground">
           <Icon name="stars" className="h-8 w-8" />
         </div>
         <h3 className="mb-2 text-lg font-semibold">Fonctionnalité Pro</h3>
@@ -106,8 +106,8 @@ export function AlbumRecommendations({
 
   if (!hasReviews) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-muted-foreground">
           <Icon name="recommend" className="h-8 w-8" />
         </div>
         <h3 className="mb-2 text-lg font-semibold">Pas encore de recommandations</h3>
@@ -131,8 +131,8 @@ export function AlbumRecommendations({
 
   if (loaded && (recommendations.length === 0 || error)) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-muted-foreground">
           <Icon name="recommend" className="h-8 w-8" />
         </div>
         <h3 className="mb-2 text-lg font-semibold">
@@ -238,7 +238,7 @@ export function AlbumRecommendations({
             className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             onClick={() => setSelectedAlbum(null)}
           />
-          <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-t-2xl border border-border bg-card shadow-xl sm:rounded-2xl">
+          <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-t-2xl border border-border bg-card shadow-md sm:rounded-2xl">
             {/* Drag handle (mobile) */}
             <div className="flex justify-center pt-3 sm:hidden">
               <div className="h-1 w-10 rounded-full bg-border" />
@@ -286,7 +286,7 @@ export function AlbumRecommendations({
                 disabled={wishlistStatus[selectedAlbum.id] === "loading"}
                 className="flex w-full items-center gap-3 rounded-xl border border-border bg-accent/50 px-4 py-3.5 text-left font-medium transition-colors hover:bg-accent disabled:opacity-60"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                   {wishlistStatus[selectedAlbum.id] === "loading" ? (
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   ) : (
@@ -303,7 +303,7 @@ export function AlbumRecommendations({
                 onClick={() => handleOpenReviewModal(selectedAlbum)}
                 className="flex w-full items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3.5 text-left font-medium transition-colors hover:bg-primary/20"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                   <Icon name="star" className="h-[20px] w-[20px]" />
                 </div>
                 <div>

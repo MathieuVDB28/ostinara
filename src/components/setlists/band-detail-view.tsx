@@ -31,6 +31,11 @@ interface BandDetailViewProps {
  * Le detail d'un groupe : tout ce que le groupe possede, sur une pile
  * plutot que derriere une quatrieme barre d'onglets.
  */
+const CHIP =
+  "inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent";
+const SECTION_TITLE =
+  "font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground";
+
 export function BandDetailView({
   band,
   setlists,
@@ -53,119 +58,109 @@ export function BandDetailView({
       rehearsal.status === "scheduled" && new Date(rehearsal.date) >= new Date()
   );
 
+  const initials = band.name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("");
+
+  /*
+   * Le groupe, style Fanzine (docs/refonte-ui.md) : le nom en capitales
+   * condensees comme sur une affiche, les actions en puces, les sections
+   * et les membres en lignes a filets. Le jam en cours reste en tete : c'est
+   * la seule chose urgente de l'ecran, et le seul bouton ambre.
+   */
   return (
-    <div className="space-y-8">
-      {/* Retour + identite du groupe */}
+    <div className="max-w-3xl space-y-8">
       <div>
         <Link
           href="/commu/groupes"
-          className="mb-4 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="-ml-1 mb-3 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
-          <Icon name="chevron_left" className="h-[20px] w-[20px]" />
+          <Icon name="chevron_left" className="h-4 w-4" strokeWidth={2.25} />
           Groupes
         </Link>
 
-        <div className="flex items-start gap-4">
+        <div className="flex items-end gap-4">
           {band.cover_url ? (
             <Image
               src={band.cover_url}
               alt=""
-              className="h-16 w-16 shrink-0 rounded-2xl object-cover"
-              width={64}
-              height={64}
+              className="h-[72px] w-[72px] shrink-0 rounded-[4px] object-cover"
+              width={72}
+              height={72}
             />
           ) : (
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
-              <Icon name="groups" className="h-6 w-6 text-primary" />
-            </div>
+            <span
+              aria-hidden="true"
+              className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[4px] bg-secondary font-display text-3xl font-extrabold uppercase"
+            >
+              {initials}
+            </span>
           )}
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-2xl font-extrabold">{band.name}</h1>
-            {band.description && (
-              <p className="mt-1 text-sm text-muted-foreground">
-                {band.description}
-              </p>
-            )}
-          </div>
+          <h1 className="min-w-0 flex-1 text-balance font-display text-[44px] font-extrabold uppercase leading-[0.88]">
+            {band.name}
+          </h1>
+        </div>
+        {band.description && (
+          <p className="mt-2 font-serif text-[15px] italic text-muted-foreground">{band.description}</p>
+        )}
+
+        <div className="-mx-4 mt-4 flex gap-1.5 overflow-x-auto px-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
+          <button onClick={() => setShowJam(true)} className={CHIP}>
+            <Icon name="music_note" className="h-4 w-4" />
+            Lancer un jam
+          </button>
+          <button onClick={() => setShowCreateRehearsal(true)} className={CHIP}>
+            <Icon name="event" className="h-4 w-4" />
+            Planifier une répète
+          </button>
+          <Link href={`/setlists/tech-rider/${band.id}`} className={CHIP}>
+            <Icon name="description" className="h-4 w-4" />
+            Fiche technique
+          </Link>
+          {isOwner && (
+            <button onClick={() => setShowInvite(true)} className={CHIP}>
+              <Icon name="person_add" className="h-4 w-4" />
+              Inviter
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Jam en cours : une session active est l'information la plus urgente */}
       {activeJam && (
-        <Link
-          href={`/jam/${activeJam.id}`}
-          className="flex items-center gap-3 rounded-2xl border border-primary/40 bg-primary/10 p-4 transition-colors hover:bg-primary/15"
-        >
-          <span className="flex h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-primary" />
+        <div className="flex items-center gap-3 border-y border-border py-3">
+          <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-destructive" />
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-primary">Jam en cours</p>
-            <p className="truncate text-sm text-muted-foreground">
-              Rejoins la session du groupe
-            </p>
+            <p className="font-display text-xl font-extrabold uppercase leading-none">Jam en cours</p>
+            <p className="truncate text-xs text-muted-foreground">Rejoins la session du groupe</p>
           </div>
-          <Icon name="chevron_right" className="h-6 w-6 text-primary" />
-        </Link>
+          <Link
+            href={`/jam/${activeJam.id}`}
+            className="inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Rejoindre
+            <Icon name="chevron_right" className="h-4 w-4" strokeWidth={2.25} />
+          </Link>
+        </div>
       )}
 
-      {/* Actions du groupe */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <button
-          onClick={() => setShowJam(true)}
-          className="flex min-h-[44px] flex-col items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-3 text-sm font-medium transition-colors hover:bg-accent"
-        >
-          <Icon name="music_note" className="h-6 w-6 text-primary" />
-          Lancer un jam
-        </button>
-
-        <button
-          onClick={() => setShowCreateRehearsal(true)}
-          className="flex min-h-[44px] flex-col items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-3 text-sm font-medium transition-colors hover:bg-accent"
-        >
-          <Icon name="event" className="h-6 w-6 text-primary" />
-          Planifier une répète
-        </button>
-
-        <Link
-          href={`/setlists/tech-rider/${band.id}`}
-          className="flex min-h-[44px] flex-col items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-3 text-center text-sm font-medium transition-colors hover:bg-accent"
-        >
-          <Icon name="description" className="h-6 w-6 text-primary" />
-          Fiche technique
-        </Link>
-
-        {isOwner && (
-          <button
-            onClick={() => setShowInvite(true)}
-            className="flex min-h-[44px] flex-col items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-3 text-sm font-medium transition-colors hover:bg-accent"
-          >
-            <Icon name="person_add" className="h-6 w-6 text-primary" />
-            Inviter
-          </button>
-        )}
-      </div>
-
-      {/* Setlists du groupe */}
       <section>
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-bold">
-            Setlists
-            {setlists.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                {setlists.length}
-              </span>
-            )}
+        <div className="flex items-baseline justify-between gap-3 border-b border-border pb-2">
+          <h2 className={SECTION_TITLE}>
+            Setlists{setlists.length > 0 && <span className="tabular"> · {setlists.length}</span>}
           </h2>
           <button
             onClick={() => setShowCreateSetlist(true)}
-            className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
           >
-            <Icon name="add" className="h-[18px] w-[18px]" />
+            <Icon name="add" className="h-3.5 w-3.5" strokeWidth={2} />
             Setlist
           </button>
         </div>
 
         {setlists.length > 0 ? (
-          <div className="max-w-2xl">
+          <div>
             {setlists.map((setlist) => (
               <SetlistCard
                 key={setlist.id}
@@ -175,37 +170,34 @@ export function BandDetailView({
             ))}
           </div>
         ) : (
-          <p className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Aucune setlist pour ce groupe.
-          </p>
+          <p className="py-6 text-sm text-muted-foreground">Aucune setlist pour ce groupe.</p>
         )}
       </section>
 
-      {/* Repetitions */}
       <section>
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-bold">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-2">
+          <h2 className={SECTION_TITLE}>
             Répètes à venir
-            {upcomingRehearsals.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                {upcomingRehearsals.length}
-              </span>
-            )}
+            {upcomingRehearsals.length > 0 && <span className="tabular"> · {upcomingRehearsals.length}</span>}
           </h2>
 
-          <div role="group" aria-label="Affichage des répètes" className="flex gap-1 rounded-lg bg-accent/60 p-1">
+          <div
+            role="group"
+            aria-label="Affichage des répètes"
+            className="grid grid-cols-2 gap-0.5 rounded-xl border border-border bg-card p-[3px]"
+          >
             {(["list", "calendar"] as const).map((view) => (
               <button
                 key={view}
                 onClick={() => setRehearsalView(view)}
                 aria-pressed={rehearsalView === view}
-                className={`flex min-h-[36px] items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`flex min-h-[32px] items-center justify-center gap-1.5 rounded-[9px] px-3 text-xs font-semibold transition-colors ${
                   rehearsalView === view
-                    ? "bg-card text-foreground shadow-sm"
+                    ? "bg-secondary text-foreground shadow-[inset_0_0_0_1px_var(--border)]"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon name={view === "list" ? "list" : "calendar_month"} className="h-4 w-4" />
+                <Icon name={view === "list" ? "list" : "calendar_month"} className="h-3.5 w-3.5" />
                 {view === "list" ? "Liste" : "Calendrier"}
               </button>
             ))}
@@ -213,15 +205,15 @@ export function BandDetailView({
         </div>
 
         {rehearsalView === "calendar" ? (
-          <RehearsalCalendar
-            rehearsals={rehearsals}
-            currentUserId={currentUserId}
-            onRehearsalClick={(rehearsal) =>
-              router.push(`/setlists/rehearsals/${rehearsal.id}`)
-            }
-          />
+          <div className="pt-3">
+            <RehearsalCalendar
+              rehearsals={rehearsals}
+              currentUserId={currentUserId}
+              onRehearsalClick={(rehearsal) => router.push(`/setlists/rehearsals/${rehearsal.id}`)}
+            />
+          </div>
         ) : upcomingRehearsals.length > 0 ? (
-          <div className="space-y-3">
+          <div>
             {upcomingRehearsals.map((rehearsal) => (
               <RehearsalCard
                 key={rehearsal.id}
@@ -232,48 +224,41 @@ export function BandDetailView({
             ))}
           </div>
         ) : (
-          <p className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Aucune répète planifiée.
-          </p>
+          <p className="py-6 text-sm text-muted-foreground">Aucune répète planifiée.</p>
         )}
       </section>
 
-      {/* Membres */}
       <section>
-        <h2 className="mb-3 text-lg font-bold">
-          Membres
-          <span className="ml-2 text-sm font-normal text-muted-foreground">
-            {band.members.length}
-          </span>
+        <h2 className={`border-b border-border pb-2 ${SECTION_TITLE}`}>
+          Membres <span className="tabular">· {band.members.length}</span>
         </h2>
-        <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+        <ul>
           {band.members.map((member) => (
-            <li key={member.id} className="flex items-center gap-3 px-4 py-3">
+            <li key={member.id} className="flex items-center gap-3 border-b border-border py-3">
               {member.profile?.avatar_url ? (
                 <Image
                   src={member.profile.avatar_url}
                   alt=""
-                  className="h-9 w-9 shrink-0 rounded-full object-cover"
-                  width={36}
-                  height={36}
+                  className="h-10 w-10 shrink-0 rounded-full object-cover"
+                  width={40}
+                  height={40}
                 />
               ) : (
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-                  {(member.profile?.display_name ||
-                    member.profile?.username ||
-                    "?")[0]?.toUpperCase()}
-                </div>
+                <span
+                  aria-hidden="true"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary font-display text-base font-extrabold text-muted-foreground"
+                >
+                  {(member.profile?.display_name || member.profile?.username || "?")[0]?.toUpperCase()}
+                </span>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">
+                <p className="truncate font-display text-lg font-extrabold uppercase leading-tight">
                   {member.profile?.display_name || member.profile?.username}
                 </p>
-                <p className="truncate text-xs capitalize text-muted-foreground">
-                  {member.role}
-                </p>
+                <p className="truncate text-xs capitalize text-muted-foreground">{member.role}</p>
               </div>
               {member.user_id === band.owner_id && (
-                <span className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                <span className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
                   Admin
                 </span>
               )}

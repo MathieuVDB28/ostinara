@@ -277,10 +277,7 @@ Fait :
   `scripts/extract-icons.mjs` et `npm run icons` retirés.
 - `EmptyState` perd sa pastille arrondie ; `StarRating` passe sur Lucide.
 
-Pas repris en profondeur (icônes converties, mise en page d'origine) :
-pages setlist, répètes, fiche technique, jam, pricing, auth, landing,
-détail album / artiste, modales d'ajout. Les animations décoratives de
-`globals.css` servent encore à la landing.
+Les pages annexes sont reprises en phase 6, ci-dessous.
 
 À savoir : la recherche d'artiste (`/artists/by-name`) renvoie
 « introuvable » en dev parce que Spotify répond 401 — jeton à renouveler,
@@ -299,6 +296,33 @@ Plan initial :
 - Supprimer les animations décoratives inutilisées de `globals.css`.
 
 ---
+
+### Phase 6 — Pages annexes ✅ (faite le 2026-10-09)
+
+- Page d'accueil publique réécrite (titres condensés, fragment de tempo en
+  frettes, sections à filets). **Retirés** : halos flottants, cartes
+  « verre », chiffres « 1K+ guitaristes / 99 % satisfaction » et le
+  témoignage « Lucas M. », qui n'étaient adossés à aucune donnée ; liens
+  morts `#pricing` et `#faq`.
+- Connexion, inscription, pages légales : halos retirés, titres condensés,
+  numéros d'articles sans pastille.
+- Tarifs et abonnement : colonnes à filets, Pro en tête d'encre, sélecteur
+  mensuel/annuel en segmenté, textes au tutoiement.
+- Groupe (Fanzine), setlist, répètes, fiche technique, jam (Atelier) :
+  noms en condensé, chiffres en ligne, actions en puces, un seul bouton
+  ambre. Les cartes à barre latérale ambrée (setlist, répète) ont disparu.
+- Détail album et page artiste (Étagère) ; contraste corrigé sur le nom
+  d'artiste (blanc sur dégradé crème en thème clair).
+- Profil public d'un ami : chiffres sans pastilles, nom en condensé.
+- Passes globales : plus aucune ombre `lg/xl/2xl`, plus de halo violet
+  `rgba(55,19,236)` (ancienne couleur orpheline), pastilles d'icônes en cases
+  neutres, états vides sans carte pointillée, titres de modales en condensé.
+- Accents manquants corrigés (répètes, Matos, fiche technique, jam).
+- Code mort supprimé : `PracticeTimer`, `FriendProfileModal`,
+  `StatsSummaryCompact`.
+
+Vérifications : `npm run build` passe ; lint complet 69 → 61 erreurs (toutes
+préexistantes), 88 → 67 avertissements.
 
 ## 4. Repères techniques
 

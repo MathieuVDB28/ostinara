@@ -188,7 +188,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
       />
 
       {/* Modal */}
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+      <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md">
         {/* Close button */}
         <button aria-label="Fermer"
           onClick={handleClose}
@@ -203,19 +203,17 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-24">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <Icon name="progress_activity" className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : profile ? (
             <>
               {/* ===== PROFILE HEADER ===== */}
               <div className="relative overflow-hidden border-b border-border px-6 pb-6 pt-8">
-                {/* Decorative gradient */}
-                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
 
                 <div className="flex items-start gap-5">
                   {/* Avatar */}
                   <div className="relative flex-shrink-0">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl font-bold text-primary ring-2 ring-primary/20 ring-offset-2 ring-offset-card">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-secondary font-display text-4xl font-extrabold text-muted-foreground">
                       {profile.profile.avatar_url ? (
                         <Image
                           src={profile.profile.avatar_url}
@@ -230,7 +228,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                       )}
                     </div>
                     {profile.profile.plan !== "free" && (
-                      <div className="absolute -bottom-1 -right-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground shadow-sm">
+                      <div className="absolute -bottom-1 -right-1 rounded bg-primary px-1.5 py-0.5 font-display text-[11px] font-bold tracking-[0.08em] text-primary-foreground">
                         {profile.profile.plan.toUpperCase()}
                       </div>
                     )}
@@ -239,7 +237,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                   {/* Info */}
                   <div className="min-w-0 flex-1 pt-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="truncate text-2xl font-extrabold">
+                      <h3 className="truncate font-display text-[34px] font-extrabold uppercase leading-[0.95]">
                         {profile.profile.display_name || profile.profile.username}
                       </h3>
                       {profile.profile.is_private && !canViewPrivateContent && (
@@ -250,7 +248,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
 
                     {/* Bio */}
                     {profile.profile.bio && canViewPrivateContent && (
-                      <p className="mt-2 text-sm text-foreground/80">{profile.profile.bio}</p>
+                      <p className="mt-2 font-serif text-[15px] italic leading-relaxed text-foreground/80">{profile.profile.bio}</p>
                     )}
 
                     {/* Social links */}
@@ -277,15 +275,15 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
               {/* ===== PRIVATE ACCOUNT ===== */}
               {profile.profile.is_private && !canViewPrivateContent ? (
                 <div className="p-6">
-                  <div className="rounded-2xl border-2 border-dashed border-border bg-muted/30 p-8 text-center">
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                      <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="py-8 text-center">
+                    <div className="mx-auto mb-3 flex items-center justify-center text-muted-foreground">
+                      <svg className="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
-                    <h4 className="mb-2 text-lg font-semibold">Ce compte est privé</h4>
+                    <h4 className="mb-2 font-display text-3xl font-extrabold uppercase leading-none">Compte privé</h4>
                     <p className="mb-4 text-sm text-muted-foreground">
-                      Devenez ami pour voir le contenu de ce profil
+                      Deviens ami·e pour voir le contenu de ce profil.
                     </p>
                     {profile.friendship_status === "none" && (
                       <button className="rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90">
@@ -429,7 +427,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                           onClick={() => setActiveTab(tab.key)}
                           className={`flex items-center gap-1.5 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                             activeTab === tab.key
-                              ? "border-primary text-primary"
+                              ? "border-foreground text-foreground"
                               : "border-transparent text-muted-foreground hover:text-foreground"
                           }`}
                         >
@@ -653,10 +651,9 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
             className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             onClick={() => setSelectedSong(null)}
           />
-          <div className="relative z-10 flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+          <div className="relative z-10 flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md">
             {/* Song header */}
             <div className="relative overflow-hidden border-b border-border p-5">
-              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 to-transparent" />
               <button
                 onClick={() => setSelectedSong(null)}
                 className="absolute right-3 top-3 rounded-lg p-1.5 text-muted-foreground hover:bg-accent"
@@ -671,12 +668,12 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                   <Image
                     src={selectedSong.cover_url}
                     alt={selectedSong.title}
-                    className="h-20 w-20 rounded-xl object-cover shadow-md"
+                    className="h-20 w-20 rounded-[4px] object-cover"
                     width={80}
                     height={80}
                   />
                 ) : (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-primary/10">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-secondary">
                     <Icon name="music_note" className="h-8 w-8 text-primary" />
                   </div>
                 )}
@@ -785,7 +782,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
                               preload="metadata"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/10">
+                            <div className="flex h-full w-full items-center justify-center bg-secondary">
                               <audio src={cover.media_url} controls className="w-4/5" preload="metadata" />
                             </div>
                           )}
@@ -801,7 +798,7 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
               )}
 
               {coversForSong.length === 0 && (
-                <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+                <div className="p-4 text-center text-sm text-muted-foreground">
                   Pas de cover pour ce morceau
                 </div>
               )}
@@ -815,26 +812,28 @@ export function PublicProfileModal({ userId, isOpen, onClose }: PublicProfileMod
 
 // ===== SUB-COMPONENTS =====
 
+/**
+ * Un chiffre du profil, style Atelier (docs/refonte-ui.md) : la valeur en
+ * condense et son libelle en mono. Les icones dans des pastilles colorees
+ * — l'un des marqueurs « genere » de l'ancienne interface — ont disparu ;
+ * les props d'icone restent acceptees pour ne pas toucher aux appelants.
+ */
 function StatCard({
-  icon,
-  iconColor,
-  iconBg,
   value,
   label,
 }: {
-  icon: string;
-  iconColor: string;
-  iconBg: string;
+  icon?: string;
+  iconColor?: string;
+  iconBg?: string;
   value: number;
   label: string;
 }) {
   return (
-    <div className="rounded-xl bg-accent/50 p-3 text-center">
-      <div className={`mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-lg ${iconBg}`}>
-        <Icon name={icon} className={`h-[18px] w-[18px] ${iconColor}`} />
+    <div className="flex flex-col">
+      <div className="tabular font-display text-[28px] font-bold leading-none">{value}</div>
+      <div className="mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+        {label}
       </div>
-      <div className="text-lg font-extrabold">{value}</div>
-      <div className="text-[11px] text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -845,12 +844,12 @@ function SongList({ songs, onSongClick }: { songs: Song[]; onSongClick: (song: S
   }
 
   return (
-    <div className="space-y-2">
+    <div>
       {songs.map((song) => (
         <button
           key={song.id}
           onClick={() => onSongClick(song)}
-          className="group flex w-full items-center gap-3 rounded-xl border border-border/50 bg-card p-3 text-left transition-all hover:border-primary/30 hover:bg-primary/[0.02]"
+          className="group flex w-full items-center gap-3 border-b border-border py-2.5 text-left transition-colors hover:bg-accent/50"
         >
           {song.cover_url ? (
             <Image src={song.cover_url} alt={song.title} className="h-12 w-12 rounded-lg object-cover"
@@ -933,7 +932,7 @@ function PlaylistList({
                 height={48}
               />
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary">
                 <Icon name="queue_music" className="h-6 w-6 text-primary" />
               </div>
             )}
@@ -1043,7 +1042,7 @@ function SessionCard({ session }: { session: PracticeSessionWithSong }) {
           height={40}
         />
       ) : (
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
           <Icon name="headphones" className="h-[18px] w-[18px] text-primary" />
         </div>
       )}
@@ -1083,7 +1082,7 @@ function CoverCard({ cover }: { cover: CoverWithSong }) {
             <video src={cover.media_url} className="h-full w-full object-cover" muted preload="metadata" />
           )
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/10">
+          <div className="flex h-full w-full items-center justify-center bg-secondary">
             <Icon name="audiotrack" className="h-8 w-8 text-primary/50" />
           </div>
         )}
@@ -1130,7 +1129,7 @@ function DetailItem({
 
 function EmptyState({ icon, message }: { icon: string; message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12 text-center">
+    <div className="flex flex-col items-center justify-center py-12 text-center">
       <Icon name={icon} className="mb-2 h-8 w-8 text-muted-foreground/50" />
       <p className="text-sm text-muted-foreground">{message}</p>
     </div>

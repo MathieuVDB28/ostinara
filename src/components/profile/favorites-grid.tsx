@@ -93,7 +93,7 @@ export function FavoritesGrid({ items, mode, type, onAdd, onRemove, onReorder }:
                     ? "opacity-50 cursor-grabbing"
                     : dragOverPosition === position
                     ? "border-primary ring-2 ring-primary"
-                    : "border-border hover:shadow-lg"
+                    : "border-border"
                 } ${mode === 'edit' ? 'cursor-grab' : ''}`}
               >
                 {/* Cover */}

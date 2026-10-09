@@ -214,10 +214,10 @@ export function AddItemModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card shadow-xl">
+      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card shadow-md">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-4">
-          <h2 className="text-lg font-bold">Ajouter un element</h2>
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Ajouter un element</h2>
           <button aria-label="Fermer"
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
@@ -244,7 +244,7 @@ export function AddItemModal({
             onClick={() => setTab("song")}
             className={`flex items-center gap-2 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
               tab === "song"
-                ? "border-primary text-foreground"
+                ? "border-foreground text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -267,7 +267,7 @@ export function AddItemModal({
             onClick={() => setTab("section")}
             className={`flex items-center gap-2 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
               tab === "section"
-                ? "border-primary text-foreground"
+                ? "border-foreground text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >

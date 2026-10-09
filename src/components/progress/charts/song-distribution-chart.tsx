@@ -91,7 +91,7 @@ export function SongDistributionChart({ data }: SongDistributionChartProps) {
                 if (active && payload && payload.length) {
                   const song = payload[0].payload as SongPracticeDistribution;
                   return (
-                    <div className="bg-popover text-popover-foreground rounded-lg shadow-lg border border-border px-3 py-2">
+                    <div className="bg-popover text-popover-foreground rounded-lg shadow-md border border-border px-3 py-2">
                       <p className="font-medium">{song.songTitle}</p>
                       <p className="text-sm text-muted-foreground">{song.songArtist}</p>
                       <div className="mt-1 text-sm">

@@ -34,7 +34,7 @@ export function JamParticipants({ participants, hostId }: JamParticipantsProps) 
               >
                 {/* Avatar with online indicator */}
                 <div className="relative">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-medium text-primary overflow-hidden">
+                  <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center font-display text-xs font-extrabold text-muted-foreground overflow-hidden">
                     {participant.avatar_url ? (
                       <img
                         src={participant.avatar_url}
@@ -61,7 +61,7 @@ export function JamParticipants({ participants, hostId }: JamParticipantsProps) 
 
                 {/* Host badge */}
                 {isHost && (
-                  <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
+                  <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
                     Host
                   </span>
                 )}

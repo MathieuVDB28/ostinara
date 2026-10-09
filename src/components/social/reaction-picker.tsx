@@ -31,7 +31,7 @@ export function ReactionPicker({ selected, onSelect, onClose }: ReactionPickerPr
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-50 flex flex-col gap-2 rounded-xl border border-border bg-card p-2 shadow-lg sm:absolute sm:inset-x-auto sm:bottom-full sm:left-0 sm:mb-2 sm:w-80">
+      <div className="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-50 flex flex-col gap-2 rounded-xl border border-border bg-card p-2 shadow-md sm:absolute sm:inset-x-auto sm:bottom-full sm:left-0 sm:mb-2 sm:w-80">
         <div className="flex items-center gap-1">
           {QUICK_REACTIONS.map((emoji) => (
             <button

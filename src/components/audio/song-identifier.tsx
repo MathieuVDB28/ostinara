@@ -86,7 +86,7 @@ export function SongIdentifier() {
       {/* Idle state */}
       {state === "idle" && (
         <div className="flex flex-col items-center gap-6">
-          <div className="flex h-32 w-32 items-center justify-center rounded-full bg-primary/10">
+          <div className="flex h-32 w-32 items-center justify-center rounded-full bg-secondary">
             <svg
               className="h-16 w-16 text-primary"
               viewBox="0 0 24 24"
@@ -118,7 +118,7 @@ export function SongIdentifier() {
 
           <button
             onClick={handleListen}
-            className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 hover:shadow-lg hover:shadow-primary/25"
+            className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
           >
             Écouter
           </button>
@@ -183,7 +183,7 @@ export function SongIdentifier() {
       {/* Error state */}
       {state === "error" && (
         <div className="flex flex-col items-center gap-6">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-secondary">
             <svg className="h-10 w-10 text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="12" cy="12" r="10" />
               <path d="M15 9l-6 6M9 9l6 6" strokeLinecap="round" />

@@ -112,7 +112,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+      <div className="relative z-10 flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-border p-5">
           <div className="flex items-center gap-3">
@@ -124,7 +124,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                 <Icon name="arrow_back" className="h-[20px] w-[20px]" />
               </button>
             )}
-            <h2 className="text-lg font-bold">
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
               {step === "search" ? "Chercher un album" : "Ton avis"}
             </h2>
           </div>

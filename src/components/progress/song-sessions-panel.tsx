@@ -134,7 +134,7 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
 
                 {/* Objectifs atteints */}
                 {session.goals_achieved && (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success/20 text-success">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
@@ -145,8 +145,8 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-8">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <div className="flex flex-col items-center justify-center py-8">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground">
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>

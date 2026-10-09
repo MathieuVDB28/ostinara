@@ -63,8 +63,8 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
 
       {/* BPM Display */}
       <div className="text-center mb-4">
-        <div className="text-5xl font-bold tabular-nums">{bpm}</div>
-        <div className="text-sm text-muted-foreground">BPM</div>
+        <div className="tabular font-display text-7xl font-extrabold leading-none">{bpm}</div>
+        <div className="mt-1 font-mono text-[11px] font-semibold tracking-[0.12em] text-muted-foreground">BPM</div>
       </div>
 
       {/* Controls - Host only */}

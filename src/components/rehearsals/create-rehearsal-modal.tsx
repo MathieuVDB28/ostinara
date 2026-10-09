@@ -136,11 +136,11 @@ export function CreateRehearsalModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold">Nouvelle repetition</h2>
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Nouvelle repetition</h2>
             <p className="text-sm text-muted-foreground">{band.name}</p>
           </div>
           <button aria-label="Fermer"
@@ -162,7 +162,7 @@ export function CreateRehearsalModal({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Repet avant le concert"
+              placeholder="Ex : répète avant le concert"
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               autoFocus
             />
@@ -174,7 +174,7 @@ export function CreateRehearsalModal({
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Notes sur cette repet..."
+              placeholder="Notes sur cette répète…"
               rows={2}
               className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
@@ -219,7 +219,7 @@ export function CreateRehearsalModal({
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Ex: Local de repet"
+                placeholder="Ex : local de répète"
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
@@ -300,7 +300,7 @@ export function CreateRehearsalModal({
                     className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
                   />
                   {/* Avatar */}
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-medium text-primary overflow-hidden">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium text-muted-foreground overflow-hidden">
                     {member.profile.avatar_url ? (
                       <img
                         src={member.profile.avatar_url}
@@ -345,7 +345,7 @@ export function CreateRehearsalModal({
               disabled={saving || !title.trim() || !date}
               className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {saving ? "Creation..." : "Creer la repet"}
+              {saving ? "Creation..." : "Créer la répète"}
             </button>
           </div>
         </form>

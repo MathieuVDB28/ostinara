@@ -26,7 +26,7 @@ export function ListeningAnimation({ duration, maxDuration }: ListeningAnimation
         />
 
         {/* Center mic icon */}
-        <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
+        <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full bg-secondary backdrop-blur-sm">
           <svg
             className="h-10 w-10 text-primary"
             viewBox="0 0 24 24"

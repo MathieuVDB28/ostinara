@@ -85,7 +85,7 @@ export function ChallengeCard({ challenge, isPending }: ChallengeCardProps) {
       {/* Header */}
       <div className="mb-4 flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
             {CHALLENGE_TYPE_ICONS[challenge.challenge_type]}
           </span>
           <div>
@@ -199,7 +199,7 @@ function ParticipantInfo({
             height={48}
           />
         ) : (
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-lg font-semibold text-muted-foreground">
             {displayName[0]?.toUpperCase()}
           </div>
         )}

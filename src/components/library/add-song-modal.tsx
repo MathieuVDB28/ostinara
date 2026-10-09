@@ -147,10 +147,10 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold">
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
             {step === "search" ? "Ajouter un morceau" : prefillTrack ? "Ajouter à la bibliothèque" : "Détails du morceau"}
           </h2>
           <button aria-label="Fermer"

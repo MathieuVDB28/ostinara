@@ -384,7 +384,7 @@ export function GearView({
               <Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Rechercher par marque ou modele..."
+                placeholder="Rechercher par marque ou modèle…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-xl border border-border/50 bg-card py-2.5 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -434,8 +434,8 @@ export function GearView({
                 </button>
               ) : (
                 <ProUpsell
-                  feature="Materiel illimite"
-                  description="Passez a Pro pour ajouter plus d'equipements."
+                  feature="Matos illimité"
+                  description="Passe à Pro pour ajouter plus de matos."
                   compact
                 />
               )}
@@ -539,9 +539,9 @@ export function GearView({
             // Has items but filters hide them
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Icon name="search" className="h-12 w-12 text-muted-foreground/40 mb-4" />
-              <h3 className="text-lg font-semibold">Aucun resultat</h3>
+              <h3 className="text-lg font-semibold">Aucun résultat</h3>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                Aucun equipement ne correspond a vos criteres de recherche.
+                Aucun matos ne correspond a vos criteres de recherche.
                 Essayez de modifier vos filtres.
               </p>
               <button
@@ -565,7 +565,7 @@ export function GearView({
                 <path d="M14 6l3-3" />
                 <path d="M15.5 2.5l2 2" />
               </svg>
-              <h3 className="text-lg font-semibold">Aucun equipement</h3>
+              <h3 className="text-lg font-semibold">Aucun matos</h3>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
                 Commencez par ajouter vos guitares, amplis, pedales et autres
                 equipements pour les retrouver facilement.
@@ -581,8 +581,8 @@ export function GearView({
               ) : (
                 <div className="mt-4">
                   <ProUpsell
-                    feature="Materiel illimite"
-                    description="Passez a Pro pour ajouter plus d'equipements."
+                    feature="Matos illimité"
+                    description="Passe à Pro pour ajouter plus de matos."
                   />
                 </div>
               )}
@@ -614,12 +614,12 @@ export function GearView({
                 className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <Icon name="add" className="h-4 w-4" />
-                <span className="hidden sm:inline">Creer un setup</span>
+                <span className="hidden sm:inline">Créer un setup</span>
               </button>
             ) : (
               <ProUpsell
-                feature="Setups illimites"
-                description="Passez a Pro pour creer plus de setups."
+                feature="Setups illimités"
+                description="Passe à Pro pour créer plus de setups."
                 compact
               />
             )}
@@ -707,8 +707,8 @@ export function GearView({
               ) : (
                 <div className="mt-4">
                   <ProUpsell
-                    feature="Setups illimites"
-                    description="Passez a Pro pour creer plus de setups."
+                    feature="Setups illimités"
+                    description="Passe à Pro pour créer plus de setups."
                   />
                 </div>
               )}
@@ -743,8 +743,8 @@ export function GearView({
               </button>
             ) : (
               <ProUpsell
-                feature="Wishlist illimitee"
-                description="Passez a Pro pour ajouter plus de souhaits."
+                feature="Wishlist illimitée"
+                description="Passe à Pro pour ajouter plus de souhaits."
                 compact
               />
             )}
@@ -766,7 +766,7 @@ export function GearView({
                 />
                 <input
                   type="text"
-                  placeholder="Modele *"
+                  placeholder="Modèle *"
                   value={wishlistModel}
                   onChange={(e) => setWishlistModel(e.target.value)}
                   className="rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -789,13 +789,13 @@ export function GearView({
                   }
                   className="w-full appearance-none rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option value="low">Basse priorite</option>
-                  <option value="medium">Moyenne priorite</option>
-                  <option value="high">Haute priorite</option>
+                  <option value="low">Priorité basse</option>
+                  <option value="medium">Priorité moyenne</option>
+                  <option value="high">Priorité haute</option>
                 </select>
                 <input
                   type="number"
-                  placeholder="Prix estime (EUR)"
+                  placeholder="Prix estimé (€)"
                   value={wishlistEstimatedPrice}
                   onChange={(e) => setWishlistEstimatedPrice(e.target.value)}
                   className="rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -877,8 +877,8 @@ export function GearView({
               ) : (
                 <div className="mt-4">
                   <ProUpsell
-                    feature="Wishlist illimitee"
-                    description="Passez a Pro pour ajouter plus de souhaits."
+                    feature="Wishlist illimitée"
+                    description="Passe à Pro pour ajouter plus de souhaits."
                   />
                 </div>
               )}

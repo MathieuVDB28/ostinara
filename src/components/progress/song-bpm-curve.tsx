@@ -94,7 +94,7 @@ export function SongBpmCurve({
   if (!chart) {
     return (
       <div
-        className={`rounded-xl border border-dashed border-border p-4 text-center ${className}`}
+        className={` p-4 text-center ${className}`}
       >
         <p className="text-sm text-muted-foreground">
           Aucun tempo enregistré pour ce morceau

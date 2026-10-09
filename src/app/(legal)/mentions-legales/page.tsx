@@ -23,11 +23,8 @@ export default function MentionsLegales() {
     <div className="relative">
       {/* Hero */}
       <div className="relative overflow-hidden border-b border-border py-20">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="animate-pulse-glow absolute -top-1/2 left-1/3 h-[600px] w-[600px] rounded-full bg-primary/15 blur-[120px]" />
-        </div>
         <div className="relative mx-auto max-w-4xl px-6">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
+          <div className="mb-4 inline-flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             <svg
               className="h-3.5 w-3.5 text-primary"
               viewBox="0 0 24 24"
@@ -48,7 +45,7 @@ export default function MentionsLegales() {
             </svg>
             Document légal
           </div>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.92] sm:text-7xl">
             Mentions légales
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
@@ -88,7 +85,7 @@ export default function MentionsLegales() {
                 href={`#${section.id}`}
                 className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <span className="tabular w-6 shrink-0 font-display text-base font-extrabold text-muted-foreground transition-colors group-hover:text-foreground">
                   {i + 1}
                 </span>
                 {section.label}
@@ -102,7 +99,7 @@ export default function MentionsLegales() {
           {/* 1. Éditeur */}
           <section id="editeur" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 1
               </span>
               Éditeur du site
@@ -143,7 +140,7 @@ export default function MentionsLegales() {
           {/* 2. Directeur de la publication */}
           <section id="publication" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 2
               </span>
               Directeur de la publication
@@ -162,7 +159,7 @@ export default function MentionsLegales() {
           {/* 3. Hébergeur */}
           <section id="hebergeur" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 3
               </span>
               Hébergeur
@@ -204,7 +201,7 @@ export default function MentionsLegales() {
           {/* 4. Propriété intellectuelle */}
           <section id="propriete" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 4
               </span>
               Propriété intellectuelle
@@ -234,7 +231,7 @@ export default function MentionsLegales() {
           {/* 5. Limitation de responsabilité */}
           <section id="responsabilite" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 5
               </span>
               Limitation de responsabilité
@@ -266,7 +263,7 @@ export default function MentionsLegales() {
           {/* 6. Liens hypertextes */}
           <section id="liens" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 6
               </span>
               Liens hypertextes
@@ -291,7 +288,7 @@ export default function MentionsLegales() {
           {/* 7. Droit applicable */}
           <section id="droit" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 7
               </span>
               Droit applicable
@@ -308,7 +305,7 @@ export default function MentionsLegales() {
           {/* 8. Contact */}
           <section id="contact" className="scroll-mt-24">
             <h2 className="mb-5 flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+              <span className="tabular w-8 font-display text-2xl font-extrabold leading-none text-muted-foreground">
                 8
               </span>
               Contact
@@ -342,16 +339,16 @@ export default function MentionsLegales() {
         </div>
 
         {/* Cross-links */}
-        <div className="mt-16 rounded-2xl border border-border bg-gradient-to-br from-primary/5 via-card to-card p-8">
+        <div className="mt-16 border-t border-border pt-8">
           <h3 className="mb-4 text-lg font-semibold">Voir aussi</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <Link
               href="/cgu"
               className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.1)]"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground">
                 <svg
-                  className="h-5 w-5 text-primary"
+                  className="h-5 w-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -376,9 +373,9 @@ export default function MentionsLegales() {
               href="/politique-confidentialite"
               className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.1)]"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground">
                 <svg
-                  className="h-5 w-5 text-primary"
+                  className="h-5 w-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

@@ -30,7 +30,7 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold">Connexion</h1>
+        <h1 className="font-display text-5xl font-extrabold uppercase leading-none">Connexion</h1>
         <p className="mt-2 text-muted-foreground">
           Content de te revoir
         </p>
@@ -47,7 +47,7 @@ export default function LoginPage() {
             type="email"
             required
             placeholder="toi@exemple.com"
-            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
 
@@ -69,7 +69,7 @@ export default function LoginPage() {
             type="password"
             required
             placeholder="••••••••"
-            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
 
@@ -82,7 +82,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-all hover:opacity-90 hover:shadow-[0_0_20px_rgba(55,19,236,0.4)] disabled:opacity-50"
+          className="min-h-[48px] w-full rounded-xl bg-primary py-3 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {loading ? "Connexion..." : "Se connecter"}
         </button>
@@ -90,7 +90,7 @@ export default function LoginPage() {
 
       <p className="text-center text-sm text-muted-foreground">
         Pas encore de compte ?{" "}
-        <Link href="/register" className="text-primary hover:underline">
+        <Link href="/register" className="font-semibold text-foreground underline underline-offset-2">
           Créer un compte
         </Link>
       </p>

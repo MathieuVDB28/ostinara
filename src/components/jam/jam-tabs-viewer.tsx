@@ -185,7 +185,7 @@ export function JamTabsViewer({
                 {currentSectionIndex + 1}
               </div>
               <div>
-                <h3 className="text-lg font-bold text-primary leading-tight">
+                <h3 className="font-display text-2xl font-extrabold uppercase leading-none">
                   {currentSection.name}
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -277,7 +277,7 @@ export function JamTabsViewer({
                   onClick={() => handleSectionClick(index)}
                   className={`relative shrink-0 rounded-lg px-3 py-1.5 text-left transition-all ${
                     isCurrent
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-105"
+                      ? "bg-primary text-primary-foreground scale-105"
                       : isPast
                       ? "bg-accent/60 text-muted-foreground"
                       : "bg-accent hover:bg-accent/80 text-foreground"

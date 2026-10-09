@@ -357,7 +357,7 @@ function TechRiderPDFDocument({
             </View>
             {(engineerName || engineerPhone) && (
               <View style={styles.contactBox}>
-                <Text style={styles.contactLabel}>Ingenieur Son</Text>
+                <Text style={styles.contactLabel}>Ingénieur son</Text>
                 {engineerName && (
                   <Text style={styles.contactName}>{engineerName}</Text>
                 )}
@@ -553,7 +553,7 @@ function TechRiderPDFDocument({
           {/* Stage Plot */}
           {(musicians.length > 0 || stageElements.length > 0) && (
             <View>
-              <Text style={styles.sectionHeader}>Plan de Scene</Text>
+              <Text style={styles.sectionHeader}>Plan de scène</Text>
               <View style={styles.stageContainer}>
                 {/* Stage labels */}
                 <Text
@@ -567,7 +567,7 @@ function TechRiderPDFDocument({
                     },
                   ]}
                 >
-                  Fond de scene
+                  Fond de scène
                 </Text>
                 <Text
                   style={[
@@ -802,7 +802,7 @@ export function TechRiderPDFExport({
       onClick={handleExport}
       disabled={generating || isEmpty}
       className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
-      title={isEmpty ? "Ajoute du contenu avant de telecharger" : undefined}
+      title={isEmpty ? "Ajoute du contenu avant de télécharger" : undefined}
     >
       {generating ? (
         <>
@@ -825,7 +825,7 @@ export function TechRiderPDFExport({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          Generation...
+          Génération…
         </>
       ) : (
         <>
@@ -842,7 +842,7 @@ export function TechRiderPDFExport({
               d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          Telecharger PDF
+          Télécharger le PDF
         </>
       )}
     </button>

@@ -87,11 +87,11 @@ export function CreateBandModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold">Creer un groupe</h2>
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Créer un groupe</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Collabore sur des setlists avec ton groupe
             </p>

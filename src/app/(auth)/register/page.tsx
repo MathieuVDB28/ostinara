@@ -1,5 +1,6 @@
 "use client";
 
+import { Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -32,18 +33,14 @@ export default function RegisterPage() {
   if (success) {
     return (
       <div className="w-full max-w-md space-y-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-          <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
-        </div>
-        <h1 className="text-2xl font-bold">Vérifie ta boîte mail</h1>
+        <Mail className="mx-auto h-10 w-10 text-muted-foreground" strokeWidth={1.25} aria-hidden="true" />
+        <h1 className="font-display text-4xl font-extrabold uppercase leading-none">Vérifie ta boîte mail</h1>
         <p className="text-muted-foreground">
           Un email de confirmation t&apos;a été envoyé. Clique sur le lien pour activer ton compte.
         </p>
         <Link
           href="/login"
-          className="inline-block text-sm text-primary hover:underline"
+          className="inline-block text-sm font-semibold text-foreground underline underline-offset-2"
         >
           Retour à la connexion
         </Link>
@@ -54,7 +51,7 @@ export default function RegisterPage() {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold">Créer un compte</h1>
+        <h1 className="font-display text-5xl font-extrabold uppercase leading-none">Créer un compte</h1>
         <p className="mt-2 text-muted-foreground">
           Rejoins la communauté des guitaristes
         </p>
@@ -71,7 +68,7 @@ export default function RegisterPage() {
             type="text"
             required
             placeholder="guitar_hero"
-            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
 
@@ -85,7 +82,7 @@ export default function RegisterPage() {
             type="email"
             required
             placeholder="toi@exemple.com"
-            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
 
@@ -100,14 +97,14 @@ export default function RegisterPage() {
             required
             minLength={6}
             placeholder="••••••••"
-            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50 dark:backdrop-blur-sm"
+            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Visibilité du compte</label>
-          <div className="flex items-center justify-between rounded-xl border border-input bg-background p-4 dark:bg-surface-lighter/50">
+          <div className="flex items-center justify-between rounded-xl border border-input bg-background p-4">
             <div className="flex-1">
               <div className="font-medium text-sm">
                 {isPrivate ? "Compte privé" : "Compte public"}
@@ -145,7 +142,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-all hover:opacity-90 hover:shadow-[0_0_20px_rgba(55,19,236,0.4)] disabled:opacity-50"
+          className="min-h-[48px] w-full rounded-xl bg-primary py-3 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {loading ? "Création..." : "Créer mon compte"}
         </button>
@@ -153,7 +150,7 @@ export default function RegisterPage() {
 
       <p className="text-center text-sm text-muted-foreground">
         Déjà un compte ?{" "}
-        <Link href="/login" className="text-primary hover:underline">
+        <Link href="/login" className="font-semibold text-foreground underline underline-offset-2">
           Se connecter
         </Link>
       </p>

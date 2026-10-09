@@ -12,7 +12,7 @@ interface AlbumWishlistCardProps {
 
 export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: AlbumWishlistCardProps) {
   return (
-    <div className="group relative w-full overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/50 hover:shadow-lg">
+    <div className="group relative w-full overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/50">
       {/* Cover */}
       <div className="relative aspect-square overflow-hidden bg-muted">
         {album.cover_url ? (
@@ -28,7 +28,7 @@ export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: Alb
         )}
 
         {/* Wishlist badge */}
-        <div className="absolute left-2 top-2 rounded-full bg-primary/20 px-2 py-1 text-xs font-medium text-primary">
+        <div className="absolute left-2 top-2 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
           A écouter
         </div>
       </div>

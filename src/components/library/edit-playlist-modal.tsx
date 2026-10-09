@@ -104,9 +104,9 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
         onClick={handleClose}
       />
 
-      <div className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card shadow-xl">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card shadow-md">
         <div className="flex items-center justify-between border-b border-border p-6">
-          <h2 className="text-lg font-semibold">Modifier la playlist</h2>
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Modifier la playlist</h2>
           <button aria-label="Fermer"
             onClick={handleClose}
             className="rounded-lg p-2 transition-colors hover:bg-accent"

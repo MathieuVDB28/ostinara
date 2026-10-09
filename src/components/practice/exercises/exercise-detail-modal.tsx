@@ -108,7 +108,7 @@ export function ExerciseDetailModal({
         {/* Header */}
         <div className="flex items-start justify-between border-b border-border p-4">
           <div className="flex-1 pr-4">
-            <h2 className="text-lg font-semibold">{exercise.name}</h2>
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{exercise.name}</h2>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <span className="text-sm text-muted-foreground">
                 {EXERCISE_CATEGORY_LABELS[exercise.category]}
@@ -121,7 +121,7 @@ export function ExerciseDetailModal({
                 {DIFFICULTY_LABELS[exercise.difficulty]}
               </span>
               {exercise.is_from_friend && exercise.creator_name && (
-                <span className="flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
+                <span className="flex items-center gap-1 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
                   <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -129,7 +129,7 @@ export function ExerciseDetailModal({
                 </span>
               )}
               {isOwnExercise && (
-                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
+                <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
                   Mon exercice
                 </span>
               )}
@@ -220,7 +220,7 @@ export function ExerciseDetailModal({
               <ol className="space-y-2">
                 {exercise.instructions.map((instruction, index) => (
                   <li key={index} className="flex gap-2 text-sm">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-medium text-primary">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium text-muted-foreground">
                       {index + 1}
                     </span>
                     <span className="text-muted-foreground">{instruction}</span>

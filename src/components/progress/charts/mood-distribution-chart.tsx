@@ -63,7 +63,7 @@ export function MoodDistributionChart({ data }: MoodDistributionChartProps) {
                 if (active && payload && payload.length) {
                   const item = payload[0].payload as MoodDistribution;
                   return (
-                    <div className="bg-popover text-popover-foreground rounded-lg shadow-lg border border-border px-3 py-2">
+                    <div className="bg-popover text-popover-foreground rounded-lg shadow-md border border-border px-3 py-2">
                       <p className="font-medium">
                         {item.emoji} {item.label}
                       </p>

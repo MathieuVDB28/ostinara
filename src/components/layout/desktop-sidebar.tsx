@@ -117,7 +117,7 @@ export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
               className="h-10 w-10 shrink-0 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary font-bold text-muted-foreground">
               {userInfo.initial}
             </div>
           )}

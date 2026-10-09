@@ -8,51 +8,41 @@ interface PlanToggleProps {
 }
 
 export function PlanToggle({ interval, onIntervalChange }: PlanToggleProps) {
-  const handleToggle = () => {
-    onIntervalChange(interval === "monthly" ? "yearly" : "monthly");
-  };
+  // Un controle segmente, comme les sections de Biblio : deux choix
+  // nommes plutot qu'un interrupteur entre deux libelles.
+  const options = [
+    { value: "monthly" as const, label: "Mensuel" },
+    { value: "yearly" as const, label: "Annuel" },
+  ];
 
   return (
-    <div className="flex items-center justify-center gap-3">
-      <button
-        type="button"
-        onClick={handleToggle}
-        className={`text-sm transition-colors ${
-          interval === "monthly" ? "text-foreground font-medium" : "text-muted-foreground"
-        }`}
-      >
-        Mensuel
-      </button>
-      <button
-        type="button"
-        onClick={handleToggle}
-        className={`relative h-7 w-14 rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background ${
-          interval === "yearly"
-            ? "bg-primary border-primary"
-            : "bg-muted/50 border-border"
-        }`}
-        role="switch"
-        aria-checked={interval === "yearly"}
-        aria-label={`Passer à la facturation ${interval === "monthly" ? "annuelle" : "mensuelle"}`}
-      >
-        <span
-          className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200 ${
-            interval === "yearly" ? "translate-x-7" : "translate-x-0"
-          }`}
-        />
-      </button>
-      <button
-        type="button"
-        onClick={handleToggle}
-        className={`text-sm transition-colors ${
-          interval === "yearly" ? "text-foreground font-medium" : "text-muted-foreground"
-        }`}
-      >
-        Annuel
-        <span className="ml-1.5 inline-flex items-center rounded-full bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
-          -20%
-        </span>
-      </button>
+    <div
+      role="radiogroup"
+      aria-label="Facturation"
+      className="inline-grid grid-cols-2 gap-0.5 rounded-xl border border-border bg-card p-[3px]"
+    >
+      {options.map((option) => {
+        const isActive = interval === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={isActive}
+            onClick={() => onIntervalChange(option.value)}
+            className={`flex min-h-[36px] items-center justify-center gap-1.5 rounded-[9px] px-4 text-sm font-semibold transition-colors ${
+              isActive
+                ? "bg-secondary text-foreground shadow-[inset_0_0_0_1px_var(--border)]"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {option.label}
+            {option.value === "yearly" && (
+              <span className="tabular font-mono text-[10.5px] font-semibold text-success">−20%</span>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }

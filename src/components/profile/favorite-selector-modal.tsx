@@ -153,10 +153,10 @@ export function FavoriteSelectorModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+      <div className="relative z-10 flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-border p-6">
-          <h2 className="text-xl font-bold">
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
             {type === "song" ? "Sélectionner un morceau" : "Sélectionner un album"}
           </h2>
           <button aria-label="Fermer"
@@ -317,7 +317,7 @@ export function FavoriteSelectorModal({
                   <button
                     key={album.id}
                     onClick={() => handleSelectAlbum(album)}
-                    className="overflow-hidden rounded-lg border border-border text-left transition-all hover:shadow-lg"
+                    className="overflow-hidden rounded-lg border border-border text-left transition-all"
                   >
                     <div className="relative aspect-square bg-muted">
                       {album.images[0]?.url ? (

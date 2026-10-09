@@ -53,7 +53,7 @@ export function SubscriptionStatusBadge({
   if (compact) {
     return (
       <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${planColors[plan]}`}
+        className={`inline-flex items-center rounded px-1.5 py-0.5 font-display text-[11px] font-bold uppercase tracking-[0.06em] ${planColors[plan]}`}
       >
         {config.name}
       </span>
@@ -64,13 +64,13 @@ export function SubscriptionStatusBadge({
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <span
-          className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${planColors[plan]}`}
+          className={`inline-flex items-center rounded px-2 py-0.5 font-display text-lg font-extrabold uppercase tracking-[0.04em] ${planColors[plan]}`}
         >
           {config.name}
         </span>
         {statusInfo && statusInfo.label && (
           <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusInfo.bg} ${statusInfo.text}`}
+            className={`inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10.5px] font-semibold uppercase ${statusInfo.bg} ${statusInfo.text}`}
           >
             {statusInfo.label}
           </span>
@@ -85,13 +85,13 @@ export function SubscriptionStatusBadge({
 
       {periodEnd && status === "canceled" && plan !== "free" && (
         <p className="text-sm text-primary">
-          Accès jusqu'au {formatDate(periodEnd)}
+          Accès jusqu&apos;au {formatDate(periodEnd)}
         </p>
       )}
 
       {status === "past_due" && (
         <p className="text-sm text-destructive">
-          Veuillez mettre à jour votre moyen de paiement
+          Mets à jour ton moyen de paiement
         </p>
       )}
     </div>
@@ -113,7 +113,7 @@ export function SubscriptionSummary({
   const isFree = plan === "free";
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div className="border-y border-border py-5">
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-lg font-semibold">Mon abonnement</h3>

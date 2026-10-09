@@ -325,7 +325,7 @@ function OfflineBanner() {
       className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 lg:bottom-4 lg:left-64"
     >
       <p
-        className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm shadow-lg ${
+        className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm shadow-md ${
           stuck.length > 0
             ? "border-destructive/30 bg-destructive/10 text-destructive"
             : "border-border bg-card text-muted-foreground"

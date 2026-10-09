@@ -163,7 +163,7 @@ export function ImportPlaylistModal({ isOpen, onClose, onSuccess }: ImportPlayli
         onClick={handleClose}
       />
 
-      <div className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+      <div className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-md">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <div className="flex items-center gap-3">

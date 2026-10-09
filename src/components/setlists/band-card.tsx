@@ -75,7 +75,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
           className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-accent/50"
         >
           {/* Band icon */}
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
             <svg
               className="h-6 w-6"
               fill="none"
@@ -96,7 +96,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
             <div className="flex items-center gap-2">
               <h3 className="truncate font-semibold">{band.name}</h3>
               {isOwner && (
-                <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
+                <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
                   Admin
                 </span>
               )}
@@ -144,7 +144,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                     className="flex items-center gap-3 rounded-lg bg-accent/50 p-2"
                   >
                     {/* Avatar */}
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-medium text-primary">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium text-muted-foreground">
                       {member.profile.avatar_url ? (
                         <img
                           src={member.profile.avatar_url}
@@ -208,7 +208,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
             {/* Next rehearsal */}
             {nextRehearsal && (
               <div className="mb-4">
-                <h4 className="mb-2 text-sm font-medium">Prochaine repet</h4>
+                <h4 className="mb-2 text-sm font-medium">Prochaine répète</h4>
                 <Link
                   href={`/setlists/rehearsals/${nextRehearsal.id}`}
                   className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3 transition-colors hover:bg-primary/10"

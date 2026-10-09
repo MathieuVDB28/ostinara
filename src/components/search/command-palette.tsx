@@ -172,7 +172,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-label="Recherche"
-        className="relative flex max-h-[70vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-popover shadow-2xl"
+        className="relative flex max-h-[70vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-popover shadow-md"
       >
         <div className="flex items-center gap-3 border-b border-border px-4">
           <Icon name="search" className="h-6 w-6 text-muted-foreground" />

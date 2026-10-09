@@ -1,10 +1,11 @@
 "use client";
 
+import { ChevronLeft, ExternalLink, LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { UserPlan, SubscriptionStatus } from "@/types";
-import { BillingInterval, PLANS } from "@/lib/stripe/config";
+import { BillingInterval } from "@/lib/stripe/config";
 import {
   PlanToggle,
   PricingCard,
@@ -20,7 +21,6 @@ interface SubscriptionInfo {
 }
 
 export default function SubscriptionPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -137,29 +137,24 @@ export default function SubscriptionPage() {
   if (loading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      {/* Header avec retour */}
-      <div className="mb-8 flex items-center gap-4">
-        <Link
-          href="/profil/reglages"
-          className="rounded-lg p-2 transition-colors hover:bg-accent"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold">Mon abonnement</h1>
-          <p className="text-sm text-muted-foreground">
-            Gérez votre plan et votre facturation
-          </p>
-        </div>
+    <div className="mx-auto max-w-5xl">
+      {/* En-tete avec retour */}
+      <Link
+        href="/profil/reglages"
+        className="-ml-1 mb-2 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ChevronLeft className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
+        Réglages
+      </Link>
+      <div className="mb-8">
+        <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.9]">Mon abonnement</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Ton plan et ta facturation.</p>
       </div>
 
       {/* Messages */}
@@ -176,10 +171,10 @@ export default function SubscriptionPage() {
 
       {/* Statut actuel */}
       {subscription && (
-        <div className="mb-8 rounded-xl border border-border bg-card p-6">
+        <div className="mb-10 border-y border-border py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h2 className="mb-2 text-lg font-semibold">Plan actuel</h2>
+              <h2 className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Plan actuel</h2>
               <SubscriptionStatusBadge
                 plan={subscription.plan}
                 status={subscription.status}
@@ -191,44 +186,17 @@ export default function SubscriptionPage() {
               <button
                 onClick={handleOpenPortal}
                 disabled={portalLoading}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-border px-4 text-sm font-semibold transition-colors hover:bg-accent disabled:opacity-50"
               >
                 {portalLoading ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                      />
-                    </svg>
-                    Chargement...
-                  </span>
+                  <>
+                    <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2} aria-hidden="true" />
+                    Chargement…
+                  </>
                 ) : (
                   <>
-                    <span className="mr-2">Gérer la facturation</span>
-                    <svg
-                      className="inline h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
+                    Gérer la facturation
+                    <ExternalLink className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                   </>
                 )}
               </button>
@@ -239,7 +207,7 @@ export default function SubscriptionPage() {
 
       {/* Changer de plan */}
       <div className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold">
+        <h2 className="mb-4 font-display text-3xl font-extrabold uppercase leading-none">
           {subscription?.plan === "free" ? "Passer à un plan payant" : "Changer de plan"}
         </h2>
 
@@ -249,7 +217,7 @@ export default function SubscriptionPage() {
         </div>
 
         {/* Plans */}
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-3 md:gap-6">
           <PricingCard
             plan="free"
             interval={interval}
