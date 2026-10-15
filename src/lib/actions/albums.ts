@@ -506,7 +506,7 @@ export async function getAlbumTracks(spotifyAlbumId: string): Promise<SpotifyAlb
 export async function addAlbumTrackToLibrary(input: {
   title: string;
   artist: string;
-  album: string;
+  album?: string;
   cover_url?: string;
   spotify_id?: string;
 }): Promise<{ success: boolean; error?: string; song?: Song; alreadyThere?: boolean }> {

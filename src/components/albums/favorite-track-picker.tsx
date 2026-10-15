@@ -72,7 +72,7 @@ export function FavoriteTrackPicker({ tracks, value, onChange, disabled, scroll 
 interface AddTrackToLibraryButtonProps {
   title: string;
   artist: string;
-  album: string;
+  album?: string;
   coverUrl?: string;
   spotifyId?: string;
 }

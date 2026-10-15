@@ -301,6 +301,10 @@ export interface PublicProfile {
     totalAlbumReviews: number;
   };
   friendship_status: FriendshipStatus | 'none' | 'self';
+  /** La ligne d'amitie, pour accepter, annuler ou retirer depuis le profil. */
+  friendship_id: string | null;
+  /** Demande en attente envoyee par ce profil : on peut l'accepter. */
+  request_incoming: boolean;
   is_friend: boolean;
 }
 

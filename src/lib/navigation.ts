@@ -129,3 +129,11 @@ export function tabBadgeTotal(tab: NavTab, counts: BadgeCounts): number {
 
 /** Les onglets affiches par la sidebar desktop. */
 export const DESKTOP_TABS: NavTab[] = NAV_TABS.filter((tab) => !tab.mobileOnly);
+
+/**
+ * La page d'un profil, d'apres le pseudo. Les liens vers quelqu'un — feed,
+ * liste d'amis, recherche, commentaires — passent tous par ici.
+ */
+export function profileHref(username: string): string {
+  return `/commu/amis/${encodeURIComponent(username)}`;
+}

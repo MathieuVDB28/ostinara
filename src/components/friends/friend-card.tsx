@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { profileHref } from "@/lib/navigation";
 import { UserMinus } from "lucide-react";
 import type { Friend } from "@/types";
 import { removeFriend } from "@/lib/actions/friends";
 
 interface FriendCardProps {
   friend: Friend;
-  onViewProfile: () => void;
   onRefresh: () => void;
 }
 
-export function FriendCard({ friend, onViewProfile, onRefresh }: FriendCardProps) {
+export function FriendCard({ friend, onRefresh }: FriendCardProps) {
   const [removing, setRemoving] = useState(false);
 
   const handleRemove = async () => {
@@ -34,11 +35,15 @@ export function FriendCard({ friend, onViewProfile, onRefresh }: FriendCardProps
 
   /*
    * Une ligne par ami (style Fanzine, docs/refonte-ui.md) : l'avatar,
-   * le nom en condense, depuis quand. « Voir le profil » est l'action ;
+   * le nom en condense, depuis quand. Toute la ligne mene au profil ;
    * la suppression reste a portee, mais en icone, pas en bouton jumeau.
    */
   return (
     <div className="flex items-center gap-3 border-b border-border py-3">
+      <Link
+        href={profileHref(friend.profile.username)}
+        className="-my-3 flex min-w-0 flex-1 items-center gap-3 py-3 transition-colors hover:bg-accent/50"
+      >
       {friend.profile.avatar_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={friend.profile.avatar_url} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
@@ -64,13 +69,7 @@ export function FriendCard({ friend, onViewProfile, onRefresh }: FriendCardProps
           @{friend.profile.username} · ami depuis le {formatDate(friend.since)}
         </p>
       </div>
-
-      <button
-        onClick={onViewProfile}
-        className="min-h-[36px] shrink-0 rounded-full border border-border px-3.5 text-xs font-semibold transition-colors hover:bg-accent"
-      >
-        Profil
-      </button>
+      </Link>
       <button
         onClick={handleRemove}
         disabled={removing}

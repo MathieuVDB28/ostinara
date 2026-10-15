@@ -211,17 +211,21 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
   // Vérifier le statut d'amitié
   let isFriend = false;
   let friendshipStatus: 'none' | 'self' | 'pending' | 'accepted' | 'blocked' = 'none';
+  let friendshipId: string | null = null;
+  let requestIncoming = false;
 
   if (user && !isOwner) {
     const { data: friendship } = await supabase
       .from("friendships")
-      .select("status")
+      .select("id, status, requester_id")
       .or(`and(requester_id.eq.${user.id},addressee_id.eq.${userId}),and(requester_id.eq.${userId},addressee_id.eq.${user.id})`)
       .maybeSingle();
 
     if (friendship) {
       friendshipStatus = friendship.status;
       isFriend = friendship.status === 'accepted';
+      friendshipId = friendship.id;
+      requestIncoming = friendship.requester_id === userId;
     }
   } else if (isOwner) {
     friendshipStatus = 'self';
@@ -464,8 +468,27 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
       totalAlbumReviews,
     },
     friendship_status: friendshipStatus,
+    friendship_id: friendshipId,
+    request_incoming: requestIncoming,
     is_friend: isFriend,
   };
+}
+
+/**
+ * Le profil public d'apres le pseudo, pour la page /commu/amis/[username].
+ * Une adresse lisible et partageable, plutot qu'un identifiant.
+ */
+export async function getPublicProfileByUsername(username: string): Promise<PublicProfile | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (!data) return null;
+  return getPublicProfile(data.id);
 }
 
 /**

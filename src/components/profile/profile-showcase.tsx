@@ -3,12 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GEAR_TYPE_LABELS } from "@/types";
-import type { UserProfile } from "@/types";
+import type { FavoriteAlbum, FavoriteGear, FavoriteSong } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { Cover } from "@/components/ui/cover";
 
 interface ProfileShowcaseProps {
-  profile: UserProfile;
+  favoriteSongs: FavoriteSong[] | null;
+  favoriteAlbums: FavoriteAlbum[] | null;
+  favoriteGear: FavoriteGear[] | null;
+  /**
+   * Sa propre vitrine : titre « Ma vitrine », lien « Modifier », invitation
+   * a la composer quand elle est vide, et affichage sur l'accueil du
+   * profil seulement. Celle d'un ami se lit, et se tait quand elle est vide.
+   */
+  editable?: boolean;
 }
 
 type ShowcaseKind = "song" | "album" | "gear";
@@ -47,18 +55,24 @@ const KIND_LABEL: Record<ShowcaseKind, [one: string, many: string]> = {
  * seulement pour les types remplis, et sur des vignettes restees petites.
  * Le sens revient sans reprendre les 475 px.
  */
-export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
+export function ProfileShowcase({
+  favoriteSongs,
+  favoriteAlbums,
+  favoriteGear,
+  editable = false,
+}: ProfileShowcaseProps) {
   const pathname = usePathname();
 
   // La vitrine appartient a l'accueil du profil : la trainer au-dessus
   // de Matos et Reglages obligerait a la depasser a chaque fois.
-  if (pathname !== "/profil") return null;
+  if (editable && pathname !== "/profil") return null;
 
   const byPosition = <T extends { position: number }>(a: T, b: T) =>
     a.position - b.position;
 
-  const songs: ShowcaseItem[] = [...profile.favorite_songs]
+  const songs: ShowcaseItem[] = [...(favoriteSongs ?? [])]
     .sort(byPosition)
+    .filter((favorite) => favorite.song)
     .map((favorite) => ({
       key: favorite.id,
       kind: "song",
@@ -67,7 +81,7 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
       coverUrl: favorite.song.cover_url,
     }));
 
-  const albums: ShowcaseItem[] = [...profile.favorite_albums]
+  const albums: ShowcaseItem[] = [...(favoriteAlbums ?? [])]
     .sort(byPosition)
     .map((favorite) => ({
       key: favorite.id,
@@ -77,7 +91,7 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
       coverUrl: favorite.cover_url,
     }));
 
-  const gear: ShowcaseItem[] = [...(profile.favorite_gear ?? [])]
+  const gear: ShowcaseItem[] = [...(favoriteGear ?? [])]
     .sort(byPosition)
     .filter((favorite) => favorite.gear)
     .map((favorite) => ({
@@ -102,6 +116,7 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
   ).filter((group) => group.items.length > 0);
 
   if (groups.length === 0) {
+    if (!editable) return null;
     return (
       <Link
         href="/profile/edit?tab=favorites"
@@ -131,14 +146,16 @@ export function ProfileShowcase({ profile }: ProfileShowcaseProps) {
           id="showcase-heading"
           className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground"
         >
-          Ma vitrine
+          {editable ? "Ma vitrine" : "Vitrine"}
         </h2>
-        <Link
-          href="/profile/edit?tab=favorites"
-          className="text-xs font-semibold text-foreground underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          Modifier
-        </Link>
+        {editable && (
+          <Link
+            href="/profile/edit?tab=favorites"
+            className="text-xs font-semibold text-foreground underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Modifier
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-col gap-4">

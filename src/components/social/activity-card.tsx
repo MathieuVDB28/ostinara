@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import {
   Bookmark,
@@ -17,6 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
+import { profileHref } from "@/lib/navigation";
 import type { ActivityWithDetails } from "@/types";
 import { ActivityReactions } from "./activity-reactions";
 import { ActivityComments } from "./activity-comments";
@@ -199,9 +201,22 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
     <article className="border-b border-border pb-4">
       {/* Qui, quoi, quand */}
       <header className="flex items-center gap-2.5 px-4 py-3 sm:px-0">
-        <Avatar url={activity.user.avatar_url} name={activity.user.display_name || activity.user.username} />
+        {/* Le nom et l'avatar menent au profil : c'est depuis le feed
+            qu'on a envie de voir ce qu'un ami joue. */}
+        <Link
+          href={isOwn ? "/profil" : profileHref(activity.user.username)}
+          aria-label={isOwn ? "Mon profil" : `Profil de ${name}`}
+          className="shrink-0 rounded-full"
+        >
+          <Avatar url={activity.user.avatar_url} name={activity.user.display_name || activity.user.username} />
+        </Link>
         <p className="min-w-0 flex-1 truncate text-[13px]">
-          <span className="font-bold">{name}</span>{" "}
+          <Link
+            href={isOwn ? "/profil" : profileHref(activity.user.username)}
+            className="font-bold underline-offset-2 hover:underline"
+          >
+            {name}
+          </Link>{" "}
           <span className="text-muted-foreground">{activityMessages[activity.type]}</span>
         </p>
         <time dateTime={activity.created_at} className="shrink-0 text-xs text-muted-foreground">

@@ -1,11 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { UserProfile } from "@/types";
+import type { ReactNode } from "react";
+import type { FavoriteAlbum, FavoriteSong, Profile } from "@/types";
 import { SocialLinks } from "./social-links";
 import { Icon } from "@/components/ui/icon";
 
+export interface IdentityStat {
+  label: string;
+  value: number | string;
+  /** Un chiffre qui mene quelque part : « 12 amis » ouvre la liste. */
+  href?: string;
+}
+
 interface ProfileIdentityProps {
-  profile: UserProfile;
+  profile: Profile;
+  favoriteSongs?: FavoriteSong[] | null;
+  favoriteAlbums?: FavoriteAlbum[] | null;
+  stats: IdentityStat[];
+  /** Le bouton a droite de l'avatar : « Éditer » chez soi, l'amitie chez un autre. */
+  action: ReactNode;
+  /** Bio et liens, masques sur un profil prive qu'on n'a pas le droit de voir. */
+  showDetails?: boolean;
 }
 
 /**
@@ -15,19 +30,19 @@ interface ProfileIdentityProps {
  * mobile le profil, les reglages et la deconnexion n'avaient aucun
  * chemin d'acces.
  */
-export function ProfileIdentity({ profile }: ProfileIdentityProps) {
-  const stats = [
-    { label: "Morceaux", value: profile.stats.totalSongs },
-    { label: "Maîtrisés", value: profile.stats.masteredSongs },
-    { label: "Covers", value: profile.stats.totalCovers },
-    { label: "Amis", value: profile.stats.friendsCount },
-  ];
-
+export function ProfileIdentity({
+  profile,
+  favoriteSongs,
+  favoriteAlbums,
+  stats,
+  action,
+  showDetails = true,
+}: ProfileIdentityProps) {
   const hasSocials =
-    profile.instagram_url ||
+    showDetails && (profile.instagram_url ||
     profile.tiktok_url ||
     profile.twitter_url ||
-    profile.facebook_url;
+    profile.facebook_url);
 
   /*
    * La banniere, style Fanzine (docs/refonte-ui.md) : quatre pochettes de
@@ -36,8 +51,8 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
    * de banniere du tout plutot qu'un aplat decoratif.
    */
   const banner = [
-    ...[...profile.favorite_albums].sort((a, b) => a.position - b.position).map((f) => f.cover_url),
-    ...[...profile.favorite_songs].sort((a, b) => a.position - b.position).map((f) => f.song.cover_url),
+    ...[...(favoriteAlbums ?? [])].sort((a, b) => a.position - b.position).map((f) => f.cover_url),
+    ...[...(favoriteSongs ?? [])].sort((a, b) => a.position - b.position).map((f) => f.song?.cover_url),
   ]
     .filter((url): url is string => Boolean(url))
     .slice(0, 4);
@@ -77,14 +92,7 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
 
         <div className="flex-1" />
 
-        <Link
-          href="/profil/reglages"
-          aria-label="Éditer mon profil"
-          className="flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Icon name="edit" className="h-4 w-4" />
-          Éditer
-        </Link>
+        {action}
       </div>
 
       <div className="mt-2.5">
@@ -98,7 +106,7 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
         </h1>
         <p className="truncate text-sm text-muted-foreground">@{profile.username}</p>
 
-        {profile.bio && (
+        {showDetails && profile.bio && (
           <p className="mt-1.5 line-clamp-3 max-w-prose font-serif text-[15px] italic leading-relaxed">
             {profile.bio}
           </p>
@@ -121,11 +129,28 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
       {/* Les chiffres, style Atelier : une ligne a filets, pas des tuiles */}
       <dl className="mt-4 grid grid-cols-4 border-y border-border py-2.5">
         {stats.map((stat) => (
-          <div key={stat.label} className="flex flex-col-reverse gap-0.5">
-            <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+          <div
+            key={stat.label}
+            className={`relative flex flex-col-reverse gap-0.5 ${stat.href ? "group" : ""}`}
+          >
+            <dt className="flex items-center gap-0.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground group-hover:text-foreground">
               {stat.label}
+              {stat.href && <Icon name="chevron_right" className="h-3 w-3" />}
             </dt>
-            <dd className="tabular font-display text-[26px] font-bold leading-none">{stat.value}</dd>
+            <dd className="tabular font-display text-[26px] font-bold leading-none">
+              {stat.href ? (
+                // Le lien couvre toute la case, libelle compris.
+                <Link
+                  href={stat.href}
+                  aria-label={`${stat.value} ${stat.label.toLowerCase()}`}
+                  className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:rounded focus-visible:after:ring-2 focus-visible:after:ring-ring"
+                >
+                  {stat.value}
+                </Link>
+              ) : (
+                stat.value
+              )}
+            </dd>
           </div>
         ))}
       </dl>

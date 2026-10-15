@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import { profileHref } from "@/lib/navigation";
 import type {
   Profile,
   SearchResult,
@@ -259,7 +260,7 @@ export async function searchEverything(
       subtitle: profile.username ? `@${profile.username}` : undefined,
       imageUrl: profile.avatar_url ?? undefined,
       icon: "person",
-      href: `/commu/amis?friend=${profile.id}`,
+      href: profile.username ? profileHref(profile.username) : "/commu/amis",
     });
   }
 

@@ -1,4 +1,7 @@
+import { redirect } from "next/navigation";
 import { getFriends, getPendingRequests, getFriendsLimitInfo } from "@/lib/actions/friends";
+import { createClient } from "@/lib/supabase/server";
+import { profileHref } from "@/lib/navigation";
 import { FriendsView } from "@/components/friends/friends-view";
 
 export default async function CommuAmisPage({
@@ -6,7 +9,14 @@ export default async function CommuAmisPage({
 }: {
   searchParams: Promise<{ friend?: string }>;
 }) {
-  const { friend: initialFriendId } = await searchParams;
+  // Ancien lien profond (?friend=<id>), encore present dans des PWA
+  // installees et des notifications : le profil a maintenant sa page.
+  const { friend } = await searchParams;
+  if (friend) {
+    const supabase = await createClient();
+    const { data } = await supabase.from("profiles").select("username").eq("id", friend).maybeSingle();
+    if (data?.username) redirect(profileHref(data.username));
+  }
 
   const [friends, requests, limitInfo] = await Promise.all([
     getFriends(),
@@ -19,7 +29,6 @@ export default async function CommuAmisPage({
       initialFriends={friends}
       initialRequests={requests}
       limitInfo={limitInfo}
-      initialFriendId={initialFriendId}
     />
   );
 }

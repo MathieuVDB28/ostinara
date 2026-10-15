@@ -6,7 +6,6 @@ import { UserPlus } from "lucide-react";
 import { FriendCard } from "./friend-card";
 import { FriendRequestCard } from "./friend-request-card";
 import { AddFriendModal } from "./add-friend-modal";
-import { PublicProfileModal } from "@/components/profile/public-profile-modal";
 import type { Friend, FriendRequest } from "@/types";
 
 interface FriendsViewProps {
@@ -17,8 +16,6 @@ interface FriendsViewProps {
     current: number;
     limit: number;
   } | null;
-  /** Profil a ouvrir a l'arrivee — lien profond de la recherche globale. */
-  initialFriendId?: string;
 }
 
 type Tab = "friends" | "requests";
@@ -27,21 +24,12 @@ export function FriendsView({
   initialFriends,
   initialRequests,
   limitInfo,
-  initialFriendId,
 }: FriendsViewProps) {
   const router = useRouter();
   const [friends, setFriends] = useState(initialFriends);
   const [requests, setRequests] = useState(initialRequests);
   const [activeTab, setActiveTab] = useState<Tab>("friends");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  // Arrivee depuis la recherche globale : le profil s'ouvre des le premier
-  // rendu.
-  const [selectedFriendId, setSelectedFriendId] = useState<string | null>(
-    initialFriendId ?? null
-  );
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(
-    Boolean(initialFriendId)
-  );
 
   useEffect(() => {
     setFriends(initialFriends);
@@ -52,20 +40,6 @@ export function FriendsView({
     router.refresh();
   };
 
-  const handleViewProfile = (friendId: string) => {
-    setSelectedFriendId(friendId);
-    setIsProfileModalOpen(true);
-  };
-
-  const handleCloseProfile = () => {
-    setIsProfileModalOpen(false);
-    setSelectedFriendId(null);
-  };
-
-  const handleCloseProfileModal = () => {
-    setIsProfileModalOpen(false);
-    setSelectedFriendId(null);
-  };
 
   return (
     <div>
@@ -123,7 +97,6 @@ export function FriendsView({
               <FriendCard
                 key={friend.id}
                 friend={friend}
-                onViewProfile={() => handleViewProfile(friend.profile.id)}
                 onRefresh={handleRefresh}
               />
             ))}
@@ -153,12 +126,6 @@ export function FriendsView({
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={handleRefresh}
-      />
-
-      <PublicProfileModal
-        userId={selectedFriendId || ""}
-        isOpen={isProfileModalOpen}
-        onClose={handleCloseProfile}
       />
     </div>
   );

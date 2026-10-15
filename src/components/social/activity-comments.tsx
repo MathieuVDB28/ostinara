@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { profileHref } from "@/lib/navigation";
 import { useState, useTransition } from "react";
 import { MessageCircle, Send } from "lucide-react";
 import { addComment, deleteComment, getActivityComments } from "@/lib/actions/activities";
@@ -132,9 +134,12 @@ export function ActivityComments({
                     {/* Contenu */}
                     <div className="min-w-0 flex-1">
                       <div className="rounded-xl bg-secondary px-3 py-2">
-                        <span className="text-sm font-semibold">
+                        <Link
+                          href={comment.user_id === currentUserId ? "/profil" : profileHref(comment.user.username)}
+                          className="text-sm font-semibold underline-offset-2 hover:underline"
+                        >
                           {comment.user.display_name || comment.user.username}
-                        </span>
+                        </Link>
                         <p className="font-serif text-[14px] italic leading-snug">{comment.content}</p>
                       </div>
                       <div className="mt-0.5 flex items-center gap-2 px-1">

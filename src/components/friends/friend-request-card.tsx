@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { profileHref } from "@/lib/navigation";
 import { useState } from "react";
 import type { FriendRequest } from "@/types";
 import { acceptFriendRequest, rejectFriendRequest } from "@/lib/actions/friends";
@@ -61,9 +63,12 @@ export function FriendRequestCard({ request, onRefresh }: FriendRequestCardProps
 
         {/* Info */}
         <div className="min-w-0 flex-1">
-          <div className="truncate font-display text-xl font-extrabold uppercase leading-tight">
+          <Link
+            href={profileHref(request.requester.username)}
+            className="block truncate font-display text-xl font-extrabold uppercase leading-tight underline-offset-2 hover:underline"
+          >
             {request.requester.display_name || request.requester.username}
-          </div>
+          </Link>
           <div className="truncate text-xs text-muted-foreground">
             @{request.requester.username} · {formatDate(request.created_at)}
           </div>

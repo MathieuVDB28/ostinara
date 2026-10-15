@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useOptimistic, useRef, useState, useTransition } from "react";
+import { profileHref } from "@/lib/navigation";
 import { AudioLines, Reply, SmilePlus, Video } from "lucide-react";
 import { toggleCoverReaction } from "@/lib/actions/activities";
 import { ActivityComments } from "@/components/social/activity-comments";
@@ -138,7 +140,16 @@ export function CoverFeedCard({
           </span>
         )}
         <p className="min-w-0 flex-1 truncate text-[13px]">
-          <span className="font-bold">{item.isOwn ? "Toi" : authorName}</span>{" "}
+          {item.author.username ? (
+            <Link
+              href={item.isOwn ? "/profil" : profileHref(item.author.username)}
+              className="font-bold underline-offset-2 hover:underline"
+            >
+              {item.isOwn ? "Toi" : authorName}
+            </Link>
+          ) : (
+            <span className="font-bold">{item.isOwn ? "Toi" : authorName}</span>
+          )}{" "}
           <span className="text-muted-foreground">a posté une cover</span>
         </p>
         <time dateTime={item.created_at} className="shrink-0 text-xs text-muted-foreground">
