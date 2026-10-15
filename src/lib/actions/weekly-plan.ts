@@ -12,6 +12,7 @@ import type {
   WeeklyGoalWithProgress,
   WeeklyPlan,
 } from "@/types";
+import { syncBadges } from "@/lib/badges/sync";
 
 /**
  * Le plan de la semaine.
@@ -584,6 +585,8 @@ export async function toggleWeeklyGoal(
 
   revalidatePath("/jouer");
   revalidatePath("/profil");
+  // Un morceau, une session, un album… peuvent debloquer un badge.
+  await syncBadges();
   return { success: true, completed };
 }
 

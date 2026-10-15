@@ -14,6 +14,8 @@ import { AddTrackToLibraryButton } from "@/components/albums/favorite-track-pick
 import { StarRating } from "@/components/ui/star-rating";
 import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
+import { BadgeMedal } from "@/components/badges/badge-medal";
+import { badgeLabel, type BadgeStatus } from "@/lib/badges/catalog";
 
 type Tab = "songs" | "albums" | "gear" | "activity";
 
@@ -64,7 +66,7 @@ function Empty({ children }: { children: React.ReactNode }) {
  * arriere avec le geste du telephone. Meme en-tete et meme vitrine que
  * son propre profil ; en dessous, ce qu'on vient voir chez un ami.
  */
-export function PublicProfileView({ data }: { data: PublicProfile }) {
+export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; badges?: BadgeStatus[] }) {
   const { profile } = data;
   const [tab, setTab] = useState<Tab>("songs");
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
@@ -130,6 +132,8 @@ export function PublicProfileView({ data }: { data: PublicProfile }) {
             favoriteAlbums={data.favorite_albums}
             favoriteGear={data.favorite_gear}
           />
+
+          <FriendBadges badges={badges} />
 
           {/* Onglets locaux, style Atelier comme ceux du profil */}
           <div role="tablist" aria-label={`Profil de ${name}`} className="mb-5 flex gap-6 overflow-x-auto border-b border-border [scrollbar-width:none]">
@@ -461,5 +465,35 @@ function FriendSongSheet({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Les badges obtenus, en un rang de medailles. Rien quand il n'y en a pas. */
+function FriendBadges({ badges }: { badges: BadgeStatus[] }) {
+  const unlocked = badges
+    .filter((badge) => badge.level > 0)
+    .sort((a, b) => (b.unlockedAt ?? "").localeCompare(a.unlockedAt ?? ""));
+
+  if (unlocked.length === 0) return null;
+
+  return (
+    <section aria-labelledby="friend-badges" className="mb-6">
+      <h2
+        id="friend-badges"
+        className="mb-3 border-b border-border pb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+      >
+        Badges · {unlocked.length}
+      </h2>
+      <ul className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:px-0">
+        {unlocked.map((badge) => (
+          <li key={badge.id} className="flex w-[72px] shrink-0 flex-col items-center gap-1 text-center">
+            <BadgeMedal badgeId={badge.id} level={badge.level} count={badge.count} />
+            <span className="line-clamp-2 text-[11px] font-semibold leading-tight">
+              {badgeLabel(badge.id, badge.level)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

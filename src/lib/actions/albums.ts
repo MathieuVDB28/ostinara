@@ -18,6 +18,7 @@ import type {
   SpotifyAlbumTrack,
   Song,
 } from "@/types";
+import { syncBadges } from "@/lib/badges/sync";
 
 function getServiceRoleSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -80,6 +81,8 @@ export async function createAlbumReview(
   });
 
   revalidatePath("/albums");
+  // Un morceau, une session, un album… peuvent debloquer un badge.
+  await syncBadges();
   return { success: true, data: data as AlbumReview };
 }
 

@@ -18,6 +18,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
+import { BadgeMedal } from "@/components/badges/badge-medal";
+import { badgeGoal, badgeLabel } from "@/lib/badges/catalog";
 import { profileHref } from "@/lib/navigation";
 import { ACTIVITY_MESSAGES, formatActivityDate } from "@/lib/activity-messages";
 import type { ActivityWithDetails } from "@/types";
@@ -351,6 +353,20 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
           label={meta.opponent_name ? `Contre ${String(meta.opponent_name)}` : "Défi"}
           title={CHALLENGE_LABELS[String(meta.challenge_type)] ?? "Défi"}
         />
+      )}
+
+      {activity.type === "badge_unlocked" && typeof meta.badge_id === "string" && (
+        <div className="flex items-center gap-3 px-4 sm:px-0">
+          <BadgeMedal badgeId={meta.badge_id} level={Number(meta.level) || 1} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs text-muted-foreground">
+              {badgeGoal(meta.badge_id, Number(meta.level) || 1)}
+            </p>
+            <p className="truncate font-display text-xl font-extrabold uppercase leading-tight">
+              {badgeLabel(meta.badge_id, Number(meta.level) || 1)}
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Réactions et commentaires */}

@@ -6,6 +6,8 @@ import { Frets } from "@/components/ui/frets";
 import { songTempoProgress } from "@/lib/song-progress";
 import { profileHref } from "@/lib/navigation";
 import { ACTIVITY_MESSAGES, formatActivityDate } from "@/lib/activity-messages";
+import { BADGES_BY_ID, badgeLabel, type BadgeStatus } from "@/lib/badges/catalog";
+import { BadgeMedal } from "@/components/badges/badge-medal";
 import type {
   ActivityWithDetails,
   AlbumReview,
@@ -33,6 +35,7 @@ interface HomeViewProps {
   weeklyAlbums: WeeklyAlbum[];
   friendActivities: ActivityWithDetails[];
   friendCovers: CoverFeedItem[];
+  badges: BadgeStatus[];
 }
 
 /**
@@ -55,6 +58,7 @@ export function HomeView({
   weeklyAlbums,
   friendActivities,
   friendCovers,
+  badges,
 }: HomeViewProps) {
   const today = new Date().toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -93,6 +97,7 @@ export function HomeView({
           <WeekStats stats={practiceStats} plan={weeklyPlan} />
           <ResumeBlock resume={resume} />
           <PendingBlock pending={pending} />
+          <BadgesBlock badges={badges} />
           <RecentSongsShelf songs={recentSongs} />
           <RecentAlbumsShelf albums={recentAlbums} />
         </div>
@@ -357,6 +362,66 @@ function PendingBlock({ pending }: { pending: HomeViewProps["pending"] }) {
   );
 }
 
+/**
+ * Les derniers badges, et le plus proche a debloquer : ce qui donne envie
+ * de faire une session de plus.
+ */
+function BadgesBlock({ badges }: { badges: BadgeStatus[] }) {
+  const recent = badges
+    .filter((badge) => badge.level > 0 && badge.unlockedAt)
+    .sort((a, b) => b.unlockedAt!.localeCompare(a.unlockedAt!))
+    .slice(0, 3);
+
+  // Le palier le plus proche, parmi les badges a paliers pas encore finis.
+  const closest = badges
+    .filter((badge) => BADGES_BY_ID[badge.id]?.kind === "tiered" && badge.next !== null && badge.value !== null)
+    .map((badge) => ({ badge, ratio: badge.value! / badge.next! }))
+    .filter(({ ratio }) => ratio < 1)
+    .sort((a, b) => b.ratio - a.ratio)[0]?.badge;
+
+  if (recent.length === 0 && !closest) return null;
+
+  const closestDef = closest ? BADGES_BY_ID[closest.id] : null;
+
+  return (
+    <section aria-labelledby="home-badges">
+      <BlockHeading id="home-badges" title="Badges" href="/profil/badges" />
+      {recent.length > 0 && (
+        <ul className="mb-3 flex gap-4">
+          {recent.map((badge) => (
+            <li key={badge.id} className="flex w-[76px] flex-col items-center gap-1 text-center">
+              <BadgeMedal badgeId={badge.id} level={badge.level} count={badge.count} />
+              <span className="line-clamp-2 text-[11px] font-semibold leading-tight">
+                {badgeLabel(badge.id, badge.level)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {closest && closestDef?.kind === "tiered" && (
+        <Link
+          href="/profil/badges"
+          className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-border pt-3 transition-colors hover:text-primary"
+        >
+          <span className="min-w-0">
+            <span className="block font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              Prochain · {badgeLabel(closest.id, closest.level + 1)}
+            </span>
+            <span className="block truncate text-sm font-semibold">{closestDef.goal(closest.next!)}</span>
+          </span>
+          <span className="grid justify-items-end gap-1">
+            <span className="tabular font-display text-xl font-bold leading-none">
+              {closest.value}
+              <span className="text-sm text-muted-foreground">/{closest.next}</span>
+            </span>
+            <Frets value={(closest.value! / closest.next!) * 100} label={`${closest.value} sur ${closest.next}`} />
+          </span>
+        </Link>
+      )}
+    </section>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Tes ajouts — style Etagere
 // ---------------------------------------------------------------------------
@@ -506,6 +571,9 @@ function WeeklyAlbumsBlock({ albums }: { albums: WeeklyAlbum[] }) {
 
 /** Ce dont parle une activite : le morceau, l'album, l'ami. */
 function activitySubject(activity: ActivityWithDetails): { title: string; cover?: string | null } | null {
+  if (activity.type === "badge_unlocked" && activity.metadata?.title) {
+    return { title: String(activity.metadata.title) };
+  }
   if (activity.albumReview) {
     return { title: activity.albumReview.album_name, cover: activity.albumReview.cover_url };
   }

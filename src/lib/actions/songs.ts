@@ -11,6 +11,7 @@ import type {
   SongStatus,
   SongsterrTabStructure,
 } from "@/types";
+import { syncBadges } from "@/lib/badges/sync";
 
 export async function getSongs(): Promise<Song[]> {
   const supabase = await createClient();
@@ -113,6 +114,8 @@ export async function createSong(input: CreateSongInput): Promise<{ success: boo
 
   revalidatePath("/library");
   revalidatePath("/feed");
+  // Un morceau, une session, un album… peuvent debloquer un badge.
+  await syncBadges();
   return { success: true, song: data as Song };
 }
 
@@ -197,6 +200,8 @@ export async function updateSong(
       updateChallengeProgress(undefined, id).catch(console.error);
     }
 
+    // Un morceau maitrise peut debloquer un badge.
+    await syncBadges();
     revalidatePath("/feed");
   }
 

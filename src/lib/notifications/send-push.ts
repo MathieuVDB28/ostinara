@@ -55,6 +55,7 @@ export type NotificationType =
   | 'band_message'
   | 'gear_added'
   | 'song_learning'
+  | 'badge_unlocked'
   | ReminderType;
 
 export async function sendPushNotification(

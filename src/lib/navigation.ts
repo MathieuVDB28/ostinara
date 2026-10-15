@@ -89,6 +89,7 @@ export const NAV_TABS: NavTab[] = [
     icon: "person",
     segments: [
       { href: "/profil", label: "Progression", icon: "chart" },
+      { href: "/profil/badges", label: "Badges", icon: "medal" },
       { href: "/profil/matos", label: "Matos", icon: "guitar" },
       { href: "/profil/reglages", label: "Réglages", icon: "settings" },
     ],

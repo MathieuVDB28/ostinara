@@ -13,6 +13,7 @@ import type {
   Song,
   UpdateCoverInput,
 } from "@/types";
+import { syncBadges } from "@/lib/badges/sync";
 
 const FREE_PLAN_COVER_LIMIT = 3;
 
@@ -186,6 +187,8 @@ export async function createCover(input: CreateCoverInput): Promise<{
   revalidatePath("/biblio/covers");
   revalidatePath("/commu/covers");
   revalidatePath("/library");
+  // Un morceau, une session, un album… peuvent debloquer un badge.
+  await syncBadges();
   return { success: true, cover: data as Cover };
 }
 

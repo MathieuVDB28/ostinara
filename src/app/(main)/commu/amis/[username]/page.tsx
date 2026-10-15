@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getPublicProfileByUsername } from "@/lib/actions/profile";
+import { getUserBadges } from "@/lib/actions/badges";
 import { PublicProfileView } from "@/components/profile/public-profile-view";
 
 export default async function FriendProfilePage({
@@ -15,5 +16,8 @@ export default async function FriendProfilePage({
   // Son propre pseudo : le vrai profil, avec ses reglages, est ailleurs.
   if (data.friendship_status === "self") redirect("/profil");
 
-  return <PublicProfileView data={data} />;
+  // Les badges d'un ami se lisent entre amis seulement (RLS).
+  const badges = data.is_friend ? await getUserBadges(data.profile.id) : [];
+
+  return <PublicProfileView data={data} badges={badges} />;
 }

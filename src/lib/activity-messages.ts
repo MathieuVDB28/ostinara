@@ -22,6 +22,7 @@ export const ACTIVITY_MESSAGES: Record<string, string> = {
   album_reviewed: "a écouté un album",
   album_wishlisted: "veut écouter un album",
   gear_added: "a ajouté du matos à sa collection",
+  badge_unlocked: "a débloqué un badge",
 };
 
 /** « 5 min », « 3 h », « 2 j », puis la date. */

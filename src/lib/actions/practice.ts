@@ -22,6 +22,7 @@ import type {
   SongPracticeDistribution,
   SessionMood,
 } from "@/types";
+import { syncBadges } from "@/lib/badges/sync";
 
 /**
  * Le journal, par page.
@@ -211,6 +212,8 @@ export async function createPracticeSession(
   revalidatePath("/library");
   revalidatePath("/jouer");
   revalidatePath("/biblio");
+  // Un morceau, une session, un album… peuvent debloquer un badge.
+  await syncBadges();
   return { success: true, session: data as PracticeSession };
 }
 

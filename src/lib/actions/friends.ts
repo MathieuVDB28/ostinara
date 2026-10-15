@@ -14,6 +14,7 @@ import type {
   CoverWithSong,
   Friendship,
 } from "@/types";
+import { syncBadges } from "@/lib/badges/sync";
 
 const FREE_PLAN_FRIENDS_LIMIT = 5;
 
@@ -253,6 +254,8 @@ export async function acceptFriendRequest(
 
   revalidatePath("/friends");
   revalidatePath("/feed");
+  // Un morceau, une session, un album… peuvent debloquer un badge.
+  await syncBadges();
   return { success: true };
 }
 

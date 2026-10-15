@@ -3,6 +3,8 @@ import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { getPendingRequestsCount } from "@/lib/actions/friends";
 import { getPendingChallengesCount } from "@/lib/actions/challenges";
 import { getPendingBandInvitations } from "@/lib/actions/bands";
+import { getUnseenBadges } from "@/lib/actions/badges";
+import { BadgeToaster } from "@/components/badges/badge-toaster";
 import { NotificationPrompt, PushNotificationManager } from "@/components/pwa";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
@@ -32,6 +34,7 @@ export default async function MainLayout({
     pendingFriends,
     pendingChallenges,
     bandInvitations,
+    unseenBadges,
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -41,6 +44,8 @@ export default async function MainLayout({
     getPendingRequestsCount(),
     getPendingChallengesCount(),
     getPendingBandInvitations(),
+    // Les badges debloques depuis la derniere page : le toast les annonce.
+    getUnseenBadges(),
   ]);
 
   const badges: BadgeCounts = {
@@ -89,6 +94,8 @@ export default async function MainLayout({
             <NotificationPrompt />
             {children}
           </main>
+
+          <BadgeToaster unseen={unseenBadges} />
 
           <PushNotificationManager userId={user.id} />
         </div>

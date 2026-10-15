@@ -408,7 +408,7 @@ export interface FriendRequest {
 }
 
 // Types pour les activités
-export type ActivityType = 'song_added' | 'song_learning' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won' | 'album_reviewed' | 'exercise_shared' | 'gear_added' | 'album_wishlisted';
+export type ActivityType = 'song_added' | 'song_learning' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won' | 'album_reviewed' | 'exercise_shared' | 'gear_added' | 'album_wishlisted' | 'badge_unlocked';
 
 export interface Activity {
   id: string;
