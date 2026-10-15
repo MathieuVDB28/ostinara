@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { profileHref } from "@/lib/navigation";
+import { ACTIVITY_MESSAGES, formatActivityDate } from "@/lib/activity-messages";
 import type { ActivityWithDetails } from "@/types";
 import { ActivityReactions } from "./activity-reactions";
 import { ActivityComments } from "./activity-comments";
@@ -27,25 +28,6 @@ interface ActivityCardProps {
   activity: ActivityWithDetails;
   currentUserId: string;
 }
-
-const activityMessages: Record<string, string> = {
-  song_added: "a ajouté un nouveau morceau",
-  song_learning: "a commencé à apprendre un morceau",
-  song_mastered: "a maîtrisé un morceau",
-  cover_posted: "a posté une cover",
-  friend_added: "a un nouvel ami",
-  song_wishlisted: "veut apprendre",
-  setlist_created: "a créé une setlist",
-  band_created: "a créé un groupe",
-  band_joined: "a rejoint un groupe",
-  challenge_created: "a lancé un défi",
-  challenge_accepted: "a accepté un défi",
-  challenge_completed: "a terminé un défi",
-  challenge_won: "a remporté un défi !",
-  album_reviewed: "a écouté un album",
-  album_wishlisted: "veut écouter un album",
-  gear_added: "a ajouté du matos à sa collection",
-};
 
 /** Le repere des activites compactes, quand il n'y a pas d'image. */
 const COMPACT_ICONS: Record<string, LucideIcon> = {
@@ -69,20 +51,6 @@ const CHALLENGE_LABELS: Record<string, string> = {
   streak: "Défi série",
   song_mastery: "Défi maîtrise",
 };
-
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-  const diffMs = Date.now() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return "à l'instant";
-  if (diffMins < 60) return `${diffMins} min`;
-  if (diffHours < 24) return `${diffHours} h`;
-  if (diffDays < 7) return `${diffDays} j`;
-  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-}
 
 function Avatar({
   url,
@@ -217,10 +185,10 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
           >
             {name}
           </Link>{" "}
-          <span className="text-muted-foreground">{activityMessages[activity.type]}</span>
+          <span className="text-muted-foreground">{ACTIVITY_MESSAGES[activity.type]}</span>
         </p>
         <time dateTime={activity.created_at} className="shrink-0 text-xs text-muted-foreground">
-          {formatDate(activity.created_at)}
+          {formatActivityDate(activity.created_at)}
         </time>
       </header>
 

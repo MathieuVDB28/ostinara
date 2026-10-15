@@ -44,6 +44,7 @@ export function useCommandPalette(): CommandPaletteValue {
 
 /** Les raccourcis proposes avant la premiere frappe. */
 const QUICK_LINKS = [
+  { href: "/accueil", label: "Accueil", icon: "home" },
   { href: "/jouer", label: "Jouer", icon: "timer" },
   { href: "/biblio", label: "Bibliothèque", icon: "music_note" },
   { href: "/biblio/covers", label: "Covers", icon: "videocam" },

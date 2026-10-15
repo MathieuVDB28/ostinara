@@ -5,6 +5,7 @@ import {
   EllipsisVertical,
   Gauge,
   Guitar,
+  House,
   LayoutDashboard,
   Library,
   ListMusic,
@@ -30,6 +31,7 @@ import {
  * ne rien changer chez les appelants.
  */
 const ICONS: Record<string, LucideIcon> = {
+  home: House,
   dashboard: LayoutDashboard,
   library: Library,
   chart: ChartLine,

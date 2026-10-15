@@ -9,11 +9,9 @@
  * "Plus" a disparu — il masquait 8 sections derriere un bouton qui
  * n'etait pas une page.
  *
- * "Recherche" respecte cette regle : c'est /recherche, une page, pas
- * l'ouverture d'un champ. Elle n'existe que sur mobile — sur desktop le
- * meme service passe par la palette cmd-K, que la sidebar affiche en
- * tete. D'ou `mobileOnly` : la liste reste unique, chaque barre decide
- * ce qu'elle en montre.
+ * "Accueil" n'existe que sur mobile : sur desktop, le logo de la sidebar
+ * y mene deja. D'ou `mobileOnly` : la liste reste unique, chaque barre
+ * decide ce qu'elle en montre.
  */
 
 export type BadgeKey = "friends" | "challenges" | "bands";
@@ -32,24 +30,28 @@ export interface NavTab {
   /** Segments servis par des routes distinctes. Vide = segments client. */
   segments: NavSegment[];
   badgeKeys?: BadgeKey[];
-  /** Absent de la sidebar : le desktop a un meilleur chemin (cmd-K). */
+  /** Absent de la sidebar : le desktop a un meilleur chemin (le logo). */
   mobileOnly?: boolean;
 }
 
 export const NAV_TABS: NavTab[] = [
+  {
+    // L'accueil a pris la place de la recherche dans la pilule : c'est la
+    // page d'arrivee, il faut pouvoir y revenir. La recherche reste une
+    // page (/recherche), ouverte depuis la loupe de l'accueil. Sur
+    // desktop, le logo de la sidebar mene a l'accueil : pas d'onglet.
+    href: "/accueil",
+    label: "Accueil",
+    icon: "home",
+    mobileOnly: true,
+    segments: [],
+  },
   {
     href: "/jouer",
     label: "Jouer",
     icon: "metronome",
     // Les segments de /jouer sont du state client : le metronome et le
     // chrono de session doivent survivre au changement d'onglet.
-    segments: [],
-  },
-  {
-    href: "/recherche",
-    label: "Recherche",
-    icon: "search",
-    mobileOnly: true,
     segments: [],
   },
   {

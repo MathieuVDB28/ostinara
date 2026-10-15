@@ -35,19 +35,24 @@ export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
 
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-full w-64 flex-col border-r border-border bg-card lg:flex">
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-2.5 border-b border-border px-6">
+      {/* Logo : il mene a l'accueil, qui n'a pas d'onglet sur desktop */}
+      <Link
+        href="/accueil"
+        aria-current={pathname === "/accueil" ? "page" : undefined}
+        className="flex h-16 items-center gap-2.5 border-b border-border px-6 transition-colors hover:bg-accent"
+      >
         <div className="flex h-9 w-9 items-center justify-center">
           <Image
             src="/logo.png"
-            alt="Ostinara"
+            alt=""
             width={36}
             height={36}
             className="rounded-lg"
           />
         </div>
         <span className="text-xl font-extrabold text-primary">Ostinara</span>
-      </div>
+        <span className="sr-only">, accueil</span>
+      </Link>
 
       {/* Navigation */}
       {/*

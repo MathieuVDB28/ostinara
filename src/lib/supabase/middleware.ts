@@ -85,7 +85,7 @@ export async function updateSession(request: NextRequest) {
 
   if ((isAuthRoute || pathname === '/') && isAuthenticated) {
     const url = request.nextUrl.clone()
-    url.pathname = '/jouer'
+    url.pathname = '/accueil'
     return NextResponse.redirect(url)
   }
 
