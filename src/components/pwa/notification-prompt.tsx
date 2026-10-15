@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Bell, X } from 'lucide-react';
 import { isIOSBrowserTab, usePushNotifications } from '@/lib/hooks/use-push-notifications';
 
@@ -20,15 +20,16 @@ const SEEN_KEY = 'ostinara_push_prompt_seen';
  */
 export function NotificationPrompt() {
   const { supported, permission, isSubscribed, loading, message, enable } = usePushNotifications();
-  const [seen, setSeen] = useState(true);
-
-  useEffect(() => {
+  // Lu au premier rendu client. Cote serveur, rien ne s'affiche de toute
+  // facon : `supported` reste faux tant que le composant n'est pas monte.
+  const [seen, setSeen] = useState(() => {
+    if (typeof window === 'undefined') return true;
     try {
-      setSeen(localStorage.getItem(SEEN_KEY) === 'true' || isIOSBrowserTab());
+      return localStorage.getItem(SEEN_KEY) === 'true' || isIOSBrowserTab();
     } catch {
-      setSeen(false);
+      return false;
     }
-  }, []);
+  });
 
   const dismiss = () => {
     setSeen(true);

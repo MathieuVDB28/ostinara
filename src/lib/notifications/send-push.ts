@@ -1,6 +1,7 @@
 import webpush from 'web-push';
 import { createClient } from '@supabase/supabase-js';
 import { VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT } from './vapid';
+import type { ReminderType } from './practice-reminders';
 
 // Supabase client with service role for server-side operations
 const supabaseAdmin = createClient(
@@ -53,7 +54,8 @@ export type NotificationType =
   | 'rehearsal_today'
   | 'band_message'
   | 'gear_added'
-  | 'song_learning';
+  | 'song_learning'
+  | ReminderType;
 
 export async function sendPushNotification(
   userId: string,

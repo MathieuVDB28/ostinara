@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { songTargetBpm, nextTempoStep } from "@/lib/song-progress";
+import { measure, type MeasureInput } from "@/lib/weekly-plan-measure";
 import type {
   PracticeSession,
   Song,
@@ -289,59 +290,6 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
 // ---------------------------------------------------------------------------
 // Mesure
 // ---------------------------------------------------------------------------
-
-interface MeasureInput {
-  weekSessions: PracticeSession[];
-  bestBpm: Map<string, number>;
-  songs: Map<string, Song>;
-  weekCovers: number;
-}
-
-/** Ce que le journal dit d'un objectif, independamment de la coche. */
-function measure(goal: WeeklyGoal, input: MeasureInput): number {
-  const { weekSessions, bestBpm, songs, weekCovers } = input;
-
-  switch (goal.kind) {
-    case "tempo":
-      return goal.song_id ? bestBpm.get(goal.song_id) ?? 0 : 0;
-
-    case "mastery":
-      return goal.song_id && songs.get(goal.song_id)?.status === "mastered"
-        ? 1
-        : 0;
-
-    case "song_start": {
-      if (!goal.song_id) return 0;
-      const status = songs.get(goal.song_id)?.status;
-      return status === "learning" || status === "mastered" ? 1 : 0;
-    }
-
-    case "section":
-      // Le detail ne porte pas la section : on compte les seances sur le
-      // morceau, c'est la seule mesure honnete a notre portee.
-      return weekSessions.filter((session) => session.song_id === goal.song_id)
-        .length;
-
-    case "minutes":
-      return weekSessions.reduce(
-        (total, session) => total + session.duration_minutes,
-        0
-      );
-
-    case "days":
-      return new Set(
-        weekSessions.map((session) =>
-          formatDateLocal(new Date(session.practiced_at))
-        )
-      ).size;
-
-    case "cover":
-      return weekCovers;
-
-    default:
-      return 0;
-  }
-}
 
 /**
  * Le pourcentage affiche.
