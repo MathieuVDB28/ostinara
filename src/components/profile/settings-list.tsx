@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { LogoutButton } from "@/components/layout/logout-button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { NotificationSetting } from "./notification-setting";
+import { NotificationSetting, PracticeRemindersSetting } from "./notification-setting";
 import { SubscriptionStatusBadge } from "@/components/subscription";
 import type { UserProfile } from "@/types";
 import { Icon } from "@/components/ui/icon";
@@ -116,8 +116,9 @@ export function SettingsList({ profile, spotifyConnected }: SettingsListProps) {
         <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           Notifications
         </h2>
-        <div className="border-b border-border">
+        <div className="divide-y divide-border border-b border-border">
           <NotificationSetting />
+          <PracticeRemindersSetting initialOn={profile.practice_reminders !== false} />
         </div>
       </section>
 

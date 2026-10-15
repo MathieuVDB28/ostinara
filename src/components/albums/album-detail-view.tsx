@@ -5,9 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StarRating } from "@/components/ui/star-rating";
 import { updateAlbumReview, deleteAlbumReview } from "@/lib/actions/albums";
-import type { SpotifyAlbumDetails, AlbumReview, AlbumCommunityStats } from "@/types";
+import type { SpotifyAlbumDetails, AlbumReview, AlbumCommunityStats, SpotifyAlbumTrack } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { Cover } from "@/components/ui/cover";
+import { AddTrackToLibraryButton, FavoriteTrackPicker } from "./favorite-track-picker";
 
 interface Props {
   album: SpotifyAlbumDetails;
@@ -56,6 +57,35 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
     }
     setIsUpdating(false);
   };
+
+  const [savingFavorite, setSavingFavorite] = useState(false);
+  const [favoriteError, setFavoriteError] = useState("");
+
+  // Le coeur s'enregistre tout de suite : pas de mode edition pour un
+  // seul choix.
+  const handleFavorite = async (track: SpotifyAlbumTrack | null) => {
+    if (!userReview) return;
+    const previous = userReview;
+    setUserReview({
+      ...userReview,
+      favorite_track_name: track?.name,
+      favorite_track_spotify_id: track?.id,
+    });
+    setSavingFavorite(true);
+    setFavoriteError("");
+
+    const result = await updateAlbumReview(userReview.id, {
+      favorite_track_name: track?.name ?? null,
+      favorite_track_spotify_id: track?.id ?? null,
+    });
+    if (!result.success) {
+      setUserReview(previous);
+      setFavoriteError(result.error || "Le choix n'a pas pu être enregistré.");
+    }
+    setSavingFavorite(false);
+  };
+
+  const tracks = album.tracks?.items ?? [];
 
   const handleDelete = async () => {
     if (!userReview) return;
@@ -260,6 +290,57 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
           </div>
         )}
       </div>
+
+      {/* Titres : le coeur marque le morceau prefere */}
+      {tracks.length > 0 && (
+        <div className="mt-8">
+          <div className="mb-1 flex items-baseline justify-between gap-3 border-b border-border pb-1.5">
+            <h2 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              Titres
+            </h2>
+            {userReview && (
+              <span className="text-xs text-muted-foreground">Touche ton morceau préféré</span>
+            )}
+          </div>
+
+          {userReview?.favorite_track_name && (
+            <div className="flex flex-wrap items-center justify-between gap-3 py-3">
+              <p className="min-w-0 text-sm">
+                <span className="text-muted-foreground">Ton préféré : </span>
+                <span className="font-semibold">{userReview.favorite_track_name}</span>
+              </p>
+              <AddTrackToLibraryButton
+                key={userReview.favorite_track_spotify_id}
+                title={userReview.favorite_track_name}
+                artist={mainArtist.name}
+                album={album.name}
+                coverUrl={album.images[0]?.url}
+                spotifyId={userReview.favorite_track_spotify_id}
+              />
+            </div>
+          )}
+
+          {favoriteError && <p className="py-2 text-sm text-destructive">{favoriteError}</p>}
+
+          {userReview ? (
+            <FavoriteTrackPicker
+              tracks={tracks}
+              value={userReview.favorite_track_spotify_id ?? null}
+              onChange={handleFavorite}
+              disabled={savingFavorite}
+            />
+          ) : (
+            <ol className="divide-y divide-border border-b border-border">
+              {tracks.map((track) => (
+                <li key={track.id} className="grid min-h-[44px] grid-cols-[28px_minmax(0,1fr)] items-center gap-2 py-2">
+                  <span className="tabular text-right font-mono text-xs text-muted-foreground">{track.track_number}</span>
+                  <span className="truncate text-sm">{track.name}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      )}
     </div>
   );
 }

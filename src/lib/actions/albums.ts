@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { createActivity } from "./activities";
-import { getRecommendations, getArtistId, getAlbumArtistIds } from "@/lib/services/spotify";
+import { getRecommendations, getArtistId, getAlbumArtistIds, getAlbumDetails } from "@/lib/services/spotify";
+import { createSong } from "./songs";
 import { getSimilarArtists } from "@/lib/services/lastfm";
 import type {
   AlbumReview,
@@ -14,6 +15,8 @@ import type {
   CreateAlbumReviewInput,
   UpdateAlbumReviewInput,
   SpotifyRecommendation,
+  SpotifyAlbumTrack,
+  Song,
 } from "@/types";
 
 function getServiceRoleSupabase() {
@@ -51,6 +54,8 @@ export async function createAlbumReview(
       total_tracks: input.total_tracks || null,
       rating: input.rating,
       review: input.review || null,
+      favorite_track_name: input.favorite_track_name || null,
+      favorite_track_spotify_id: input.favorite_track_spotify_id || null,
     })
     .select()
     .single();
@@ -70,6 +75,7 @@ export async function createAlbumReview(
       cover_url: input.cover_url,
       rating: input.rating,
       review: input.review,
+      favorite_track_name: input.favorite_track_name,
     },
   });
 
@@ -477,4 +483,60 @@ export async function getAlbumRecommendations(): Promise<{
       total_tracks: a.total_tracks,
     })),
   };
+}
+
+// === Titres d'un album, pour choisir son morceau prefere ===
+export async function getAlbumTracks(spotifyAlbumId: string): Promise<SpotifyAlbumTrack[]> {
+  try {
+    const album = await getAlbumDetails(spotifyAlbumId);
+    return album?.tracks?.items ?? [];
+  } catch (error) {
+    console.error("Error fetching album tracks:", error);
+    return [];
+  }
+}
+
+/**
+ * Le morceau prefere d'un album, ajoute a la bibliotheque « à apprendre ».
+ *
+ * Un morceau deja present — meme titre Spotify, ou meme titre et artiste
+ * saisis a la main — n'est pas ajoute deux fois : on renvoie celui qui
+ * existe, pour que le bouton mene a sa fiche.
+ */
+export async function addAlbumTrackToLibrary(input: {
+  title: string;
+  artist: string;
+  album: string;
+  cover_url?: string;
+  spotify_id?: string;
+}): Promise<{ success: boolean; error?: string; song?: Song; alreadyThere?: boolean }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: "Non authentifié" };
+  }
+
+  const { data: existing } = await supabase
+    .from("songs")
+    .select("*")
+    .eq("user_id", user.id)
+    .or(
+      input.spotify_id
+        ? `spotify_id.eq.${input.spotify_id},and(title.ilike.${escapeFilter(input.title)},artist.ilike.${escapeFilter(input.artist)})`
+        : `and(title.ilike.${escapeFilter(input.title)},artist.ilike.${escapeFilter(input.artist)})`
+    )
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) {
+    return { success: true, song: existing as Song, alreadyThere: true };
+  }
+
+  return createSong({ ...input, status: "want_to_learn" });
+}
+
+/** Une valeur entre guillemets dans un filtre PostgREST `or()`. */
+function escapeFilter(value: string): string {
+  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 }

@@ -4,6 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 
 const ENABLED_KEY = 'ostinara_push_enabled';
 
+/**
+ * Les notifications sont actives par defaut : une fois la permission
+ * accordee, on s'abonne sans attendre de geste dans les Reglages. Seul un
+ * refus explicite — l'interrupteur coupe — est memorise, sous cette valeur.
+ */
+const DISABLED = 'false';
+
 interface Options {
   /**
    * Re-abonne en silence quand l'abonnement a ete perdu (mise a jour du
@@ -25,7 +32,7 @@ export interface PushNotificationsState {
   disable: () => Promise<void>;
 }
 
-function isIOSBrowserTab() {
+export function isIOSBrowserTab() {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isStandalone =
     (window.navigator as Navigator & { standalone?: boolean }).standalone ||
@@ -137,13 +144,13 @@ export function usePushNotifications({ autoResubscribe = false }: Options = {}):
       try {
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.getSubscription();
-        const wasSubscribed = localStorage.getItem(ENABLED_KEY) === 'true';
+        const turnedOff = localStorage.getItem(ENABLED_KEY) === DISABLED;
 
-        if (!subscription && wasSubscribed) {
+        if (!subscription && !turnedOff) {
           await subscribe();
         } else if (subscription) {
           setIsSubscribed(true);
-          if (!wasSubscribed) localStorage.setItem(ENABLED_KEY, 'true');
+          if (turnedOff) localStorage.setItem(ENABLED_KEY, 'true');
         }
       } catch (error) {
         console.error('Push: verification de l\'abonnement impossible', error);
@@ -198,7 +205,7 @@ export function usePushNotifications({ autoResubscribe = false }: Options = {}):
       }
 
       setIsSubscribed(false);
-      localStorage.removeItem(ENABLED_KEY);
+      localStorage.setItem(ENABLED_KEY, DISABLED);
     } catch (error) {
       console.error('Push: desabonnement impossible', error);
       setMessage("La désactivation a échoué. Réessaie dans un instant.");

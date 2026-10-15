@@ -148,6 +148,16 @@ export interface SpotifyAlbumDetails {
   external_urls: { spotify: string };
   label: string;
   popularity: number;
+  /** Les 50 premiers titres, inclus dans la reponse de /albums/{id}. */
+  tracks?: { items: SpotifyAlbumTrack[] };
+}
+
+export interface SpotifyAlbumTrack {
+  id: string;
+  name: string;
+  track_number: number;
+  disc_number: number;
+  duration_ms: number;
 }
 
 export interface SpotifyArtist {
@@ -209,6 +219,8 @@ export interface Profile {
   twitter_url?: string;
   facebook_url?: string;
   is_private: boolean;
+  /** Rappels de pratique (morceau delaisse, pause, serie, plan). Vrai par defaut. */
+  practice_reminders?: boolean;
   updated_at?: string;
   // Stripe subscription fields
   stripe_customer_id?: string;
@@ -302,6 +314,7 @@ export interface UpdateProfileInput {
   facebook_url?: string;
   is_private?: boolean;
   avatar_url?: string;
+  practice_reminders?: boolean;
 }
 
 // Inputs pour gestion des favoris
@@ -1276,6 +1289,9 @@ export interface AlbumReview {
   total_tracks?: number;
   rating: number; // 0–10 integer stored in DB (stars × 2); display as rating / 2 stars
   review?: string;
+  /** Le morceau prefere, choisi apres l'ecoute. */
+  favorite_track_name?: string;
+  favorite_track_spotify_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -1294,11 +1310,15 @@ export interface CreateAlbumReviewInput {
   total_tracks?: number;
   rating: number;
   review?: string;
+  favorite_track_name?: string;
+  favorite_track_spotify_id?: string;
 }
 
 export interface UpdateAlbumReviewInput {
   rating?: number;
   review?: string;
+  favorite_track_name?: string | null;
+  favorite_track_spotify_id?: string | null;
 }
 
 // Type pour les recommandations Spotify

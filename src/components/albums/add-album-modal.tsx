@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
-import { createAlbumReview } from "@/lib/actions/albums";
+import { addAlbumTrackToLibrary, createAlbumReview, getAlbumTracks } from "@/lib/actions/albums";
+import { FavoriteTrackPicker } from "./favorite-track-picker";
 import { StarRating } from "@/components/ui/star-rating";
-import type { AlbumReview, SpotifyAlbum } from "@/types";
+import type { AlbumReview, SpotifyAlbum, SpotifyAlbumTrack } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
 interface AddAlbumModalProps {
@@ -24,6 +25,9 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
   const [review, setReview] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [tracks, setTracks] = useState<SpotifyAlbumTrack[] | null>(null);
+  const [favorite, setFavorite] = useState<SpotifyAlbumTrack | null>(null);
+  const [addToLibrary, setAddToLibrary] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -35,6 +39,8 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
       setRating(3.5);
       setReview("");
       setError("");
+      setFavorite(null);
+      setAddToLibrary(false);
     } else if (prefillAlbum) {
       setSelectedAlbum(prefillAlbum);
       setStep("review");
@@ -71,6 +77,21 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
     };
   }, [searchQuery]);
 
+  // La tracklist, pour choisir son morceau prefere une fois l'album ecoute.
+  const albumId = selectedAlbum?.id;
+  useEffect(() => {
+    if (!albumId) return;
+    let cancelled = false;
+    setTracks(null);
+    setFavorite(null);
+    getAlbumTracks(albumId).then((items) => {
+      if (!cancelled) setTracks(items);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [albumId]);
+
   const handleSelectAlbum = (album: SpotifyAlbum) => {
     setSelectedAlbum(album);
     setStep("review");
@@ -82,9 +103,28 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
     setSubmitting(true);
     setError("");
 
+    const artistName = selectedAlbum.artists.map((a) => a.name).join(", ");
+
+    // La biblio d'abord : si la limite du plan gratuit bloque l'ajout,
+    // l'avis n'est pas encore publie et on peut decocher puis reessayer.
+    if (favorite && addToLibrary) {
+      const added = await addAlbumTrackToLibrary({
+        title: favorite.name,
+        artist: selectedAlbum.artists[0]?.name ?? artistName,
+        album: selectedAlbum.name,
+        cover_url: selectedAlbum.images[0]?.url,
+        spotify_id: favorite.id,
+      });
+      if (!added.success) {
+        setError(added.error || "Le morceau n'a pas pu être ajouté à ta biblio.");
+        setSubmitting(false);
+        return;
+      }
+    }
+
     const result = await createAlbumReview({
       album_name: selectedAlbum.name,
-      artist_name: selectedAlbum.artists.map((a) => a.name).join(", "),
+      artist_name: artistName,
       cover_url: selectedAlbum.images[0]?.url,
       spotify_id: selectedAlbum.id,
       spotify_url: selectedAlbum.external_urls?.spotify,
@@ -92,6 +132,8 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
       total_tracks: selectedAlbum.total_tracks,
       rating: Math.round(rating * 2),
       review: review.trim() || undefined,
+      favorite_track_name: favorite?.name,
+      favorite_track_spotify_id: favorite?.id,
     });
 
     if (result.success && result.data) {
@@ -236,6 +278,45 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                 </div>
                 <StarRating value={rating} onChange={setRating} size="lg" />
               </div>
+
+              {/* Morceau prefere — sans identifiant Spotify, pas de tracklist */}
+              {selectedAlbum.id && (
+              <div className="mb-6">
+                <div className="mb-2 flex items-baseline justify-between gap-3">
+                  <label className="text-sm font-medium">
+                    Ton morceau préféré <span className="text-muted-foreground">(optionnel)</span>
+                  </label>
+                  {favorite && (
+                    <span className="truncate text-xs font-semibold text-primary">{favorite.name}</span>
+                  )}
+                </div>
+                {tracks === null ? (
+                  <p className="py-3 text-sm text-muted-foreground">Chargement des titres…</p>
+                ) : tracks.length === 0 ? (
+                  <p className="py-3 text-sm text-muted-foreground">Tracklist indisponible pour cet album.</p>
+                ) : (
+                  <FavoriteTrackPicker
+                    tracks={tracks}
+                    value={favorite?.id ?? null}
+                    onChange={setFavorite}
+                    scroll
+                  />
+                )}
+                {favorite && (
+                  <label className="mt-3 flex min-h-[40px] cursor-pointer items-center gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={addToLibrary}
+                      onChange={(e) => setAddToLibrary(e.target.checked)}
+                      className="h-4 w-4 accent-[var(--primary)]"
+                    />
+                    <span>
+                      L&apos;ajouter à ma biblio, dans « À apprendre »
+                    </span>
+                  </label>
+                )}
+              </div>
+              )}
 
               {/* Review text */}
               <div className="mb-6">

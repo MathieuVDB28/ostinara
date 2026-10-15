@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deleteAlbumReview, updateAlbumReview } from "@/lib/actions/albums";
-import { EllipsisVertical, Pencil, Star, Trash2 } from "lucide-react";
+import { EllipsisVertical, Heart, Pencil, Star, Trash2 } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { StarRating } from "@/components/ui/star-rating";
 import type { AlbumReview } from "@/types";
@@ -163,6 +163,13 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
           >
             {review.artist_name}
           </Link>
+
+          {review.favorite_track_name && (
+            <p className="mt-1 flex items-center gap-1 truncate text-[12px] text-muted-foreground">
+              <Heart className="h-3 w-3 shrink-0 fill-primary text-primary" strokeWidth={0} aria-label="Morceau préféré" />
+              <span className="truncate">{review.favorite_track_name}</span>
+            </p>
+          )}
 
           {review.review && (
             <p className="mt-1.5 line-clamp-2 font-serif text-[13px] italic leading-snug text-foreground/80">

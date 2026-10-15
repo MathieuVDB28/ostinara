@@ -3,7 +3,7 @@ import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { getPendingRequestsCount } from "@/lib/actions/friends";
 import { getPendingChallengesCount } from "@/lib/actions/challenges";
 import { getPendingBandInvitations } from "@/lib/actions/bands";
-import { PushNotificationManager } from "@/components/pwa";
+import { NotificationPrompt, PushNotificationManager } from "@/components/pwa";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
@@ -86,6 +86,7 @@ export default async function MainLayout({
           <DesktopSidebar badges={badges} userInfo={userInfo} />
 
           <main className="w-full min-w-0 flex-1 overflow-x-hidden p-4 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:ml-64 lg:p-8 lg:pb-8">
+            <NotificationPrompt />
             {children}
           </main>
 
