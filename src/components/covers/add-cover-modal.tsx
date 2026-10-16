@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { VideoUpload } from "./video-upload";
 import { createCover, canUploadCover } from "@/lib/actions/covers";
+import { getUpcomingRehearsalSetlists } from "@/lib/actions/rehearsals";
+import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import type { Song, CoverVisibility } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
@@ -31,6 +33,7 @@ export function AddCoverModal({
   replyToCoverId,
   replyToLabel,
 }: AddCoverModalProps) {
+  const nextSteps = useNextSteps();
   const [step, setStep] = useState<"upload" | "details">("upload");
   const [uploadedFile, setUploadedFile] = useState<{
     url: string;
@@ -79,6 +82,13 @@ export function AddCoverModal({
     if (result.success) {
       onSuccess();
       handleClose();
+      // Une cover enregistree est un morceau pret pour le groupe : si une
+      // repete avec setlist arrive, on propose de l'y ajouter.
+      getUpcomingRehearsalSetlists()
+        .then((rehearsals) => {
+          if (rehearsals.length > 0) nextSteps.show({ kind: "cover_posted", song, rehearsals });
+        })
+        .catch(console.error);
     } else {
       setError(result.error || "Erreur lors de l'ajout");
     }

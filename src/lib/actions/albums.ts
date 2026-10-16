@@ -5,7 +5,7 @@ import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { createActivity } from "./activities";
 import { getRecommendations, getArtistId, getAlbumArtistIds, getAlbumDetails } from "@/lib/services/spotify";
-import { createSong } from "./songs";
+import { addSongToLibrary } from "./songs";
 import { getSimilarArtists } from "@/lib/services/lastfm";
 import type {
   AlbumReview,
@@ -501,10 +501,7 @@ export async function getAlbumTracks(spotifyAlbumId: string): Promise<SpotifyAlb
 
 /**
  * Le morceau prefere d'un album, ajoute a la bibliotheque « à apprendre ».
- *
- * Un morceau deja present — meme titre Spotify, ou meme titre et artiste
- * saisis a la main — n'est pas ajoute deux fois : on renvoie celui qui
- * existe, pour que le bouton mene a sa fiche.
+ * Sans doublon : cf. addSongToLibrary.
  */
 export async function addAlbumTrackToLibrary(input: {
   title: string;
@@ -513,33 +510,83 @@ export async function addAlbumTrackToLibrary(input: {
   cover_url?: string;
   spotify_id?: string;
 }): Promise<{ success: boolean; error?: string; song?: Song; alreadyThere?: boolean }> {
-  const supabase = await createClient();
-  const user = await getAuthenticatedUser();
-
-  if (!user) {
-    return { success: false, error: "Non authentifié" };
-  }
-
-  const { data: existing } = await supabase
-    .from("songs")
-    .select("*")
-    .eq("user_id", user.id)
-    .or(
-      input.spotify_id
-        ? `spotify_id.eq.${input.spotify_id},and(title.ilike.${escapeFilter(input.title)},artist.ilike.${escapeFilter(input.artist)})`
-        : `and(title.ilike.${escapeFilter(input.title)},artist.ilike.${escapeFilter(input.artist)})`
-    )
-    .limit(1)
-    .maybeSingle();
-
-  if (existing) {
-    return { success: true, song: existing as Song, alreadyThere: true };
-  }
-
-  return createSong({ ...input, status: "want_to_learn" });
+  return addSongToLibrary(
+    input,
+    "want_to_learn",
+    input.album ? { from: "album", label: input.album } : undefined
+  );
 }
 
-/** Une valeur entre guillemets dans un filtre PostgREST `or()`. */
-function escapeFilter(value: string): string {
-  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+// === Ce que l'on a deja d'un artiste ===
+
+export interface ArtistLibraryContext {
+  /** Ses morceaux dans la biblio. */
+  songs: Pick<Song, "id" | "title" | "album" | "cover_url" | "status">[];
+  /** Ses albums deja notes : identifiant Spotify -> note sur 10. */
+  reviewed: Record<string, number>;
+  /** Ses albums dans « À écouter ». */
+  wishlisted: string[];
+}
+
+/**
+ * La page d'un artiste, vue depuis sa propre pratique : les morceaux qu'on
+ * en joue, les albums qu'on a ecoutes ou qu'on garde pour plus tard.
+ *
+ * Le nom d'artiste d'un morceau est du texte libre (« AC/DC », « Slash
+ * feat. Myles Kennedy ») : on lit large avec `ilike`, puis on ne garde que
+ * les morceaux ou l'artiste figure comme un nom entier.
+ */
+export async function getArtistLibraryContext(
+  artistName: string,
+  albumIds: string[]
+): Promise<ArtistLibraryContext> {
+  const empty: ArtistLibraryContext = { songs: [], reviewed: {}, wishlisted: [] };
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+  if (!user) return empty;
+
+  const pattern = `%${artistName.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+  const ids = albumIds.length > 0 ? albumIds : ["-"];
+
+  const [songsResult, reviewsResult, wishlistResult] = await Promise.all([
+    supabase
+      .from("songs")
+      .select("id, title, artist, album, cover_url, status")
+      .eq("user_id", user.id)
+      .ilike("artist", pattern)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("album_reviews")
+      .select("spotify_id, rating")
+      .eq("user_id", user.id)
+      .in("spotify_id", ids),
+    supabase
+      .from("album_wishlist")
+      .select("spotify_id")
+      .eq("user_id", user.id)
+      .in("spotify_id", ids),
+  ]);
+
+  const target = artistName.trim().toLowerCase();
+  const songs = (songsResult.data ?? [])
+    .filter((song) =>
+      String(song.artist)
+        .split(/\s*(?:,|&|\/\/|\bfeat\.?|\bft\.?|\bwith\b)\s*/i)
+        .some((name) => name.trim().toLowerCase() === target)
+    )
+    .map((song) => ({
+      id: song.id,
+      title: song.title,
+      album: song.album,
+      cover_url: song.cover_url,
+      status: song.status,
+    })) as ArtistLibraryContext["songs"];
+
+  return {
+    songs,
+    reviewed: Object.fromEntries(
+      (reviewsResult.data ?? []).map((row) => [row.spotify_id as string, row.rating as number])
+    ),
+    wishlisted: (wishlistResult.data ?? []).map((row) => row.spotify_id as string),
+  };
 }

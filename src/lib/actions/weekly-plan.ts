@@ -211,16 +211,20 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
   }
 
   // 4. Sortir un morceau de la file d'attente, quand on n'en travaille
-  //    qu'un ou aucun et qu'il y a de quoi piocher.
+  //    qu'un ou aucun et qu'il y a de quoi piocher. Ce qu'un pont a
+  //    ajoute (un album, un ami) passe devant : c'est l'envie du moment.
   if (drafts.length < GOALS_PER_WEEK && learningCount < 3) {
-    const queued = songs.find(
-      (song) => song.status === "want_to_learn" && !usedSongIds.has(song.id)
-    );
+    const queued = songs
+      .filter((song) => song.status === "want_to_learn" && !usedSongIds.has(song.id))
+      .sort((a, b) => {
+        const byOrigin = Number(Boolean(b.added_from)) - Number(Boolean(a.added_from));
+        return byOrigin || b.created_at.localeCompare(a.created_at);
+      })[0];
     if (queued) {
       drafts.push({
         kind: "song_start",
         title: `Attaquer « ${queued.title} »`,
-        detail: `${queued.artist} attend dans « À apprendre »`,
+        detail: songStartDetail(queued),
         song_id: queued.id,
         target_value: 1,
         baseline_value: 0,
@@ -286,6 +290,20 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
   }
 
   return drafts.slice(0, GOALS_PER_WEEK);
+}
+
+/** Pourquoi ce morceau-la : son origine, quand un pont l'a ajoute. */
+function songStartDetail(song: Song): string {
+  switch (song.added_from) {
+    case "album":
+      return song.added_from_label
+        ? `Repéré sur « ${song.added_from_label} »`
+        : `Repéré en écoutant ${song.artist}`;
+    case "friend":
+      return song.added_from_label ? `Vu chez ${song.added_from_label}` : "Vu chez un ami";
+    default:
+      return `${song.artist} attend dans « À apprendre »`;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -623,4 +641,65 @@ export async function regenerateWeeklyPlan(): Promise<{
   revalidatePath("/jouer");
   revalidatePath("/profil");
   return { success: true };
+}
+
+/**
+ * Un morceau tout juste repere entre dans le plan de la semaine en cours.
+ *
+ * Le plan est genere le lundi : sans ce pont, un morceau ajoute depuis un
+ * album le mardi attendrait six jours pour etre propose. Il devient un
+ * objectif « Attaquer X » en plus des trois — une seule fois par semaine,
+ * et pas tant qu'un autre « Attaquer » attend encore d'etre commence.
+ */
+export async function suggestSongThisWeek(song: Song): Promise<void> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+  if (!user) return;
+
+  const weekStart = formatDateLocal(startOfWeek());
+
+  const { data: goals } = await supabase
+    .from("weekly_goals")
+    .select("kind, position, song_id, completed_at")
+    .eq("user_id", user.id)
+    .eq("week_start", weekStart);
+
+  // Pas encore de plan : il sera genere a l'ouverture, avec ce morceau
+  // en tete de la file (cf. buildGoals, etape 4).
+  if (!goals || goals.length === 0) return;
+  if (goals.length > GOALS_PER_WEEK) return;
+
+  const pendingStarts = goals.filter((goal) => goal.kind === "song_start" && !goal.completed_at);
+  if (pendingStarts.length > 0) {
+    const ids = pendingStarts.map((goal) => goal.song_id).filter(Boolean) as string[];
+    const { data: waiting } = await supabase
+      .from("songs")
+      .select("id")
+      .in("id", ids)
+      .eq("status", "want_to_learn")
+      .limit(1);
+    if (waiting && waiting.length > 0) return;
+  }
+
+  const position = Math.max(...goals.map((goal) => goal.position)) + 1;
+  const { error } = await supabase.from("weekly_goals").insert({
+    user_id: user.id,
+    week_start: weekStart,
+    kind: "song_start",
+    title: `Attaquer « ${song.title} »`,
+    detail: songStartDetail(song),
+    song_id: song.id,
+    target_value: 1,
+    baseline_value: 0,
+    unit: null,
+    position,
+  });
+
+  if (error) {
+    console.error("Error adding song to weekly plan:", error);
+    return;
+  }
+
+  revalidatePath("/jouer");
+  revalidatePath("/accueil");
 }

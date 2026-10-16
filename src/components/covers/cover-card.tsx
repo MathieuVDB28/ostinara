@@ -3,6 +3,7 @@
 import { Globe, Lock, Music, Play, Users } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import type { CoverWithSong, CoverVisibility } from "@/types";
+import { CoverGearLine } from "./cover-gear-line";
 
 interface CoverCardProps {
   cover: CoverWithSong;
@@ -91,6 +92,7 @@ export function CoverCard({ cover, onClick }: CoverCardProps) {
             </>
           )}
         </p>
+        <CoverGearLine gear={cover.gear} className="mt-0.5" />
       </div>
     </button>
   );

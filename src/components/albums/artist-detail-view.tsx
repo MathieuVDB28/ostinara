@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 import type { SpotifyArtist, SpotifyAlbum, AlbumCommunityStats } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { Cover } from "@/components/ui/cover";
+import type { ArtistLibraryContext } from "@/lib/actions/albums";
+import { ArtistLibrarySection, albumKey } from "./artist-library-section";
 
 interface Props {
   artist: SpotifyArtist;
   albums: SpotifyAlbum[];
   communityStats: Record<string, AlbumCommunityStats>;
+  library: ArtistLibraryContext;
 }
 
 function formatFollowers(n: number): string {
@@ -18,9 +21,17 @@ function formatFollowers(n: number): string {
   return n.toString();
 }
 
-export function ArtistDetailView({ artist, albums, communityStats }: Props) {
+export function ArtistDetailView({ artist, albums, communityStats, library }: Props) {
   const router = useRouter();
   const artistImage = artist.images[0]?.url;
+
+  // Combien de ses morceaux viennent de chaque album : la discographie dit
+  // ou l'on a deja mis les doigts.
+  const songsByAlbum = new Map<string, number>();
+  for (const song of library.songs) {
+    const key = albumKey(song.album);
+    if (key) songsByAlbum.set(key, (songsByAlbum.get(key) ?? 0) + 1);
+  }
 
   return (
     <div className="min-h-screen">
@@ -83,6 +94,13 @@ export function ArtistDetailView({ artist, albums, communityStats }: Props) {
           </div>
         )}
 
+        <ArtistLibrarySection
+          artistName={artist.name}
+          albums={albums}
+          communityStats={communityStats}
+          library={library}
+        />
+
         {/* Discography */}
         <h2 className="mb-3 border-b border-border pb-2 text-lg font-extrabold tracking-[-0.01em]">
           Discographie<span className="tabular font-bold text-muted-foreground"> · {albums.length}</span>
@@ -98,6 +116,9 @@ export function ArtistDetailView({ artist, albums, communityStats }: Props) {
             {albums.map((album) => {
               const stats = communityStats[album.id];
               const year = album.release_date?.split("-")[0];
+              const myRating = library.reviewed[album.id];
+              const saved = library.wishlisted.includes(album.id);
+              const mySongs = songsByAlbum.get(albumKey(album.name)) ?? 0;
 
               return (
                 <Link
@@ -114,6 +135,19 @@ export function ArtistDetailView({ artist, albums, communityStats }: Props) {
                         {(stats.avg_rating / 2).toFixed(1).replace(".", ",")}
                       </span>
                     )}
+
+                    {/* Le sien : ecoute (sa note) ou mis de cote */}
+                    {myRating !== undefined ? (
+                      <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-primary px-1.5 py-0.5 font-display text-[12px] font-bold text-primary-foreground">
+                        <Icon name="check" className="h-3 w-3" />
+                        Écouté · {String(myRating / 2).replace(".", ",")}
+                      </span>
+                    ) : saved ? (
+                      <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 font-display text-[12px] font-bold text-white">
+                        <Icon name="bookmark" className="h-3 w-3" />
+                        À écouter
+                      </span>
+                    ) : null}
                   </Cover>
 
                   <div>
@@ -124,6 +158,11 @@ export function ArtistDetailView({ artist, albums, communityStats }: Props) {
                         <> · {stats.review_count} avis</>
                       )}
                     </p>
+                    {mySongs > 0 && (
+                      <p className="mt-0.5 text-xs font-semibold text-primary">
+                        {mySongs} de tes morceaux
+                      </p>
+                    )}
                   </div>
                 </Link>
               );

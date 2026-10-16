@@ -25,6 +25,8 @@ import { ACTIVITY_MESSAGES, formatActivityDate } from "@/lib/activity-messages";
 import type { ActivityWithDetails } from "@/types";
 import { ActivityReactions } from "./activity-reactions";
 import { ActivityComments } from "./activity-comments";
+import { FeedBridge } from "./feed-bridge";
+import { CoverGearLine } from "@/components/covers/cover-gear-line";
 
 interface ActivityCardProps {
   activity: ActivityWithDetails;
@@ -270,6 +272,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
               />
             </button>
           )}
+          <CoverGearLine gear={activity.cover.gear} className="px-4 pt-2.5 sm:px-0" />
         </div>
       )}
 
@@ -371,6 +374,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
 
       {/* Réactions et commentaires */}
       <div className="mt-3 flex flex-col gap-2.5 px-4 sm:px-0">
+        {!isOwn && <FeedBridge activity={activity} friendName={name} />}
         <ActivityReactions
           activityId={activity.id}
           reactions={activity.reactions || []}

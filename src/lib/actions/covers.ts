@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
+import { COVER_GEAR_SELECT, withCoverGear } from "@/lib/cover-gear";
 import type {
   Cover,
   CoverFeedItem,
@@ -29,7 +30,8 @@ export async function getCovers(): Promise<CoverWithSong[]> {
     .from("covers")
     .select(`
       *,
-      song:songs(*)
+      song:songs(*),
+      ${COVER_GEAR_SELECT}
     `)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -39,7 +41,7 @@ export async function getCovers(): Promise<CoverWithSong[]> {
     return [];
   }
 
-  return data as CoverWithSong[];
+  return (data ?? []).map(withCoverGear) as CoverWithSong[];
 }
 
 export async function getCoversBySong(songId: string): Promise<Cover[]> {
@@ -170,6 +172,31 @@ export async function createCover(input: CreateCoverInput): Promise<{
   if (error) {
     console.error("Error creating cover:", error);
     return { success: false, error: "Erreur lors de l'ajout du cover" };
+  }
+
+  /*
+   * Le matos du morceau suit la cover : « joué avec ma Strat » se decide
+   * une fois, sur le morceau, et chaque cover le porte. Copie et non lien,
+   * parce qu'une cover est un instant — changer de guitare plus tard ne
+   * doit pas reecrire celles deja postees.
+   *
+   * Le matos sur une cover est un avantage Pro/Band (cf. addGearToCover) :
+   * la copie automatique suit la meme regle.
+   */
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("plan")
+    .eq("id", user.id)
+    .single();
+  const { data: songGear } =
+    profile?.plan && profile.plan !== "free"
+      ? await supabase.from("song_gear").select("gear_id").eq("song_id", input.song_id)
+      : { data: null };
+  if (songGear && songGear.length > 0) {
+    const { error: gearError } = await supabase
+      .from("cover_gear")
+      .insert(songGear.map((row) => ({ cover_id: data.id, gear_id: row.gear_id })));
+    if (gearError) console.error("Error copying song gear to cover:", gearError);
   }
 
   // Créer une activité si le cover est visible par les amis ou public
@@ -314,7 +341,7 @@ export async function getCoversFeed(limit = 30): Promise<CoverFeedItem[]> {
 
   const { data: covers, error } = await supabase
     .from("covers")
-    .select("*, song:songs(*)")
+    .select(`*, song:songs(*), ${COVER_GEAR_SELECT}`)
     .in("user_id", feedUserIds)
     // Les covers privees restent privees, y compris les siennes : ce feed
     // est l'ecran du partage, la bibliotheque reste l'ecran de l'archive.
@@ -458,7 +485,7 @@ export async function getCoversFeed(limit = 30): Promise<CoverFeedItem[]> {
     const parentSong = Array.isArray(parent?.song) ? parent?.song[0] : parent?.song;
 
     return {
-      ...(cover as CoverWithSong),
+      ...(withCoverGear(cover) as CoverWithSong),
       author: (authors.get(cover.user_id) ?? {
         id: cover.user_id,
         username: "guitariste",

@@ -17,6 +17,7 @@ import type {
   AlbumReview,
   AlbumWishlistItem,
 } from "@/types";
+import { COVER_GEAR_SELECT, withCoverGear } from "@/lib/cover-gear";
 
 /** « 4,5/5 ★ » : la note est stockee sur 10, une unite par demi-etoile. */
 function formatStars(rating: unknown): string {
@@ -415,12 +416,12 @@ export async function getFeedActivities(
   if (coverIds.length > 0) {
     const { data: covers } = await supabase
       .from("covers")
-      .select(`*, song:songs(*)`)
+      .select(`*, song:songs(*), ${COVER_GEAR_SELECT}`)
       .in("id", coverIds)
       .in("visibility", ["friends", "public"]);
 
     if (covers) {
-      covers.forEach((cover) => coversMap.set(cover.id, cover as CoverWithSong));
+      covers.forEach((cover) => coversMap.set(cover.id, withCoverGear(cover) as CoverWithSong));
     }
   }
 

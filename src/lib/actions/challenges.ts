@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
+import { addSongToLibrary } from "./songs";
 import { sendPushNotification } from "@/lib/notifications";
 import type {
   Challenge,
@@ -210,6 +211,29 @@ export async function acceptChallenge(
     return { success: false, error: "Erreur lors de l'acceptation" };
   }
 
+  /*
+   * Accepter un defi de maitrise, c'est s'engager a apprendre le morceau :
+   * il rejoint la biblio « en cours ». Un echec (limite du plan gratuit)
+   * n'empeche pas le defi — on pourra l'ajouter a la main.
+   */
+  if (challenge.challenge_type === "song_mastery" && challenge.song_title) {
+    const added = await addSongToLibrary(
+      {
+        title: challenge.song_title,
+        artist: challenge.song_artist ?? "",
+        cover_url: challenge.song_cover_url ?? undefined,
+      },
+      "learning",
+      {
+        from: "challenge",
+        label: (challenge.creator as Profile).display_name || (challenge.creator as Profile).username,
+      }
+    );
+    if (!added.success) {
+      console.error("Error adding challenge song to library:", added.error);
+    }
+  }
+
   // Créer une activité
   const creatorProfile = challenge.creator as Profile;
   await createActivity({
@@ -411,6 +435,19 @@ export async function getPendingChallengesCount(): Promise<number> {
 }
 
 // === Mettre à jour la progression des challenges actifs ===
+/** Le morceau maitrise est-il celui du defi, quelle que soit la biblio ? */
+function isChallengeSong(
+  challenge: { song_id: string | null; song_title: string | null; song_artist: string | null },
+  songId: string,
+  song: { title: string; artist: string } | null
+): boolean {
+  if (challenge.song_id === songId) return true;
+  if (!song || !challenge.song_title) return false;
+  const same = (a: string | null, b: string | null) =>
+    (a ?? "").trim().toLowerCase() === (b ?? "").trim().toLowerCase();
+  return same(challenge.song_title, song.title) && same(challenge.song_artist, song.artist);
+}
+
 export async function updateChallengeProgress(
   sessionMinutes?: number,
   songMasteredId?: string
@@ -431,6 +468,22 @@ export async function updateChallengeProgress(
 
   if (!challenges || challenges.length === 0) {
     return;
+  }
+
+  /*
+   * Le morceau du defi est celui du createur : l'adversaire en a sa propre
+   * copie, avec un autre identifiant. Comparer les seuls `song_id` rendait
+   * la victoire impossible a celui qui avait accepte le defi — on compare
+   * donc aussi titre et artiste.
+   */
+  let masteredSong: { title: string; artist: string } | null = null;
+  if (songMasteredId && challenges.some((c) => c.challenge_type === "song_mastery")) {
+    const { data } = await supabase
+      .from("songs")
+      .select("title, artist")
+      .eq("id", songMasteredId)
+      .maybeSingle();
+    masteredSong = data;
   }
 
   // Une seule requete pour toutes les progressions, au lieu d'une par
@@ -490,7 +543,7 @@ export async function updateChallengeProgress(
     }
 
     if (challenge.challenge_type === "song_mastery" && songMasteredId) {
-      if (challenge.song_id === songMasteredId && !progress.song_mastered_at) {
+      if (isChallengeSong(challenge, songMasteredId, masteredSong) && !progress.song_mastered_at) {
         updates.song_mastered_at = new Date().toISOString();
 
         // Vérifier si c'est le premier à maîtriser = victoire immédiate

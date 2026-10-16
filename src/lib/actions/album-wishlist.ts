@@ -106,8 +106,10 @@ export async function addToAlbumWishlist(
     return { success: false, error: "Erreur lors de l'ajout à la wishlist" };
   }
 
-  // Créer une activité pour le feed
-  createActivity({
+  // Créer une activité pour le feed. Attendue : non attendue, son
+  // revalidatePath partait apres la fin de l'action, pendant le rendu, et
+  // Next le refuse.
+  await createActivity({
     type: "album_wishlisted",
     reference_id: data.id,
     metadata: {

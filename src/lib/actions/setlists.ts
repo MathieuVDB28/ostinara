@@ -274,6 +274,67 @@ export async function addSetlistItem(
   return { success: true, item: data as SetlistItem };
 }
 
+/**
+ * Un morceau de la bibliotheque, ajoute en fin de setlist.
+ *
+ * Le pont « maitrise -> scene » : depuis la fiche d'un morceau qu'on vient
+ * de boucler, sans passer par la setlist et son selecteur. Un morceau deja
+ * dans la setlist n'y entre pas deux fois.
+ */
+export async function addSongToSetlist(
+  setlistId: string,
+  songId: string
+): Promise<{ success: boolean; error?: string; alreadyThere?: boolean }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: "Non authentifie" };
+  }
+
+  const [{ data: song }, { data: existing }] = await Promise.all([
+    supabase
+      .from("songs")
+      .select("id, title, artist, cover_url, tabs_url, target_bpm")
+      .eq("id", songId)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("setlist_items")
+      .select("id")
+      .eq("setlist_id", setlistId)
+      .eq("song_id", songId)
+      .limit(1),
+  ]);
+
+  if (!song) {
+    return { success: false, error: "Morceau introuvable" };
+  }
+
+  if (existing && existing.length > 0) {
+    return { success: true, alreadyThere: true };
+  }
+
+  const result = await addSetlistItem({
+    setlist_id: setlistId,
+    item_type: "song",
+    song_id: song.id,
+    song_title: song.title,
+    song_artist: song.artist,
+    song_cover_url: song.cover_url ?? undefined,
+    song_owner_id: user.id,
+    tabs_url: song.tabs_url ?? undefined,
+    bpm: song.target_bpm ?? undefined,
+  });
+
+  if (!result.success) {
+    return { success: false, error: result.error };
+  }
+
+  revalidatePath("/setlists");
+  return { success: true };
+}
+
 // === Update setlist item ===
 export async function updateSetlistItem(
   itemId: string,

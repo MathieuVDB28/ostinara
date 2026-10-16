@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { SwipeRow, type SwipeAction, type SwipeActionTone } from "@/components/ui/swipe-row";
 import { updateSongStatus } from "@/lib/actions/songs";
+import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import type { Song, SongStatus } from "@/types";
 
 /**
@@ -40,6 +41,8 @@ export function SongSwipeRow({
   onStatusChange,
   children,
 }: SongSwipeRowProps) {
+  const nextSteps = useNextSteps();
+
   const apply = useCallback(
     async (status: SongStatus) => {
       // L'affichage bascule tout de suite : le resultat d'un glissement
@@ -47,9 +50,16 @@ export function SongSwipeRow({
       onStatusChange(song.id, status);
       const result = await updateSongStatus(song.id, status);
       // L'echec remet la carte dans son etat reel plutot que de mentir.
-      if (!result.success) onStatusChange(song.id, song.status);
+      if (!result.success) {
+        onStatusChange(song.id, song.status);
+        return;
+      }
+      // Un morceau tout juste maitrise appelle la suite : cover, setlist.
+      if (status === "mastered") {
+        nextSteps.show({ kind: "song_mastered", song: { ...song, status, progress_percent: 100 } });
+      }
     },
-    [onStatusChange, song.id, song.status]
+    [nextSteps, onStatusChange, song]
   );
 
   const actions: SwipeAction[] = OFFER_ORDER.filter(

@@ -138,6 +138,36 @@ export async function getUpcomingRehearsals(): Promise<RehearsalWithDetails[]> {
   return rehearsals as RehearsalWithDetails[];
 }
 
+/**
+ * Les setlists des prochaines repetes, une par setlist.
+ *
+ * Le pont « cover postee -> repete » : un morceau qu'on vient d'enregistrer
+ * est pret a etre joue en groupe. Seules les repetes qui ont deja une
+ * setlist comptent — sans elle, il n'y a nulle part ou le ranger.
+ */
+export async function getUpcomingRehearsalSetlists(): Promise<
+  { rehearsalId: string; title: string; date: string; bandName: string; setlistId: string; setlistName: string }[]
+> {
+  const rehearsals = await getUpcomingRehearsals();
+  const seen = new Set<string>();
+  const targets = [];
+
+  for (const rehearsal of rehearsals) {
+    if (!rehearsal.setlist || seen.has(rehearsal.setlist.id)) continue;
+    seen.add(rehearsal.setlist.id);
+    targets.push({
+      rehearsalId: rehearsal.id,
+      title: rehearsal.title,
+      date: rehearsal.date,
+      bandName: rehearsal.band?.name ?? "Groupe",
+      setlistId: rehearsal.setlist.id,
+      setlistName: rehearsal.setlist.name,
+    });
+  }
+
+  return targets.slice(0, 3);
+}
+
 // === Helper: generate recurrence dates ===
 function generateRecurrenceDates(
   startDate: Date,

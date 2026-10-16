@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getArtistDetails, getArtistAlbums } from "@/lib/services/spotify";
-import { getAlbumsCommunityStats } from "@/lib/actions/albums";
+import { getAlbumsCommunityStats, getArtistLibraryContext } from "@/lib/actions/albums";
 import { ArtistDetailView } from "@/components/albums/artist-detail-view";
 
 interface Props {
@@ -16,7 +16,13 @@ export default async function ArtistDetailPage({ params }: Props) {
   const albums = await getArtistAlbums(id, artist.name);
 
   const spotifyIds = albums.map((a) => a.id).filter(Boolean);
-  const communityStats = await getAlbumsCommunityStats(spotifyIds);
+  const [communityStats, library] = await Promise.all([
+    getAlbumsCommunityStats(spotifyIds),
+    // Ce qu'on joue et ecoute deja de l'artiste : la page part de la.
+    getArtistLibraryContext(artist.name, spotifyIds),
+  ]);
 
-  return <ArtistDetailView artist={artist} albums={albums} communityStats={communityStats} />;
+  return (
+    <ArtistDetailView artist={artist} albums={albums} communityStats={communityStats} library={library} />
+  );
 }

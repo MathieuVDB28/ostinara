@@ -9,6 +9,8 @@ import type { SpotifyAlbumDetails, AlbumReview, AlbumCommunityStats, SpotifyAlbu
 import { Icon } from "@/components/ui/icon";
 import { Cover } from "@/components/ui/cover";
 import { AddTrackToLibraryButton, FavoriteTrackPicker } from "./favorite-track-picker";
+import { useNextSteps } from "@/components/next-steps/next-steps-provider";
+import { Plus } from "lucide-react";
 
 interface Props {
   album: SpotifyAlbumDetails;
@@ -22,6 +24,7 @@ function starsFromDb(dbRating: number) {
 
 export function AlbumDetailView({ album, stats, userReview: initialReview }: Props) {
   const router = useRouter();
+  const nextSteps = useNextSteps();
   const [userReview, setUserReview] = useState(initialReview);
   const [isEditing, setIsEditing] = useState(false);
   const [editRating, setEditRating] = useState(initialReview ? starsFromDb(initialReview.rating) : 0);
@@ -298,9 +301,32 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
             <h2 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               Titres
             </h2>
-            {userReview && (
-              <span className="text-xs text-muted-foreground">Touche ton morceau préféré</span>
-            )}
+            <div className="flex items-baseline gap-3">
+              {userReview && (
+                <span className="hidden text-xs text-muted-foreground sm:inline">Touche ton morceau préféré</span>
+              )}
+              {/* Plusieurs titres d'un coup vers la biblio : le coeur n'en marque qu'un. */}
+              <button
+                type="button"
+                onClick={() =>
+                  nextSteps.show({
+                    kind: "album_tracks",
+                    album: {
+                      name: album.name,
+                      artist: mainArtist.name,
+                      coverUrl: album.images[0]?.url,
+                      spotifyId: album.id,
+                    },
+                    tracks,
+                    preselected: userReview?.favorite_track_spotify_id ? [userReview.favorite_track_spotify_id] : [],
+                  })
+                }
+                className="inline-flex items-center gap-1 text-xs font-semibold text-primary underline-offset-2 hover:underline"
+              >
+                <Plus className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />
+                Apprendre des titres
+              </button>
+            </div>
           </div>
 
           {userReview?.favorite_track_name && (

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -31,6 +32,7 @@ import { SongBpmCurve } from "@/components/progress/song-bpm-curve";
 import { getSongBpmProgress } from "@/lib/actions/practice";
 import { saveSongTabStructure } from "@/lib/actions/songs";
 import { songTargetBpm, slowPracticeFloor } from "@/lib/song-progress";
+import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import type {
   Song,
   SongBpmPoint,
@@ -80,6 +82,7 @@ export function EditSongModal({
   bestBpm = null,
 }: EditSongModalProps) {
   const router = useRouter();
+  const nextSteps = useNextSteps();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -208,6 +211,12 @@ export function EditSongModal({
     if (result.success) {
       onUpdate();
       onClose();
+      if (status === "mastered" && song.status !== "mastered") {
+        nextSteps.show({
+          kind: "song_mastered",
+          song: { ...song, title, artist, status, progress_percent: 100 },
+        });
+      }
     } else {
       setError(result.error || "Erreur lors de la sauvegarde");
     }
@@ -301,9 +310,24 @@ export function EditSongModal({
             {song.title}
           </h2>
           <p className="font-semibold text-muted-foreground">
-            {song.artist}
+            {/* L'artiste mene a sa page : ce qu'on en joue, ses albums a ecouter. */}
+            <Link
+              href={`/artists/by-name?q=${encodeURIComponent(song.artist)}`}
+              className="underline-offset-2 hover:text-foreground hover:underline"
+            >
+              {song.artist}
+            </Link>
             {song.album && <span className="font-normal"> · {song.album}</span>}
           </p>
+          {song.added_from && song.added_from_label && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {song.added_from === "album"
+                ? `Repéré sur « ${song.added_from_label} »`
+                : song.added_from === "friend"
+                  ? `Vu chez ${song.added_from_label}`
+                  : `Défi de ${song.added_from_label}`}
+            </p>
+          )}
 
           <div className="mt-3 flex flex-wrap gap-1.5">
             {[

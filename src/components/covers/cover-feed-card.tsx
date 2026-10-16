@@ -8,6 +8,7 @@ import { toggleCoverReaction } from "@/lib/actions/activities";
 import { ActivityComments } from "@/components/social/activity-comments";
 import { ReactionPicker } from "@/components/social/reaction-picker";
 import type { CoverFeedItem } from "@/types";
+import { CoverGearLine } from "./cover-gear-line";
 
 /**
  * Une cover dans le feed.
@@ -172,6 +173,7 @@ export function CoverFeedCard({
             En réponse à {item.replyTo.authorName} sur «&nbsp;{item.replyTo.songTitle}&nbsp;»
           </p>
         )}
+        <CoverGearLine gear={item.gear} className="mt-1.5" />
       </div>
 
       {/* Le media */}

@@ -8,6 +8,7 @@ import type {
   CreateSongInput,
   UpdateSongInput,
   Song,
+  SongOrigin,
   SongStatus,
   SongsterrTabStructure,
 } from "@/types";
@@ -119,6 +120,101 @@ export async function createSong(input: CreateSongInput): Promise<{ success: boo
   return { success: true, song: data as Song };
 }
 
+/** Ce qu'il faut pour ranger un morceau venu d'ailleurs dans la biblio. */
+export interface LibrarySongSource {
+  title: string;
+  artist: string;
+  album?: string;
+  cover_url?: string;
+  spotify_id?: string;
+}
+
+/**
+ * Le point d'entree des ponts vers la bibliotheque : un titre d'album, le
+ * morceau qu'un ami vient de maitriser, celui d'un defi accepte…
+ *
+ * Un morceau deja present — meme identifiant Spotify, ou meme titre et
+ * artiste — n'est pas ajoute deux fois : on renvoie celui qui existe, pour
+ * que l'appelant puisse mener a sa fiche. `status` ne s'applique qu'a un
+ * nouveau morceau : on ne fait pas reculer un morceau deja maitrise.
+ */
+export async function addSongToLibrary(
+  input: LibrarySongSource,
+  status: SongStatus = "want_to_learn",
+  origin?: { from: SongOrigin; label: string }
+): Promise<{ success: boolean; error?: string; song?: Song; alreadyThere?: boolean }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: "Non authentifié" };
+  }
+
+  const sameTitle = `and(title.ilike.${escapeFilter(input.title)},artist.ilike.${escapeFilter(input.artist)})`;
+  const { data: existing } = await supabase
+    .from("songs")
+    .select("*")
+    .eq("user_id", user.id)
+    .or(input.spotify_id ? `spotify_id.eq.${input.spotify_id},${sameTitle}` : sameTitle)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    return { success: true, song: existing[0] as Song, alreadyThere: true };
+  }
+
+  const created = await createSong({
+    ...input,
+    status,
+    added_from: origin?.from,
+    added_from_label: origin?.label,
+  });
+
+  /*
+   * Ce qui vient de donner envie entre dans le plan de la semaine : un
+   * morceau repere sur un album ou chez un ami devient « Attaquer X ».
+   * Un morceau de defi n'en a pas besoin — le defi est deja l'objectif.
+   */
+  if (created.success && created.song && status === "want_to_learn" && origin && origin.from !== "challenge") {
+    const { suggestSongThisWeek } = await import("./weekly-plan");
+    await suggestSongThisWeek(created.song).catch((error) =>
+      console.error("Error adding song to weekly plan:", error)
+    );
+  }
+
+  return created;
+}
+
+/**
+ * Plusieurs morceaux d'un coup — les titres preferes d'un album.
+ *
+ * Un par un, dans l'ordre : la limite du plan gratuit arrete la serie la
+ * ou elle tombe, et l'on sait exactement ce qui est passe.
+ */
+export async function addSongsToLibrary(
+  inputs: LibrarySongSource[],
+  origin?: { from: SongOrigin; label: string }
+): Promise<{ success: boolean; added: number; alreadyThere: number; error?: string }> {
+  let added = 0;
+  let alreadyThere = 0;
+
+  for (const input of inputs) {
+    const result = await addSongToLibrary(input, "want_to_learn", origin);
+    if (!result.success) {
+      return { success: added + alreadyThere > 0, added, alreadyThere, error: result.error };
+    }
+    if (result.alreadyThere) alreadyThere += 1;
+    else added += 1;
+  }
+
+  revalidatePath("/biblio");
+  return { success: true, added, alreadyThere };
+}
+
+/** Une valeur entre guillemets dans un filtre PostgREST `or()`. */
+function escapeFilter(value: string): string {
+  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
 /**
  * L'activite de progression d'un changement de statut, s'il en merite une.
  * « À apprendre » -> « en cours » : song_learning. Tout passage a
@@ -161,9 +257,16 @@ export async function updateSong(
     }
   }
 
+  // Maitrise, c'est 100 % — quel que soit l'ecran qui le decide. Seul le
+  // glissement le disait ; la fiche du morceau laissait l'ancienne valeur.
+  const changes: UpdateSongInput =
+    input.status === "mastered" && input.progress_percent === undefined
+      ? { ...input, progress_percent: 100 }
+      : input;
+
   const { data: updatedSong, error } = await supabase
     .from("songs")
-    .update(input)
+    .update(changes)
     .eq("id", id)
     .eq("user_id", user.id)
     .select()

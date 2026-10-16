@@ -12,6 +12,7 @@ import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { PracticeSessionProvider } from "@/components/providers/practice-session-provider";
 import { CommandPaletteProvider } from "@/components/search/command-palette";
 import { OfflineProvider } from "@/components/offline/offline-provider";
+import { NextStepsProvider } from "@/components/next-steps/next-steps-provider";
 import type { BadgeCounts } from "@/lib/navigation";
 
 export default async function MainLayout({
@@ -75,6 +76,9 @@ export default async function MainLayout({
       quand le reseau manque.
     */
     <OfflineProvider>
+    {/* Les ponts entre features (« et maintenant ? ») : au-dessus du chrono,
+        parce que la fin de session est l'un des moments qui les ouvrent. */}
+    <NextStepsProvider>
     {/* Le chrono de session vit au-dessus des pages : il survit a la
         navigation, et la barre qui permet de l'arreter aussi. */}
     <PracticeSessionProvider>
@@ -101,6 +105,7 @@ export default async function MainLayout({
         </div>
       </CommandPaletteProvider>
     </PracticeSessionProvider>
+    </NextStepsProvider>
     </OfflineProvider>
   );
 }

@@ -32,10 +32,16 @@ export interface Song {
   tab_total_measures?: number;
   tab_sections?: PlayedSection[];
   tab_synced_at?: string;
+  /** D'ou vient le morceau quand un pont l'a ajoute (null : a la main). */
+  added_from?: SongOrigin | null;
+  /** Le nom de l'album, de l'ami ou de l'adversaire d'origine. */
+  added_from_label?: string | null;
   created_at: string;
   updated_at: string;
   covers_count?: number;
 }
+
+export type SongOrigin = "album" | "friend" | "challenge";
 
 export interface CreateSongInput {
   title: string;
@@ -50,6 +56,8 @@ export interface CreateSongInput {
   capo_position?: number;
   tabs_url?: string;
   notes?: string;
+  added_from?: SongOrigin;
+  added_from_label?: string;
 }
 
 export interface UpdateSongInput {
@@ -353,7 +361,12 @@ export interface Cover {
   /** La cover a laquelle celle-ci repond, quand c'en est une. */
   reply_to_cover_id?: string | null;
   created_at: string;
+  /** Le matos joue sur la cover — repris du morceau a la publication. */
+  gear?: CoverGearTag[];
 }
+
+/** Ce qu'une cover dit de son matos : « Joué avec Fender Stratocaster ». */
+export type CoverGearTag = Pick<GearItem, "id" | "type" | "brand" | "model">;
 
 export interface CoverWithSong extends Cover {
   song: Song;
@@ -808,7 +821,8 @@ export interface UpdateSetlistInput {
 
 export interface CreateSetlistItemInput {
   setlist_id: string;
-  position: number;
+  /** Absente : en fin de setlist. */
+  position?: number;
   item_type: SetlistItemType;
 
   // For songs

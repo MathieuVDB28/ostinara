@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
-import { addAlbumTrackToLibrary, createAlbumReview, getAlbumTracks } from "@/lib/actions/albums";
+import { createAlbumReview, getAlbumTracks } from "@/lib/actions/albums";
+import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { FavoriteTrackPicker } from "./favorite-track-picker";
 import { StarRating } from "@/components/ui/star-rating";
 import type { AlbumReview, SpotifyAlbum, SpotifyAlbumTrack } from "@/types";
@@ -27,7 +28,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
   const [error, setError] = useState("");
   const [tracks, setTracks] = useState<SpotifyAlbumTrack[] | null>(null);
   const [favorite, setFavorite] = useState<SpotifyAlbumTrack | null>(null);
-  const [addToLibrary, setAddToLibrary] = useState(false);
+  const nextSteps = useNextSteps();
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -40,7 +41,6 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
       setReview("");
       setError("");
       setFavorite(null);
-      setAddToLibrary(false);
     } else if (prefillAlbum) {
       setSelectedAlbum(prefillAlbum);
       setStep("review");
@@ -105,23 +105,6 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
 
     const artistName = selectedAlbum.artists.map((a) => a.name).join(", ");
 
-    // La biblio d'abord : si la limite du plan gratuit bloque l'ajout,
-    // l'avis n'est pas encore publie et on peut decocher puis reessayer.
-    if (favorite && addToLibrary) {
-      const added = await addAlbumTrackToLibrary({
-        title: favorite.name,
-        artist: selectedAlbum.artists[0]?.name ?? artistName,
-        album: selectedAlbum.name,
-        cover_url: selectedAlbum.images[0]?.url,
-        spotify_id: favorite.id,
-      });
-      if (!added.success) {
-        setError(added.error || "Le morceau n'a pas pu être ajouté à ta biblio.");
-        setSubmitting(false);
-        return;
-      }
-    }
-
     const result = await createAlbumReview({
       album_name: selectedAlbum.name,
       artist_name: artistName,
@@ -138,6 +121,23 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
 
     if (result.success && result.data) {
       onAdded(result.data);
+      /*
+       * Apres l'avis, les titres a apprendre : l'ecoute passe la main a la
+       * guitare. Le prefere est coche d'emblee, on peut en cocher d'autres.
+       */
+      if (selectedAlbum.id && tracks && tracks.length > 0) {
+        nextSteps.show({
+          kind: "album_tracks",
+          album: {
+            name: selectedAlbum.name,
+            artist: selectedAlbum.artists[0]?.name ?? artistName,
+            coverUrl: selectedAlbum.images[0]?.url,
+            spotifyId: selectedAlbum.id,
+          },
+          tracks,
+          preselected: favorite ? [favorite.id] : [],
+        });
+      }
     } else {
       setError(result.error || "Une erreur est survenue");
     }
@@ -301,19 +301,6 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                     onChange={setFavorite}
                     scroll
                   />
-                )}
-                {favorite && (
-                  <label className="mt-3 flex min-h-[40px] cursor-pointer items-center gap-3 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={addToLibrary}
-                      onChange={(e) => setAddToLibrary(e.target.checked)}
-                      className="h-4 w-4 accent-[var(--primary)]"
-                    />
-                    <span>
-                      L&apos;ajouter à ma biblio, dans « À apprendre »
-                    </span>
-                  </label>
                 )}
               </div>
               )}

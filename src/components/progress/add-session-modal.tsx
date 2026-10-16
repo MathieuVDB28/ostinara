@@ -8,6 +8,7 @@ import { Cover } from "@/components/ui/cover";
 import { useOffline } from "@/components/offline/offline-provider";
 import { updateSong } from "@/lib/actions/songs";
 import { songTargetBpm } from "@/lib/song-progress";
+import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import type { SessionSongTime } from "@/components/providers/practice-session-provider";
 import { MoodSelector } from "./mood-selector";
 import { SectionsSelector } from "./sections-selector";
@@ -91,6 +92,7 @@ export function AddSessionModal({
   mode,
 }: AddSessionModalProps) {
   const router = useRouter();
+  const nextSteps = useNextSteps();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /*
@@ -243,6 +245,17 @@ export function AddSessionModal({
             })
           )
       );
+
+      // Chaque morceau boucle pendant la session ouvre sa suite.
+      for (const entry of entries) {
+        const song = songs.find((item) => item.id === entry.songId);
+        if (entry.status === "mastered" && song && song.status !== "mastered") {
+          nextSteps.show({
+            kind: "song_mastered",
+            song: { ...song, status: "mastered", progress_percent: 100 },
+          });
+        }
+      }
     }
 
     setLoading(false);
