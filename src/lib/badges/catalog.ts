@@ -120,7 +120,7 @@ export const BADGES: BadgeDef[] = [
     id: "heures",
     kind: "tiered",
     family: "pratique",
-    title: "Heures de vol",
+    title: "Corne aux doigts",
     icon: "clock",
     tiers: [10, 50, 100],
     goal: (n) => `Cumule ${n} h de pratique`,
