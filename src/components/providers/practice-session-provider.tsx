@@ -51,6 +51,63 @@ interface StoredSession {
    * bibliotheque. Optionnel : une session sans morceau reste une session.
    */
   song?: SessionSong | null;
+  /**
+   * Le temps passe sur chaque morceau, en ms, dans l'ordre ou on les a
+   * ouverts. Cle "" pour le temps joue sans morceau. Le morceau courant
+   * n'y est credite qu'au changement de morceau ou a l'arret.
+   */
+  songTimes?: Record<string, number>;
+  /** Le temps ecoule au moment ou le morceau courant a ete ouvert. */
+  songStartMs?: number;
+  /** Le dernier tempo regle sur chaque morceau. */
+  songBpms?: Record<string, number>;
+}
+
+/** Une ligne de fin de session : un morceau, son temps, son tempo. */
+export interface SessionSongTime {
+  songId: string | null;
+  minutes: number;
+  bpm: number | null;
+}
+
+/** En dessous, on a ouvert le morceau sans le jouer. */
+const MIN_SONG_MS = 30_000;
+
+/** Credite le temps du morceau courant, jusqu'a maintenant. */
+function creditCurrentSong(session: StoredSession): Pick<StoredSession, "songTimes" | "songStartMs"> {
+  const elapsed = elapsedOf(session);
+  const key = session.songId ?? "";
+  const times = { ...(session.songTimes ?? {}) };
+  times[key] = (times[key] ?? 0) + Math.max(0, elapsed - (session.songStartMs ?? 0));
+  return { songTimes: times, songStartMs: elapsed };
+}
+
+/**
+ * Les morceaux de la session, avec leurs minutes. Un morceau ouvert moins
+ * de 30 s n'a pas ete joue ; le temps sans morceau n'apparait que s'il
+ * pese au moins une minute ou s'il n'y a rien d'autre.
+ */
+function sessionSongTimes(session: StoredSession, bpms: Record<string, number>): SessionSongTime[] {
+  const { songTimes = {} } = creditCurrentSong(session);
+  const entries = Object.entries(songTimes);
+  const played = entries.filter(([key, ms]) => key !== "" && ms >= MIN_SONG_MS);
+  const free = songTimes[""] ?? 0;
+
+  const rows: SessionSongTime[] = played.map(([key, ms]) => ({
+    songId: key,
+    minutes: Math.max(1, Math.round(ms / 60000)),
+    bpm: bpms[key] ?? null,
+  }));
+
+  if (rows.length === 0 || free >= 60_000) {
+    rows.push({
+      songId: null,
+      minutes: Math.max(1, Math.round((rows.length === 0 ? elapsedOf(session) : free) / 60000)),
+      bpm: rows.length === 0 ? session.bpm : null,
+    });
+  }
+
+  return rows;
 }
 
 /** Le strict necessaire pour nommer le morceau travaille. */
@@ -197,6 +254,8 @@ interface PendingEntry {
   songId?: string | null;
   exerciseId?: string | null;
   bpm?: number | null;
+  /** Les morceaux joues pendant le chrono, avec leur temps. */
+  songTimes?: SessionSongTime[];
 }
 
 export function PracticeSessionProvider({ children }: { children: ReactNode }) {
@@ -245,6 +304,9 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       exerciseId: options?.exerciseId ?? null,
       bpm: options?.bpm ?? null,
       song: options?.song ?? null,
+      songTimes: {},
+      songStartMs: 0,
+      songBpms: options?.songId && options?.bpm ? { [options.songId]: options.bpm } : {},
     }));
     if (options?.focus) setFocused(true);
   }, []);
@@ -277,6 +339,9 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
     // Une minute plancher : une session de 40 secondes reste une session.
     const durationMinutes = Math.max(1, Math.round(elapsedOf(current) / 60000));
 
+    const bpms = { ...(current.songBpms ?? {}) };
+    if (current.songId && current.bpm) bpms[current.songId] = current.bpm;
+
     setSession(() => IDLE);
     setFocused(false);
     void loadSongs();
@@ -286,6 +351,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       songId: current.songId,
       exerciseId: current.exerciseId,
       bpm: current.bpm,
+      songTimes: sessionSongTimes(current, bpms),
     });
   }, [loadSongs]);
 
@@ -294,12 +360,26 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
     setFocused(false);
   }, []);
 
+  /*
+   * Changer de morceau pendant la session ne remplace plus le precedent :
+   * son temps est credite, et la session finit avec la liste de tout ce
+   * qui a ete joue.
+   */
   const setSongId = useCallback((songId: string | null, song?: SessionSong | null) => {
-    setSession((current) => ({
-      ...current,
-      songId,
-      song: song === undefined ? current.song : song,
-    }));
+    setSession((current) => {
+      if (songId === current.songId) {
+        return { ...current, song: song === undefined ? current.song : song };
+      }
+      const bpms = { ...(current.songBpms ?? {}) };
+      if (current.songId && current.bpm) bpms[current.songId] = current.bpm;
+      return {
+        ...current,
+        ...creditCurrentSong(current),
+        songBpms: bpms,
+        songId,
+        song: song === undefined ? current.song : song,
+      };
+    });
   }, []);
 
   const openFocus = useCallback(() => setFocused(true), []);
@@ -382,6 +462,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
           timerDuration={pending.durationMinutes}
           timerSong={pendingSong}
           timerBpm={pending.bpm ?? undefined}
+          timerSongTimes={pending.songTimes}
           onClose={() => setPending(null)}
           onSuccess={() => {
             // La progression de l'exercice suit l'enregistrement de la

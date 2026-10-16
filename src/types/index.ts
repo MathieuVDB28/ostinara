@@ -509,6 +509,8 @@ export interface PracticeSession {
   session_goals: string | null;
   goals_achieved: boolean;
   notes: string | null;
+  /** Les lignes d'une session a plusieurs morceaux partagent cet id. */
+  session_group_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -517,7 +519,20 @@ export interface PracticeSessionWithSong extends PracticeSession {
   song: Song | null;
 }
 
+/** Un morceau d'une session a plusieurs morceaux, avec son temps et son tempo. */
+export interface PracticeSessionSongEntry {
+  /** Null pour le temps joue sans morceau. */
+  song_id: string | null;
+  duration_minutes: number;
+  bpm_achieved?: number;
+}
+
 export interface CreatePracticeSessionInput {
+  /**
+   * Plusieurs morceaux : une ligne par morceau, groupees. Quand il est
+   * present, il remplace `song_id`, `duration_minutes` et `bpm_achieved`.
+   */
+  songs?: PracticeSessionSongEntry[];
   song_id?: string;
   duration_minutes: number;
   practiced_at?: string;

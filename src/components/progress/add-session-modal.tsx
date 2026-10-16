@@ -3,13 +3,66 @@
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, CloudOff, Pencil, X } from "lucide-react";
+import { ChevronDown, CloudOff, Plus, X } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { useOffline } from "@/components/offline/offline-provider";
+import { updateSong } from "@/lib/actions/songs";
+import { songTargetBpm } from "@/lib/song-progress";
+import type { SessionSongTime } from "@/components/providers/practice-session-provider";
 import { MoodSelector } from "./mood-selector";
 import { SectionsSelector } from "./sections-selector";
 import { EnergySelector } from "./energy-selector";
-import type { Song, SessionMood, EnergyLevel, SongSection } from "@/types";
+import type { Song, SongStatus, SessionMood, EnergyLevel, SongSection } from "@/types";
+
+/** Un morceau de la session, tel qu'on l'edite dans la modale. */
+interface Entry {
+  /** Null : le temps joue sans morceau. */
+  songId: string | null;
+  minutes: number | "";
+  bpm: string;
+  /** Null tant qu'on ne touche pas au statut du morceau. */
+  status: SongStatus | null;
+  /** Null tant qu'on ne touche pas a la progression. */
+  percent: number | null;
+}
+
+function initialEntries(
+  timerSongTimes: SessionSongTime[] | undefined,
+  timerSong: Song | null | undefined,
+  timerDuration: number | undefined,
+  timerBpm: number | undefined
+): Entry[] {
+  if (timerSongTimes && timerSongTimes.length > 0) {
+    // Le temps sans morceau ne merite une ligne que s'il y a aussi des
+    // morceaux : seul, c'est simplement une session libre.
+    const rows = timerSongTimes.some((row) => row.songId)
+      ? timerSongTimes
+      : [];
+    return rows.map((row) => ({
+      songId: row.songId,
+      minutes: row.minutes,
+      bpm: row.bpm ? String(row.bpm) : "",
+      status: null,
+      percent: null,
+    }));
+  }
+  if (timerSong) {
+    return [{
+      songId: timerSong.id,
+      minutes: timerDuration || 30,
+      bpm: timerBpm ? String(timerBpm) : "",
+      status: null,
+      percent: null,
+    }];
+  }
+  return [];
+}
+
+const STATUS_OPTIONS: { value: SongStatus; label: string }[] = [
+  { value: "want_to_learn", label: "À apprendre" },
+  { value: "learning", label: "En cours" },
+  { value: "mastered", label: "Maîtrisé" },
+];
 
 interface AddSessionModalProps {
   isOpen: boolean;
@@ -21,6 +74,8 @@ interface AddSessionModalProps {
   timerSong?: Song | null;
   /** Tempo du metronome au moment du "Terminer", quand il y en avait un. */
   timerBpm?: number;
+  /** Les morceaux joues pendant le chrono, avec leur temps. */
+  timerSongTimes?: SessionSongTime[];
   mode: "timer" | "manual";
 }
 
@@ -32,6 +87,7 @@ export function AddSessionModal({
   timerDuration,
   timerSong,
   timerBpm,
+  timerSongTimes,
   mode,
 }: AddSessionModalProps) {
   const router = useRouter();
@@ -48,7 +104,9 @@ export function AddSessionModal({
   const { saveSession, isOnline } = useOffline();
 
   // Champs du formulaire
-  const [selectedSong, setSelectedSong] = useState<Song | null>(timerSong || null);
+  const [entries, setEntries] = useState<Entry[]>(() =>
+    initialEntries(timerSongTimes, timerSong, timerDuration, timerBpm)
+  );
   const [durationMinutes, setDurationMinutes] = useState<number | "">(timerDuration || 30);
   const [practicedAt, setPracticedAt] = useState(
     new Date().toISOString().slice(0, 16)
@@ -75,7 +133,7 @@ export function AddSessionModal({
   // Reset au changement de mode ou props
   useEffect(() => {
     if (isOpen) {
-      setSelectedSong(timerSong || null);
+      setEntries(initialEntries(timerSongTimes, timerSong, timerDuration, timerBpm));
       setDurationMinutes(timerDuration || 30);
       setPracticedAt(new Date().toISOString().slice(0, 16));
       setBpmAchieved(timerBpm ? String(timerBpm) : "");
@@ -90,7 +148,7 @@ export function AddSessionModal({
       setShowFeeling(false);
       setShowGoals(false);
     }
-  }, [isOpen, timerDuration, timerSong, timerBpm]);
+  }, [isOpen, timerDuration, timerSong, timerBpm, timerSongTimes]);
 
   const handleClose = useCallback(() => {
     onClose();
@@ -111,20 +169,52 @@ export function AddSessionModal({
     };
   }, [isOpen, handleClose]);
 
+  // Plusieurs morceaux : la duree est la somme des leurs. Un seul ou
+  // aucun : la duree du chrono, ou celle saisie.
+  const isMulti = entries.length > 1;
+  const totalMinutes: number | "" = isMulti
+    ? entries.reduce((sum, entry) => sum + (Number(entry.minutes) || 0), 0)
+    : durationMinutes;
+
+  const updateEntry = (index: number, patch: Partial<Entry>) => {
+    setEntries((current) => current.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
+  };
+
+  const addSong = (song: Song) => {
+    setEntries((current) => {
+      if (current.some((entry) => entry.songId === song.id)) return current;
+      // Le premier morceau ajoute a une session libre la remplace.
+      const base = current.filter((entry) => entry.songId !== null || current.length > 1);
+      return [...base, { songId: song.id, minutes: base.length === 0 ? durationMinutes : "", bpm: "", status: null, percent: null }];
+    });
+  };
+
   const handleSubmit = async () => {
-    if (!durationMinutes || durationMinutes < 1) {
+    if (!totalMinutes || totalMinutes < 1) {
       setError("La durée doit être d'au moins 1 minute");
+      return;
+    }
+    if (isMulti && entries.some((entry) => !entry.minutes || Number(entry.minutes) < 1)) {
+      setError("Indique les minutes passées sur chaque morceau");
       return;
     }
 
     setLoading(true);
     setError(null);
 
+    const single = entries.length === 1 ? entries[0] : null;
     const result = await saveSession({
-      song_id: selectedSong?.id,
-      duration_minutes: durationMinutes,
+      songs: isMulti
+        ? entries.map((entry) => ({
+            song_id: entry.songId,
+            duration_minutes: Number(entry.minutes),
+            bpm_achieved: entry.bpm ? parseInt(entry.bpm) : undefined,
+          }))
+        : undefined,
+      song_id: single?.songId ?? undefined,
+      duration_minutes: totalMinutes,
       practiced_at: new Date(practicedAt).toISOString(),
-      bpm_achieved: bpmAchieved ? parseInt(bpmAchieved) : undefined,
+      bpm_achieved: single ? (single.bpm ? parseInt(single.bpm) : undefined) : bpmAchieved ? parseInt(bpmAchieved) : undefined,
       mood: mood || undefined,
       energy_level: energyLevel || undefined,
       sections_worked: sectionsWorked.length > 0 ? sectionsWorked : undefined,
@@ -132,6 +222,28 @@ export function AddSessionModal({
       goals_achieved: goalsAchieved,
       notes: notes || undefined,
     });
+
+    if (result.success && !result.queued) {
+      /*
+       * Statut et progression touches dans la modale. Apres la session,
+       * pour que le morceau maitrise le soit apres le tempo enregistre.
+       * Hors ligne, ces champs sont caches : rien a envoyer.
+       */
+      await Promise.all(
+        entries
+          .filter((entry) => entry.songId && (entry.status !== null || entry.percent !== null))
+          .map((entry) =>
+            updateSong(entry.songId!, {
+              ...(entry.status !== null ? { status: entry.status } : {}),
+              ...(entry.status === "mastered"
+                ? { progress_percent: 100 }
+                : entry.percent !== null
+                  ? { progress_percent: entry.percent }
+                  : {}),
+            })
+          )
+      );
+    }
 
     setLoading(false);
 
@@ -190,8 +302,19 @@ export function AddSessionModal({
 
         {mode === "timer" && (
           <dl className="mb-6 grid grid-cols-3 gap-3 border-y border-border py-3">
-            <RecapStat label="durée" value={<>{durationMinutes || 0}<small className="text-base text-muted-foreground"> min</small></>} />
-            <RecapStat label="bpm tenu" value={bpmAchieved ? <>{bpmAchieved}</> : <span className="text-muted-foreground">—</span>} />
+            <RecapStat label="durée" value={<>{totalMinutes || 0}<small className="text-base text-muted-foreground"> min</small></>} />
+            {isMulti ? (
+              <RecapStat label="morceaux" value={<>{entries.filter((entry) => entry.songId).length}</>} />
+            ) : (
+              <RecapStat
+                label="bpm tenu"
+                value={
+                  (entries[0]?.bpm || bpmAchieved)
+                    ? <>{entries[0]?.bpm || bpmAchieved}</>
+                    : <span className="text-muted-foreground">—</span>
+                }
+              />
+            )}
             <RecapStat label="sections" value={<>{sectionsWorked.length}</>} />
           </dl>
         )}
@@ -217,34 +340,38 @@ export function AddSessionModal({
         )}
 
         <div className="space-y-6">
-          {/* Morceau */}
+          {/*
+            Les morceaux de la session. Le chrono les a suivis : chaque
+            morceau ouvert pendant la session y est, avec son temps. On
+            peut en ajouter, en retirer, et regler leur statut au passage.
+          */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Morceau</label>
-            {selectedSong ? (
-              <div className="flex items-center gap-3 border-b border-border pb-3">
-                <Cover src={selectedSong.cover_url} className="h-12 w-12 rounded-[4px]" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{selectedSong.title}</p>
-                  <p className="text-sm text-muted-foreground truncate">{selectedSong.artist}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowSongSearch(true)}
-                  aria-label="Changer de morceau"
-                  className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
-                >
-                  <Pencil className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowSongSearch(true)}
-                className="w-full p-4 text-center text-sm font-medium text-muted-foreground hover:border-foreground hover:text-foreground"
-              >
-                Choisir un morceau (optionnel)
-              </button>
+            <label className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              {entries.length > 1 ? `Morceaux · ${entries.length}` : "Morceau"}
+            </label>
+            {entries.length > 0 && (
+              <ul className="border-t border-border">
+                {entries.map((entry, index) => (
+                  <EntryRow
+                    key={entry.songId ?? "free"}
+                    entry={entry}
+                    song={entry.songId ? songs.find((song) => song.id === entry.songId) ?? null : null}
+                    showMinutes={isMulti}
+                    canEditSong={isOnline}
+                    onChange={(patch) => updateEntry(index, patch)}
+                    onRemove={() => setEntries((current) => current.filter((_, i) => i !== index))}
+                  />
+                ))}
+              </ul>
             )}
+            <button
+              type="button"
+              onClick={() => setShowSongSearch(true)}
+              className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border text-sm font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              {entries.length === 0 ? "Choisir un morceau (optionnel)" : "Ajouter un morceau"}
+            </button>
           </div>
 
           {/* Durée et Date : le chrono les a deja, on ne les montre qu'en saisie manuelle */}
@@ -256,11 +383,12 @@ export function AddSessionModal({
                 inputMode="numeric"
                 min="1"
                 max="480"
-                value={durationMinutes}
+                value={totalMinutes}
                 onChange={(e) => setDurationMinutes(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
-                disabled={mode === "timer"}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary disabled:opacity-60"
+                // Plusieurs morceaux : la duree est leur somme.
+                disabled={mode === "timer" || isMulti}
               />
             </div>
             <div>
@@ -297,7 +425,8 @@ export function AddSessionModal({
             </button>
             {showPerformance && (
               <div className="space-y-4 pb-4">
-                <div>
+                {/* Avec un morceau, le tempo se note sur sa ligne. */}
+                {entries.length === 0 && <div>
                   <label className="mb-2 block text-sm font-medium">BPM atteint</label>
                   <input
                     type="number"
@@ -308,7 +437,7 @@ export function AddSessionModal({
                     onChange={(e) => setBpmAchieved(e.target.value)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
-                </div>
+                </div>}
                 <div>
                   <label className="mb-3 block text-sm font-medium">Sections travaillées</label>
                   <SectionsSelector value={sectionsWorked} onChange={setSectionsWorked} />
@@ -394,7 +523,7 @@ export function AddSessionModal({
           {/* Bouton de validation */}
           <button
             onClick={handleSubmit}
-            disabled={loading || !durationMinutes || durationMinutes < 1}
+            disabled={loading || !totalMinutes || totalMinutes < 1}
             className="min-h-[48px] w-full rounded-xl bg-primary py-3 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {loading ? (
@@ -419,7 +548,7 @@ export function AddSessionModal({
             />
             <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-md">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-bold">Choisir un morceau</h3>
+                <h3 className="text-lg font-bold">Ajouter un morceau</h3>
                 <button
                   onClick={() => setShowSongSearch(false)}
                   className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
@@ -443,27 +572,17 @@ export function AddSessionModal({
                 />
               </div>
 
-              <button
-                onClick={() => {
-                  setSelectedSong(null);
-                  setShowSongSearch(false);
-                }}
-                className="mb-2 w-full rounded-lg border border-dashed border-border p-3 text-left text-sm text-muted-foreground hover:border-primary hover:bg-primary/5"
-              >
-                Session libre (sans morceau)
-              </button>
-
               <div className="max-h-64 space-y-2 overflow-y-auto">
                 {filteredSongs.map((song) => (
                   <button
                     key={song.id}
                     onClick={() => {
-                      setSelectedSong(song);
+                      addSong(song);
                       setShowSongSearch(false);
                     }}
                     className={`
                       w-full flex items-center gap-3 rounded-lg p-2 text-left transition-all
-                      ${selectedSong?.id === song.id
+                      ${entries.some((entry) => entry.songId === song.id)
                         ? "bg-primary/10 border border-primary"
                         : "hover:bg-accent"
                       }
@@ -512,6 +631,148 @@ function RecapStat({ label, value }: { label: string; value: React.ReactNode }) 
         {label}
       </dt>
       <dd className="tabular font-display text-[32px] font-bold leading-none">{value}</dd>
+    </div>
+  );
+}
+
+/**
+ * Une ligne de morceau : son temps et son tempo, puis son statut et, sans
+ * tempo cible, sa progression en frettes. Avec un tempo cible, la
+ * progression reste calculee par le meilleur tempo tenu.
+ */
+function EntryRow({
+  entry,
+  song,
+  showMinutes,
+  canEditSong,
+  onChange,
+  onRemove,
+}: {
+  entry: Entry;
+  song: Song | null;
+  showMinutes: boolean;
+  /** Hors ligne, statut et progression ne partiraient pas : on les cache. */
+  canEditSong: boolean;
+  onChange: (patch: Partial<Entry>) => void;
+  onRemove: () => void;
+}) {
+  const status = entry.status ?? song?.status ?? null;
+  const hasTarget = song ? songTargetBpm(song) !== null : false;
+  const percent = entry.percent ?? song?.progress_percent ?? 0;
+
+  return (
+    <li className="space-y-3 border-b border-border py-3">
+      <div className="flex items-center gap-3">
+        <Cover src={song?.cover_url} className="h-11 w-11 rounded-[3px]" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold">{song?.title ?? (entry.songId ? "Morceau" : "Sans morceau")}</p>
+          {song?.artist && <p className="truncate text-xs text-muted-foreground">{song.artist}</p>}
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Retirer ${song?.title ?? "cette ligne"}`}
+          className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+
+      <div className="flex gap-3">
+        {showMinutes && (
+          <label className="flex flex-1 items-center gap-2 text-xs text-muted-foreground">
+            <input
+              type="number"
+              inputMode="numeric"
+              min="1"
+              max="480"
+              value={entry.minutes}
+              onChange={(e) => onChange({ minutes: e.target.value === "" ? "" : parseInt(e.target.value) || 0 })}
+              onFocus={(e) => e.target.select()}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
+            />
+            min
+          </label>
+        )}
+        {entry.songId && (
+          <label className="flex flex-1 items-center gap-2 text-xs text-muted-foreground">
+            <input
+              type="number"
+              inputMode="numeric"
+              min="20"
+              max="300"
+              placeholder="BPM tenu"
+              value={entry.bpm}
+              onChange={(e) => onChange({ bpm: e.target.value })}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
+            />
+            bpm
+          </label>
+        )}
+      </div>
+
+      {song && canEditSong && (
+        <div className="space-y-2.5">
+          <div role="radiogroup" aria-label={`Statut de ${song.title}`} className="flex gap-1.5">
+            {STATUS_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={status === option.value}
+                onClick={() => onChange({ status: option.value })}
+                className={`min-h-[36px] flex-1 rounded-full border px-2 text-xs font-semibold transition-colors ${
+                  status === option.value
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          {status !== "mastered" &&
+            (hasTarget ? (
+              <p className="text-xs text-muted-foreground">
+                Progression calculée d&apos;après ton meilleur tempo tenu.
+              </p>
+            ) : (
+              <FretsInput
+                value={percent}
+                label={`Progression de ${song.title}`}
+                onChange={(value) => onChange({ percent: value })}
+              />
+            ))}
+        </div>
+      )}
+    </li>
+  );
+}
+
+/** La progression en douze frettes, a toucher. */
+function FretsInput({ value, label, onChange }: { value: number; label: string; onChange: (value: number) => void }) {
+  const filled = Math.round((Math.min(100, Math.max(0, value)) / 100) * 12);
+
+  return (
+    <div className="flex items-center gap-3">
+      <div role="group" aria-label={label} className="grid flex-1 grid-cols-12 gap-1">
+        {Array.from({ length: 12 }, (_, i) => (
+          <button
+            key={i}
+            type="button"
+            aria-label={`${Math.round(((i + 1) / 12) * 100)} %`}
+            aria-pressed={i < filled}
+            // Retoucher la derniere frette pleine la vide : on peut revenir a 0.
+            onClick={() => onChange(i + 1 === filled ? Math.round((i / 12) * 100) : Math.round(((i + 1) / 12) * 100))}
+            className={`h-6 rounded-[2px] transition-colors ${i < filled ? "bg-primary" : "bg-muted hover:bg-muted-foreground/30"}`}
+          />
+        ))}
+      </div>
+      <span className="tabular w-10 text-right font-display text-lg font-bold leading-none">
+        {Math.round(value)}
+        <small className="text-xs text-muted-foreground">%</small>
+      </span>
     </div>
   );
 }

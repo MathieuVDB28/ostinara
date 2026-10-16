@@ -58,6 +58,8 @@ function getServiceRoleSupabase() {
 }
 
 interface SessionRow {
+  id: string;
+  session_group_id: string | null;
   practiced_at: string;
   duration_minutes: number;
   song_id: string | null;
@@ -134,7 +136,7 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
       .eq("user_id", userId),
     supabase
       .from("practice_sessions")
-      .select("practiced_at, duration_minutes, song_id, bpm_achieved")
+      .select("id, session_group_id, practiced_at, duration_minutes, song_id, bpm_achieved")
       .eq("user_id", userId),
     supabase.from("covers").select("created_at").eq("user_id", userId),
     supabase.from("album_reviews").select("created_at").eq("user_id", userId),
@@ -156,6 +158,16 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
 
   const songRows = songs ?? [];
   const sessionRows = (sessions ?? []) as SessionRow[];
+
+  // Une session a plusieurs morceaux tient sur plusieurs lignes : pour
+  // compter des sessions, on ne garde que la premiere de chaque groupe.
+  const seenGroups = new Set<string>();
+  const sessionStarts = sessionRows.filter((s) => {
+    if (!s.session_group_id) return true;
+    if (seenGroups.has(s.session_group_id)) return false;
+    seenGroups.add(s.session_group_id);
+    return true;
+  });
 
   const masteredAt = new Map<string, string>();
   for (const activity of masteredActivities ?? []) {
@@ -184,7 +196,7 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
     ),
     bibliotheque: countMetric(songRows.map((song) => song.created_at)),
     tempo: countMetric(tempoDates),
-    sessions: countMetric(sessionRows.map((s) => s.practiced_at)),
+    sessions: countMetric(sessionStarts.map((s) => s.practiced_at)),
     serie: streakMetric(sessionRows),
     heures: hoursMetric(sessionRows),
     scene: countMetric((covers ?? []).map((c) => c.created_at)),
@@ -222,11 +234,14 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
 
   for (const [month, monthSessions] of byMonth) {
     const songsSeen = new Set<string>();
+    const sessionsSeen = new Set<string>();
     let variedAt: string | null = null;
-    monthSessions.forEach((session, index) => {
+    monthSessions.forEach((session) => {
       if (session.song_id) songsSeen.add(session.song_id);
       if (!variedAt && songsSeen.size >= 5) variedAt = session.practiced_at;
-      if (index + 1 === 20) {
+      const before = sessionsSeen.size;
+      sessionsSeen.add(session.session_group_id ?? session.id);
+      if (before === 19 && sessionsSeen.size === 20) {
         earned.push({ badge_id: "mois-assidu", level: 1, period: month, unlocked_at: session.practiced_at });
       }
     });
@@ -234,7 +249,7 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
 
     if (month === currentMonth) {
       values["mois-varie"] = songsSeen.size;
-      values["mois-assidu"] = monthSessions.length;
+      values["mois-assidu"] = sessionsSeen.size;
     }
   }
 

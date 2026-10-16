@@ -18,6 +18,13 @@ import type {
   AlbumWishlistItem,
 } from "@/types";
 
+/** « 4,5/5 ★ » : la note est stockee sur 10, une unite par demi-etoile. */
+function formatStars(rating: unknown): string {
+  const value = Number(rating);
+  if (!Number.isFinite(value)) return "";
+  return `${(value / 2).toLocaleString("fr-FR", { maximumFractionDigits: 1 })}/5 ★`;
+}
+
 // Mapper les types d'activités vers les types de notifications
 function getNotificationForActivity(
   type: CreateActivityInput["type"],
@@ -146,7 +153,7 @@ function getNotificationForActivity(
       return {
         payload: {
           title: "Nouvelle ecoute",
-          body: `${userName} a ecoute "${metadata?.album_name}" - ${metadata?.rating}/10`,
+          body: `${userName} a écouté "${metadata?.album_name}" — ${formatStars(metadata?.rating)}`,
           data: { url: "/feed" },
         },
         notificationType: "album_reviewed",

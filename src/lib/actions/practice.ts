@@ -177,36 +177,59 @@ export async function createPracticeSession(
     return { success: false, error: "Non authentifié" };
   }
 
+  // Ce qui vaut pour toute la session : date, ressenti, objectifs, notes.
+  const shared = {
+    user_id: user.id,
+    practiced_at: input.practiced_at || new Date().toISOString(),
+    mood: input.mood || null,
+    energy_level: input.energy_level || null,
+    sections_worked: input.sections_worked || [],
+    session_goals: input.session_goals || null,
+    goals_achieved: input.goals_achieved || false,
+    notes: input.notes || null,
+  };
+
+  /*
+   * Plusieurs morceaux : une ligne par morceau, reliees par un groupe.
+   * Un seul : la ligne habituelle, sans groupe.
+   */
+  const entries =
+    input.songs && input.songs.length > 0
+      ? input.songs.filter((entry) => entry.duration_minutes > 0)
+      : [{ song_id: input.song_id || null, duration_minutes: input.duration_minutes, bpm_achieved: input.bpm_achieved }];
+
+  if (entries.length === 0) {
+    return { success: false, error: "La durée doit être d'au moins 1 minute" };
+  }
+
+  const groupId = entries.length > 1 ? crypto.randomUUID() : null;
+
   const { data, error } = await supabase
     .from("practice_sessions")
-    .insert({
-      user_id: user.id,
-      song_id: input.song_id || null,
-      duration_minutes: input.duration_minutes,
-      practiced_at: input.practiced_at || new Date().toISOString(),
-      bpm_achieved: input.bpm_achieved || null,
-      mood: input.mood || null,
-      energy_level: input.energy_level || null,
-      sections_worked: input.sections_worked || [],
-      session_goals: input.session_goals || null,
-      goals_achieved: input.goals_achieved || false,
-      notes: input.notes || null,
-    })
-    .select()
-    .single();
+    .insert(
+      entries.map((entry) => ({
+        ...shared,
+        song_id: entry.song_id || null,
+        duration_minutes: entry.duration_minutes,
+        bpm_achieved: entry.bpm_achieved || null,
+        session_group_id: groupId,
+      }))
+    )
+    .select();
 
-  if (error) {
+  if (error || !data || data.length === 0) {
     console.error("Error creating practice session:", error);
     return { success: false, error: "Erreur lors de l'enregistrement de la session" };
   }
 
-  // Mettre à jour la progression des challenges actifs
-  updateChallengeProgress(input.duration_minutes).catch(console.error);
+  // Mettre à jour la progression des challenges actifs, une fois pour
+  // toute la session.
+  const totalMinutes = entries.reduce((sum, entry) => sum + entry.duration_minutes, 0);
+  updateChallengeProgress(totalMinutes).catch(console.error);
 
-  // La progression du morceau suit le tempo, plus le curseur.
-  if (input.song_id) {
-    await syncSongProgressFromTempo(input.song_id);
-  }
+  // La progression de chaque morceau suit son tempo, plus le curseur.
+  const songIds = [...new Set(entries.map((entry) => entry.song_id).filter((id): id is string => Boolean(id)))];
+  await Promise.all(songIds.map((songId) => syncSongProgressFromTempo(songId)));
 
   revalidatePath("/progress");
   revalidatePath("/library");
@@ -214,7 +237,7 @@ export async function createPracticeSession(
   revalidatePath("/biblio");
   // Un morceau, une session, un album… peuvent debloquer un badge.
   await syncBadges();
-  return { success: true, session: data as PracticeSession };
+  return { success: true, session: data[0] as PracticeSession };
 }
 
 /**
@@ -393,7 +416,7 @@ export async function getPracticeStats(): Promise<PracticeStats> {
    */
   const { data: sessions, error } = await supabase
     .from("practice_sessions")
-    .select("practiced_at, duration_minutes, song_id")
+    .select("id, practiced_at, duration_minutes, song_id, session_group_id")
     .eq("user_id", user.id)
     .order("practiced_at", { ascending: false });
 
@@ -401,8 +424,11 @@ export async function getPracticeStats(): Promise<PracticeStats> {
     return defaultStats;
   }
 
-  // Stats de base
-  const totalSessions = sessions.length;
+  // Stats de base. Une session a plusieurs morceaux tient sur plusieurs
+  // lignes : elle compte pour une.
+  const sessionKey = (s: { id: string; session_group_id: string | null }) =>
+    s.session_group_id ?? s.id;
+  const totalSessions = new Set(sessions.map(sessionKey)).size;
   const totalMinutes = sessions.reduce((sum, s) => sum + s.duration_minutes, 0);
   const averageSessionLength = Math.round(totalMinutes / totalSessions);
 
@@ -496,7 +522,7 @@ export async function getPracticeStats(): Promise<PracticeStats> {
     totalSessions,
     totalMinutes,
     averageSessionLength,
-    sessionsThisWeek: sessionsThisWeek.length,
+    sessionsThisWeek: new Set(sessionsThisWeek.map(sessionKey)).size,
     minutesThisWeek,
     currentStreak,
     longestStreak,
