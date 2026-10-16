@@ -1,7 +1,7 @@
 "use client";
 
 import type { PracticeSessionWithSong } from "@/types";
-import { SessionCard } from "./session-card";
+import { GroupSessionCard, SessionCard } from "./session-card";
 import { SwipeRow } from "@/components/ui/swipe-row";
 import { EmptyState } from "@/components/ui/empty-state";
 import { usePracticeSession } from "@/components/providers/practice-session-provider";
@@ -19,6 +19,44 @@ interface GroupedSessions {
   date: string;
   totalMinutes: number;
   sessions: PracticeSessionWithSong[];
+}
+
+/** Une entree du journal : une session, ou une session a plusieurs morceaux. */
+type JournalItem =
+  | { kind: "single"; key: string; session: PracticeSessionWithSong }
+  | { kind: "group"; key: string; sessions: PracticeSessionWithSong[] };
+
+/**
+ * Les lignes d'une meme session a plusieurs morceaux se reunissent en une
+ * entree, a la place de la premiere. Le journal parle en sessions, comme
+ * les totaux.
+ */
+function toJournalItems(sessions: PracticeSessionWithSong[]): JournalItem[] {
+  const items: JournalItem[] = [];
+  const groups = new Map<string, Extract<JournalItem, { kind: "group" }>>();
+
+  for (const session of sessions) {
+    const groupId = session.session_group_id;
+    if (!groupId) {
+      items.push({ kind: "single", key: session.id, session });
+      continue;
+    }
+    const existing = groups.get(groupId);
+    if (existing) {
+      existing.sessions.push(session);
+    } else {
+      const item = { kind: "group" as const, key: groupId, sessions: [session] };
+      groups.set(groupId, item);
+      items.push(item);
+    }
+  }
+
+  // Un groupe dont une seule ligne est chargee reste une ligne simple.
+  return items.map((item) =>
+    item.kind === "group" && item.sessions.length === 1
+      ? { kind: "single", key: item.sessions[0].id, session: item.sessions[0] }
+      : item
+  );
 }
 
 export function SessionList({
@@ -128,8 +166,38 @@ export function SessionList({
 
           <div>
             <div>
-              {group.sessions.map((session) => (
-                <div key={session.id}>
+              {toJournalItems(group.sessions).map((item) =>
+                item.kind === "group" ? (
+                  /*
+                    Session a plusieurs morceaux : une carte, chaque morceau
+                    en sous-ligne qu'on touche pour la modifier. Supprimer
+                    retire toute la session.
+                  */
+                  <SwipeRow
+                    key={item.key}
+                    label={`session du ${new Date(item.sessions[0].practiced_at).toLocaleDateString("fr-FR")}`}
+                    actions={[
+                      {
+                        key: "delete",
+                        label: "Supprimer",
+                        icon: "delete",
+                        tone: "destructive",
+                        confirm: true,
+                        onAction: async () => {
+                          const results = await Promise.all(
+                            item.sessions.map((session) => deletePracticeSession(session.id))
+                          );
+                          item.sessions.forEach((session, index) => {
+                            if (results[index].success) onSessionDeleted?.(session.id);
+                          });
+                        },
+                      },
+                    ]}
+                  >
+                    <GroupSessionCard sessions={item.sessions} onSessionClick={onSessionClick} />
+                  </SwipeRow>
+                ) : (
+                <div key={item.key}>
 
                   {/*
                     Carte de session. Modifier et supprimer passaient tous
@@ -139,14 +207,14 @@ export function SessionList({
                   */}
                   <div>
                     <SwipeRow
-                      label={`session du ${new Date(session.practiced_at).toLocaleDateString("fr-FR")}`}
+                      label={`session du ${new Date(item.session.practiced_at).toLocaleDateString("fr-FR")}`}
                       actions={[
                         {
                           key: "edit",
                           label: "Modifier",
                           icon: "edit",
                           tone: "neutral",
-                          onAction: () => onSessionClick(session),
+                          onAction: () => onSessionClick(item.session),
                         },
                         {
                           key: "delete",
@@ -155,20 +223,21 @@ export function SessionList({
                           tone: "destructive",
                           confirm: true,
                           onAction: async () => {
-                            const result = await deletePracticeSession(session.id);
-                            if (result.success) onSessionDeleted?.(session.id);
+                            const result = await deletePracticeSession(item.session.id);
+                            if (result.success) onSessionDeleted?.(item.session.id);
                           },
                         },
                       ]}
                     >
                       <SessionCard
-                        session={session}
-                        onClick={() => onSessionClick(session)}
+                        session={item.session}
+                        onClick={() => onSessionClick(item.session)}
                       />
                     </SwipeRow>
                   </div>
                 </div>
-              ))}
+                )
+              )}
             </div>
           </div>
         </div>

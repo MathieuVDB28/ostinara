@@ -100,3 +100,109 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
     </button>
   );
 }
+
+const STACK_OFFSETS = ["left-0 top-0", "left-1.5 top-1.5", "left-3 top-3"];
+
+function formatMinutes(minutes: number): string {
+  if (minutes < 60) return `${minutes}min`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+}
+
+/**
+ * Une session a plusieurs morceaux, en une entree du journal.
+ *
+ * En tete, ce qui vaut pour toute la session : l'heure, les pochettes
+ * empilees, la duree totale, l'humeur et la note. Dessous, une sous-ligne
+ * par morceau avec ses minutes et son tempo — c'est elle qu'on touche
+ * pour modifier.
+ */
+export function GroupSessionCard({
+  sessions,
+  onSessionClick,
+}: {
+  sessions: PracticeSessionWithSong[];
+  onSessionClick: (session: PracticeSessionWithSong) => void;
+}) {
+  // Les champs communs sont recopies sur chaque ligne : la premiere suffit.
+  const first = sessions[0];
+  const total = sessions.reduce((sum, session) => sum + session.duration_minutes, 0);
+  const songCount = sessions.filter((session) => session.song).length;
+  const moodEmoji = getMoodEmoji(first.mood);
+  const sectionsLabel = getSectionsLabels(first.sections_worked);
+
+  const meta = [
+    new Date(first.practiced_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    sectionsLabel || null,
+  ].filter(Boolean);
+
+  return (
+    <div className="border-b border-border py-3">
+      <div className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-start gap-3">
+        {/* Les pochettes empilees : on voit d'un coup que c'est plusieurs morceaux. */}
+        <span className="relative h-12 w-12" aria-hidden="true">
+          {/* Decalees en diagonale, la premiere au-dessus. */}
+          {sessions.slice(0, 3).map((session, index) => (
+            <span
+              key={session.id}
+              className={`absolute ${STACK_OFFSETS[index]} rounded-[3px] ring-2 ring-background`}
+              style={{ zIndex: 3 - index }}
+            >
+              <Cover src={session.song?.cover_url} className="h-9 w-9 rounded-[3px]" />
+            </span>
+          ))}
+        </span>
+
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-semibold">
+            {songCount > 1 ? `${songCount} morceaux` : "Session"}
+          </span>
+          <span className="tabular block truncate text-xs text-muted-foreground">{meta.join(" · ")}</span>
+          {first.notes && (
+            <span className="mt-1 line-clamp-1 block font-serif text-[13.5px] italic text-foreground/80">
+              {first.notes}
+            </span>
+          )}
+          {first.goals_achieved && first.session_goals && (
+            <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-success">
+              <CircleCheck className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+              Objectifs atteints
+            </span>
+          )}
+        </span>
+
+        <span className="flex flex-col items-end gap-1">
+          <span className="tabular font-display text-xl font-bold leading-none">{formatMinutes(total)}</span>
+          {moodEmoji && (
+            <span className="text-base" title={first.mood || ""}>
+              {moodEmoji}
+            </span>
+          )}
+        </span>
+      </div>
+
+      <ul className="ml-[60px] mt-2 border-l border-border">
+        {sessions.map((session) => (
+          <li key={session.id}>
+            <button
+              type="button"
+              onClick={() => onSessionClick(session)}
+              className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 py-1.5 pl-3 text-left transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="min-w-0 truncate text-[13px]">
+                <span className="font-semibold">{session.song?.title || "Sans morceau"}</span>
+                {session.bpm_achieved ? (
+                  <span className="tabular text-muted-foreground"> · {session.bpm_achieved} bpm</span>
+                ) : null}
+              </span>
+              <span className="tabular text-xs font-semibold text-muted-foreground">
+                {formatMinutes(session.duration_minutes)}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
