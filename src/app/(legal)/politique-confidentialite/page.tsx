@@ -393,8 +393,8 @@ export default function PolitiqueConfidentialite() {
                     role: "Traitement des paiements",
                   },
                   {
-                    name: "Spotify",
-                    role: "Intégration musicale (recherche de morceaux, si connecté)",
+                    name: "Deezer",
+                    role: "Catalogue musical : recherche de morceaux et d'albums (via nos serveurs, sans donnée personnelle), pochettes et lecteur intégré chargés depuis Deezer",
                   },
                 ].map((provider) => (
                   <div

@@ -1,6 +1,6 @@
 import { getSongs } from "@/lib/actions/songs";
 import { getPlaylists } from "@/lib/actions/playlists";
-import { getSpotifyConnectionStatus, requirePaidPlan } from "@/lib/actions/spotify";
+import { requirePaidPlan } from "@/lib/actions/plan";
 import { getAllSongPracticeStats } from "@/lib/actions/practice";
 import { LibraryView } from "@/components/library/library-view";
 
@@ -22,11 +22,10 @@ export default async function BiblioPage({
    * carte est le meilleur BPM tenu, pas un curseur. Une lecture agregee,
    * pas une par morceau.
    */
-  const [songs, playlists, spotifyStatus, planCheck, songPracticeStats] =
+  const [songs, playlists, planCheck, songPracticeStats] =
     await Promise.all([
       getSongs(),
       getPlaylists(),
-      getSpotifyConnectionStatus(),
       requirePaidPlan(),
       getAllSongPracticeStats(),
     ]);
@@ -36,7 +35,6 @@ export default async function BiblioPage({
       initialSongs={songs}
       initialPlaylists={playlists}
       userPlan={planCheck.plan}
-      spotifyConnected={spotifyStatus.connected}
       initialSongId={initialSongId}
       songPracticeStats={songPracticeStats}
     />

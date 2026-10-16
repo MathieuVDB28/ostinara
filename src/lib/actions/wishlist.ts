@@ -37,13 +37,13 @@ export async function addToWishlist(
     return { success: false, error: "Non authentifié" };
   }
 
-  // Vérifier si déjà dans la wishlist (par spotify_id)
-  if (input.spotify_id) {
+  // Vérifier si déjà dans la wishlist (par deezer_id)
+  if (input.deezer_id) {
     const { data: existing } = await supabase
       .from("wishlist_songs")
       .select("id")
       .eq("user_id", user.id)
-      .eq("spotify_id", input.spotify_id)
+      .eq("deezer_id", input.deezer_id)
       .single();
 
     if (existing) {
@@ -51,13 +51,13 @@ export async function addToWishlist(
     }
   }
 
-  // Vérifier si déjà dans la bibliothèque (par spotify_id)
-  if (input.spotify_id) {
+  // Vérifier si déjà dans la bibliothèque (par deezer_id)
+  if (input.deezer_id) {
     const { data: existingInLibrary } = await supabase
       .from("songs")
       .select("id")
       .eq("user_id", user.id)
-      .eq("spotify_id", input.spotify_id)
+      .eq("deezer_id", input.deezer_id)
       .single();
 
     if (existingInLibrary) {

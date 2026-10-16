@@ -271,7 +271,7 @@ export default function MentionsLegales() {
             <div className="space-y-4 leading-relaxed text-muted-foreground">
               <p>
                 Le site Ostinara peut contenir des liens vers d&apos;autres
-                sites internet (notamment Spotify, Ultimate Guitar). Ces liens
+                sites internet (notamment Deezer, Ultimate Guitar). Ces liens
                 sont fournis à titre indicatif et ne signifient pas que
                 l&apos;éditeur approuve ou cautionne le contenu de ces sites
                 tiers.

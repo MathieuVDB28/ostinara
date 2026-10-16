@@ -198,8 +198,8 @@ function WeeklyTopAlbum({ album }: { album: WeeklyAlbum }) {
 
   return (
     <div className="-mx-4 mb-1 sm:mx-0">
-      {album.spotify_id ? (
-        <Link href={`/albums/${album.spotify_id}`} className="block">
+      {album.deezer_id ? (
+        <Link href={`/albums/${album.deezer_id}`} className="block">
           {poster}
         </Link>
       ) : (
@@ -235,8 +235,8 @@ function WeeklyAlbumRow({ album, rank }: { album: WeeklyAlbum; rank: number }) {
 
   const className = "flex items-center gap-3 border-b border-border py-2.5 transition-colors";
 
-  return album.spotify_id ? (
-    <Link href={`/albums/${album.spotify_id}`} className={`${className} hover:bg-accent/50`}>
+  return album.deezer_id ? (
+    <Link href={`/albums/${album.deezer_id}`} className={`${className} hover:bg-accent/50`}>
       {content}
     </Link>
   ) : (

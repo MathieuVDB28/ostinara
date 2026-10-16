@@ -126,14 +126,14 @@ export interface LibrarySongSource {
   artist: string;
   album?: string;
   cover_url?: string;
-  spotify_id?: string;
+  deezer_id?: string;
 }
 
 /**
  * Le point d'entree des ponts vers la bibliotheque : un titre d'album, le
  * morceau qu'un ami vient de maitriser, celui d'un defi accepte…
  *
- * Un morceau deja present — meme identifiant Spotify, ou meme titre et
+ * Un morceau deja present — meme identifiant Deezer, ou meme titre et
  * artiste — n'est pas ajoute deux fois : on renvoie celui qui existe, pour
  * que l'appelant puisse mener a sa fiche. `status` ne s'applique qu'a un
  * nouveau morceau : on ne fait pas reculer un morceau deja maitrise.
@@ -155,7 +155,7 @@ export async function addSongToLibrary(
     .from("songs")
     .select("*")
     .eq("user_id", user.id)
-    .or(input.spotify_id ? `spotify_id.eq.${input.spotify_id},${sameTitle}` : sameTitle)
+    .or(input.deezer_id ? `deezer_id.eq.${input.deezer_id},${sameTitle}` : sameTitle)
     .limit(1);
 
   if (existing && existing.length > 0) {

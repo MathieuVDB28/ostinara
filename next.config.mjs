@@ -20,13 +20,15 @@ const nextConfig = {
         protocol: "https",
         hostname: "*.supabase.co",
       },
+      // Pochettes et photos du catalogue (Deezer)
+      {
+        protocol: "https",
+        hostname: "*.dzcdn.net",
+      },
+      // Pochettes enregistrees du temps de Spotify, tant qu'il en reste
       {
         protocol: "https",
         hostname: "i.scdn.co",
-      },
-      {
-        protocol: "https",
-        hostname: "open.spotify.com",
       },
     ],
   },
@@ -134,10 +136,10 @@ export default withPWA({
       },
     },
     {
-      urlPattern: /^https:\/\/i\.scdn\.co\/.*/i,
+      urlPattern: /^https:\/\/([a-z0-9-]+\.dzcdn\.net|i\.scdn\.co)\/.*/i,
       handler: 'CacheFirst',
       options: {
-        cacheName: 'spotify-images',
+        cacheName: 'catalog-images',
         expiration: {
           maxEntries: 200,
           maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days

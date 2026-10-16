@@ -6,12 +6,12 @@ import { createSong } from "@/lib/actions/songs";
 import type { CreateSongInput, SongDifficulty } from "@/types";
 import { TUNING_GROUPS } from "@/lib/tunings";
 
-export interface SpotifyResult {
+export interface CatalogResult {
   title: string;
   artist: string;
   album: string;
   cover_url: string;
-  spotify_id: string;
+  deezer_id: string;
   preview_url: string | null;
 }
 
@@ -19,15 +19,15 @@ interface AddSongModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  prefillTrack?: SpotifyResult;
+  prefillTrack?: CatalogResult;
 }
 
 export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSongModalProps) {
   const [step, setStep] = useState<"search" | "details">(prefillTrack ? "details" : "search");
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SpotifyResult[]>([]);
+  const [results, setResults] = useState<CatalogResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedTrack, setSelectedTrack] = useState<SpotifyResult | null>(prefillTrack || null);
+  const [selectedTrack, setSelectedTrack] = useState<CatalogResult | null>(prefillTrack || null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +56,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/spotify/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`/api/catalog/search?q=${encodeURIComponent(query)}`);
         if (response.ok) {
           const data = await response.json();
           setResults(data);
@@ -71,7 +71,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
     return () => clearTimeout(timer);
   }, [query]);
 
-  const handleSelectTrack = (track: SpotifyResult) => {
+  const handleSelectTrack = (track: CatalogResult) => {
     setSelectedTrack(track);
     setStep("details");
   };
@@ -87,7 +87,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
       artist: selectedTrack.artist,
       album: selectedTrack.album,
       cover_url: selectedTrack.cover_url,
-      spotify_id: selectedTrack.spotify_id,
+      deezer_id: selectedTrack.deezer_id,
       preview_url: selectedTrack.preview_url || undefined,
       difficulty: difficulty || undefined,
       tuning,
@@ -194,7 +194,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
             <div className="max-h-80 space-y-2 overflow-y-auto">
               {results.map((track) => (
                 <button
-                  key={track.spotify_id}
+                  key={track.deezer_id}
                   onClick={() => handleSelectTrack(track)}
                   className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-accent"
                 >
@@ -230,7 +230,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
 
               {!query && (
                 <div className="py-8 text-center text-muted-foreground">
-                  Recherche un morceau sur Spotify
+                  Recherche un morceau sur Deezer
                 </div>
               )}
             </div>

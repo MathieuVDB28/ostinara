@@ -48,7 +48,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
       'Amis illimités',
       'Wishlist illimitée',
       'Stats avancées',
-      'Intégrations Spotify & tablatures',
+      'Lecteur Deezer & tablatures',
       'Reconnaissance audio',
       'Badge Pro',
     ],
@@ -64,7 +64,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
     description: 'Pour les groupes',
     features: [
       'Tout ce qui est dans Pro',
-      'Intégrations Spotify & tablatures',
+      'Lecteur Deezer & tablatures',
       'Reconnaissance audio',
       'Espaces groupe',
       'Setlists partagées',

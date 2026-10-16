@@ -1,5 +1,5 @@
 import { redirect, notFound } from "next/navigation";
-import { searchArtists } from "@/lib/services/spotify";
+import { searchArtists } from "@/lib/services/deezer";
 import { Icon } from "@/components/ui/icon";
 
 interface Props {

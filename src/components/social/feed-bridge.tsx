@@ -63,7 +63,7 @@ function LearnToo({ song, friend }: { song: Song; friend: { id: string; name: st
         artist: song.artist,
         album: song.album,
         cover_url: song.cover_url,
-        spotify_id: song.spotify_id,
+        deezer_id: song.deezer_id,
       }, "want_to_learn", { from: "friend", label: friend.name });
       if (!result.success || !result.song) {
         setError(result.error || "L'ajout a échoué. Réessaie.");
@@ -110,8 +110,7 @@ function ListenToo({ activity }: { activity: ActivityWithDetails }) {
         album_name: review.album_name,
         artist_name: review.artist_name,
         cover_url: review.cover_url,
-        spotify_id: review.spotify_id,
-        spotify_url: review.spotify_url,
+        deezer_id: review.deezer_id,
         release_date: review.release_date,
         total_tracks: review.total_tracks,
       });

@@ -13,6 +13,7 @@ import { useBiblioSearch } from "@/components/biblio/biblio-search";
 import Link from "next/link";
 import { Bookmark, Disc3, ListFilter, Plus, SearchX, Star } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
+import { deezerUrl } from "@/lib/services/deezer";
 
 type AlbumsTab = "reviews" | "wishlist" | "week" | "recommendations";
 
@@ -213,7 +214,7 @@ export function AlbumsView({
                 {favorites.map((review, index) => (
                   <Link
                     key={review.id}
-                    href={review.spotify_id ? `/albums/${review.spotify_id}` : `/artists/by-name?q=${encodeURIComponent(review.artist_name)}`}
+                    href={review.deezer_id ? `/albums/${review.deezer_id}` : `/artists/by-name?q=${encodeURIComponent(review.artist_name)}`}
                     className="w-[104px] shrink-0 snap-start lg:w-[132px]"
                   >
                     <Cover
@@ -342,7 +343,6 @@ export function AlbumsView({
       {activeTab === "recommendations" && (
         <AlbumRecommendations
           isPaid={isPaid}
-          hasReviews={reviews.length > 0}
           onReviewAdded={(review) => {
             setReviews((prev) => [review, ...prev]);
           }}
@@ -364,8 +364,8 @@ export function AlbumsView({
           name: reviewFromWishlist.album_name,
           artists: reviewFromWishlist.artist_name.split(", ").map((name) => ({ name })),
           images: reviewFromWishlist.cover_url ? [{ url: reviewFromWishlist.cover_url, width: 300, height: 300 }] : [],
-          id: reviewFromWishlist.spotify_id || "",
-          external_urls: { spotify: reviewFromWishlist.spotify_url || "" },
+          id: reviewFromWishlist.deezer_id || "",
+          url: reviewFromWishlist.deezer_id ? deezerUrl("album", reviewFromWishlist.deezer_id) : "",
           release_date: reviewFromWishlist.release_date || "",
           total_tracks: reviewFromWishlist.total_tracks || 0,
         } : undefined}

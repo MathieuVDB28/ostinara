@@ -7,20 +7,17 @@ import { createSong } from "@/lib/actions/songs";
 import type { UserProfile, UpdateProfileInput, Song } from "@/types";
 import { FavoritesGrid } from "@/components/profile/favorites-grid";
 import { FavoriteSelectorModal } from "@/components/profile/favorite-selector-modal";
-import { SpotifyConnectSection } from "@/components/profile/spotify-connect-section";
 import { SubscriptionStatusBadge } from "@/components/subscription";
 import { PLANS } from "@/lib/stripe/config";
-import { getSpotifyConnectionStatus } from "@/lib/actions/spotify";
 import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
 
-type Tab = "profile" | "favorites" | "privacy" | "integrations" | "subscription";
+type Tab = "profile" | "favorites" | "privacy" | "subscription";
 
 const TABS: Tab[] = [
   "profile",
   "favorites",
   "privacy",
-  "integrations",
   "subscription",
 ];
 
@@ -58,15 +55,9 @@ function EditProfilePageContent() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Spotify connection state
-  const [spotifyConnected, setSpotifyConnected] = useState(false);
-  const [spotifyUserId, setSpotifyUserId] = useState<string | undefined>();
-  const [spotifyConnectedAt, setSpotifyConnectedAt] = useState<string | undefined>();
-  const [spotifyMessage, setSpotifyMessage] = useState<string | null>(null);
-
-  // Charger le profil et le statut Spotify
+  // Charger le profil
   useEffect(() => {
-    Promise.all([getMyProfile(), getSpotifyConnectionStatus()]).then(([data, spotifyStatus]) => {
+    getMyProfile().then((data) => {
       if (data) {
         setProfile(data);
         setDisplayName(data.display_name || "");
@@ -77,25 +68,8 @@ function EditProfilePageContent() {
         setFacebookUrl(data.facebook_url || "");
         setIsPrivate(data.is_private);
       }
-      setSpotifyConnected(spotifyStatus.connected);
-      setSpotifyUserId(spotifyStatus.spotify_user_id);
-      setSpotifyConnectedAt(spotifyStatus.connected_at);
       setLoading(false);
     });
-
-    // Handle ?spotify=connected query param
-    const params = new URLSearchParams(window.location.search);
-    const spotifyParam = params.get("spotify");
-    if (spotifyParam === "connected") {
-      setSpotifyMessage("Spotify connecté avec succès !");
-      setActiveTab("integrations");
-      window.history.replaceState({}, "", window.location.pathname);
-    } else if (spotifyParam === "error") {
-      const reason = params.get("reason") || "unknown";
-      setSpotifyMessage(`Erreur lors de la connexion Spotify (${reason}). Réessaie.`);
-      setActiveTab("integrations");
-      window.history.replaceState({}, "", window.location.pathname);
-    }
   }, []);
 
   const handleSave = async () => {
@@ -133,7 +107,7 @@ function EditProfilePageContent() {
   const handleSelectSong = async (song: Song) => {
     let songId = song.id;
 
-    // Si le morceau n'a pas de user_id, c'est un morceau Spotify qui n'est pas encore dans la bibliothèque
+    // Si le morceau n'a pas de user_id, c'est un morceau du catalogue qui n'est pas encore dans la bibliothèque
     if (!song.user_id) {
       // Créer d'abord le morceau dans la bibliothèque
       const createResult = await createSong({
@@ -141,7 +115,7 @@ function EditProfilePageContent() {
         artist: song.artist,
         album: song.album,
         cover_url: song.cover_url,
-        spotify_id: song.spotify_id,
+        deezer_id: song.deezer_id,
         preview_url: song.preview_url,
         status: "want_to_learn",
       });
@@ -198,7 +172,7 @@ function EditProfilePageContent() {
     setIsSelectorOpen(true);
   };
 
-  const handleSelectAlbum = async (album: { album_name: string; artist_name: string; cover_url?: string; spotify_id?: string }) => {
+  const handleSelectAlbum = async (album: { album_name: string; artist_name: string; cover_url?: string; deezer_id?: string }) => {
     const result = await setFavoriteAlbum({ ...album, position: selectedPosition });
     if (result.success) {
       const updatedProfile = await getMyProfile();
@@ -225,7 +199,7 @@ function EditProfilePageContent() {
         album_name: fromItem.album_name,
         artist_name: fromItem.artist_name,
         cover_url: fromItem.cover_url,
-        spotify_id: fromItem.spotify_id,
+        deezer_id: fromItem.deezer_id,
         position: toPosition,
       });
     }
@@ -234,7 +208,7 @@ function EditProfilePageContent() {
         album_name: toItem.album_name,
         artist_name: toItem.artist_name,
         cover_url: toItem.cover_url,
-        spotify_id: toItem.spotify_id,
+        deezer_id: toItem.deezer_id,
         position: fromPosition,
       });
     }
@@ -300,7 +274,6 @@ function EditProfilePageContent() {
     { value: "profile", label: "Profil" },
     { value: "favorites", label: "Favoris" },
     { value: "privacy", label: "Confidentialité" },
-    { value: "integrations", label: "Intégrations" },
     { value: "subscription", label: "Abonnement" },
   ];
 
@@ -490,7 +463,7 @@ function EditProfilePageContent() {
             <div>
               <h3 className="mb-3 text-lg font-semibold">Albums favoris</h3>
               <p className="mb-4 text-sm text-muted-foreground">
-                Choisis jusqu&apos;à 4 albums cultes. Recherche sur Spotify pour trouver tes albums préférés.
+                Choisis jusqu&apos;à 4 albums cultes. Recherche-les dans le catalogue pour les ajouter.
               </p>
               <FavoritesGrid
                 items={profile.favorite_albums}
@@ -603,30 +576,6 @@ function EditProfilePageContent() {
                   </>
                 )}
               </ul>
-            </div>
-          </div>
-        )}
-
-        {/* Tab Intégrations */}
-        {activeTab === "integrations" && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="mb-4 text-lg font-semibold">Spotify</h3>
-              {spotifyMessage && (
-                <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${
-                  spotifyMessage.includes("Erreur")
-                    ? "bg-destructive/10 text-destructive"
-                    : "bg-success/10 text-success"
-                }`}>
-                  {spotifyMessage}
-                </div>
-              )}
-              <SpotifyConnectSection
-                connected={spotifyConnected}
-                spotifyUserId={spotifyUserId}
-                connectedAt={spotifyConnectedAt}
-                userPlan={profile.plan}
-              />
             </div>
           </div>
         )}

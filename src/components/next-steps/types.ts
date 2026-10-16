@@ -1,4 +1,4 @@
-import type { Song, SpotifyAlbumTrack } from "@/types";
+import type { Song, CatalogAlbumTrack } from "@/types";
 
 /**
  * Les moments ou une feature passe la main a une autre.
@@ -16,9 +16,9 @@ export type NextStep =
   /** Album ecoute -> titres a apprendre dans la biblio. */
   | {
       kind: "album_tracks";
-      album: { name: string; artist: string; coverUrl?: string; spotifyId: string };
-      /** Absents : la feuille les charge depuis Spotify. */
-      tracks?: SpotifyAlbumTrack[];
+      album: { name: string; artist: string; coverUrl?: string; deezerId: string };
+      /** Absents : la feuille les charge depuis Deezer. */
+      tracks?: CatalogAlbumTrack[];
       /** Les titres coches d'emblee — le prefere, en general. */
       preselected?: string[];
     };

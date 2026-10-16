@@ -9,24 +9,24 @@ interface FavoriteSelectorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectSong?: (song: Song) => void;
-  onSelectAlbum?: (album: { album_name: string; artist_name: string; cover_url?: string; spotify_id?: string }) => void;
+  onSelectAlbum?: (album: { album_name: string; artist_name: string; cover_url?: string; deezer_id?: string }) => void;
   type: "song" | "album";
 }
 
-interface SpotifyAlbum {
+interface CatalogResultAlbum {
   id: string;
   name: string;
   artists: { name: string }[];
   images: { url: string }[];
 }
 
-interface SpotifyTrack {
+interface CatalogResultTrack {
   id: string;
   title: string;
   artist: string;
   album: string;
   cover_url?: string;
-  spotify_id: string;
+  deezer_id: string;
   preview_url?: string | null;
 }
 
@@ -37,12 +37,12 @@ export function FavoriteSelectorModal({
   onSelectAlbum,
   type,
 }: FavoriteSelectorModalProps) {
-  // Pour les albums, commencer directement sur l'onglet Spotify
-  const [activeTab, setActiveTab] = useState<"library" | "spotify">(type === "album" ? "spotify" : "library");
+  // Pour les albums, commencer directement sur l'onglet Deezer
+  const [activeTab, setActiveTab] = useState<"library" | "catalog">(type === "album" ? "catalog" : "library");
   const [searchQuery, setSearchQuery] = useState("");
   const [librarySongs, setLibrarySongs] = useState<Song[]>([]);
-  const [spotifyTracks, setSpotifyTracks] = useState<SpotifyTrack[]>([]);
-  const [spotifyAlbums, setSpotifyAlbums] = useState<SpotifyAlbum[]>([]);
+  const [catalogTracks, setCatalogTracks] = useState<CatalogResultTrack[]>([]);
+  const [catalogAlbums, setCatalogAlbums] = useState<CatalogResultAlbum[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
@@ -60,20 +60,20 @@ export function FavoriteSelectorModal({
     }
   }, [isOpen, activeTab, type]);
 
-  // Recherche Spotify avec debounce
+  // Recherche Deezer avec debounce
   useEffect(() => {
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
 
-    if (searchQuery.length > 2 && activeTab === "spotify") {
+    if (searchQuery.length > 2 && activeTab === "catalog") {
       const timeout = setTimeout(() => {
-        searchSpotify(searchQuery);
+        searchCatalog(searchQuery);
       }, 500);
       setSearchTimeout(timeout);
     } else {
-      setSpotifyTracks([]);
-      setSpotifyAlbums([]);
+      setCatalogTracks([]);
+      setCatalogAlbums([]);
     }
 
     return () => {
@@ -81,28 +81,28 @@ export function FavoriteSelectorModal({
     };
   }, [searchQuery, activeTab]);
 
-  const searchSpotify = async (query: string) => {
+  const searchCatalog = async (query: string) => {
     setLoading(true);
     try {
       const searchType = type === "song" ? "track" : "album";
-      const response = await fetch(`/api/spotify/search?q=${encodeURIComponent(query)}&type=${searchType}`);
+      const response = await fetch(`/api/catalog/search?q=${encodeURIComponent(query)}&type=${searchType}`);
       const data = await response.json();
 
       if (type === "album") {
-        setSpotifyAlbums(data);
+        setCatalogAlbums(data);
       } else if (type === "song") {
-        setSpotifyTracks(data);
+        setCatalogTracks(data);
       }
     } catch (error) {
-      console.error("Spotify search error:", error);
+      console.error("Catalog search error:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSelectSong = (song: Song | SpotifyTrack) => {
+  const handleSelectSong = (song: Song | CatalogResultTrack) => {
     if (onSelectSong) {
-      // Convertir SpotifyTrack en Song si nécessaire
+      // Convertir un titre Deezer en Song si nécessaire
       const songData: Song = "user_id" in song ? song : {
         id: song.id,
         user_id: "",
@@ -110,7 +110,7 @@ export function FavoriteSelectorModal({
         artist: song.artist,
         album: song.album,
         cover_url: song.cover_url,
-        spotify_id: song.spotify_id,
+        deezer_id: song.deezer_id,
         preview_url: song.preview_url || undefined,
         status: "want_to_learn",
         progress_percent: 0,
@@ -124,13 +124,13 @@ export function FavoriteSelectorModal({
     }
   };
 
-  const handleSelectAlbum = (album: SpotifyAlbum) => {
+  const handleSelectAlbum = (album: CatalogResultAlbum) => {
     if (onSelectAlbum) {
       onSelectAlbum({
         album_name: album.name,
         artist_name: album.artists.map(a => a.name).join(", "),
         cover_url: album.images[0]?.url,
-        spotify_id: album.id,
+        deezer_id: album.id,
       });
       onClose();
     }
@@ -188,15 +188,15 @@ export function FavoriteSelectorModal({
               </button>
             )}
             <button
-              onClick={() => setActiveTab("spotify")}
+              onClick={() => setActiveTab("catalog")}
               className={`relative pb-3 text-sm font-medium transition-colors ${
-                activeTab === "spotify"
+                activeTab === "catalog"
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Rechercher sur Spotify
-              {activeTab === "spotify" && (
+              Rechercher sur Deezer
+              {activeTab === "catalog" && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
               )}
             </button>
@@ -217,8 +217,8 @@ export function FavoriteSelectorModal({
                 activeTab === "library"
                   ? "Rechercher dans ta bibliothèque..."
                   : type === "song"
-                  ? "Rechercher un morceau sur Spotify..."
-                  : "Rechercher un album sur Spotify..."
+                  ? "Rechercher un morceau sur Deezer..."
+                  : "Rechercher un album sur Deezer..."
               }
               className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
@@ -268,11 +268,11 @@ export function FavoriteSelectorModal({
                 {searchQuery ? "Aucun morceau trouvé" : "Ta bibliothèque est vide"}
               </div>
             )
-          ) : activeTab === "spotify" && type === "song" ? (
-            // Spotify tracks
-            spotifyTracks.length > 0 ? (
+          ) : activeTab === "catalog" && type === "song" ? (
+            // Deezer tracks
+            catalogTracks.length > 0 ? (
               <div className="space-y-2">
-                {spotifyTracks.map((track) => (
+                {catalogTracks.map((track) => (
                   <button
                     key={track.id}
                     onClick={() => handleSelectSong(track)}
@@ -306,14 +306,14 @@ export function FavoriteSelectorModal({
               </div>
             ) : (
               <div className="py-12 text-center text-muted-foreground">
-                Commence à taper pour rechercher sur Spotify
+                Commence à taper pour rechercher sur Deezer
               </div>
             )
-          ) : activeTab === "spotify" && type === "album" ? (
-            // Spotify albums
-            spotifyAlbums.length > 0 ? (
+          ) : activeTab === "catalog" && type === "album" ? (
+            // Deezer albums
+            catalogAlbums.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
-                {spotifyAlbums.map((album) => (
+                {catalogAlbums.map((album) => (
                   <button
                     key={album.id}
                     onClick={() => handleSelectAlbum(album)}
@@ -349,7 +349,7 @@ export function FavoriteSelectorModal({
               </div>
             ) : (
               <div className="py-12 text-center text-muted-foreground">
-                Commence à taper pour rechercher sur Spotify
+                Commence à taper pour rechercher sur Deezer
               </div>
             )
           ) : null}

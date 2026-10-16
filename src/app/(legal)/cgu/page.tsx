@@ -164,7 +164,7 @@ export default function CGU() {
                   "Métronome intégré pour les sessions de pratique",
                   "Création de setlists",
                   "Système social : amis, feed d'activité, challenges",
-                  "Intégrations tierces (Spotify, recherche de tablatures)",
+                  "Intégrations tierces (catalogue musical Deezer, recherche de tablatures)",
                   "Mode Jam Session collaboratif",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3">

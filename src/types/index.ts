@@ -9,7 +9,7 @@ export interface Song {
   artist: string;
   album?: string;
   cover_url?: string;
-  spotify_id?: string;
+  deezer_id?: string;
   preview_url?: string;
   difficulty?: SongDifficulty;
   status: SongStatus;
@@ -19,10 +19,8 @@ export interface Song {
   tabs_url?: string;
   notes?: string;
   target_bpm?: number;
+  /** Tempo d'origine, analyse du temps de Spotify (historique, plus ecrit). */
   spotify_bpm?: number;
-  spotify_key?: number;
-  spotify_energy?: number;
-  spotify_audio_fetched_at?: string;
   /* Pont Songsterr : l'analyse de la tab reste sur le morceau, pour que
      l'ouvrir donne la tab, le tempo et les sections sans rien retelecharger. */
   songsterr_id?: number;
@@ -48,7 +46,7 @@ export interface CreateSongInput {
   artist: string;
   album?: string;
   cover_url?: string;
-  spotify_id?: string;
+  deezer_id?: string;
   preview_url?: string;
   difficulty?: SongDifficulty;
   status?: SongStatus;
@@ -90,7 +88,7 @@ export interface WishlistSong {
   artist: string;
   album?: string;
   cover_url?: string;
-  spotify_id?: string;
+  deezer_id?: string;
   preview_url?: string;
   created_at: string;
 }
@@ -100,82 +98,79 @@ export interface CreateWishlistSongInput {
   artist: string;
   album?: string;
   cover_url?: string;
-  spotify_id?: string;
+  deezer_id?: string;
   preview_url?: string;
 }
 
-// Types Spotify
-export interface SpotifyTrack {
+// Catalogue musical (Deezer, cf. src/lib/services/deezer.ts). Les ecrans ne
+// connaissent que ces formes : changer de fournisseur ne touche que le service.
+export interface CatalogImage {
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface CatalogArtistRef {
+  id?: string;
+  name: string;
+}
+
+export interface CatalogTrack {
   id: string;
   name: string;
-  artists: { name: string }[];
-  album: {
-    name: string;
-    images: { url: string; width: number; height: number }[];
-  };
+  artists: CatalogArtistRef[];
+  album: { id: string; name: string; images: CatalogImage[] };
+  duration_ms: number;
+  /** Extrait de 30 secondes. */
   preview_url: string | null;
-  external_urls: {
-    spotify: string;
-  };
+  url: string;
 }
 
-export interface SpotifySearchResult {
-  tracks: {
-    items: SpotifyTrack[];
-    total: number;
-  };
-}
-
-export interface SpotifyAlbum {
+export interface CatalogAlbum {
   id: string;
   name: string;
-  artists: { id?: string; name: string }[];
-  images: { url: string; width: number; height: number }[];
-  external_urls: {
-    spotify: string;
-  };
+  artists: CatalogArtistRef[];
+  /** De la plus grande a la plus petite. */
+  images: CatalogImage[];
+  /** Lien d'ecoute. */
+  url: string;
+  /** Vide dans les resultats de recherche : seule la fiche la donne. */
   release_date: string;
   total_tracks: number;
+  /** album, ep, single, compile. */
+  record_type?: string;
+  /** Nombre de fans de l'album (discographie seulement). */
+  fans?: number;
 }
 
-export interface SpotifyAlbumSearchResult {
-  albums: {
-    items: SpotifyAlbum[];
-    total: number;
-  };
+/** Un album recommande, et pourquoi il l'est. */
+export interface AlbumRecommendation extends CatalogAlbum {
+  /** « Parce que tu joues Metallica », « Proche de Paranoid ». */
+  reason: string;
 }
 
-export interface SpotifyAlbumDetails {
-  id: string;
-  name: string;
-  album_type: string;
-  artists: { id: string; name: string; external_urls: { spotify: string } }[];
-  images: { url: string; width: number; height: number }[];
-  release_date: string;
-  total_tracks: number;
-  external_urls: { spotify: string };
-  label: string;
-  popularity: number;
-  /** Les 50 premiers titres, inclus dans la reponse de /albums/{id}. */
-  tracks?: { items: SpotifyAlbumTrack[] };
+export interface CatalogAlbumDetails extends CatalogAlbum {
+  label?: string;
+  genres: string[];
+  tracks: { items: CatalogAlbumTrack[] };
 }
 
-export interface SpotifyAlbumTrack {
+export interface CatalogAlbumTrack {
   id: string;
   name: string;
   track_number: number;
   disc_number: number;
   duration_ms: number;
+  preview_url?: string | null;
 }
 
-export interface SpotifyArtist {
+export interface CatalogArtist {
   id: string;
   name: string;
-  images: { url: string; width: number; height: number }[];
-  genres?: string[];
-  followers?: { total: number };
-  popularity: number;
-  external_urls: { spotify: string };
+  images: CatalogImage[];
+  fans: number;
+  album_count: number;
+  url: string;
 }
 
 export interface AlbumCommunityStats {
@@ -185,12 +180,12 @@ export interface AlbumCommunityStats {
 
 // Albums de la semaine : les ecoutes de toute la communaute, agregees
 export interface WeeklyAlbum {
-  /** spotify_id, ou « titre|artiste » pour les albums ajoutes a la main */
+  /** deezer_id, ou « titre|artiste » pour les albums ajoutes a la main */
   key: string;
   album_name: string;
   artist_name: string;
   cover_url: string | null;
-  spotify_id: string | null;
+  deezer_id: string | null;
   /** Moyenne des notes de la semaine, 0–10 (une unite = une demi-etoile) */
   avg_rating: number;
   review_count: number;
@@ -235,9 +230,6 @@ export interface Profile {
   stripe_subscription_id?: string;
   subscription_status?: SubscriptionStatus;
   subscription_period_end?: string;
-  // Spotify fields
-  spotify_user_id?: string;
-  spotify_connected_at?: string;
 }
 
 // Types pour les liens sociaux
@@ -264,7 +256,7 @@ export interface FavoriteAlbum {
   album_name: string;
   artist_name: string;
   cover_url?: string;
-  spotify_id?: string;
+  deezer_id?: string;
   position: number;
   created_at: string;
 }
@@ -339,7 +331,7 @@ export interface SetFavoriteAlbumInput {
   album_name: string;
   artist_name: string;
   cover_url?: string;
-  spotify_id?: string;
+  deezer_id?: string;
   position: number; // 1-4
 }
 
@@ -1203,58 +1195,6 @@ export interface UpdatePlaylistInput {
 }
 
 // =============================================
-// Types pour les intégrations Spotify OAuth
-// =============================================
-
-export interface SpotifyConnectionStatus {
-  connected: boolean;
-  spotify_user_id?: string;
-  connected_at?: string;
-}
-
-export interface SpotifyPlaylist {
-  id: string;
-  name: string;
-  description: string | null;
-  images: { url: string; width: number | null; height: number | null }[];
-  tracks: { total: number; href: string };
-  owner: { display_name: string; id: string };
-}
-
-export interface SpotifyPlaylistsResponse {
-  items: SpotifyPlaylist[];
-  total: number;
-  next: string | null;
-}
-
-export interface SpotifyPlaylistTracksResponse {
-  items: { track: SpotifyTrack; added_at: string }[];
-  total: number;
-  next: string | null;
-}
-
-export interface SpotifyRecentTrack {
-  track: SpotifyTrack;
-  played_at: string;
-}
-
-export interface SpotifyAudioFeatures {
-  id: string;
-  tempo: number;
-  key: number;
-  energy: number;
-  mode: number;
-  time_signature: number;
-}
-
-export interface SongAudioFeatures {
-  bpm: number;
-  key: string;
-  energy: number;
-  fetched_at: string;
-}
-
-// =============================================
 // Types pour la recherche de tablatures
 // =============================================
 
@@ -1289,7 +1229,7 @@ export interface AudioIdentificationResult {
   album?: string;
   release_date?: string;
   cover_url?: string;
-  spotify_id?: string;
+  deezer_id?: string;
   preview_url?: string;
 }
 
@@ -1316,15 +1256,14 @@ export interface AlbumReview {
   album_name: string;
   artist_name: string;
   cover_url?: string;
-  spotify_id?: string;
-  spotify_url?: string;
+  deezer_id?: string;
   release_date?: string;
   total_tracks?: number;
   rating: number; // 0–10 integer stored in DB (stars × 2); display as rating / 2 stars
   review?: string;
   /** Le morceau prefere, choisi apres l'ecoute. */
   favorite_track_name?: string;
-  favorite_track_spotify_id?: string;
+  favorite_track_deezer_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -1337,32 +1276,20 @@ export interface CreateAlbumReviewInput {
   album_name: string;
   artist_name: string;
   cover_url?: string;
-  spotify_id?: string;
-  spotify_url?: string;
+  deezer_id?: string;
   release_date?: string;
   total_tracks?: number;
   rating: number;
   review?: string;
   favorite_track_name?: string;
-  favorite_track_spotify_id?: string;
+  favorite_track_deezer_id?: string;
 }
 
 export interface UpdateAlbumReviewInput {
   rating?: number;
   review?: string;
   favorite_track_name?: string | null;
-  favorite_track_spotify_id?: string | null;
-}
-
-// Type pour les recommandations Spotify
-export interface SpotifyRecommendation {
-  id: string;
-  name: string;
-  artists: { name: string }[];
-  images: { url: string; width: number; height: number }[];
-  external_urls: { spotify: string };
-  release_date: string;
-  total_tracks: number;
+  favorite_track_deezer_id?: string | null;
 }
 
 // =============================================
@@ -1375,8 +1302,7 @@ export interface AlbumWishlistItem {
   album_name: string;
   artist_name: string;
   cover_url?: string;
-  spotify_id?: string;
-  spotify_url?: string;
+  deezer_id?: string;
   release_date?: string;
   total_tracks?: number;
   created_at: string;
@@ -1386,8 +1312,7 @@ export interface CreateAlbumWishlistInput {
   album_name: string;
   artist_name: string;
   cover_url?: string;
-  spotify_id?: string;
-  spotify_url?: string;
+  deezer_id?: string;
   release_date?: string;
   total_tracks?: number;
 }

@@ -1,5 +1,5 @@
 import { getGearItems, getGearSetups, getGearWishlist } from "@/lib/actions/gear";
-import { requirePaidPlan } from "@/lib/actions/spotify";
+import { requirePaidPlan } from "@/lib/actions/plan";
 import { GearView } from "@/components/gear/gear-view";
 
 export default async function ProfilMatosPage({

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
-import type { SpotifyAlbum, CreateAlbumWishlistInput } from "@/types";
+import type { CatalogAlbum, CreateAlbumWishlistInput } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
 interface AddToAlbumWishlistModalProps {
@@ -14,7 +14,7 @@ interface AddToAlbumWishlistModalProps {
 
 export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlbumWishlistModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [results, setResults] = useState<SpotifyAlbum[]>([]);
+  const [results, setResults] = useState<CatalogAlbum[]>([]);
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
     searchTimeoutRef.current = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await fetch(`/api/spotify/search?q=${encodeURIComponent(searchQuery)}&type=album`);
+        const res = await fetch(`/api/catalog/search?q=${encodeURIComponent(searchQuery)}&type=album`);
         if (res.ok) {
           const data = await res.json();
           setResults(data);
@@ -72,7 +72,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
     };
   }, [isOpen, onClose]);
 
-  const handleSelectAlbum = async (album: SpotifyAlbum) => {
+  const handleSelectAlbum = async (album: CatalogAlbum) => {
     setSaving(true);
     setError(null);
 
@@ -80,9 +80,8 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
       album_name: album.name,
       artist_name: album.artists.map((a) => a.name).join(", "),
       cover_url: album.images[0]?.url,
-      spotify_id: album.id,
-      spotify_url: album.external_urls?.spotify,
-      release_date: album.release_date,
+      deezer_id: album.id,
+      release_date: album.release_date || undefined,
       total_tracks: album.total_tracks,
     };
 

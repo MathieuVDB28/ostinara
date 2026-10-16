@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { SpotifyArtist, SpotifyAlbum, AlbumCommunityStats } from "@/types";
+import type { CatalogArtist, CatalogAlbum, AlbumCommunityStats } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { Cover } from "@/components/ui/cover";
 import type { ArtistLibraryContext } from "@/lib/actions/albums";
 import { ArtistLibrarySection, albumKey } from "./artist-library-section";
 
 interface Props {
-  artist: SpotifyArtist;
-  albums: SpotifyAlbum[];
+  artist: CatalogArtist;
+  albums: CatalogAlbum[];
   communityStats: Record<string, AlbumCommunityStats>;
   library: ArtistLibraryContext;
 }
@@ -63,16 +63,10 @@ export function ArtistDetailView({ artist, albums, communityStats, library }: Pr
         <div className="absolute bottom-5 left-4 right-4">
           <h1 className="text-balance font-display text-5xl font-extrabold uppercase leading-[0.88] text-white sm:text-7xl">{artist.name}</h1>
           <div className="mt-1.5 flex flex-wrap items-center gap-3">
-            {(artist.followers?.total ?? 0) > 0 && (
+            {artist.fans > 0 && (
               <span className="flex items-center gap-1 text-sm text-white/80">
                 <Icon name="person" className="h-[15px] w-[15px]" />
-                {formatFollowers(artist.followers!.total)} abonnés Spotify
-              </span>
-            )}
-            {artist.popularity > 0 && (
-              <span className="flex items-center gap-1 text-sm text-white/80">
-                <Icon name="trending_up" className="h-[15px] w-[15px]" />
-                Popularité {artist.popularity}/100
+                {formatFollowers(artist.fans)} fans sur Deezer
               </span>
             )}
           </div>
@@ -80,20 +74,6 @@ export function ArtistDetailView({ artist, albums, communityStats, library }: Pr
       </div>
 
       <div className="py-5">
-        {/* Genres */}
-        {artist.genres && artist.genres.length > 0 && (
-          <div className="mb-6 flex flex-wrap gap-2">
-            {artist.genres.slice(0, 6).map((genre) => (
-              <span
-                key={genre}
-                className="rounded border border-border px-2 py-0.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em]"
-              >
-                {genre}
-              </span>
-            ))}
-          </div>
-        )}
-
         <ArtistLibrarySection
           artistName={artist.name}
           albums={albums}
@@ -115,7 +95,6 @@ export function ArtistDetailView({ artist, albums, communityStats, library }: Pr
           <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
             {albums.map((album) => {
               const stats = communityStats[album.id];
-              const year = album.release_date?.split("-")[0];
               const myRating = library.reviewed[album.id];
               const saved = library.wishlisted.includes(album.id);
               const mySongs = songsByAlbum.get(albumKey(album.name)) ?? 0;
@@ -152,8 +131,9 @@ export function ArtistDetailView({ artist, albums, communityStats, library }: Pr
 
                   <div>
                     <p className="line-clamp-2 text-sm font-semibold leading-tight">{album.name}</p>
+                    {/* Pas d'annee : Deezer date les reeditions, pas les albums. */}
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {year}
+                      {album.record_type === "ep" ? "EP" : "Album"}
                       {stats && stats.review_count > 0 && (
                         <> · {stats.review_count} avis</>
                       )}

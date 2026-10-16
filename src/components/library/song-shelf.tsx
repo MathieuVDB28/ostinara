@@ -18,7 +18,7 @@ type ShelfEntry =
   | { kind: "album"; key: string; name: string; songs: Song[] };
 
 /**
- * La cle d'album d'un morceau : le nom d'album quand Spotify l'a donne,
+ * La cle d'album d'un morceau : le nom d'album quand le catalogue l'a donne,
  * sinon la pochette — deux morceaux qui partagent la meme image viennent
  * du meme disque. Sans l'un ni l'autre, pas de regroupement.
  */

@@ -8,7 +8,7 @@ import {
   getPracticeSessions,
   getPracticeStats,
 } from "@/lib/actions/practice";
-import { requirePaidPlan } from "@/lib/actions/spotify";
+import { requirePaidPlan } from "@/lib/actions/plan";
 import { getWeeklyPlan } from "@/lib/actions/weekly-plan";
 import { PlayView } from "@/components/play/play-view";
 

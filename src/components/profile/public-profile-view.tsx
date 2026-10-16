@@ -205,9 +205,9 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
                   );
                   return (
                     <li key={review.id}>
-                      {review.spotify_id ? (
+                      {review.deezer_id ? (
                         <Link
-                          href={`/albums/${review.spotify_id}`}
+                          href={`/albums/${review.deezer_id}`}
                           className="flex items-start gap-3.5 py-3 transition-colors hover:bg-accent/50"
                         >
                           {content}
@@ -460,7 +460,7 @@ function FriendSongSheet({
             artist={song.artist}
             album={song.album}
             coverUrl={song.cover_url}
-            spotifyId={song.spotify_id}
+            deezerId={song.deezer_id}
           />
         </div>
       </div>

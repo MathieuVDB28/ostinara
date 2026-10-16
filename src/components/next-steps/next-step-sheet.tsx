@@ -11,7 +11,7 @@ import { addSongToSetlist, getSetlists } from "@/lib/actions/setlists";
 import { getAlbumTracks } from "@/lib/actions/albums";
 import { createChallenge } from "@/lib/actions/challenges";
 import { addGearToSong, getGearItems, getSongGear, removeGearFromSong } from "@/lib/actions/gear";
-import type { GearItem, SetlistWithDetails, Song, SpotifyAlbumTrack } from "@/types";
+import type { GearItem, SetlistWithDetails, Song, CatalogAlbumTrack } from "@/types";
 import type { NextStep, RehearsalTarget } from "./types";
 
 const AddCoverModal = dynamic(() =>
@@ -468,12 +468,12 @@ function SongAdded({ song, from, onDone }: {
 // === Album ecoute : titres a apprendre ===
 
 function AlbumTracks({ album, initialTracks, preselected, onDone }: {
-  album: { name: string; artist: string; coverUrl?: string; spotifyId: string };
-  initialTracks?: SpotifyAlbumTrack[];
+  album: { name: string; artist: string; coverUrl?: string; deezerId: string };
+  initialTracks?: CatalogAlbumTrack[];
   preselected?: string[];
   onDone: () => void;
 }) {
-  const [tracks, setTracks] = useState<SpotifyAlbumTrack[] | null>(initialTracks ?? null);
+  const [tracks, setTracks] = useState<CatalogAlbumTrack[] | null>(initialTracks ?? null);
   const [selected, setSelected] = useState<Set<string>>(() => new Set(preselected));
   const [result, setResult] = useState<{ added: number; alreadyThere: number; error?: string } | null>(null);
   const [pending, startTransition] = useTransition();
@@ -481,13 +481,13 @@ function AlbumTracks({ album, initialTracks, preselected, onDone }: {
   useEffect(() => {
     if (initialTracks) return;
     let cancelled = false;
-    getAlbumTracks(album.spotifyId).then((items) => {
+    getAlbumTracks(album.deezerId).then((items) => {
       if (!cancelled) setTracks(items);
     });
     return () => {
       cancelled = true;
     };
-  }, [album.spotifyId, initialTracks]);
+  }, [album.deezerId, initialTracks]);
 
   const toggle = useCallback((id: string) => {
     setSelected((previous) => {
@@ -508,7 +508,7 @@ function AlbumTracks({ album, initialTracks, preselected, onDone }: {
           artist: album.artist,
           album: album.name,
           cover_url: album.coverUrl,
-          spotify_id: track.id,
+          deezer_id: track.id,
         })),
         { from: "album", label: album.name }
       );

@@ -6,11 +6,11 @@ import { Bookmark, Check, Play } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
 import type { ArtistLibraryContext } from "@/lib/actions/albums";
-import type { AlbumCommunityStats, SongStatus, SpotifyAlbum } from "@/types";
+import type { AlbumCommunityStats, SongStatus, CatalogAlbum } from "@/types";
 
 interface Props {
   artistName: string;
-  albums: SpotifyAlbum[];
+  albums: CatalogAlbum[];
   communityStats: Record<string, AlbumCommunityStats>;
   library: ArtistLibraryContext;
 }
@@ -117,7 +117,7 @@ export function ArtistLibrarySection({ artistName, albums, communityStats, libra
   );
 }
 
-function AlbumSuggestion({ album, reason }: { album: SpotifyAlbum; reason: string }) {
+function AlbumSuggestion({ album, reason }: { album: CatalogAlbum; reason: string }) {
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -127,8 +127,7 @@ function AlbumSuggestion({ album, reason }: { album: SpotifyAlbum; reason: strin
         album_name: album.name,
         artist_name: album.artists.map((artist) => artist.name).join(", "),
         cover_url: album.images[0]?.url,
-        spotify_id: album.id,
-        spotify_url: album.external_urls?.spotify,
+        deezer_id: album.id,
         release_date: album.release_date,
         total_tracks: album.total_tracks,
       });

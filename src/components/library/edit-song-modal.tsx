@@ -25,7 +25,7 @@ const AddSessionModal = dynamic(() =>
 const AddToPlaylistModal = dynamic(() =>
   import("./add-to-playlist-modal").then((m) => m.AddToPlaylistModal)
 );
-import { AudioFeaturesBadge } from "./audio-features-badge";
+import { DeezerPlayer } from "@/components/ui/deezer-player";
 import { TabsSearchPanel } from "./tabs-search-panel";
 import { TempoLadder } from "@/components/ui/tempo-ladder";
 import { SongBpmCurve } from "@/components/progress/song-bpm-curve";
@@ -370,17 +370,10 @@ export function EditSongModal({
           </div>
         </div>
 
-        {/* Spotify embed player */}
-        {song.spotify_id && userPlan !== "free" && (
+        {/* Lecteur Deezer */}
+        {song.deezer_id && userPlan !== "free" && (
           <div className="mx-5 mt-4 sm:mx-6">
-            <iframe
-              src={`https://open.spotify.com/embed/track/${song.spotify_id}?theme=0`}
-              width="100%"
-              height="80"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-              className="rounded-xl border-0"
-            />
+            <DeezerPlayer trackId={song.deezer_id} title={song.title} />
           </div>
         )}
 
@@ -535,17 +528,6 @@ export function EditSongModal({
               </select>
             </div>
           </div>
-
-          {/* Audio Features */}
-          <AudioFeaturesBadge
-            bpm={song.spotify_bpm}
-            musicalKey={song.spotify_key != null ? undefined : undefined}
-            energy={song.spotify_energy}
-            spotifyId={song.spotify_id}
-            songId={song.id}
-            userPlan={userPlan}
-            onFetched={() => onUpdate()}
-          />
 
           {/* Notes */}
           <div>

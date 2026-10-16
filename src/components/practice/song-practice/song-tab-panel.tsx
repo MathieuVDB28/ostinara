@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ExternalLink, Gauge, Search } from "lucide-react";
 import { isSongsterrUrl } from "@/lib/songsterr-url";
 import type { PlayedSection, Song, UserPlan } from "@/types";
+import { DeezerPlayer } from "@/components/ui/deezer-player";
 
 /**
  * La tab, le tempo et les sections, sans quitter l'ecran.
@@ -164,21 +165,11 @@ export function SongTabPanel({
       )}
 
       {/*
-        L'original, pour l'oreille. Le lecteur Spotify est reserve aux
-        plans payants comme partout ailleurs dans l'app.
+        L'original, pour l'oreille. Le lecteur est reserve aux plans
+        payants comme partout ailleurs dans l'app.
       */}
-      {song.spotify_id && userPlan !== "free" && (
-        <div className="mt-4">
-          <iframe
-            title={`Écouter ${song.title} sur Spotify`}
-            src={`https://open.spotify.com/embed/track/${song.spotify_id}?theme=0`}
-            width="100%"
-            height="80"
-            allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            className="rounded-xl border-0"
-          />
-        </div>
+      {song.deezer_id && userPlan !== "free" && (
+        <DeezerPlayer trackId={song.deezer_id} title={song.title} className="mt-4" />
       )}
     </div>
   );

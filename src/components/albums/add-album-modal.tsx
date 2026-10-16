@@ -2,32 +2,32 @@
 
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
-import { createAlbumReview, getAlbumTracks } from "@/lib/actions/albums";
+import { createAlbumReview, getCatalogAlbum } from "@/lib/actions/albums";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { FavoriteTrackPicker } from "./favorite-track-picker";
 import { StarRating } from "@/components/ui/star-rating";
-import type { AlbumReview, SpotifyAlbum, SpotifyAlbumTrack } from "@/types";
+import type { AlbumReview, CatalogAlbum, CatalogAlbumTrack } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
 interface AddAlbumModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdded: (review: AlbumReview) => void;
-  prefillAlbum?: SpotifyAlbum;
+  prefillAlbum?: CatalogAlbum;
 }
 
 export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlbumModalProps) {
   const [step, setStep] = useState<"search" | "review">("search");
   const [searchQuery, setSearchQuery] = useState("");
-  const [results, setResults] = useState<SpotifyAlbum[]>([]);
+  const [results, setResults] = useState<CatalogAlbum[]>([]);
   const [searching, setSearching] = useState(false);
-  const [selectedAlbum, setSelectedAlbum] = useState<SpotifyAlbum | null>(null);
+  const [selectedAlbum, setSelectedAlbum] = useState<CatalogAlbum | null>(null);
   const [rating, setRating] = useState(3.5); // star value 0–5 (db = stars × 2)
   const [review, setReview] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [tracks, setTracks] = useState<SpotifyAlbumTrack[] | null>(null);
-  const [favorite, setFavorite] = useState<SpotifyAlbumTrack | null>(null);
+  const [tracks, setTracks] = useState<CatalogAlbumTrack[] | null>(null);
+  const [favorite, setFavorite] = useState<CatalogAlbumTrack | null>(null);
   const nextSteps = useNextSteps();
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -60,7 +60,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
     searchTimeoutRef.current = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await fetch(`/api/spotify/search?q=${encodeURIComponent(searchQuery)}&type=album`);
+        const res = await fetch(`/api/catalog/search?q=${encodeURIComponent(searchQuery)}&type=album`);
         if (res.ok) {
           const data = await res.json();
           setResults(data);
@@ -84,15 +84,25 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
     let cancelled = false;
     setTracks(null);
     setFavorite(null);
-    getAlbumTracks(albumId).then((items) => {
-      if (!cancelled) setTracks(items);
+    // La fiche complete : la tracklist, et la date de sortie que la
+    // recherche ne donne pas.
+    getCatalogAlbum(albumId).then((details) => {
+      if (cancelled) return;
+      setTracks(details?.tracks.items ?? []);
+      if (details) {
+        setSelectedAlbum((album) =>
+          album && album.id === details.id
+            ? { ...album, release_date: details.release_date, total_tracks: details.total_tracks }
+            : album
+        );
+      }
     });
     return () => {
       cancelled = true;
     };
   }, [albumId]);
 
-  const handleSelectAlbum = (album: SpotifyAlbum) => {
+  const handleSelectAlbum = (album: CatalogAlbum) => {
     setSelectedAlbum(album);
     setStep("review");
   };
@@ -109,14 +119,13 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
       album_name: selectedAlbum.name,
       artist_name: artistName,
       cover_url: selectedAlbum.images[0]?.url,
-      spotify_id: selectedAlbum.id,
-      spotify_url: selectedAlbum.external_urls?.spotify,
+      deezer_id: selectedAlbum.id,
       release_date: selectedAlbum.release_date,
       total_tracks: selectedAlbum.total_tracks,
       rating: Math.round(rating * 2),
       review: review.trim() || undefined,
       favorite_track_name: favorite?.name,
-      favorite_track_spotify_id: favorite?.id,
+      favorite_track_deezer_id: favorite?.id,
     });
 
     if (result.success && result.data) {
@@ -132,7 +141,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
             name: selectedAlbum.name,
             artist: selectedAlbum.artists[0]?.name ?? artistName,
             coverUrl: selectedAlbum.images[0]?.url,
-            spotifyId: selectedAlbum.id,
+            deezerId: selectedAlbum.id,
           },
           tracks,
           preselected: favorite ? [favorite.id] : [],
@@ -279,7 +288,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                 <StarRating value={rating} onChange={setRating} size="lg" />
               </div>
 
-              {/* Morceau prefere — sans identifiant Spotify, pas de tracklist */}
+              {/* Morceau prefere — sans identifiant Deezer, pas de tracklist */}
               {selectedAlbum.id && (
               <div className="mb-6">
                 <div className="mb-2 flex items-baseline justify-between gap-3">

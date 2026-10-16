@@ -570,12 +570,12 @@ export async function ensureSongForCoverReply(
 
   const { data: cover } = await supabase
     .from("covers")
-    .select("song:songs(title, artist, album, cover_url, spotify_id)")
+    .select("song:songs(title, artist, album, cover_url, deezer_id)")
     .eq("id", coverId)
     .maybeSingle();
 
   const source = (Array.isArray(cover?.song) ? cover?.song[0] : cover?.song) as
-    | Pick<Song, "title" | "artist" | "album" | "cover_url" | "spotify_id">
+    | Pick<Song, "title" | "artist" | "album" | "cover_url" | "deezer_id">
     | undefined;
 
   if (!source) {
@@ -609,7 +609,7 @@ export async function ensureSongForCoverReply(
       artist: source.artist,
       album: source.album,
       cover_url: source.cover_url,
-      spotify_id: source.spotify_id,
+      deezer_id: source.deezer_id,
       status: "learning",
     })
     .select("id")

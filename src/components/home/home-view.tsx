@@ -428,7 +428,7 @@ function RecentAlbumsShelf({ albums }: { albums: AlbumReview[] }) {
           {albums.map((album) => (
             <ShelfItem
               key={album.id}
-              href={album.spotify_id ? `/albums/${album.spotify_id}` : "/biblio/albums"}
+              href={album.deezer_id ? `/albums/${album.deezer_id}` : "/biblio/albums"}
               cover={album.cover_url}
               title={album.album_name}
               subtitle={album.artist_name}
@@ -488,8 +488,8 @@ function WeeklyAlbumsBlock({ albums }: { albums: WeeklyAlbum[] }) {
 
             return (
               <li key={album.key} aria-label={`${album.album_name}, ${album.artist_name}`}>
-                {album.spotify_id ? (
-                  <Link href={`/albums/${album.spotify_id}`} className="block transition-opacity hover:opacity-90">
+                {album.deezer_id ? (
+                  <Link href={`/albums/${album.deezer_id}`} className="block transition-opacity hover:opacity-90">
                     {content}
                   </Link>
                 ) : (

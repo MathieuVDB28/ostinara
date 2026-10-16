@@ -4,9 +4,14 @@ import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { createActivity } from "./activities";
-import { getRecommendations, getArtistId, getAlbumArtistIds, getAlbumDetails } from "@/lib/services/spotify";
+import {
+  findAlbum,
+  getAlbumDetails,
+  getArtistAlbums,
+  getRelatedArtists,
+  searchArtists,
+} from "@/lib/services/deezer";
 import { addSongToLibrary } from "./songs";
-import { getSimilarArtists } from "@/lib/services/lastfm";
 import type {
   AlbumReview,
   AlbumCommunityStats,
@@ -14,8 +19,9 @@ import type {
   WeeklyAlbums,
   CreateAlbumReviewInput,
   UpdateAlbumReviewInput,
-  SpotifyRecommendation,
-  SpotifyAlbumTrack,
+  AlbumRecommendation,
+  CatalogAlbumDetails,
+  CatalogAlbumTrack,
   Song,
 } from "@/types";
 import { syncBadges } from "@/lib/badges/sync";
@@ -49,14 +55,13 @@ export async function createAlbumReview(
       album_name: input.album_name,
       artist_name: input.artist_name,
       cover_url: input.cover_url || null,
-      spotify_id: input.spotify_id || null,
-      spotify_url: input.spotify_url || null,
+      deezer_id: input.deezer_id || null,
       release_date: input.release_date || null,
       total_tracks: input.total_tracks || null,
       rating: input.rating,
       review: input.review || null,
       favorite_track_name: input.favorite_track_name || null,
-      favorite_track_spotify_id: input.favorite_track_spotify_id || null,
+      favorite_track_deezer_id: input.favorite_track_deezer_id || null,
     })
     .select()
     .single();
@@ -172,13 +177,13 @@ export async function deleteAlbumReview(
 }
 
 // === Note moyenne communauté pour un album (tous utilisateurs, service role) ===
-export async function getAlbumCommunityStats(spotifyId: string): Promise<AlbumCommunityStats | null> {
+export async function getAlbumCommunityStats(deezerId: string): Promise<AlbumCommunityStats | null> {
   const supabase = getServiceRoleSupabase();
 
   const { data, error } = await supabase
     .from("album_reviews")
     .select("rating")
-    .eq("spotify_id", spotifyId);
+    .eq("deezer_id", deezerId);
 
   if (error || !data || data.length === 0) return null;
 
@@ -188,25 +193,25 @@ export async function getAlbumCommunityStats(spotifyId: string): Promise<AlbumCo
 
 // === Notes communauté pour plusieurs albums (batch, pour la fiche artiste) ===
 export async function getAlbumsCommunityStats(
-  spotifyIds: string[]
+  catalogIds: string[]
 ): Promise<Record<string, AlbumCommunityStats>> {
-  if (spotifyIds.length === 0) return {};
+  if (catalogIds.length === 0) return {};
 
   const supabase = getServiceRoleSupabase();
 
   const { data, error } = await supabase
     .from("album_reviews")
-    .select("spotify_id, rating")
-    .in("spotify_id", spotifyIds);
+    .select("deezer_id, rating")
+    .in("deezer_id", catalogIds);
 
   if (error || !data) return {};
 
   const result: Record<string, { sum: number; count: number }> = {};
   for (const row of data) {
-    if (!row.spotify_id) continue;
-    if (!result[row.spotify_id]) result[row.spotify_id] = { sum: 0, count: 0 };
-    result[row.spotify_id].sum += row.rating;
-    result[row.spotify_id].count += 1;
+    if (!row.deezer_id) continue;
+    if (!result[row.deezer_id]) result[row.deezer_id] = { sum: 0, count: 0 };
+    result[row.deezer_id].sum += row.rating;
+    result[row.deezer_id].count += 1;
   }
 
   const stats: Record<string, AlbumCommunityStats> = {};
@@ -301,7 +306,7 @@ export async function getWeeklyAlbums(weekOffset = 0): Promise<WeeklyAlbums | nu
   const supabase = getServiceRoleSupabase();
   const { data, error } = await supabase
     .from("album_reviews")
-    .select("user_id, album_name, artist_name, cover_url, spotify_id, rating, created_at")
+    .select("user_id, album_name, artist_name, cover_url, deezer_id, rating, created_at")
     .gte("created_at", start.toISOString())
     .lt("created_at", end.toISOString())
     .order("created_at", { ascending: false });
@@ -311,11 +316,11 @@ export async function getWeeklyAlbums(weekOffset = 0): Promise<WeeklyAlbums | nu
     return empty;
   }
 
-  // Un album = un spotify_id. Sans (ajout manuel), le couple titre/artiste.
+  // Un album = un deezer_id. Sans (ajout manuel), le couple titre/artiste.
   const groups = new Map<string, WeeklyAlbum & { sum: number }>();
   for (const row of data || []) {
     const key =
-      row.spotify_id ||
+      row.deezer_id ||
       `${normalizeAlbumKey(row.album_name)}|${normalizeAlbumKey(row.artist_name)}`;
 
     let group = groups.get(key);
@@ -325,7 +330,7 @@ export async function getWeeklyAlbums(weekOffset = 0): Promise<WeeklyAlbums | nu
         album_name: row.album_name,
         artist_name: row.artist_name,
         cover_url: row.cover_url,
-        spotify_id: row.spotify_id,
+        deezer_id: row.deezer_id,
         avg_rating: 0,
         review_count: 0,
         user_rating: null,
@@ -350,8 +355,8 @@ export async function getWeeklyAlbums(weekOffset = 0): Promise<WeeklyAlbums | nu
   return { ...empty, albums };
 }
 
-// === Review de l'utilisateur courant pour un album donné (par spotify_id) ===
-export async function getUserAlbumReviewBySpotifyId(spotifyId: string): Promise<AlbumReview | null> {
+// === Review de l'utilisateur courant pour un album donné (par deezer_id) ===
+export async function getUserAlbumReviewByDeezerId(deezerId: string): Promise<AlbumReview | null> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
 
@@ -361,18 +366,59 @@ export async function getUserAlbumReviewBySpotifyId(spotifyId: string): Promise<
     .from("album_reviews")
     .select("*")
     .eq("user_id", user.id)
-    .eq("spotify_id", spotifyId)
+    .eq("deezer_id", deezerId)
     .maybeSingle();
 
   if (error || !data) return null;
   return data as AlbumReview;
 }
 
-// === Récupérer des recommandations basées sur les albums écoutés (Pro/Band only) ===
+/**
+ * L'album Deezer d'un ancien lien /albums/<id Spotify>.
+ *
+ * Les avis, la wishlist et les favoris gardent leur `spotify_id` : on y
+ * retrouve l'album, puis son `deezer_id` (renseigne par
+ * scripts/backfill-deezer.mjs) ou, a defaut, on le cherche par son nom.
+ */
+export async function resolveLegacyAlbumId(spotifyId: string): Promise<string | null> {
+  const supabase = await createClient();
+
+  for (const table of ["album_reviews", "album_wishlist", "favorite_albums"] as const) {
+    const { data } = await supabase
+      .from(table)
+      .select("deezer_id, album_name, artist_name")
+      .eq("spotify_id", spotifyId)
+      .limit(1);
+    const row = data?.[0];
+    if (!row) continue;
+    if (row.deezer_id) return row.deezer_id;
+    const found = await findAlbum(row.album_name, row.artist_name);
+    if (found) return found.id;
+  }
+
+  return null;
+}
+
+// === Recommandations d'albums (Pro/Band) ===
+
+/** Le poids d'un morceau de la biblio : on recommande d'apres ce qu'on joue. */
+const SONG_WEIGHT = { mastered: 3, learning: 2, want_to_learn: 1 } as const;
+
+/**
+ * Des albums a ecouter, d'apres ce qu'on fait dans Ostinara — rien d'autre.
+ *
+ * 1. Les artistes de reference : ceux des albums notes (la note compte,
+ *    un album recent plus qu'un ancien) et ceux des morceaux de la biblio
+ *    (un morceau maitrise plus qu'un morceau en attente).
+ * 2. Leurs artistes proches selon Deezer. Un artiste proche de plusieurs
+ *    references passe devant : c'est la ou les gouts se recoupent.
+ * 3. L'album le plus ecoute de chacun, hors albums deja notes ou mis de
+ *    cote. Chaque recommandation dit d'ou elle vient.
+ */
 export async function getAlbumRecommendations(): Promise<{
   success: boolean;
   error?: string;
-  data?: SpotifyRecommendation[];
+  data?: AlbumRecommendation[];
 }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
@@ -381,7 +427,6 @@ export async function getAlbumRecommendations(): Promise<{
     return { success: false, error: "Non authentifié" };
   }
 
-  // Vérifier le plan
   const { data: profile } = await supabase
     .from("profiles")
     .select("plan")
@@ -392,106 +437,118 @@ export async function getAlbumRecommendations(): Promise<{
     return { success: false, error: "Cette fonctionnalité nécessite un plan Pro ou Band" };
   }
 
-  // Récupérer les albums écoutés récemment
-  const { data: reviews } = await supabase
-    .from("album_reviews")
-    .select("artist_name, spotify_id")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(15);
+  const [{ data: reviews }, { data: songs }, { data: wishlist }] = await Promise.all([
+    supabase
+      .from("album_reviews")
+      .select("artist_name, album_name, deezer_id, rating, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(30),
+    supabase.from("songs").select("artist, status").eq("user_id", user.id),
+    supabase.from("album_wishlist").select("deezer_id, album_name").eq("user_id", user.id),
+  ]);
 
-  if (!reviews || reviews.length === 0) {
+  // ── 1. Les artistes de reference ─────────────────────────────────────────
+  // Un artiste par nom, avec un score et ce qui l'a fait entrer : on joue
+  // ses morceaux (`played`), sinon on a aime l'un de ses albums (`album`).
+  const seeds = new Map<string, { name: string; score: number; played: boolean; album?: string }>();
+  const bump = (rawName: string, score: number, source: { played: boolean; album?: string }) => {
+    const name = rawName.split(",")[0].trim();
+    if (!name || score <= 0) return;
+    const key = name.toLowerCase();
+    const seed = seeds.get(key);
+    if (seed) {
+      seed.score += score;
+      seed.played ||= source.played;
+      seed.album ??= source.album;
+    } else {
+      seeds.set(key, { name, score, ...source });
+    }
+  };
+
+  (reviews ?? []).forEach((review, index) => {
+    // Une note de 3/5 ne doit pas peser comme un 5/5 ; la recence compte.
+    const ratingWeight = Math.max(0, review.rating - 4) / 2;
+    const recency = 1 - index / 40;
+    bump(review.artist_name, ratingWeight * recency, { played: false, album: review.album_name });
+  });
+  for (const song of songs ?? []) {
+    const weight = SONG_WEIGHT[song.status as keyof typeof SONG_WEIGHT] ?? 1;
+    bump(song.artist, weight, { played: true });
+  }
+
+  const topSeeds = [...seeds.values()]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6);
+
+  if (topSeeds.length === 0) {
     return { success: true, data: [] };
   }
 
-  // ── Étape 1 : résoudre les IDs Spotify des artistes écoutés ──────────────
-  const seenArtistIds = new Set<string>();
-  const seedArtistIds: string[] = [];
-  const seedArtistNames = [...new Set(reviews.map((r) => r.artist_name))];
+  // ── 2. Les artistes proches ──────────────────────────────────────────────
+  const knownNames = new Set(seeds.keys());
+  const candidates = new Map<string, { id: string; name: string; score: number; why: string }>();
 
-  for (const review of reviews.slice(0, 8)) {
-    if (seedArtistIds.length >= 6) break;
-    if (review.spotify_id) {
-      const ids = await getAlbumArtistIds(review.spotify_id);
-      for (const id of ids) {
-        if (!seenArtistIds.has(id)) {
-          seenArtistIds.add(id);
-          seedArtistIds.push(id);
+  await Promise.all(
+    topSeeds.map(async (seed) => {
+      const [artist] = await searchArtists(seed.name, 1);
+      if (!artist || artist.name.toLowerCase() !== seed.name.toLowerCase()) return;
+      const related = await getRelatedArtists(artist.id, 8);
+      related.forEach((candidate, rank) => {
+        if (knownNames.has(candidate.name.toLowerCase())) return;
+        const gain = seed.score * (1 - rank / 10);
+        const current = candidates.get(candidate.id);
+        if (current) {
+          current.score += gain;
+        } else {
+          const reason = seed.played
+            ? `Parce que tu joues ${seed.name}`
+            : `Proche de ${seed.name}, dont tu as aimé « ${seed.album} »`;
+          candidates.set(candidate.id, { id: candidate.id, name: candidate.name, score: gain, why: reason });
         }
-      }
-    }
-  }
-  // Fallback : recherche par nom pour les reviews sans spotify_id
-  for (const name of seedArtistNames.slice(0, 6)) {
-    if (seedArtistIds.length >= 6) break;
-    const id = await getArtistId(name);
-    if (id && !seenArtistIds.has(id)) {
-      seenArtistIds.add(id);
-      seedArtistIds.push(id);
-    }
-  }
+      });
+    })
+  );
 
-  if (seedArtistIds.length === 0) {
-    console.error("getAlbumRecommendations: impossible de résoudre les IDs Spotify");
-    return { success: true, data: [] };
-  }
+  const topCandidates = [...candidates.values()].sort((a, b) => b.score - a.score).slice(0, 12);
 
-  // ── Étape 2 : artistes similaires via Last.fm ─────────────────────────────
-  // On prend max 3 similaires PAR artiste source pour couvrir toute la collection
-  // et garder un temps de réponse acceptable (~3 similaires × N artistes sources).
-  const reviewedNamesLower = new Set(seedArtistNames.map((n) => n.toLowerCase()));
-  const similarArtistIds: string[] = [];
-  const seenSimilarIds = new Set(seenArtistIds);
-  const MAX_SIMILAR_PER_ARTIST = 3;
+  // ── 3. Un album par artiste ──────────────────────────────────────────────
+  const excludedIds = new Set(
+    [...(reviews ?? []), ...(wishlist ?? [])].map((row) => row.deezer_id).filter(Boolean)
+  );
 
-  for (const artistName of seedArtistNames.slice(0, 6)) {
-    const similarNames = await getSimilarArtists(artistName);
-    console.log(`[recos] Last.fm similar to "${artistName}":`, similarNames.slice(0, 5));
-
-    let addedForThisArtist = 0;
-    for (const name of similarNames) {
-      if (addedForThisArtist >= MAX_SIMILAR_PER_ARTIST) break;
-      if (reviewedNamesLower.has(name.toLowerCase())) continue;
-      const id = await getArtistId(name);
-      if (id && !seenSimilarIds.has(id)) {
-        seenSimilarIds.add(id);
-        similarArtistIds.push(id);
-        addedForThisArtist++;
-      }
-    }
-  }
-
-  console.log(`[recos] ${similarArtistIds.length} similar artist IDs from Last.fm`);
-
-  // Utilise les artistes similaires si Last.fm a renvoyé des résultats,
-  // sinon fallback sur les artistes déjà écoutés
-  const targetArtistIds = similarArtistIds.length > 0 ? similarArtistIds : seedArtistIds;
-
-  // Obtenir les albums de ces artistes via Spotify
-  const albums = await getRecommendations(targetArtistIds, 20);
-
-  // Filtrer les albums déjà reviewés
-  const reviewedSpotifyIds = new Set(reviews.map((r) => r.spotify_id).filter(Boolean));
-  const filtered = albums.filter((a) => !reviewedSpotifyIds.has(a.id));
+  const picks = await Promise.all(
+    topCandidates.map(async (candidate) => {
+      const albums = await getArtistAlbums(candidate.id, { name: candidate.name });
+      const best = albums
+        .filter((album) => album.record_type === "album" && !excludedIds.has(album.id))
+        .sort((a, b) => (b.fans ?? 0) - (a.fans ?? 0))[0];
+      return best ? { ...best, reason: candidate.why } : null;
+    })
+  );
 
   return {
     success: true,
-    data: filtered.map((a) => ({
-      id: a.id,
-      name: a.name,
-      artists: a.artists,
-      images: a.images,
-      external_urls: a.external_urls,
-      release_date: a.release_date,
-      total_tracks: a.total_tracks,
-    })),
+    data: picks.filter((pick): pick is AlbumRecommendation => pick !== null),
   };
 }
 
-// === Titres d'un album, pour choisir son morceau prefere ===
-export async function getAlbumTracks(spotifyAlbumId: string): Promise<SpotifyAlbumTrack[]> {
+// === La fiche d'un album (tracklist, date de sortie) ===
+// La recherche Deezer ne donne pas la date de sortie : on la lit ici quand
+// un album est choisi.
+export async function getCatalogAlbum(albumId: string): Promise<CatalogAlbumDetails | null> {
   try {
-    const album = await getAlbumDetails(spotifyAlbumId);
+    return await getAlbumDetails(albumId);
+  } catch (error) {
+    console.error("Error fetching album details:", error);
+    return null;
+  }
+}
+
+// === Titres d'un album, pour choisir son morceau prefere ===
+export async function getAlbumTracks(albumId: string): Promise<CatalogAlbumTrack[]> {
+  try {
+    const album = await getAlbumDetails(albumId);
     return album?.tracks?.items ?? [];
   } catch (error) {
     console.error("Error fetching album tracks:", error);
@@ -508,7 +565,7 @@ export async function addAlbumTrackToLibrary(input: {
   artist: string;
   album?: string;
   cover_url?: string;
-  spotify_id?: string;
+  deezer_id?: string;
 }): Promise<{ success: boolean; error?: string; song?: Song; alreadyThere?: boolean }> {
   return addSongToLibrary(
     input,
@@ -522,7 +579,7 @@ export async function addAlbumTrackToLibrary(input: {
 export interface ArtistLibraryContext {
   /** Ses morceaux dans la biblio. */
   songs: Pick<Song, "id" | "title" | "album" | "cover_url" | "status">[];
-  /** Ses albums deja notes : identifiant Spotify -> note sur 10. */
+  /** Ses albums deja notes : identifiant Deezer -> note sur 10. */
   reviewed: Record<string, number>;
   /** Ses albums dans « À écouter ». */
   wishlisted: string[];
@@ -557,14 +614,14 @@ export async function getArtistLibraryContext(
       .order("updated_at", { ascending: false }),
     supabase
       .from("album_reviews")
-      .select("spotify_id, rating")
+      .select("deezer_id, rating")
       .eq("user_id", user.id)
-      .in("spotify_id", ids),
+      .in("deezer_id", ids),
     supabase
       .from("album_wishlist")
-      .select("spotify_id")
+      .select("deezer_id")
       .eq("user_id", user.id)
-      .in("spotify_id", ids),
+      .in("deezer_id", ids),
   ]);
 
   const target = artistName.trim().toLowerCase();
@@ -585,8 +642,8 @@ export async function getArtistLibraryContext(
   return {
     songs,
     reviewed: Object.fromEntries(
-      (reviewsResult.data ?? []).map((row) => [row.spotify_id as string, row.rating as number])
+      (reviewsResult.data ?? []).map((row) => [row.deezer_id as string, row.rating as number])
     ),
-    wishlisted: (wishlistResult.data ?? []).map((row) => row.spotify_id as string),
+    wishlisted: (wishlistResult.data ?? []).map((row) => row.deezer_id as string),
   };
 }

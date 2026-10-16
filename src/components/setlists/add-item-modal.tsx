@@ -26,11 +26,11 @@ export function AddItemModal({
 }: AddItemModalProps) {
   const [tab, setTab] = useState<Tab>("song");
   const [query, setQuery] = useState("");
-  const [spotifyQuery, setSpotifyQuery] = useState("");
-  const [spotifyResults, setSpotifyResults] = useState<
+  const [catalogQuery, setCatalogQuery] = useState("");
+  const [catalogResults, setCatalogResults] = useState<
     { title: string; artist: string; cover_url?: string }[]
   >([]);
-  const [searchingSpotify, setSearchingSpotify] = useState(false);
+  const [searchingCatalog, setSearchingCatalog] = useState(false);
   const [customSection, setCustomSection] = useState("");
   const [sectionDuration, setSectionDuration] = useState(0);
   const [adding, setAdding] = useState(false);
@@ -41,8 +41,8 @@ export function AddItemModal({
     if (isOpen) {
       setTab("song");
       setQuery("");
-      setSpotifyQuery("");
-      setSpotifyResults([]);
+      setCatalogQuery("");
+      setCatalogResults([]);
       setCustomSection("");
       setSectionDuration(0);
       setError(null);
@@ -72,23 +72,23 @@ export function AddItemModal({
     };
   }, [isOpen]);
 
-  // Search Spotify
+  // Recherche dans le catalogue (Deezer)
   useEffect(() => {
-    if (spotifyQuery.length < 2) {
-      setSpotifyResults([]);
+    if (catalogQuery.length < 2) {
+      setCatalogResults([]);
       return;
     }
 
     const timer = setTimeout(async () => {
-      setSearchingSpotify(true);
+      setSearchingCatalog(true);
       try {
         const res = await fetch(
-          `/api/spotify/search?q=${encodeURIComponent(spotifyQuery)}`
+          `/api/catalog/search?q=${encodeURIComponent(catalogQuery)}`
         );
         if (res.ok) {
           const data = await res.json();
           // L'API retourne déjà un array formaté avec title, artist, cover_url
-          setSpotifyResults(
+          setCatalogResults(
             data.map(
               (t: {
                 title: string;
@@ -103,13 +103,13 @@ export function AddItemModal({
           );
         }
       } catch {
-        console.error("Spotify search error");
+        console.error("Catalog search error");
       }
-      setSearchingSpotify(false);
+      setSearchingCatalog(false);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [spotifyQuery]);
+  }, [catalogQuery]);
 
   if (!isOpen) return null;
 
@@ -156,7 +156,7 @@ export function AddItemModal({
     }
   };
 
-  const handleAddSpotifySong = async (song: {
+  const handleAddCatalogSong = async (song: {
     title: string;
     artist: string;
     cover_url?: string;
@@ -377,10 +377,10 @@ export function AddItemModal({
                 </div>
               </div>
 
-              {/* Spotify search */}
+              {/* Recherche dans le catalogue */}
               <div className="border-t border-border pt-4">
                 <label className="mb-2 block text-sm font-medium">
-                  Ou depuis Spotify
+                  Ou depuis Deezer
                 </label>
                 <div className="relative">
                   <svg
@@ -398,22 +398,22 @@ export function AddItemModal({
                   </svg>
                   <input
                     type="text"
-                    value={spotifyQuery}
-                    onChange={(e) => setSpotifyQuery(e.target.value)}
-                    placeholder="Rechercher sur Spotify..."
+                    value={catalogQuery}
+                    onChange={(e) => setCatalogQuery(e.target.value)}
+                    placeholder="Rechercher sur Deezer..."
                     className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary"
                   />
                 </div>
                 <div className="mt-2 max-h-40 space-y-1 overflow-y-auto">
-                  {searchingSpotify && (
+                  {searchingCatalog && (
                     <p className="py-4 text-center text-sm text-muted-foreground">
                       Recherche...
                     </p>
                   )}
-                  {spotifyResults.map((song, i) => (
+                  {catalogResults.map((song, i) => (
                     <button
                       key={i}
-                      onClick={() => handleAddSpotifySong(song)}
+                      onClick={() => handleAddCatalogSong(song)}
                       disabled={adding}
                       className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-accent disabled:opacity-50"
                     >

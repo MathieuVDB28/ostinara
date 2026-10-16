@@ -1,7 +1,7 @@
 import { Music } from "lucide-react";
 
 interface CoverProps {
-  /** URL de la pochette (Spotify), ou rien. */
+  /** URL de la pochette (Deezer, ou Spotify pour les plus anciennes), ou rien. */
   src?: string | null;
   /** Vide par defaut : la pochette accompagne un titre deja lu. */
   alt?: string;
@@ -29,7 +29,7 @@ export function Cover({ src, alt = "", className = "", priority = false, childre
       className={`relative shrink-0 overflow-hidden bg-muted after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--foreground)_10%,transparent)] ${className}`}
     >
       {src ? (
-        // Pochettes Spotify deja dimensionnees par le CDN : <img>, comme
+        // Pochettes deja dimensionnees par le CDN : <img>, comme
         // partout ailleurs dans l'app, plutot que l'optimiseur d'images.
         // eslint-disable-next-line @next/next/no-img-element
         <img

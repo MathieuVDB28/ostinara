@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Check, Heart, Plus } from "lucide-react";
 import { addAlbumTrackToLibrary } from "@/lib/actions/albums";
-import type { SpotifyAlbumTrack } from "@/types";
+import type { CatalogAlbumTrack } from "@/types";
 
 function formatDuration(ms: number): string {
   const seconds = Math.round(ms / 1000);
@@ -12,10 +12,10 @@ function formatDuration(ms: number): string {
 }
 
 interface FavoriteTrackPickerProps {
-  tracks: SpotifyAlbumTrack[];
-  /** Identifiant Spotify du titre prefere, ou null. */
+  tracks: CatalogAlbumTrack[];
+  /** Identifiant Deezer du titre prefere, ou null. */
   value: string | null;
-  onChange: (track: SpotifyAlbumTrack | null) => void;
+  onChange: (track: CatalogAlbumTrack | null) => void;
   disabled?: boolean;
   /** Hauteur bornee dans une modale, liste entiere sur la page de l'album. */
   scroll?: boolean;
@@ -74,7 +74,7 @@ interface AddTrackToLibraryButtonProps {
   artist: string;
   album?: string;
   coverUrl?: string;
-  spotifyId?: string;
+  deezerId?: string;
 }
 
 /**
@@ -82,7 +82,7 @@ interface AddTrackToLibraryButtonProps {
  * apprendre ». Un morceau deja dans la biblio n'est pas duplique, le
  * bouton le dit et mene a la bibliotheque.
  */
-export function AddTrackToLibraryButton({ title, artist, album, coverUrl, spotifyId }: AddTrackToLibraryButtonProps) {
+export function AddTrackToLibraryButton({ title, artist, album, coverUrl, deezerId }: AddTrackToLibraryButtonProps) {
   const [state, setState] = useState<"idle" | "added" | "already">("idle");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -95,7 +95,7 @@ export function AddTrackToLibraryButton({ title, artist, album, coverUrl, spotif
         artist,
         album,
         cover_url: coverUrl,
-        spotify_id: spotifyId,
+        deezer_id: deezerId,
       });
       if (result.success) {
         setState(result.alreadyThere ? "already" : "added");

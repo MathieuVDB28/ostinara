@@ -10,7 +10,6 @@ import { Icon } from "@/components/ui/icon";
 
 interface SettingsListProps {
   profile: UserProfile;
-  spotifyConnected: boolean;
 }
 
 interface SettingsRow {
@@ -49,7 +48,7 @@ function Row({ row }: { row: SettingsRow }) {
  * navigation, et une quatrieme barre d'onglets ici rendrait l'app
  * illisible. Chaque ligne pousse une vue de detail.
  */
-export function SettingsList({ profile, spotifyConnected }: SettingsListProps) {
+export function SettingsList({ profile }: SettingsListProps) {
   const account: SettingsRow[] = [
     {
       href: "/profile/edit",
@@ -64,14 +63,6 @@ export function SettingsList({ profile, spotifyConnected }: SettingsListProps) {
         ? "Profil privé"
         : "Profil visible par tes amis",
       icon: "lock",
-    },
-    {
-      href: "/profile/edit?tab=integrations",
-      label: "Spotify",
-      description: spotifyConnected
-        ? "Compte connecté"
-        : "Non connecté",
-      icon: "link",
     },
   ];
 

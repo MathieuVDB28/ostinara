@@ -37,13 +37,13 @@ export async function addToAlbumWishlist(
     return { success: false, error: "Non authentifié" };
   }
 
-  // Vérifier si déjà dans la wishlist (par spotify_id)
-  if (input.spotify_id) {
+  // Vérifier si déjà dans la wishlist (par deezer_id)
+  if (input.deezer_id) {
     const { data: existing } = await supabase
       .from("album_wishlist")
       .select("id")
       .eq("user_id", user.id)
-      .eq("spotify_id", input.spotify_id)
+      .eq("deezer_id", input.deezer_id)
       .single();
 
     if (existing) {
@@ -51,13 +51,13 @@ export async function addToAlbumWishlist(
     }
   }
 
-  // Vérifier si déjà dans les reviews (par spotify_id)
-  if (input.spotify_id) {
+  // Vérifier si déjà dans les reviews (par deezer_id)
+  if (input.deezer_id) {
     const { data: existingReview } = await supabase
       .from("album_reviews")
       .select("id")
       .eq("user_id", user.id)
-      .eq("spotify_id", input.spotify_id)
+      .eq("deezer_id", input.deezer_id)
       .single();
 
     if (existingReview) {
@@ -93,8 +93,7 @@ export async function addToAlbumWishlist(
       album_name: input.album_name,
       artist_name: input.artist_name,
       cover_url: input.cover_url || null,
-      spotify_id: input.spotify_id || null,
-      spotify_url: input.spotify_url || null,
+      deezer_id: input.deezer_id || null,
       release_date: input.release_date || null,
       total_tracks: input.total_tracks || null,
     })

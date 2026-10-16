@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { SongCard } from "./song-card";
 import { SongSwipeRow } from "./song-swipe-row";
 import { SongShelf } from "./song-shelf";
-import { ChevronDown, ChevronLeft, ChevronRight, ListPlus, Music, Plus, SearchX } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Music, Plus, SearchX } from "lucide-react";
 // Les modales ne sont ni montees ni telechargees tant qu'elles ne sont pas
 // ouvertes. EditSongModal entraine toute la chaine d'upload video
 // (add-cover-modal → video-upload → tus-js-client), inutile pour qui
@@ -25,10 +25,6 @@ const CreatePlaylistModal = dynamic(() =>
 );
 const EditPlaylistModal = dynamic(() =>
   import("./edit-playlist-modal").then((m) => m.EditPlaylistModal)
-);
-import { SpotifySuggestions } from "./spotify-suggestions";
-const ImportPlaylistModal = dynamic(() =>
-  import("./import-playlist-modal").then((m) => m.ImportPlaylistModal)
 );
 import { useBiblioSearch } from "@/components/biblio/biblio-search";
 import { songTempoProgress } from "@/lib/song-progress";
@@ -65,7 +61,6 @@ interface LibraryViewProps {
   initialSongs: Song[];
   initialPlaylists: PlaylistWithSongs[];
   userPlan?: UserPlan;
-  spotifyConnected?: boolean;
   /** Morceau a ouvrir a l'arrivee — lien profond de la recherche globale. */
   initialSongId?: string;
   /**
@@ -187,7 +182,6 @@ export function LibraryView({
   initialSongs,
   initialPlaylists,
   userPlan = "free",
-  spotifyConnected = false,
   initialSongId,
   songPracticeStats = {},
 }: LibraryViewProps) {
@@ -198,7 +192,6 @@ export function LibraryView({
   const [playlists, setPlaylists] = useState(initialPlaylists);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isCreatePlaylistModalOpen, setIsCreatePlaylistModalOpen] = useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   /*
    * Arrivee depuis la recherche globale : la fiche s'ouvre des le premier
    * rendu. En etat initial plutot qu'en effet — sinon la page s'affiche
@@ -461,15 +454,6 @@ export function LibraryView({
         C'est le seul aplat ambre de l'ecran.
       */}
       <div className="mb-4 hidden items-center justify-end gap-2 sm:flex">
-        {spotifyConnected && userPlan !== "free" && (
-          <button
-            onClick={() => setIsImportModalOpen(true)}
-            className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <ListPlus className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-            Importer une playlist
-          </button>
-        )}
         <button
           onClick={() => setIsAddModalOpen(true)}
           className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -478,13 +462,6 @@ export function LibraryView({
           Ajouter un morceau
         </button>
       </div>
-
-      <SpotifySuggestions
-        userPlan={userPlan}
-        spotifyConnected={spotifyConnected}
-        existingSpotifyIds={songs.filter((s) => s.spotify_id).map((s) => s.spotify_id!)}
-        onAddSong={() => setIsAddModalOpen(true)}
-      />
 
       {/*
         Filtres, tri et playlists sur une seule rangee de puces. L'ecran en
@@ -655,15 +632,6 @@ export function LibraryView({
         la pilule de navigation et de l'encoche.
       */}
       <div className="fixed bottom-0 right-0 z-30 flex flex-col items-center gap-3 p-4 pb-[calc(env(safe-area-inset-bottom)+5.5rem)] sm:hidden">
-        {spotifyConnected && userPlan !== "free" && (
-          <button
-            onClick={() => setIsImportModalOpen(true)}
-            aria-label="Importer une playlist Spotify"
-            className="glass flex h-11 w-11 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <ListPlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-          </button>
-        )}
         <button
           onClick={() => setIsAddModalOpen(true)}
           aria-label="Ajouter un morceau"
@@ -714,13 +682,6 @@ export function LibraryView({
         />
       )}
 
-      {isImportModalOpen && (
-        <ImportPlaylistModal
-          isOpen={isImportModalOpen}
-          onClose={() => setIsImportModalOpen(false)}
-          onSuccess={handleRefresh}
-        />
-      )}
     </div>
   );
 }
