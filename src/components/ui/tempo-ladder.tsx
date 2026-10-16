@@ -51,6 +51,8 @@ export function TempoLadder({
   const atTempo = achieved >= targetBpm;
   const remaining = targetBpm - achieved;
   const marks = TEMPO_MARKS.filter((m) => m.bpm > min && m.bpm < max);
+  const labels = stagger(marks.map((mark) => ({ ...mark, left: pct(mark.bpm) })));
+  const twoRows = labels.some((label) => label.row === 1);
 
   return (
     <div className={className}>
@@ -102,12 +104,14 @@ export function TempoLadder({
       </div>
 
       {showScale && marks.length > 0 && (
-        <div className="relative h-4">
-          {marks.map((mark) => (
+        <div className={`relative ${twoRows ? "h-8" : "h-4"}`}>
+          {labels.map((mark) => (
             <span
               key={mark.name}
-              className="absolute top-0 -translate-x-1/2 text-[11px] text-muted-foreground"
-              style={{ left: `${pct(mark.bpm)}%` }}
+              className={`absolute -translate-x-1/2 whitespace-nowrap text-[11px] text-muted-foreground ${
+                mark.row === 1 ? "top-4" : "top-0"
+              }`}
+              style={{ left: `${mark.left}%` }}
             >
               {mark.name}
             </span>
@@ -116,6 +120,29 @@ export function TempoLadder({
       )}
     </div>
   );
+}
+
+/**
+ * Ecart minimal, en % du rail, entre deux etiquettes d'une meme ligne.
+ * Andante (108) et Moderato (120) sont a 12 BPM : sur un telephone, leurs
+ * noms se chevauchent. « Moderato » fait ~50 px ; 14 % d'un rail de 320 px
+ * en laisse 45 entre deux centres, assez pour deux demi-etiquettes.
+ */
+const MIN_LABEL_GAP = 14;
+
+/**
+ * Une etiquette trop proche de la precedente descend d'une ligne. Les
+ * marques arrivent triees par tempo : il suffit de comparer a la derniere
+ * etiquette posee sur chaque ligne.
+ */
+function stagger<T extends { left: number }>(marks: T[]): (T & { row: 0 | 1 })[] {
+  const last: [number, number] = [-Infinity, -Infinity];
+  return marks.map((mark) => {
+    const row: 0 | 1 =
+      mark.left - last[0] >= MIN_LABEL_GAP || mark.left - last[0] >= mark.left - last[1] ? 0 : 1;
+    last[row] = mark.left;
+    return { ...mark, row };
+  });
 }
 
 /**
