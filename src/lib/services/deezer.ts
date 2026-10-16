@@ -383,6 +383,17 @@ export async function findTrack(title: string, artist: string): Promise<CatalogT
   return pickByName(await searchTracks(`artist:"${mainArtist}" track:"${clean(title)}"`, 15), title, artist);
 }
 
+/**
+ * Le tempo d'un titre selon Deezer, ou null s'il ne le connait pas (il
+ * repond 0 pour un titre sur deux). Calcule par analyse du son, il double
+ * parfois : 190 pour « Back In Black », qui est a 94.
+ */
+export async function getTrackBpm(trackId: string): Promise<number | null> {
+  if (!/^\d+$/.test(trackId)) return null;
+  const raw = await get<RawTrack>(`/track/${trackId}`, DAY);
+  return raw?.bpm && raw.bpm > 0 ? Math.round(raw.bpm) : null;
+}
+
 /** Le lien d'ecoute d'un album ou d'un titre Deezer. */
 export function deezerUrl(kind: 'album' | 'track' | 'artist', id: string): string {
   return `https://www.deezer.com/${kind}/${id}`;

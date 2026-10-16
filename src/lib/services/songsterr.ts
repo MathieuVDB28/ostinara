@@ -1,6 +1,6 @@
 import type { SongsterrTabStructure, PlayedSection } from '@/types';
 // Les deux helpers d'URL vivent a part : ils sont aussi lus par des
-// composants clients, qui n'ont rien a faire du parseur Guitar Pro.
+// composants clients, qui n'ont pas a appeler Songsterr.
 import { extractSongsterrId, getSongsterrUrl } from '@/lib/songsterr-url';
 
 export { extractSongsterrId, getSongsterrUrl };
@@ -23,18 +23,25 @@ interface SongsterrApiSong {
   defaultTrack: number;
 }
 
-interface SongsterrRevision {
+/** La fiche d'une revision : de quoi trouver ses pistes sur le CDN. */
+interface SongsterrMeta {
   revisionId: number;
-  songId: number;
-  artist: string;
-  title: string;
-  source?: string; // URL to GP file
-  tracks: {
-    instrument: string;
-    name: string;
-    hash: string;
+  image: string;
+  defaultTrack?: number;
+  popularTrackGuitar?: number;
+}
+
+/** Une piste telle que le lecteur Songsterr la dessine (seulement les champs lus). */
+interface SongsterrTrackJson {
+  automations?: { tempo?: { measure: number; bpm: number }[] };
+  measures: {
+    signature?: [number, number];
+    marker?: { text: string };
   }[];
 }
+
+/** Le CDN d'ou le lecteur de Songsterr charge ses pistes. */
+const TRACKS_CDN = 'https://dqsljvtekg760.cloudfront.net';
 
 export async function searchSongsterr(
   title: string,
@@ -62,232 +69,90 @@ export async function searchSongsterr(
   }
 }
 
-// Fetch and parse tab structure from Songsterr by downloading the GP file
+/**
+ * Le tempo, la mesure et les sections d'une tab Songsterr.
+ *
+ * Songsterr ne livre plus le fichier Guitar Pro (`source` est vide sur les
+ * revisions) : on lit la piste que son lecteur charge, un JSON sur leur CDN.
+ * Toutes les pistes portent le meme tempo ; on prend la guitare la plus jouee.
+ */
 export async function fetchSongsterrTabStructure(
   songId: number
 ): Promise<SongsterrTabStructure | null> {
   try {
-    // Step 1: Get the latest revision to find the GP file URL
-    const revisionsRes = await fetch(
-      `https://www.songsterr.com/api/meta/${songId}/revisions`,
-      { next: { revalidate: 3600 } }
+    const metaRes = await fetch(`https://www.songsterr.com/api/meta/${songId}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!metaRes.ok) return null;
+    const meta = (await metaRes.json()) as SongsterrMeta;
+    if (!meta.revisionId || !meta.image) return null;
+
+    const track = meta.popularTrackGuitar ?? meta.defaultTrack ?? 0;
+    const trackRes = await fetch(
+      `${TRACKS_CDN}/${songId}/${meta.revisionId}/${meta.image}/${track}.json`,
+      { next: { revalidate: 86400 } }
     );
+    if (!trackRes.ok) return null;
 
-    if (!revisionsRes.ok) return null;
-
-    const revisions: SongsterrRevision[] = await revisionsRes.json();
-    if (!revisions || revisions.length === 0) return null;
-
-    const latestRevisionId = revisions[0].revisionId;
-
-    // Step 2: Get revision details to find the GP source URL
-    const revisionRes = await fetch(
-      `https://www.songsterr.com/api/revision/${latestRevisionId}`,
-      { next: { revalidate: 3600 } }
-    );
-
-    if (!revisionRes.ok) return null;
-
-    const revision = await revisionRes.json() as Record<string, unknown>;
-    const sourceUrl = revision.source as string | undefined;
-
-    if (!sourceUrl) return null;
-
-    // Step 3: Download the GP file (it's a ZIP containing XML)
-    const gpRes = await fetch(sourceUrl);
-    if (!gpRes.ok) return null;
-
-    const gpBuffer = await gpRes.arrayBuffer();
-
-    // Step 4: Parse the GP file (ZIP -> XML)
-    return parseGPFile(new Uint8Array(gpBuffer));
+    return toStructure((await trackRes.json()) as SongsterrTrackJson);
   } catch (e) {
     console.error('Error fetching Songsterr tab structure:', e);
     return null;
   }
 }
 
-// Parse a Guitar Pro file (.gp) which is a ZIP containing score.gpif (XML)
-function parseGPFile(data: Uint8Array): SongsterrTabStructure | null {
-  try {
-    // The GP file is a ZIP. We need to find and extract Content/score.gpif
-    // ZIP files have local file headers starting with PK\x03\x04
-    const xmlContent = extractFileFromZip(data, 'Content/score.gpif');
-    if (!xmlContent) return null;
+function toStructure(track: SongsterrTrackJson): SongsterrTabStructure {
+  const measures = track.measures ?? [];
+  const firstTempo = [...(track.automations?.tempo ?? [])].sort((a, b) => a.measure - b.measure)[0];
+  const [timeSignatureBeats, timeSignatureValue] = measures[0]?.signature ?? [4, 4];
 
-    return parseGPIF(xmlContent);
-  } catch (e) {
-    console.error('Error parsing GP file:', e);
-    return null;
-  }
+  // Une section court de son marqueur jusqu'a la mesure avant le suivant.
+  const markers = measures
+    .map((measure, index) => ({ name: measure.marker?.text?.trim() ?? '', index }))
+    .filter((marker) => marker.name);
+  const sections: PlayedSection[] = markers.map((marker, i) => ({
+    name: marker.name,
+    startMeasure: marker.index + 1,
+    endMeasure: i < markers.length - 1 ? markers[i + 1].index : measures.length,
+  }));
+
+  return {
+    bpm: firstTempo ? Math.round(firstTempo.bpm) : 0,
+    totalMeasures: measures.length,
+    timeSignatureBeats,
+    timeSignatureValue,
+    sections,
+  };
 }
 
-// Simple ZIP file extractor - extracts a specific file from a ZIP archive
-function extractFileFromZip(data: Uint8Array, targetPath: string): string | null {
-  const decoder = new TextDecoder('utf-8');
-
-  let offset = 0;
-  while (offset < data.length - 4) {
-    // Look for local file header signature: PK\x03\x04
-    if (
-      data[offset] === 0x50 &&
-      data[offset + 1] === 0x4b &&
-      data[offset + 2] === 0x03 &&
-      data[offset + 3] === 0x04
-    ) {
-      // Parse local file header
-      const compressionMethod = data[offset + 8] | (data[offset + 9] << 8);
-      const compressedSize =
-        data[offset + 18] |
-        (data[offset + 19] << 8) |
-        (data[offset + 20] << 16) |
-        (data[offset + 21] << 24);
-      const uncompressedSize =
-        data[offset + 22] |
-        (data[offset + 23] << 8) |
-        (data[offset + 24] << 16) |
-        (data[offset + 25] << 24);
-      const fileNameLength = data[offset + 26] | (data[offset + 27] << 8);
-      const extraFieldLength = data[offset + 28] | (data[offset + 29] << 8);
-
-      const fileName = decoder.decode(
-        data.slice(offset + 30, offset + 30 + fileNameLength)
-      );
-      const dataStart = offset + 30 + fileNameLength + extraFieldLength;
-
-      if (fileName === targetPath) {
-        const fileData = data.slice(dataStart, dataStart + compressedSize);
-
-        if (compressionMethod === 0) {
-          // Stored (no compression)
-          return decoder.decode(fileData);
-        } else if (compressionMethod === 8) {
-          // Deflate - use DecompressionStream
-          return decompressDeflate(fileData, uncompressedSize);
-        }
-        return null;
-      }
-
-      // Skip to next file
-      offset = dataStart + compressedSize;
-    } else {
-      offset++;
-    }
-  }
-
-  return null;
+function normalize(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s*[([].*?[)\]]\s*/g, ' ')
+    .replace(/\s+-\s+.*$/, '')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 }
 
-// Decompress deflate data synchronously using raw inflate
-// Since we're in a server context, we can use zlib
-function decompressDeflate(data: Uint8Array, _expectedSize: number): string | null {
-  try {
-    // Use Node.js zlib for server-side decompression
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const zlib = require('zlib');
-    const result = zlib.inflateRawSync(Buffer.from(data));
-    return result.toString('utf-8');
-  } catch (e) {
-    console.error('Decompression error:', e);
-    return null;
-  }
-}
+/**
+ * La tab Songsterr d'un morceau : meme artiste, meme titre. Pas de « Misc
+ * Covers », pas de « (Acoustic) » ni « (Live) » s'il y a la version tout
+ * court — Songsterr les classe deja par popularite, on garde le premier.
+ */
+export async function findSongsterrSong(title: string, artist: string): Promise<number | null> {
+  // « The Eagles » chez Songsterr, « Eagles » chez Deezer.
+  const bare = (name: string) => normalize(name).replace(/^the /, '');
+  const wantedArtist = bare(artist.split(',')[0]);
+  const wantedTitle = normalize(title);
+  if (!wantedArtist || !wantedTitle) return null;
 
-// Parse the GPIF XML to extract sections, tempo, and time signature
-function parseGPIF(xmlContent: string): SongsterrTabStructure | null {
-  try {
-    // Simple XML parsing - we need to extract specific elements
-    // Since we're on the server, we can use a basic approach
-
-    // Extract BPM from first Automation with type=Tempo
-    let bpm = 120;
-    const tempoMatch = xmlContent.match(
-      /<Automation>\s*<Type>Tempo<\/Type>\s*<Linear>[^<]*<\/Linear>\s*<Bar>\d+<\/Bar>\s*<Position>[^<]*<\/Position>\s*<Visible>[^<]*<\/Visible>\s*<Value>(\d+)/
-    );
-    if (tempoMatch) {
-      bpm = parseInt(tempoMatch[1], 10);
-    } else {
-      // Fallback: try a simpler pattern
-      const simpleTempoMatch = xmlContent.match(
-        /<Type>Tempo<\/Type>[\s\S]*?<Value>(\d+)/
-      );
-      if (simpleTempoMatch) {
-        bpm = parseInt(simpleTempoMatch[1], 10);
-      }
-    }
-
-    // Extract time signature from first MasterBar
-    let timeSignatureBeats = 4;
-    let timeSignatureValue = 4;
-    const timeMatch = xmlContent.match(/<Time>(\d+)\/(\d+)<\/Time>/);
-    if (timeMatch) {
-      timeSignatureBeats = parseInt(timeMatch[1], 10);
-      timeSignatureValue = parseInt(timeMatch[2], 10);
-    }
-
-    // Count MasterBars for total measures
-    const masterBarMatches = xmlContent.match(/<MasterBar>/g);
-    const totalMeasures = masterBarMatches ? masterBarMatches.length : 0;
-
-    // Extract sections from MasterBars
-    // Pattern: <MasterBar>...<Section><Letter>...</Letter><Text>SectionName</Text></Section>...</MasterBar>
-    const sections: PlayedSection[] = [];
-    const sectionRegex =
-      /<MasterBar>[\s\S]*?<\/MasterBar>/g;
-    let masterBarIndex = 0;
-    let match;
-
-    // Collect all section markers with their measure index
-    const markers: { name: string; measureIndex: number }[] = [];
-
-    // Find sections within each MasterBar
-    const masterBarRegex = /<MasterBar>([\s\S]*?)<\/MasterBar>/g;
-    while ((match = masterBarRegex.exec(xmlContent)) !== null) {
-      const barContent = match[1];
-      const sectionMatch = barContent.match(
-        /<Section>[\s\S]*?<Text>\s*(.*?)\s*<\/Text>[\s\S]*?<\/Section>/
-      );
-      if (sectionMatch && sectionMatch[1].trim()) {
-        // Clean CDATA wrappers and whitespace
-        let sectionName = sectionMatch[1].trim();
-        sectionName = sectionName
-          .replace(/<!\[CDATA\[/g, '')
-          .replace(/\]\]>/g, '')
-          .trim();
-        if (sectionName) {
-          markers.push({
-            name: sectionName,
-            measureIndex: masterBarIndex,
-          });
-        }
-      }
-      masterBarIndex++;
-    }
-
-    // Convert markers to sections with measure ranges
-    for (let i = 0; i < markers.length; i++) {
-      const startMeasure = markers[i].measureIndex + 1; // 1-based
-      const endMeasure =
-        i < markers.length - 1
-          ? markers[i + 1].measureIndex // end before next section
-          : totalMeasures;
-
-      sections.push({
-        name: markers[i].name,
-        startMeasure,
-        endMeasure,
-      });
-    }
-
-    return {
-      bpm,
-      totalMeasures,
-      timeSignatureBeats,
-      timeSignatureValue,
-      sections,
-    };
-  } catch (e) {
-    console.error('Error parsing GPIF:', e);
-    return null;
-  }
+  const results = (await searchSongsterr(title, artist)).filter(
+    (song) => bare(song.artist) === wantedArtist
+  );
+  const exact = results.find((song) => song.title.trim().toLowerCase() === title.trim().toLowerCase());
+  const same = results.find((song) => normalize(song.title) === wantedTitle);
+  return (exact ?? same)?.songId ?? null;
 }

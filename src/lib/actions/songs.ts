@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import { updateChallengeProgress } from "./challenges";
@@ -13,6 +14,7 @@ import type {
   SongsterrTabStructure,
 } from "@/types";
 import { syncBadges } from "@/lib/badges/sync";
+import { findSongTempo } from "@/lib/services/tempo";
 
 export async function getSongs(): Promise<Song[]> {
   const supabase = await createClient();
@@ -117,6 +119,27 @@ export async function createSong(input: CreateSongInput): Promise<{ success: boo
   revalidatePath("/feed");
   // Un morceau, une session, un album… peuvent debloquer un badge.
   await syncBadges();
+
+  /*
+   * Le tempo cible se trouve tout seul (Songsterr, puis Deezer), apres la
+   * reponse : chercher la tab prend une seconde ou deux, et un album ajoute
+   * d'un coup en enchaine dix. `target_bpm is null` : on n'ecrase pas un
+   * tempo regle entre-temps.
+   */
+  if (!data.target_bpm) {
+    after(async () => {
+      const bpm = await findSongTempo(data);
+      if (!bpm) return;
+      const { error: tempoError } = await supabase
+        .from("songs")
+        .update({ target_bpm: bpm })
+        .eq("id", data.id)
+        .is("target_bpm", null);
+      if (tempoError) console.error("Error saving found tempo:", tempoError);
+      else revalidatePath("/biblio");
+    });
+  }
+
   return { success: true, song: data as Song };
 }
 

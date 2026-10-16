@@ -1,9 +1,8 @@
 /**
  * Lecture des URL Songsterr, cote client comme cote serveur.
  *
- * `lib/services/songsterr.ts` fait la meme chose, mais il embarque le
- * parseur de fichiers Guitar Pro et son `require("zlib")` : l'importer
- * depuis un composant client tirerait tout Node dans le bundle. Ces deux
+ * `lib/services/songsterr.ts` les re-exporte, mais il appelle Songsterr
+ * cote serveur : un composant client n'a rien a en importer. Ces deux
  * fonctions-la sont de simples expressions regulieres, elles vivent ici.
  */
 
