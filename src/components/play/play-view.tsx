@@ -47,10 +47,10 @@ const TABS: { value: PlayTab; label: string }[] = [
   { value: "carnet", label: "Carnet" },
   // Monter une session (morceaux + exos) à la volée et la dérouler.
   { value: "file", label: "Session" },
-  { value: "song", label: "Morceau" },
+  { value: "song", label: "Morceaux" },
   { value: "exercises", label: "Exercices" },
   // Dérouler une setlist enregistrée.
-  { value: "setlist", label: "Setlist" },
+  { value: "setlist", label: "Setlists" },
 ];
 
 /** Ce que la session plein ecran affiche du morceau. */
