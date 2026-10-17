@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { sendPushNotificationToMultipleUsers } from "@/lib/notifications";
+import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type {
+  ExerciseCategory,
   JamSession,
   JamSessionWithDetails,
   JamSessionMessage,
@@ -86,7 +88,7 @@ export async function createJamSession(
     }
   }
 
-  // Get first song from setlist if provided
+  // Premier element jouable de la setlist (morceau ou exercice)
   let currentSong: {
     song_id: string | null;
     song_title: string | null;
@@ -96,15 +98,32 @@ export async function createJamSession(
   if (setlistId) {
     const { data: firstItem } = await supabase
       .from("setlist_items")
-      .select("song_id, song_title, song_artist")
+      .select(
+        "item_type, song_id, song_title, song_artist, exercise_name, exercise_category"
+      )
       .eq("setlist_id", setlistId)
-      .eq("item_type", "song")
+      .in("item_type", ["song", "exercise"])
       .order("position", { ascending: true })
       .limit(1)
       .single();
 
     if (firstItem) {
-      currentSong = firstItem;
+      currentSong =
+        firstItem.item_type === "exercise"
+          ? {
+              song_id: null,
+              song_title: firstItem.exercise_name || "Exercice",
+              song_artist: firstItem.exercise_category
+                ? EXERCISE_CATEGORY_LABELS[
+                    firstItem.exercise_category as ExerciseCategory
+                  ]
+                : "Exercice",
+            }
+          : {
+              song_id: firstItem.song_id,
+              song_title: firstItem.song_title,
+              song_artist: firstItem.song_artist,
+            };
     }
   }
 

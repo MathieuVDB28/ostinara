@@ -8,6 +8,7 @@ import { JamParticipants } from "./jam-participants";
 import { JamSongQueue } from "./jam-song-queue";
 import { JamTabsViewer } from "./jam-tabs-viewer";
 import { leaveJamSession, endJamSession } from "@/lib/actions/jam-sessions";
+import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type { JamSessionWithDetails, JamSessionMessageWithProfile, Profile } from "@/types";
 
 interface JamSessionViewProps {
@@ -221,7 +222,7 @@ export function JamSessionView({
             <JamTabsViewer
               currentItem={
                 session.setlist.items.filter(
-                  (i) => i.item_type === "song"
+                  (i) => i.item_type === "song" || i.item_type === "exercise"
                 )[session.current_song_index] || null
               }
               bpm={metronome.bpm}
@@ -238,11 +239,18 @@ export function JamSessionView({
               currentIndex={session.current_song_index}
               isHost={isHost}
               onSongSelect={(index, item) => {
+                const isExercise = item.item_type === "exercise";
                 changeSong(
                   index,
                   item.song_id || null,
-                  item.song_title || null,
-                  item.song_artist || null
+                  isExercise
+                    ? item.exercise_name || "Exercice"
+                    : item.song_title || null,
+                  isExercise
+                    ? item.exercise_category
+                      ? EXERCISE_CATEGORY_LABELS[item.exercise_category]
+                      : "Exercice"
+                    : item.song_artist || null
                 );
               }}
             />

@@ -30,6 +30,7 @@ export function EditItemModal({
   const [transitionSeconds, setTransitionSeconds] = useState(0);
   const [durationMinutes, setDurationMinutes] = useState(0);
   const [sectionName, setSectionName] = useState("");
+  const [exerciseName, setExerciseName] = useState("");
   const [tabsUrl, setTabsUrl] = useState("");
   const [bpm, setBpm] = useState(0);
   const [playedSections, setPlayedSections] = useState<PlayedSection[]>([]);
@@ -54,6 +55,7 @@ export function EditItemModal({
         item.duration_seconds ? Math.round(item.duration_seconds / 60) : 0
       );
       setSectionName(item.section_name || "");
+      setExerciseName(item.exercise_name || "");
       setTabsUrl(item.tabs_url || "");
       setBpm(item.bpm || 0);
       setPlayedSections(item.played_sections || []);
@@ -102,6 +104,8 @@ export function EditItemModal({
         durationMinutes > 0 ? durationMinutes * 60 : undefined,
       section_name:
         item.item_type === "section" ? sectionName.trim() : undefined,
+      exercise_name:
+        item.item_type === "exercise" ? exerciseName.trim() : undefined,
       tabs_url: tabsUrl.trim() || undefined,
       bpm: bpm > 0 ? bpm : undefined,
       played_sections: playedSections.length > 0 ? playedSections : undefined,
@@ -183,6 +187,7 @@ export function EditItemModal({
   };
 
   const isSong = item.item_type === "song";
+  const isExercise = item.item_type === "exercise";
 
   // Calculate total sections duration if BPM is set
   const totalSectionsMeasures = playedSections.reduce(
@@ -206,7 +211,11 @@ export function EditItemModal({
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
-              {isSong ? "Modifier le morceau" : "Modifier la section"}
+              {isSong
+                ? "Modifier le morceau"
+                : isExercise
+                ? "Modifier l'exercice"
+                : "Modifier la section"}
             </h2>
             {isSong && (
               <p className="mt-1 text-sm text-muted-foreground">
@@ -265,7 +274,7 @@ export function EditItemModal({
           {activeTab === "general" ? (
             <>
               {/* Section name (only for sections) */}
-              {!isSong && (
+              {item.item_type === "section" && (
                 <div>
                   <label className="mb-1 block text-sm font-medium">
                     Nom de la section
@@ -275,6 +284,22 @@ export function EditItemModal({
                     value={sectionName}
                     onChange={(e) => setSectionName(e.target.value)}
                     placeholder="Ex: Pause, Rappel..."
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
+                  />
+                </div>
+              )}
+
+              {/* Exercise name (only for exercises) */}
+              {isExercise && (
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Nom de l&apos;exercice
+                  </label>
+                  <input
+                    type="text"
+                    value={exerciseName}
+                    onChange={(e) => setExerciseName(e.target.value)}
+                    placeholder="Ex: Échauffement, gamme majeure..."
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                 </div>
@@ -324,7 +349,7 @@ export function EditItemModal({
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                 </div>
-                {isSong && (
+                {(isSong || isExercise) && (
                   <div>
                     <label className="mb-1 block text-sm font-medium">
                       BPM

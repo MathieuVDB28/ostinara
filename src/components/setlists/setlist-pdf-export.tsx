@@ -10,6 +10,7 @@ import {
   pdf,
 } from "@react-pdf/renderer";
 import type { SetlistWithDetails, SetlistItemWithSongOwner } from "@/types";
+import { EXERCISE_CATEGORY_LABELS } from "@/types";
 
 // Styles pour le PDF
 const styles = StyleSheet.create({
@@ -109,6 +110,18 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 10,
     alignItems: "center",
+  },
+  exerciseRow: {
+    flexDirection: "row",
+    backgroundColor: "#f3e8ff",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    alignItems: "center",
+  },
+  exerciseLabel: {
+    fontSize: 12,
+    color: "#6b21a8",
+    fontWeight: "bold",
   },
   itemNumber: {
     width: 30,
@@ -291,6 +304,42 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
                   <Text style={styles.itemNumber}>-</Text>
                   <Text style={styles.sectionLabel}>
                     {item.section_name || "Section"}
+                  </Text>
+                </View>
+                {item.transition_seconds && item.transition_seconds > 0 && (
+                  <View style={styles.transitionRow}>
+                    <Text style={styles.transitionText}>
+                      ↓ Transition: {formatDuration(item.transition_seconds)}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
+          }
+
+          if (item.item_type === "exercise") {
+            return (
+              <View key={item.id}>
+                <View style={styles.exerciseRow}>
+                  <Text style={styles.itemNumber}>♦</Text>
+                  <View style={styles.colTitle}>
+                    <Text style={styles.exerciseLabel}>
+                      {item.exercise_name || "Exercice"}
+                    </Text>
+                    {item.notes && (
+                      <Text style={styles.itemNotes}>{item.notes}</Text>
+                    )}
+                  </View>
+                  <Text style={styles.itemArtist}>
+                    {item.exercise_category
+                      ? EXERCISE_CATEGORY_LABELS[item.exercise_category]
+                      : "Exercice"}
+                    {item.bpm ? ` · ${item.bpm} bpm` : ""}
+                  </Text>
+                  <Text style={styles.itemDuration}>
+                    {item.duration_seconds
+                      ? formatDuration(item.duration_seconds)
+                      : "-"}
                   </Text>
                 </View>
                 {item.transition_seconds && item.transition_seconds > 0 && (

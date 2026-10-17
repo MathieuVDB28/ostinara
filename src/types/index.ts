@@ -726,7 +726,7 @@ export interface UpdateBandInput {
 // =============================================
 // Types pour les Setlists
 // =============================================
-export type SetlistItemType = 'song' | 'section';
+export type SetlistItemType = 'song' | 'section' | 'exercise';
 
 // Section jouée dans une tab (pour les setlists)
 export interface PlayedSection {
@@ -769,6 +769,11 @@ export interface SetlistItem {
 
   // Section fields
   section_name?: string;
+
+  // Exercise fields
+  exercise_id?: string;          // null pour un exo express
+  exercise_name?: string;        // snapshot, toujours renseigne pour un exercice
+  exercise_category?: ExerciseCategory;
 
   // Common fields
   notes?: string;
@@ -827,6 +832,11 @@ export interface CreateSetlistItemInput {
   // For sections
   section_name?: string;
 
+  // For exercises
+  exercise_id?: string;
+  exercise_name?: string;
+  exercise_category?: ExerciseCategory;
+
   notes?: string;
   transition_seconds?: number;
   duration_seconds?: number;
@@ -841,6 +851,8 @@ export interface UpdateSetlistItemInput {
   transition_seconds?: number;
   duration_seconds?: number;
   section_name?: string;
+  exercise_name?: string;
+  exercise_category?: ExerciseCategory;
   tabs_url?: string;
   bpm?: number;
   played_sections?: PlayedSection[];

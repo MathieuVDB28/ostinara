@@ -2,6 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type { SetlistItemWithSongOwner } from "@/types";
 
 interface SetlistItemCardProps {
@@ -149,6 +150,7 @@ export function SetlistItemCard({
   };
 
   const isSong = item.item_type === "song";
+  const isExercise = item.item_type === "exercise";
 
   return (
     <div
@@ -223,6 +225,35 @@ export function SetlistItemCard({
             </p>
           </div>
         </>
+      ) : isExercise ? (
+        <>
+          {/* Exercise icon */}
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6.5 6.5l11 11m-9-13l2 2m-4 0l4 4m9 1l-2-2m4 0l-4-4M3 21l2-2m14-14l2-2"
+              />
+            </svg>
+          </div>
+
+          {/* Exercise info */}
+          <div className="flex-1 min-w-0">
+            <p className="truncate font-medium">{item.exercise_name}</p>
+            <p className="text-sm text-muted-foreground">
+              {item.exercise_category
+                ? EXERCISE_CATEGORY_LABELS[item.exercise_category]
+                : "Exercice"}
+            </p>
+          </div>
+        </>
       ) : (
         <>
           {/* Section icon */}
@@ -265,7 +296,7 @@ export function SetlistItemCard({
         )}
 
       {/* BPM badge */}
-      {isSong && item.bpm && item.bpm > 0 && (
+      {(isSong || isExercise) && item.bpm && item.bpm > 0 && (
         <div className="tabular shrink-0 font-display text-base font-bold">
           {item.bpm}<span className="text-xs text-muted-foreground"> bpm</span>
         </div>

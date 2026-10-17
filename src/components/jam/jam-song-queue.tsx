@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type { SetlistWithDetails, SetlistItem } from "@/types";
 
 interface JamSongQueueProps {
@@ -16,9 +17,12 @@ export function JamSongQueue({
   isHost,
   onSongSelect,
 }: JamSongQueueProps) {
-  const songs = setlist.items.filter((item) => item.item_type === "song");
+  // Elements jouables de la setlist : morceaux + exercices (pas les sections)
+  const items = setlist.items.filter(
+    (item) => item.item_type === "song" || item.item_type === "exercise"
+  );
 
-  if (songs.length === 0) {
+  if (items.length === 0) {
     return null;
   }
 
@@ -28,15 +32,16 @@ export function JamSongQueue({
         <h3 className="font-semibold">
           Setlist : {setlist.name}{" "}
           <span className="text-muted-foreground font-normal">
-            ({songs.length} morceaux)
+            ({items.length} éléments)
           </span>
         </h3>
       </div>
 
       <div className="max-h-64 overflow-y-auto">
-        {songs.map((item, index) => {
+        {items.map((item, index) => {
           const isCurrent = currentIndex === index;
           const position = index + 1;
+          const isExercise = item.item_type === "exercise";
 
           return (
             <button
@@ -72,8 +77,24 @@ export function JamSongQueue({
                 )}
               </div>
 
-              {/* Cover art */}
-              {item.song_cover_url ? (
+              {/* Cover art / exercise icon */}
+              {isExercise ? (
+                <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6.5 6.5l11 11m-9-13l2 2m-4 0l4 4m9 1l-2-2m4 0l-4-4M3 21l2-2m14-14l2-2"
+                    />
+                  </svg>
+                </div>
+              ) : item.song_cover_url ? (
                 <Image
                   src={item.song_cover_url}
                   alt=""
@@ -99,29 +120,35 @@ export function JamSongQueue({
                 </div>
               )}
 
-              {/* Song info */}
+              {/* Song / exercise info */}
               <div className="flex-1 min-w-0">
                 <p
                   className={`truncate font-medium ${
                     isCurrent ? "text-primary" : ""
                   }`}
                 >
-                  {item.song_title}
+                  {isExercise ? item.exercise_name : item.song_title}
                 </p>
                 <div className="flex items-center gap-1.5">
                   <p className="truncate text-sm text-muted-foreground">
-                    {item.song_artist}
+                    {isExercise
+                      ? item.exercise_category
+                        ? EXERCISE_CATEGORY_LABELS[item.exercise_category]
+                        : "Exercice"
+                      : item.song_artist}
                   </p>
-                  {item.tabs_url && (
+                  {!isExercise && item.tabs_url && (
                     <span className="shrink-0 rounded-full bg-chart-2/20 px-1.5 py-0.5 text-[11px] font-medium text-chart-2">
                       Tab
                     </span>
                   )}
-                  {item.played_sections && item.played_sections.length > 0 && (
-                    <span className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
-                      {item.played_sections.length} sect.
-                    </span>
-                  )}
+                  {!isExercise &&
+                    item.played_sections &&
+                    item.played_sections.length > 0 && (
+                      <span className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
+                        {item.played_sections.length} sect.
+                      </span>
+                    )}
                 </div>
               </div>
 
