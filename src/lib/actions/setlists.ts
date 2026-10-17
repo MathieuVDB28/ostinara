@@ -13,6 +13,7 @@ import type {
   CreateSetlistItemInput,
   UpdateSetlistItemInput,
   Band,
+  ExerciseCategory,
 } from "@/types";
 
 // === Get all setlists (personal + band) ===
@@ -119,6 +120,94 @@ export async function getSetlist(
     ),
     song_count: items.filter((item) => item.item_type === "song").length,
   } as SetlistWithDetails;
+}
+
+// === Enregistrer une file de session ad-hoc comme setlist perso ===
+/**
+ * Depuis « Jouer › File » : on fige une file montee a la volee en une
+ * setlist perso, pour la rejouer plus tard. Les morceaux prennent
+ * l'utilisateur comme proprietaire ; les exos gardent leur lien (ou juste
+ * leur nom, pour un exo express).
+ */
+export interface SaveSessionItemInput {
+  item_type: "song" | "exercise";
+  song_id?: string;
+  song_title?: string;
+  song_artist?: string;
+  song_cover_url?: string;
+  exercise_id?: string;
+  exercise_name?: string;
+  exercise_category?: ExerciseCategory;
+  bpm?: number;
+  duration_seconds?: number;
+}
+
+export async function createSetlistWithItems(
+  name: string,
+  items: SaveSessionItemInput[]
+): Promise<{ success: boolean; error?: string; setlistId?: string }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: "Non authentifie" };
+  }
+
+  const trimmed = name.trim();
+  if (!trimmed) {
+    return { success: false, error: "Donne un nom à la setlist" };
+  }
+
+  const { data: setlist, error } = await supabase
+    .from("setlists")
+    .insert({ name: trimmed, user_id: user.id, is_personal: true })
+    .select()
+    .single();
+
+  if (error || !setlist) {
+    console.error("Error creating setlist:", error);
+    return { success: false, error: "Erreur lors de la creation" };
+  }
+
+  if (items.length > 0) {
+    const rows = items.map((item, i) => ({
+      setlist_id: setlist.id,
+      position: i + 1,
+      item_type: item.item_type,
+      song_id: item.song_id ?? null,
+      song_title: item.song_title ?? null,
+      song_artist: item.song_artist ?? null,
+      song_cover_url: item.song_cover_url ?? null,
+      song_owner_id: item.item_type === "song" ? user.id : null,
+      exercise_id: item.exercise_id ?? null,
+      exercise_name: item.exercise_name ?? null,
+      exercise_category: item.exercise_category ?? null,
+      bpm: item.bpm ?? null,
+      duration_seconds: item.duration_seconds ?? null,
+      transition_seconds: 0,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("setlist_items")
+      .insert(rows);
+
+    if (itemsError) {
+      console.error("Error inserting setlist items:", itemsError);
+      // Rollback : pas de setlist a moitie remplie.
+      await supabase.from("setlists").delete().eq("id", setlist.id);
+      return { success: false, error: "Erreur lors de l'ajout des elements" };
+    }
+  }
+
+  await createActivity({
+    type: "setlist_created",
+    reference_id: setlist.id,
+    metadata: { name: trimmed, is_band: false },
+  });
+
+  revalidatePath("/setlists");
+  revalidatePath("/jouer");
+  return { success: true, setlistId: setlist.id };
 }
 
 // === Create a setlist ===
