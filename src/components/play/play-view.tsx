@@ -43,10 +43,10 @@ type PlayTab = "carnet" | "song" | "exercises" | "file" | "setlist";
 const TABS: { value: PlayTab; label: string }[] = [
   // Le Carnet ouvre l'onglet : ce qu'on a joue, et ce qu'on va jouer.
   { value: "carnet", label: "Carnet" },
+  // Monter une session (morceaux + exos) à la volée et la dérouler.
+  { value: "file", label: "Session" },
   { value: "song", label: "Morceau" },
   { value: "exercises", label: "Exercices" },
-  // Monter une file (morceaux + exos) à la volée et la dérouler.
-  { value: "file", label: "File" },
   // Dérouler une setlist enregistrée.
   { value: "setlist", label: "Setlist" },
 ];
