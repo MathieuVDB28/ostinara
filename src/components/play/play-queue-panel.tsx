@@ -292,7 +292,7 @@ export function PlayQueuePanel({
       {/* ---- Constructeur ---- */}
       <div className="space-y-4 rounded-xl border border-border p-4">
         <h2 className="font-display text-2xl font-extrabold uppercase leading-none">
-          Monte ta file
+          Monte ta session
         </h2>
 
         {/* Ajouter un morceau */}
@@ -425,7 +425,7 @@ export function PlayQueuePanel({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
-              Ta file · {queue.length}
+              Ta session · {queue.length}
             </h3>
             <div className="flex items-center gap-3">
               <button
@@ -529,7 +529,7 @@ export function PlayQueuePanel({
         <div className="border-t border-border pt-5">
           <PlayStepper
             steps={steps}
-            title="Ma file"
+            title="Ma session"
             songPracticeStats={songPracticeStats}
             currentBpm={currentBpm}
             onRequestBpm={onRequestBpm}
