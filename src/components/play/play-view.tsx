@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Gauge, Timer } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Metronome } from "@/components/practice/metronome/metronome";
@@ -15,9 +15,10 @@ import { SongTabPanel } from "@/components/practice/song-practice/song-tab-panel
 import { ResumeCard } from "./resume-card";
 import { CarnetView } from "./carnet-view";
 import { PlaySetlistPanel } from "./play-setlist-panel";
-import { PlayQueuePanel } from "./play-queue-panel";
+import { PlayQueuePanel, STORAGE_KEY } from "./play-queue-panel";
 import { usePracticeSession } from "@/components/providers/practice-session-provider";
 import { updateSong } from "@/lib/actions/songs";
+import { deleteRoutine } from "@/lib/actions/routines";
 import { songTargetBpm, slowPracticeFloor } from "@/lib/song-progress";
 import type {
   Song,
@@ -27,6 +28,7 @@ import type {
   PracticeSessionWithSong,
   PracticeStats,
   SetlistWithDetails,
+  RoutineWithItems,
   UserPlan,
   WeeklyPlan,
 } from "@/types";
@@ -82,6 +84,8 @@ interface PlayViewProps {
   recentSessions: PracticeSessionWithSong[];
   /** Les setlists de l'utilisateur (perso + groupes), a dérouler en session. */
   setlists: SetlistWithDetails[];
+  /** Les routines de l'utilisateur, a relancer depuis le Carnet. */
+  routines: RoutineWithItems[];
   userPlan: UserPlan;
   isPaid: boolean;
 }
@@ -111,6 +115,7 @@ export function PlayView({
   calendar,
   recentSessions,
   setlists,
+  routines,
   userPlan,
   isPaid,
 }: PlayViewProps) {
@@ -178,6 +183,41 @@ export function PlayView({
 
   const [currentBpm, setCurrentBpm] = useState(initialBpm);
   const [tunerOpen, setTunerOpen] = useState(false);
+
+  // Routines : relancer depuis le Carnet charge la routine dans la session.
+  const [routineLoad, setRoutineLoad] = useState<{
+    routine: RoutineWithItems;
+    token: number;
+  } | null>(null);
+  // La derniere session montee (retenue en localStorage), pour « Reprendre ».
+  const [lastSessionCount, setLastSessionCount] = useState(0);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      setLastSessionCount(Array.isArray(arr) ? arr.length : 0);
+    } catch {
+      setLastSessionCount(0);
+    }
+  }, [activeTab]);
+
+  const handlePlayRoutine = useCallback((routine: RoutineWithItems) => {
+    setRoutineLoad({ routine, token: Date.now() });
+    setActiveTab("file");
+  }, []);
+
+  const handleResumeSession = useCallback(() => {
+    setActiveTab("file");
+  }, []);
+
+  const handleDeleteRoutine = useCallback(
+    async (routineId: string) => {
+      await deleteRoutine(routineId);
+      router.refresh();
+    },
+    [router]
+  );
 
   // Le metronome porte son propre tempo : le regler depuis l'exterieur
   // demande une requete explicite, sinon « Reprendre a 96 BPM » lancerait
@@ -408,6 +448,11 @@ export function PlayView({
           isPracticing={isPracticing}
           onStartSession={startSession}
           onWorkOnSong={handleWorkOnSong}
+          routines={routines}
+          onPlayRoutine={handlePlayRoutine}
+          onDeleteRoutine={handleDeleteRoutine}
+          lastSessionCount={lastSessionCount}
+          onResumeSession={handleResumeSession}
         />
       )}
 
@@ -502,6 +547,7 @@ export function PlayView({
               onRequestBpm={handleRequestBpm}
               songWorkingBpm={workingBpmFor}
               userPlan={userPlan}
+              loadRoutine={routineLoad}
             />
           )}
 

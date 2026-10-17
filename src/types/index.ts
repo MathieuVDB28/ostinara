@@ -871,6 +871,47 @@ export const SECTION_PRESETS = [
 export type SectionPresetName = typeof SECTION_PRESETS[number]['name'];
 
 // =============================================
+// Types pour les Routines (sessions de travail reutilisables)
+// =============================================
+export interface Routine {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RoutineItem {
+  id: string;
+  routine_id: string;
+  position: number;
+  item_type: 'song' | 'exercise';
+
+  // Morceau
+  song_id?: string;
+  song_title?: string;
+  song_artist?: string;
+  song_cover_url?: string;
+
+  // Exercice
+  exercise_id?: string;
+  exercise_name?: string;
+  exercise_category?: ExerciseCategory;
+
+  // Commun
+  bpm?: number;
+  duration_seconds?: number;
+
+  created_at: string;
+}
+
+export interface RoutineWithItems extends Routine {
+  items: RoutineItem[];
+  song_count: number;
+  exercise_count: number;
+}
+
+// =============================================
 // Types pour les Challenges
 // =============================================
 export type ChallengeType = 'practice_time' | 'streak' | 'song_mastery';

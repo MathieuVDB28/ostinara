@@ -1,6 +1,6 @@
 "use client";
 
-import { Play } from "lucide-react";
+import { Play, RotateCcw, X } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
 import { WeeklyPlanCard } from "@/components/plan/weekly-plan-card";
@@ -10,6 +10,7 @@ import type {
   HeatmapData,
   PracticeSessionWithSong,
   PracticeStats,
+  RoutineWithItems,
   Song,
   WeeklyPlan,
 } from "@/types";
@@ -27,6 +28,13 @@ interface CarnetViewProps {
   isPracticing: boolean;
   onStartSession: () => void;
   onWorkOnSong: (songId: string) => void;
+  /** Les routines a relancer en un clic. */
+  routines: RoutineWithItems[];
+  onPlayRoutine: (routine: RoutineWithItems) => void;
+  onDeleteRoutine: (routineId: string) => void;
+  /** Nombre d'elements dans la derniere session montee (0 = aucune). */
+  lastSessionCount: number;
+  onResumeSession: () => void;
 }
 
 /** « 17 h 40 » : les heures et les minutes, sans « 1060 min ». */
@@ -62,6 +70,11 @@ export function CarnetView({
   isPracticing,
   onStartSession,
   onWorkOnSong,
+  routines,
+  onPlayRoutine,
+  onDeleteRoutine,
+  lastSessionCount,
+  onResumeSession,
 }: CarnetViewProps) {
   const total = splitMinutes(stats.totalMinutes);
   const focusTempo = focusSong ? songTempoProgress(focusSong, focusBestBpm) : null;
@@ -188,6 +201,78 @@ export function CarnetView({
         <div className="min-w-0 lg:col-start-2 lg:row-start-2">
           <WeeklyPlanCard plan={weeklyPlan} onWorkOnSong={onWorkOnSong} />
         </div>
+      )}
+
+      {/* Routines + reprise de la derniere session montee */}
+      {(routines.length > 0 || lastSessionCount > 0) && (
+        <section className="min-w-0 lg:col-span-2 lg:row-start-3">
+          <h2 className="border-b border-border pb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            Tes routines
+          </h2>
+
+          {lastSessionCount > 0 && (
+            <button
+              type="button"
+              onClick={onResumeSession}
+              className="mt-3 flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition-colors hover:bg-accent"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                <RotateCcw className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">
+                  Reprendre ta dernière session
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  {lastSessionCount} élément{lastSessionCount > 1 ? "s" : ""} en attente
+                </span>
+              </span>
+            </button>
+          )}
+
+          {routines.length > 0 ? (
+            <ul className="mt-3">
+              {routines.map((routine) => (
+                <li
+                  key={routine.id}
+                  className="flex items-center gap-2 border-b border-border py-2.5"
+                >
+                  <button
+                    type="button"
+                    onClick={() => onPlayRoutine(routine)}
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
+                      <Play className="h-4 w-4 fill-current" strokeWidth={0} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold">
+                        {routine.name}
+                      </span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {routine.song_count} morceau{routine.song_count > 1 ? "x" : ""} ·{" "}
+                        {routine.exercise_count} exo{routine.exercise_count > 1 ? "s" : ""}
+                      </span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDeleteRoutine(routine.id)}
+                    aria-label={`Supprimer la routine ${routine.name}`}
+                    className="shrink-0 rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <X className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Aucune routine. Monte une session dans l&apos;onglet Session et
+              enregistre-la.
+            </p>
+          )}
+        </section>
       )}
     </div>
   );

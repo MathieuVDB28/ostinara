@@ -10,17 +10,19 @@ import {
   X,
 } from "lucide-react";
 import { PlayStepper, type PlayStep } from "./play-stepper";
-import { createSetlistWithItems } from "@/lib/actions/setlists";
+import { createRoutineWithItems } from "@/lib/actions/routines";
 import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type {
   Song,
   ExerciseWithProgress,
   ExerciseCategory,
   SongPracticeStats,
+  RoutineWithItems,
   UserPlan,
 } from "@/types";
 
-const STORAGE_KEY = "ostinara:jouer:file";
+/** La session en cours, retenue entre les navigations (une seule a la fois). */
+export const STORAGE_KEY = "ostinara:jouer:file";
 
 /** Un element de la file ad-hoc. On ne stocke que des references + l'express. */
 type QueueItem =
@@ -42,6 +44,8 @@ interface PlayQueuePanelProps {
   onRequestBpm: (bpm: number) => void;
   songWorkingBpm: (song: Song) => number | null;
   userPlan: UserPlan;
+  /** Demande de charger une routine dans la session (depuis le Carnet). */
+  loadRoutine?: { routine: RoutineWithItems; token: number } | null;
 }
 
 function uid() {
@@ -60,6 +64,7 @@ export function PlayQueuePanel({
   onRequestBpm,
   songWorkingBpm,
   userPlan,
+  loadRoutine,
 }: PlayQueuePanelProps) {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -97,6 +102,35 @@ export function PlayQueuePanel({
       // tant pis, la file reste en memoire pour cette session
     }
   }, [queue, loaded]);
+
+  // Chargement d'une routine (clic depuis le Carnet) : elle remplace la
+  // session en cours. Un morceau supprime de la biblio est ignore.
+  useEffect(() => {
+    if (!loadRoutine) return;
+    const items = loadRoutine.routine.items
+      .map((it): QueueItem | null => {
+        if (it.item_type === "song") {
+          return it.song_id
+            ? { uid: uid(), kind: "song", songId: it.song_id }
+            : null;
+        }
+        if (it.exercise_id) {
+          return { uid: uid(), kind: "exercise", exerciseId: it.exercise_id };
+        }
+        return {
+          uid: uid(),
+          kind: "express",
+          name: it.exercise_name ?? "Exercice",
+          category: it.exercise_category,
+          bpm: it.bpm ?? undefined,
+        };
+      })
+      .filter((x): x is QueueItem => x !== null);
+    setQueue(items);
+    setSaveMessage(null);
+    // On ne recharge qu'a chaque nouvelle demande (token).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadRoutine?.token]);
 
   // Resolution de chaque element : son libelle et, si possible, sa source.
   const entries = useMemo(
@@ -273,13 +307,13 @@ export function PlayQueuePanel({
       };
     });
 
-    const result = await createSetlistWithItems(saveName.trim(), items);
+    const result = await createRoutineWithItems(saveName.trim(), items);
     setSaving(false);
 
     if (result.success) {
       setShowSave(false);
       setSaveName("");
-      setSaveMessage("Setlist enregistrée dans Commu › Groupes.");
+      setSaveMessage("Routine enregistrée — tu la retrouves dans le Carnet.");
     } else {
       setSaveMessage(result.error || "Erreur lors de l'enregistrement");
     }
@@ -433,7 +467,7 @@ export function PlayQueuePanel({
                 disabled={validCount === 0}
                 className="text-xs font-semibold text-foreground hover:underline disabled:opacity-40"
               >
-                Enregistrer comme setlist
+                Enregistrer comme routine
               </button>
               <button
                 onClick={clearAll}
@@ -451,7 +485,7 @@ export function PlayQueuePanel({
                 type="text"
                 value={saveName}
                 onChange={(e) => setSaveName(e.target.value)}
-                placeholder="Nom de la setlist"
+                placeholder="Nom de la routine"
                 className="flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:border-primary"
               />
               <button
