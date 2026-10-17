@@ -14,6 +14,7 @@ import { TunerSheet } from "@/components/audio/tuner-sheet";
 import { SongTabPanel } from "@/components/practice/song-practice/song-tab-panel";
 import { ResumeCard } from "./resume-card";
 import { CarnetView } from "./carnet-view";
+import { PlaySetlistPanel } from "./play-setlist-panel";
 import { usePracticeSession } from "@/components/providers/practice-session-provider";
 import { updateSong } from "@/lib/actions/songs";
 import { songTargetBpm, slowPracticeFloor } from "@/lib/song-progress";
@@ -24,11 +25,12 @@ import type {
   SongPracticeStats,
   PracticeSessionWithSong,
   PracticeStats,
+  SetlistWithDetails,
   UserPlan,
   WeeklyPlan,
 } from "@/types";
 
-type PlayTab = "carnet" | "song" | "exercises";
+type PlayTab = "carnet" | "song" | "exercises" | "setlist";
 
 /*
  * Deux segments, pas trois. L'accordeur etait le seul onglet qui ne
@@ -42,6 +44,8 @@ const TABS: { value: PlayTab; label: string }[] = [
   { value: "carnet", label: "Carnet" },
   { value: "song", label: "Morceau" },
   { value: "exercises", label: "Exercices" },
+  // Dérouler une setlist (morceaux + exos) avec le métronome et le chrono.
+  { value: "setlist", label: "Setlist" },
 ];
 
 /** Ce que la session plein ecran affiche du morceau. */
@@ -73,6 +77,8 @@ interface PlayViewProps {
   /** Quinze semaines de calendrier de pratique. */
   calendar: HeatmapData;
   recentSessions: PracticeSessionWithSong[];
+  /** Les setlists de l'utilisateur (perso + groupes), a dérouler en session. */
+  setlists: SetlistWithDetails[];
   userPlan: UserPlan;
   isPaid: boolean;
 }
@@ -101,6 +107,7 @@ export function PlayView({
   practiceStats,
   calendar,
   recentSessions,
+  setlists,
   userPlan,
   isPaid,
 }: PlayViewProps) {
@@ -347,7 +354,9 @@ export function PlayView({
                 <span className="sr-only">Afficher la session en plein écran</span>
               </button>
             ) : (
-              activeTab !== "carnet" && (
+              // L'onglet Setlist a son propre bouton de démarrage, sur l'élément courant.
+              activeTab !== "carnet" &&
+              activeTab !== "setlist" && (
                 <button
                   onClick={startSession}
                   className="hidden min-h-[38px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex"
@@ -406,7 +415,7 @@ export function PlayView({
         hidden={activeTab === "carnet"}
         className="grid gap-x-10 gap-y-6 lg:grid-cols-[400px_1fr]"
       >
-        {!isPracticing && (
+        {!isPracticing && activeTab !== "setlist" && (
           <button
             onClick={startSession}
             className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold transition-colors hover:bg-accent sm:hidden"
@@ -478,6 +487,19 @@ export function PlayView({
                 onCreateExercise={() => setCreateExerciseModalOpen(true)}
               />
             </div>
+          )}
+
+          {activeTab === "setlist" && (
+            <PlaySetlistPanel
+              setlists={setlists}
+              songs={songs}
+              exercises={exercises}
+              songPracticeStats={songPracticeStats}
+              currentBpm={currentBpm}
+              onRequestBpm={handleRequestBpm}
+              songWorkingBpm={workingBpmFor}
+              userPlan={userPlan}
+            />
           )}
         </div>
       </div>

@@ -10,6 +10,7 @@ import {
 } from "@/lib/actions/practice";
 import { requirePaidPlan } from "@/lib/actions/plan";
 import { getWeeklyPlan } from "@/lib/actions/weekly-plan";
+import { getSetlists } from "@/lib/actions/setlists";
 import { PlayView } from "@/components/play/play-view";
 
 export const metadata = {
@@ -41,6 +42,7 @@ export default async function JouerPage({
     practiceStats,
     calendar,
     recentSessions,
+    setlists,
   ] = await Promise.all([
     getSongs(),
     getExercises(),
@@ -56,6 +58,7 @@ export default async function JouerPage({
     getPracticeStats(),
     getPracticeCalendar(105),
     getPracticeSessions(undefined, 3),
+    getSetlists(),
   ]);
 
   // Le morceau en cours ouvre la page : c'est la raison pour laquelle
@@ -83,6 +86,7 @@ export default async function JouerPage({
       practiceStats={practiceStats}
       calendar={calendar}
       recentSessions={recentSessions}
+      setlists={setlists}
       userPlan={planCheck.plan}
       isPaid={planCheck.allowed}
     />
