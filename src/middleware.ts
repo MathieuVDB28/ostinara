@@ -13,7 +13,10 @@ export const config = {
      * - _next/image (optimisation d'images)
      * - favicon.ico (favicon)
      * - images publiques
+     * - fichiers publics du PWA et des robots (sw.js, workbox, manifest,
+     *   robots.txt) : redirige vers /login, un visiteur sans session ne
+     *   pouvait ni enregistrer le service worker ni installer l'app
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|json|txt|xml)$).*)',
   ],
 }

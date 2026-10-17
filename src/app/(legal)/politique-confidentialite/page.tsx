@@ -51,7 +51,7 @@ export default function PolitiqueConfidentialite() {
             données sont collectées, utilisées et protégées.
           </p>
           <p className="mt-3 text-sm text-muted-foreground/70">
-            Dernière mise à jour : 5 février 2026
+            Dernière mise à jour : 17 octobre 2026
           </p>
         </div>
       </div>
@@ -172,6 +172,15 @@ export default function PolitiqueConfidentialite() {
                     ],
                   },
                   {
+                    title: "Liste d'attente (accès anticipé)",
+                    items: [
+                      "Adresse email",
+                      "Plan qui vous intéresse (Free, Pro ou Band)",
+                      "Provenance du lien d'inscription (ex. Instagram), si présente",
+                      "Date d'inscription et rang dans la liste",
+                    ],
+                  },
+                  {
                     title: "Données d'utilisation",
                     items: [
                       "Morceaux ajoutés à la bibliothèque et leur progression",
@@ -237,6 +246,7 @@ export default function PolitiqueConfidentialite() {
               <ul className="ml-1 space-y-2.5">
                 {[
                   "Création et gestion de votre compte utilisateur",
+                  "Gestion de la liste d'attente : confirmation d'inscription, envoi de votre invitation et application de l'offre de lancement",
                   "Fourniture et personnalisation du service",
                   "Suivi de votre progression musicale",
                   "Fonctionnement des fonctionnalités sociales (amis, feed, challenges)",
@@ -276,7 +286,7 @@ export default function PolitiqueConfidentialite() {
                   },
                   {
                     base: "Consentement",
-                    desc: "Pour l'envoi de notifications push et la collecte de cookies non essentiels. Vous pouvez retirer votre consentement à tout moment.",
+                    desc: "Pour l'inscription à la liste d'attente de l'accès anticipé, l'envoi de notifications push et la collecte de cookies non essentiels. Vous pouvez retirer votre consentement à tout moment.",
                   },
                   {
                     base: "Intérêt légitime",
@@ -325,6 +335,17 @@ export default function PolitiqueConfidentialite() {
                     </span>
                     <span>
                       Durée de vie du compte + 30 jours après suppression
+                    </span>
+                  </div>
+                  <div className="h-px bg-border" />
+                  <div className="flex gap-3">
+                    <span className="w-48 shrink-0 font-medium text-foreground">
+                      Liste d&apos;attente
+                    </span>
+                    <span>
+                      Jusqu&apos;à l&apos;ouverture de votre accès, puis 6 mois
+                      maximum si vous ne créez pas de compte. Supprimée
+                      immédiatement en cas de désinscription
                     </span>
                   </div>
                   <div className="h-px bg-border" />
@@ -393,6 +414,10 @@ export default function PolitiqueConfidentialite() {
                     role: "Traitement des paiements",
                   },
                   {
+                    name: "Resend",
+                    role: "Envoi des emails transactionnels (confirmation d'inscription à la liste d'attente, invitation)",
+                  },
+                  {
                     name: "Deezer",
                     role: "Catalogue musical : recherche de morceaux et d'albums (via nos serveurs, sans donnée personnelle), pochettes et lecteur intégré chargés depuis Deezer",
                   },
@@ -427,7 +452,7 @@ export default function PolitiqueConfidentialite() {
             </h2>
             <div className="space-y-4 leading-relaxed text-muted-foreground">
               <p>
-                Certains de nos prestataires (Supabase, Vercel, Stripe) sont
+                Certains de nos prestataires (Supabase, Vercel, Stripe, Resend) sont
                 basés aux États-Unis. Les transferts de données vers les
                 États-Unis sont encadrés par les clauses contractuelles types
                 approuvées par la Commission européenne et/ou le cadre EU-US
@@ -561,6 +586,11 @@ export default function PolitiqueConfidentialite() {
                   contact@ostinara.app
                 </a>
                 . Nous répondrons à votre demande dans un délai de 30 jours.
+              </p>
+              <p>
+                Si vous êtes inscrit·e sur la liste d&apos;attente, chaque email
+                que nous vous envoyons contient un lien de désinscription : il
+                supprime immédiatement votre adresse de la liste.
               </p>
               <p>
                 Vous disposez également du droit d&apos;introduire une

@@ -17,6 +17,8 @@ const PUBLIC_PREFIXES = [
   '/mentions-legales',
   '/politique-confidentialite',
   '/auth',
+  // La landing du lancement (liste d'attente) et son image d'apercu.
+  '/acces-anticipe',
 ]
 
 const AUTH_ROUTES = ['/login', '/register']
