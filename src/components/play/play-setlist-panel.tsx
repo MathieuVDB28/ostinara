@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ChevronRight, ListMusic } from "lucide-react";
 import { PlayStepper, type PlayStep } from "./play-stepper";
+import type { SaveSessionItemInput } from "@/lib/actions/setlists";
 import type {
   Song,
   SetlistWithDetails,
@@ -84,6 +85,30 @@ export function PlaySetlistPanel({
     );
   }, [selected, songs, exercises]);
 
+  // La setlist en version « a enregistrer » (prompt de fin de session).
+  const sessionItems: SaveSessionItemInput[] = useMemo(() => {
+    if (!selected) return [];
+    return playableItems(selected).map((item) =>
+      item.item_type === "song"
+        ? {
+            item_type: "song" as const,
+            song_id: item.song_id,
+            song_title: item.song_title,
+            song_artist: item.song_artist,
+            song_cover_url: item.song_cover_url,
+            bpm: item.bpm,
+          }
+        : {
+            item_type: "exercise" as const,
+            exercise_id: item.exercise_id,
+            exercise_name: item.exercise_name,
+            exercise_category: item.exercise_category,
+            bpm: item.bpm,
+            duration_seconds: item.duration_seconds,
+          }
+    );
+  }, [selected]);
+
   // --- Sans setlist : le selecteur ---
   if (!selected) {
     if (setlists.length === 0) {
@@ -158,6 +183,7 @@ export function PlaySetlistPanel({
       onRequestBpm={onRequestBpm}
       songWorkingBpm={songWorkingBpm}
       userPlan={userPlan}
+      sessionItems={sessionItems}
     />
   );
 }

@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Timer } from "lucide-react";
 import { BpmTargetIndicator } from "@/components/practice/song-practice/bpm-target-indicator";
 import { SongTabPanel } from "@/components/practice/song-practice/song-tab-panel";
 import { usePracticeSession } from "@/components/providers/practice-session-provider";
+import type { SaveSessionItemInput } from "@/lib/actions/setlists";
 import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type {
   Song,
@@ -48,6 +49,8 @@ interface PlayStepperProps {
   onRequestBpm: (bpm: number) => void;
   songWorkingBpm: (song: Song) => number | null;
   userPlan: UserPlan;
+  /** Le deroule en version « a enregistrer » : propose routine/setlist en fin de session. */
+  sessionItems?: SaveSessionItemInput[];
 }
 
 function sessionSong(song: Song | null) {
@@ -74,6 +77,7 @@ export function PlayStepper({
   onRequestBpm,
   songWorkingBpm,
   userPlan,
+  sessionItems,
 }: PlayStepperProps) {
   const practiceSession = usePracticeSession();
   const [index, setIndex] = useState(0);
@@ -136,6 +140,7 @@ export function PlayStepper({
       bpm: bpmFor(current) ?? currentBpm,
       song: current.kind === "song" ? sessionSong(current.song) : null,
       focus: false,
+      programItems: sessionItems,
     });
   };
 

@@ -14,9 +14,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { getSongs } from "@/lib/actions/songs";
 import { updateUserExerciseProgress } from "@/lib/actions/exercises";
 import { AddSessionModal } from "@/components/progress/add-session-modal";
+import { SessionSavePrompt } from "@/components/play/session-save-prompt";
 import { Maximize2, Minimize2, Pause, Play } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import type { Song } from "@/types";
+import type { SaveSessionItemInput } from "@/lib/actions/setlists";
 
 /**
  * Un seul chronometre de session pour toute l'app.
@@ -61,6 +63,12 @@ interface StoredSession {
   songStartMs?: number;
   /** Le dernier tempo regle sur chaque morceau. */
   songBpms?: Record<string, number>;
+  /**
+   * Les elements de la session quand elle a ete lancee depuis un deroule
+   * (onglet Session, ou une setlist). Sert a proposer, en fin de session,
+   * d'en faire une routine ou une setlist. Absent pour un travail a l'unite.
+   */
+  programItems?: SaveSessionItemInput[];
 }
 
 /** Une ligne de fin de session : un morceau, son temps, son tempo. */
@@ -208,6 +216,8 @@ export interface StartOptions {
   song?: SessionSong | null;
   /** Ouvre la session en plein ecran (depuis « Jouer »). */
   focus?: boolean;
+  /** Les elements du deroule, pour proposer de l'enregistrer en fin de session. */
+  programItems?: SaveSessionItemInput[];
 }
 
 interface PracticeSessionValue {
@@ -256,6 +266,8 @@ interface PendingEntry {
   bpm?: number | null;
   /** Les morceaux joues pendant le chrono, avec leur temps. */
   songTimes?: SessionSongTime[];
+  /** Le deroule joue, s'il y en avait un : propose routine/setlist en sortie. */
+  programItems?: SaveSessionItemInput[];
 }
 
 export function PracticeSessionProvider({ children }: { children: ReactNode }) {
@@ -267,6 +279,8 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState<PendingEntry | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
   const [focused, setFocused] = useState(false);
+  // En fin de session issue d'un deroule : proposer d'en faire une routine/setlist.
+  const [savePrompt, setSavePrompt] = useState<SaveSessionItemInput[] | null>(null);
 
   // Le chrono n'est pas dans le state : on le recalcule a partir des
   // timestamps. Un onglet en arriere-plan ne fait pas deriver l'affichage,
@@ -307,6 +321,10 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       songTimes: {},
       songStartMs: 0,
       songBpms: options?.songId && options?.bpm ? { [options.songId]: options.bpm } : {},
+      programItems:
+        options?.programItems && options.programItems.length > 0
+          ? options.programItems
+          : undefined,
     }));
     if (options?.focus) setFocused(true);
   }, []);
@@ -352,6 +370,11 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       exerciseId: current.exerciseId,
       bpm: current.bpm,
       songTimes: sessionSongTimes(current, bpms),
+      // On ne propose d'enregistrer qu'un vrai deroule (au moins deux elements).
+      programItems:
+        current.programItems && current.programItems.length >= 2
+          ? current.programItems
+          : undefined,
     });
   }, [loadSongs]);
 
@@ -463,7 +486,13 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
           timerSong={pendingSong}
           timerBpm={pending.bpm ?? undefined}
           timerSongTimes={pending.songTimes}
-          onClose={() => setPending(null)}
+          onClose={() => {
+            // Fermer sans enregistrer n'ecrit pas la session, mais on
+            // propose quand meme d'en garder le deroule (routine/setlist).
+            const program = pending.programItems;
+            setPending(null);
+            if (program && program.length >= 2) setSavePrompt(program);
+          }}
           onSuccess={() => {
             // La progression de l'exercice suit l'enregistrement de la
             // session, pas le clic sur "Terminer" : abandonner la modale
@@ -480,8 +509,18 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
               });
             }
             setPending(null);
+            if (entry.programItems && entry.programItems.length >= 2) {
+              setSavePrompt(entry.programItems);
+            }
             router.refresh();
           }}
+        />
+      )}
+
+      {savePrompt && (
+        <SessionSavePrompt
+          items={savePrompt}
+          onClose={() => setSavePrompt(null)}
         />
       )}
     </PracticeSessionContext.Provider>

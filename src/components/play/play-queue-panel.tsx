@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { PlayStepper, type PlayStep } from "./play-stepper";
 import { createRoutineWithItems } from "@/lib/actions/routines";
+import type { SaveSessionItemInput } from "@/lib/actions/setlists";
 import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type {
   Song,
@@ -216,6 +217,45 @@ export function PlayQueuePanel({
     [entries]
   );
 
+  // La file en version « a enregistrer » (routine, setlist, ou prompt de fin).
+  const saveItems: SaveSessionItemInput[] = useMemo(
+    () =>
+      entries
+        .filter((e) => e.valid)
+        .map((e) => {
+          if (e.item.kind === "song" && e.song) {
+            return {
+              item_type: "song" as const,
+              song_id: e.song.id,
+              song_title: e.song.title,
+              song_artist: e.song.artist,
+              song_cover_url: e.song.cover_url,
+              bpm: e.song.target_bpm ?? undefined,
+            };
+          }
+          if (e.item.kind === "exercise" && e.exercise) {
+            return {
+              item_type: "exercise" as const,
+              exercise_id: e.exercise.id,
+              exercise_name: e.exercise.name,
+              exercise_category: e.exercise.category,
+              bpm: e.exercise.target_bpm ?? undefined,
+              duration_seconds: e.exercise.duration_minutes
+                ? e.exercise.duration_minutes * 60
+                : undefined,
+            };
+          }
+          const exp = e.item as Extract<QueueItem, { kind: "express" }>;
+          return {
+            item_type: "exercise" as const,
+            exercise_name: exp.name,
+            exercise_category: exp.category,
+            bpm: exp.bpm,
+          };
+        }),
+    [entries]
+  );
+
   // --- Mutations de la file ---
   const add = (item: QueueItem) => {
     setQueue((q) => [...q, item]);
@@ -269,45 +309,11 @@ export function PlayQueuePanel({
   ).slice(0, 6);
 
   const handleSave = async () => {
-    const validEntries = entries.filter((e) => e.valid);
-    if (validEntries.length === 0 || !saveName.trim()) return;
+    if (saveItems.length === 0 || !saveName.trim()) return;
     setSaving(true);
     setSaveMessage(null);
 
-    const items = validEntries.map((e) => {
-      if (e.item.kind === "song" && e.song) {
-        return {
-          item_type: "song" as const,
-          song_id: e.song.id,
-          song_title: e.song.title,
-          song_artist: e.song.artist,
-          song_cover_url: e.song.cover_url,
-          bpm: e.song.target_bpm ?? undefined,
-        };
-      }
-      if (e.item.kind === "exercise" && e.exercise) {
-        return {
-          item_type: "exercise" as const,
-          exercise_id: e.exercise.id,
-          exercise_name: e.exercise.name,
-          exercise_category: e.exercise.category,
-          bpm: e.exercise.target_bpm ?? undefined,
-          duration_seconds: e.exercise.duration_minutes
-            ? e.exercise.duration_minutes * 60
-            : undefined,
-        };
-      }
-      // express
-      const exp = e.item as Extract<QueueItem, { kind: "express" }>;
-      return {
-        item_type: "exercise" as const,
-        exercise_name: exp.name,
-        exercise_category: exp.category,
-        bpm: exp.bpm,
-      };
-    });
-
-    const result = await createRoutineWithItems(saveName.trim(), items);
+    const result = await createRoutineWithItems(saveName.trim(), saveItems);
     setSaving(false);
 
     if (result.success) {
@@ -569,6 +575,7 @@ export function PlayQueuePanel({
             onRequestBpm={onRequestBpm}
             songWorkingBpm={songWorkingBpm}
             userPlan={userPlan}
+            sessionItems={saveItems}
           />
         </div>
       ) : (
