@@ -679,6 +679,8 @@ export interface ChartData {
   bpmProgress: BpmProgressData[];
   moodDistribution: MoodDistribution[];
   songDistribution: SongPracticeDistribution[];
+  /** Le temps par instrument, sur toute la periode (filtre ou non). */
+  instrumentDistribution?: { instrument: Instrument; minutes: number }[];
 }
 
 // Types pour les filtres et tri de la bibliothèque
@@ -1600,7 +1602,10 @@ export interface SaveTechRiderInput {
 // =============================================
 // Types pour le Matériel (Gear Library)
 // =============================================
-export type GearType = 'guitar' | 'bass' | 'amp' | 'effect' | 'accessory' | 'recording' | 'other';
+export type GearType =
+  | 'guitar' | 'bass' | 'amp' | 'effect'
+  | 'drums' | 'cymbals' | 'keyboard'
+  | 'accessory' | 'recording' | 'other';
 export type GearCondition = 'mint' | 'excellent' | 'good' | 'fair' | 'poor';
 export type GearVisibility = 'private' | 'friends' | 'public';
 export type GearPriority = 'low' | 'medium' | 'high';
@@ -1753,6 +1758,9 @@ export const GEAR_TYPE_LABELS: Record<GearType, string> = {
   bass: 'Basse',
   amp: 'Ampli',
   effect: 'Pédale',
+  drums: 'Batterie',
+  cymbals: 'Cymbales',
+  keyboard: 'Clavier',
   accessory: 'Accessoire',
   recording: 'Enregistrement',
   other: 'Autre',
@@ -1763,6 +1771,9 @@ export const GEAR_TYPE_ICONS: Record<GearType, string> = {
   bass: 'bass',
   amp: 'amp',
   effect: 'effect',
+  drums: 'drums',
+  cymbals: 'drums',
+  keyboard: 'piano',
   accessory: 'tune',
   recording: 'mic',
   other: 'more_horiz',
@@ -1802,6 +1813,9 @@ export const GEAR_BRANDS: Record<GearType, string[]> = {
   bass: ['Fender', 'Music Man', 'Ibanez', 'Yamaha', 'Rickenbacker', 'Warwick', 'Squier', 'Epiphone', 'Gibson', 'Spector', 'Sandberg', 'Dingwall', 'Lakland', 'G&L', 'Cort', 'Sterling'],
   amp: ['Marshall', 'Fender', 'Vox', 'Mesa/Boogie', 'Orange', 'Blackstar', 'Boss', 'Roland', 'Line 6', 'Peavey', 'Hughes & Kettner', 'Kemper', 'Neural DSP', 'Positive Grid', 'Two-Rock', 'Friedman', 'Laney'],
   effect: ['Boss', 'MXR', 'Electro-Harmonix', 'TC Electronic', 'Strymon', 'JHS', 'Walrus Audio', 'Way Huge', 'Dunlop', 'Eventide', 'Chase Bliss', 'EarthQuaker Devices', 'Keeley', 'Wampler', 'Fulltone', 'Line 6', 'Ibanez', 'ProCo', 'Zvex', 'Neural DSP'],
+  drums: ['Pearl', 'Tama', 'DW', 'Ludwig', 'Gretsch', 'Yamaha', 'Sonor', 'Mapex', 'Ddrum', 'Roland', 'Alesis', 'Premier', 'Natal'],
+  cymbals: ['Zildjian', 'Sabian', 'Meinl', 'Paiste', 'Istanbul Agop', 'Istanbul Mehmet', 'Dream', 'Bosphorus', 'UFIP'],
+  keyboard: ['Yamaha', 'Roland', 'Korg', 'Nord', 'Kawai', 'Casio', 'Arturia', 'Native Instruments', 'Novation', 'Akai', 'Moog', 'Sequential', 'Studiologic'],
   accessory: ['Ernie Ball', "D'Addario", 'Elixir', 'Dunlop', 'Shubb', 'Kyser', 'Planet Waves', 'Levy\'s', 'Mono', 'SKB', 'Hercules', 'Peterson', 'TC Electronic', 'Snark'],
   recording: ['Focusrite', 'Universal Audio', 'PreSonus', 'Audient', 'MOTU', 'RME', 'Shure', 'Rode', 'Audio-Technica', 'Sennheiser', 'AKG', 'Neumann', 'Beyerdynamic', 'KRK', 'Yamaha', 'Adam Audio', 'JBL'],
   other: [],

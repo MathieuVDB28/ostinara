@@ -1,4 +1,4 @@
-import type { ExerciseCategory, Instrument, ProfileInstrument, SkillLevel } from "@/types";
+import type { ExerciseCategory, GearType, Instrument, ProfileInstrument, SkillLevel } from "@/types";
 import { EXERCISE_CATEGORY_LABELS } from "@/types";
 
 /**
@@ -115,4 +115,26 @@ export function bandLineup<M extends { instrument?: Instrument | null; instrumen
   return [...postes.values()].sort(
     (a, b) => INSTRUMENT_VALUES.indexOf(a.instrument) - INSTRUMENT_VALUES.indexOf(b.instrument)
   );
+}
+
+/** Le matos propre a chaque instrument. */
+const GEAR_FOR: Record<Instrument, GearType[]> = {
+  guitar: ["guitar", "amp", "effect"],
+  bass: ["bass", "amp", "effect"],
+  drums: ["drums", "cymbals"],
+  keys: ["keyboard"],
+  other: [],
+};
+
+const ALL_GEAR: GearType[] = [
+  "guitar", "bass", "amp", "effect", "drums", "cymbals", "keyboard", "accessory", "recording", "other",
+];
+
+/**
+ * Les types de matos, ceux de mes instruments d'abord (principal en tete),
+ * puis le reste : un batteur peut aussi avoir une guitare au mur.
+ */
+export function gearTypesFor(instruments: Instrument[]): GearType[] {
+  const first = instruments.flatMap((instrument) => GEAR_FOR[instrument]);
+  return [...new Set([...first, ...ALL_GEAR])];
 }

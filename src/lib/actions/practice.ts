@@ -324,19 +324,23 @@ export async function syncSongProgressFromTempo(
  * toucher l'instrument — un curseur « 60 % » ne fait aucun des trois.
  */
 export async function getSongBpmProgress(
-  songId: string
+  songId: string,
+  instrument?: Instrument | null
 ): Promise<SongBpmPoint[]> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
   if (!user) return [];
 
-  const { data, error } = await supabase
+  // Un instrument a la fois : le tempo a la batterie n'est pas celui de la guitare.
+  let query = supabase
     .from("practice_sessions")
     .select("practiced_at, bpm_achieved")
     .eq("user_id", user.id)
     .eq("song_id", songId)
-    .not("bpm_achieved", "is", null)
-    .order("practiced_at", { ascending: true });
+    .not("bpm_achieved", "is", null);
+  if (instrument) query = query.eq("instrument", instrument);
+
+  const { data, error } = await query.order("practiced_at", { ascending: true });
 
   if (error || !data) {
     if (error) console.error("Error fetching song BPM progress:", error);
@@ -713,7 +717,11 @@ function formatDateLocal(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export async function getChartData(daysBack: number = 365): Promise<ChartData> {
+/**
+ * @param instrument Les stats d'un seul instrument ; absent : tous. La
+ * repartition par instrument porte toujours sur toutes les sessions.
+ */
+export async function getChartData(daysBack: number = 365, instrument?: Instrument | null): Promise<ChartData> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
 
@@ -746,17 +754,30 @@ export async function getChartData(daysBack: number = 365): Promise<ChartData> {
     return defaultData;
   }
 
+  const minutesByInstrument = new Map<Instrument, number>();
+  for (const session of sessions) {
+    if (!session.instrument) continue;
+    const key = session.instrument as Instrument;
+    minutesByInstrument.set(key, (minutesByInstrument.get(key) ?? 0) + session.duration_minutes);
+  }
+  const instrumentDistribution = [...minutesByInstrument.entries()]
+    .map(([key, minutes]) => ({ instrument: key, minutes }))
+    .sort((a, b) => b.minutes - a.minutes);
+
+  const scoped = instrument ? sessions.filter((session) => session.instrument === instrument) : sessions;
+
   // Générer les données
-  const heatmap = generateHeatmapData(sessions, daysBack);
-  const bpmProgress = generateBpmProgressData(sessions);
-  const moodDistribution = generateMoodDistribution(sessions);
-  const songDistribution = generateSongDistribution(sessions);
+  const heatmap = generateHeatmapData(scoped, daysBack);
+  const bpmProgress = generateBpmProgressData(scoped);
+  const moodDistribution = generateMoodDistribution(scoped);
+  const songDistribution = generateSongDistribution(scoped);
 
   return {
     heatmap,
     bpmProgress,
     moodDistribution,
     songDistribution,
+    instrumentDistribution,
   };
 }
 

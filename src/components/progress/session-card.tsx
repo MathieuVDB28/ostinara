@@ -1,5 +1,8 @@
 "use client";
 
+import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { instrumentLabel } from "@/lib/instruments";
+import type { Instrument } from "@/types";
 import { CircleCheck } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import type { PracticeSessionWithSong } from "@/types";
@@ -47,9 +50,12 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
   const sectionsLabel = getSectionsLabels(session.sections_worked);
   const moodEmoji = getMoodEmoji(session.mood);
 
+  const instrument = useSessionInstrument(session.instrument);
+
   const meta = [
     formatRelativeTime(session.practiced_at),
     formatTime(session.practiced_at),
+    instrument,
     session.bpm_achieved ? `${session.bpm_achieved} bpm` : null,
     sectionsLabel || null,
   ].filter(Boolean);
@@ -101,6 +107,17 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
   );
 }
 
+/**
+ * L'instrument d'une session, a afficher seulement pour qui en joue
+ * plusieurs : un guitariste n'a pas besoin de lire « Guitare » partout.
+ */
+function useSessionInstrument(instrument: Instrument | null | undefined): string | null {
+  const myInstruments = useMyInstruments();
+  if (!myInstruments.isMulti || !instrument) return null;
+  const entry = myInstruments.instruments.find((i) => i.instrument === instrument);
+  return instrumentLabel(entry ?? { instrument });
+}
+
 const STACK_OFFSETS = ["left-0 top-0", "left-1.5 top-1.5", "left-3 top-3"];
 
 function formatMinutes(minutes: number): string {
@@ -132,8 +149,11 @@ export function GroupSessionCard({
   const moodEmoji = getMoodEmoji(first.mood);
   const sectionsLabel = getSectionsLabels(first.sections_worked);
 
+  const instrument = useSessionInstrument(first.instrument);
+
   const meta = [
     new Date(first.practiced_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    instrument,
     sectionsLabel || null,
   ].filter(Boolean);
 

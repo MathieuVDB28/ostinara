@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Drum, Piano } from "lucide-react";
 import type { GearItem, GearType, GearCondition } from "@/types";
 import {
   GEAR_TYPE_LABELS,
@@ -39,6 +40,27 @@ function GearTypeIcon({
           <circle cx="10.5" cy="18" r="1" />
           <path d="M14 6l3-3" />
           <path d="M15.5 2.5l2 2" />
+        </svg>
+      );
+    case "drums":
+      return <Drum className={className} strokeWidth={1.5} aria-hidden="true" />;
+    case "keyboard":
+      return <Piano className={className} strokeWidth={1.5} aria-hidden="true" />;
+    case "cymbals":
+      return (
+        <svg
+          className={className}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={iconColor}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <ellipse cx="12" cy="8" rx="9" ry="2.5" />
+          <path d="M12 5.5V4" />
+          <path d="M12 10.5V21" />
+          <path d="M8 21h8" />
         </svg>
       );
     case "amp":

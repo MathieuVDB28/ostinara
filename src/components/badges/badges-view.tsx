@@ -1,15 +1,19 @@
 import { Frets } from "@/components/ui/frets";
 import {
   BADGES_BY_ID,
+  badgeTitle,
   FAMILY_LABELS,
   TIER_NAMES,
   type BadgeFamily,
   type BadgeStatus,
 } from "@/lib/badges/catalog";
 import { BadgeMedal } from "./badge-medal";
+import type { Instrument } from "@/types";
 
 interface BadgesViewProps {
   badges: BadgeStatus[];
+  /** L'instrument principal : certains titres en dependent. */
+  instrument: Instrument;
 }
 
 const FAMILIES: BadgeFamily[] = ["repertoire", "pratique", "commu"];
@@ -22,7 +26,7 @@ function formatDate(iso: string): string {
  * Profil › Badges, style Atelier : une ligne par badge, filets, chiffres
  * en condense. Chaque ligne dit ou on en est et ce qu'il reste a faire.
  */
-export function BadgesView({ badges }: BadgesViewProps) {
+export function BadgesView({ badges, instrument }: BadgesViewProps) {
   const unlocked = badges.filter((badge) => badge.level > 0).length;
   const tierLevels = badges.reduce((sum, badge) => {
     const def = BADGES_BY_ID[badge.id];
@@ -52,7 +56,7 @@ export function BadgesView({ badges }: BadgesViewProps) {
             {badges
               .filter((badge) => BADGES_BY_ID[badge.id]?.family === family)
               .map((badge) => (
-                <BadgeRow key={badge.id} badge={badge} />
+                <BadgeRow key={badge.id} badge={badge} instrument={instrument} />
               ))}
           </ul>
         </section>
@@ -75,7 +79,7 @@ function Stat({ label, value, total }: { label: string; value: number; total: nu
   );
 }
 
-function BadgeRow({ badge }: { badge: BadgeStatus }) {
+function BadgeRow({ badge, instrument }: { badge: BadgeStatus; instrument: Instrument }) {
   const def = BADGES_BY_ID[badge.id];
   if (!def) return null;
 
@@ -112,7 +116,7 @@ function BadgeRow({ badge }: { badge: BadgeStatus }) {
       <div className="min-w-0">
         <p className="flex items-baseline justify-between gap-2">
           <span className={`truncate font-display text-xl font-extrabold uppercase leading-tight ${badge.level === 0 ? "text-muted-foreground" : ""}`}>
-            {def.title}
+            {badgeTitle(def.id, instrument)}
           </span>
           <span className="shrink-0 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
             {status}

@@ -1,5 +1,7 @@
 "use client";
 
+import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { gearTypesFor } from "@/lib/instruments";
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { GearType, GearCondition, GearVisibility, UserPlan } from "@/types";
 import {
@@ -17,15 +19,6 @@ interface AddGearModalProps {
   userPlan: UserPlan;
 }
 
-const GEAR_TYPES: GearType[] = [
-  "guitar",
-  "bass",
-  "amp",
-  "effect",
-  "accessory",
-  "recording",
-  "other",
-];
 
 const CONDITION_OPTIONS: GearCondition[] = [
   "mint",
@@ -47,7 +40,10 @@ export function AddGearModal({
   onSaved,
   userPlan,
 }: AddGearModalProps) {
-  const [type, setType] = useState<GearType>("guitar");
+  // Le matos de mes instruments d'abord, et le premier preselectionne.
+  const myInstruments = useMyInstruments();
+  const gearTypes = gearTypesFor(myInstruments.instruments.map((i) => i.instrument));
+  const [type, setType] = useState<GearType>(gearTypes[0]);
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
@@ -110,7 +106,7 @@ export function AddGearModal({
 
   // Reset form
   const resetForm = useCallback(() => {
-    setType("guitar");
+    setType(gearTypes[0]);
     setBrand("");
     setModel("");
     setYear("");
@@ -193,8 +189,8 @@ export function AddGearModal({
           {/* Type selector - full width */}
           <div className="mb-5">
             <label className="mb-2 block text-sm font-medium">Type</label>
-            <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-              {GEAR_TYPES.map((t) => (
+            <div className="grid grid-cols-5 gap-2">
+              {gearTypes.map((t) => (
                 <button
                   key={t}
                   type="button"

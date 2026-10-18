@@ -23,7 +23,7 @@ import { BadgeMedal } from "@/components/badges/badge-medal";
 import { badgeGoal, badgeLabel } from "@/lib/badges/catalog";
 import { profileHref } from "@/lib/navigation";
 import { ACTIVITY_MESSAGES, formatActivityDate } from "@/lib/activity-messages";
-import type { ActivityWithDetails } from "@/types";
+import type { ActivityWithDetails, Instrument } from "@/types";
 import { ActivityReactions } from "./activity-reactions";
 import { ActivityComments } from "./activity-comments";
 import { FeedBridge } from "./feed-bridge";
@@ -376,7 +376,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
               {badgeGoal(meta.badge_id, Number(meta.level) || 1)}
             </p>
             <p className="truncate font-display text-xl font-extrabold uppercase leading-tight">
-              {badgeLabel(meta.badge_id, Number(meta.level) || 1)}
+              {badgeLabel(meta.badge_id, Number(meta.level) || 1, meta.instrument as Instrument | undefined)}
             </p>
           </div>
         </div>

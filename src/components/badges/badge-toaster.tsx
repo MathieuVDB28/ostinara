@@ -1,5 +1,6 @@
 "use client";
 
+import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
@@ -22,6 +23,8 @@ const DURATION_MS = 7000;
  * est marque vu des qu'il s'affiche : il ne revient pas a la page suivante.
  */
 export function BadgeToaster({ unseen }: BadgeToasterProps) {
+  // Le titre suit l'instrument principal (« Ampoules aux baguettes »).
+  const { primary } = useMyInstruments();
   const [visible, setVisible] = useState<UserBadgeRow[]>(unseen);
   const [previous, setPrevious] = useState(unseen);
 
@@ -65,7 +68,7 @@ export function BadgeToaster({ unseen }: BadgeToasterProps) {
               Badge débloqué
             </p>
             <p className="truncate font-display text-lg font-extrabold uppercase leading-tight">
-              {badgeLabel(row.badge_id, row.level)}
+              {badgeLabel(row.badge_id, row.level, primary)}
             </p>
             <p className="truncate text-xs text-muted-foreground">{badgeGoal(row.badge_id, row.level)}</p>
           </Link>

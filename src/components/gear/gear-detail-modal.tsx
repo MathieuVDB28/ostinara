@@ -1,5 +1,7 @@
 "use client";
 
+import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { gearTypesFor } from "@/lib/instruments";
 import { useState, useEffect, useCallback } from "react";
 import type {
   GearItem,
@@ -26,15 +28,6 @@ interface GearDetailModalProps {
   userPlan: UserPlan;
 }
 
-const GEAR_TYPES: GearType[] = [
-  "guitar",
-  "bass",
-  "amp",
-  "effect",
-  "accessory",
-  "recording",
-  "other",
-];
 
 const CONDITION_OPTIONS: GearCondition[] = [
   "mint",
@@ -58,6 +51,8 @@ export function GearDetailModal({
   onDeleted,
   userPlan,
 }: GearDetailModalProps) {
+  const myInstruments = useMyInstruments();
+  const gearTypes = gearTypesFor(myInstruments.instruments.map((i) => i.instrument));
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -277,8 +272,8 @@ export function GearDetailModal({
               {/* Type selector */}
               <div>
                 <label className="mb-2 block text-sm font-medium">Type</label>
-                <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-                  {GEAR_TYPES.map((t) => (
+                <div className="grid grid-cols-5 gap-2">
+                  {gearTypes.map((t) => (
                     <button
                       key={t}
                       type="button"

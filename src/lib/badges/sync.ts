@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import { getMyPrimaryInstrument } from "@/lib/instruments-server";
 import { getWeeklyPlan } from "@/lib/actions/weekly-plan";
 import { sendPushNotification } from "@/lib/notifications";
 import { songTargetBpm } from "@/lib/song-progress";
@@ -337,8 +338,10 @@ export async function syncBadges(
           if (!current || row.level > current.level) highest.set(row.badge_id, row);
         }
 
+        // Le titre suit l'instrument principal (« Ampoules aux baguettes »).
+        const instrument = await getMyPrimaryInstrument();
         for (const row of highest.values()) {
-          const label = badgeLabel(row.badge_id, row.level);
+          const label = badgeLabel(row.badge_id, row.level, instrument);
           // Insertion directe plutot que createActivity : celle-ci
           // revalide /feed, ce qu'un rendu de page n'a pas le droit de
           // faire. Les amis ne recoivent pas de notification pour un badge.
@@ -346,7 +349,7 @@ export async function syncBadges(
             user_id: user.id,
             type: "badge_unlocked",
             reference_id: null,
-            metadata: { badge_id: row.badge_id, level: row.level, period: row.period, title: label },
+            metadata: { badge_id: row.badge_id, level: row.level, period: row.period, title: label, instrument },
           });
           after(() =>
             sendPushNotification(

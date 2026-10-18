@@ -1,4 +1,5 @@
 import { getMyBadges } from "@/lib/actions/badges";
+import { getMyPrimaryInstrument } from "@/lib/instruments-server";
 import { BadgesView } from "@/components/badges/badges-view";
 
 export const metadata = {
@@ -7,7 +8,7 @@ export const metadata = {
 };
 
 export default async function ProfilBadgesPage() {
-  const badges = await getMyBadges();
+  const [badges, instrument] = await Promise.all([getMyBadges(), getMyPrimaryInstrument()]);
 
-  return <BadgesView badges={badges} />;
+  return <BadgesView badges={badges} instrument={instrument} />;
 }

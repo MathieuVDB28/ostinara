@@ -1,5 +1,7 @@
 "use client";
 
+import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { gearTypesFor } from "@/lib/instruments";
 import { useState, useMemo, useCallback } from "react";
 import type {
   GearItem,
@@ -49,16 +51,6 @@ interface GearViewProps {
   initialGearId?: string;
 }
 
-const GEAR_TYPES: { value: GearType | "all"; label: string }[] = [
-  { value: "all", label: "Tous" },
-  { value: "guitar", label: "Guitare" },
-  { value: "bass", label: "Basse" },
-  { value: "amp", label: "Ampli" },
-  { value: "effect", label: "Effet" },
-  { value: "accessory", label: "Accessoire" },
-  { value: "recording", label: "Enregistrement" },
-  { value: "other", label: "Autre" },
-];
 
 const SORT_OPTIONS: { value: string; label: string }[] = [
   { value: "date_desc", label: "Plus recent" },
@@ -86,6 +78,16 @@ export function GearView({
   userPlan,
   initialGearId,
 }: GearViewProps) {
+  // Les types de matos, ceux de mes instruments d'abord.
+  const myInstruments = useMyInstruments();
+  const GEAR_TYPES: { value: GearType | "all"; label: string }[] = [
+    { value: "all", label: "Tous" },
+    ...gearTypesFor(myInstruments.instruments.map((i) => i.instrument)).map((value) => ({
+      value,
+      label: GEAR_TYPE_LABELS[value],
+    })),
+  ];
+
   // --- Tab state ---
   const [mainTab, setMainTab] = useState<MainTab>("gear");
 
@@ -120,7 +122,7 @@ export function GearView({
   const [showWishlistForm, setShowWishlistForm] = useState(false);
   const [wishlistBrand, setWishlistBrand] = useState("");
   const [wishlistModel, setWishlistModel] = useState("");
-  const [wishlistType, setWishlistType] = useState<GearType>("guitar");
+  const [wishlistType, setWishlistType] = useState<GearType>(GEAR_TYPES[1].value as GearType);
   const [wishlistPriority, setWishlistPriority] = useState<GearPriority>("medium");
   const [wishlistEstimatedPrice, setWishlistEstimatedPrice] = useState("");
   const [wishlistNotes, setWishlistNotes] = useState("");
@@ -286,7 +288,7 @@ export function GearView({
       });
       setWishlistBrand("");
       setWishlistModel("");
-      setWishlistType("guitar");
+      setWishlistType(GEAR_TYPES[1].value as GearType);
       setWishlistPriority("medium");
       setWishlistEstimatedPrice("");
       setWishlistNotes("");
@@ -821,7 +823,7 @@ export function GearView({
                     setShowWishlistForm(false);
                     setWishlistBrand("");
                     setWishlistModel("");
-                    setWishlistType("guitar");
+                    setWishlistType(GEAR_TYPES[1].value as GearType);
                     setWishlistPriority("medium");
                     setWishlistEstimatedPrice("");
                     setWishlistNotes("");

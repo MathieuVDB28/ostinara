@@ -35,6 +35,7 @@ import { songTargetBpm, slowPracticeFloor } from "@/lib/song-progress";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { instrumentLabel, instrumentMeta } from "@/lib/instruments";
+import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
 import type {
   Instrument,
   Song,
@@ -123,6 +124,9 @@ export function EditSongModal({
    */
   const [targetBpm, setTargetBpm] = useState("");
   const [bpmPoints, setBpmPoints] = useState<SongBpmPoint[] | null>(null);
+  // Plusieurs instruments : la courbe et le meilleur tempo d'un seul a la
+  // fois, le principal d'abord.
+  const [tempoInstrument, setTempoInstrument] = useState<Instrument>(myInstruments.primary);
   const [tabStructure, setTabStructure] = useState<SongsterrTabStructure | null>(
     null
   );
@@ -162,13 +166,13 @@ export function EditSongModal({
   useEffect(() => {
     if (!song || !isOpen) return;
     let cancelled = false;
-    getSongBpmProgress(song.id).then((points) => {
+    getSongBpmProgress(song.id, myInstruments.isMulti ? tempoInstrument : undefined).then((points) => {
       if (!cancelled) setBpmPoints(points);
     });
     return () => {
       cancelled = true;
     };
-  }, [song, isOpen]);
+  }, [song, isOpen, myInstruments.isMulti, tempoInstrument]);
 
   // Load covers for the song
   useEffect(() => {
@@ -502,11 +506,27 @@ export function EditSongModal({
             session. Le reste — barre, pourcentage, courbe — n'est qu'une
             lecture de ces deux-la.
           */}
+          {myInstruments.isMulti && (
+            <InstrumentSwitch
+              options={myInstruments.instruments}
+              value={tempoInstrument}
+              onChange={setTempoInstrument}
+              label="Tempo de quel instrument"
+            />
+          )}
           <TempoBlock
             song={song}
             targetBpm={targetBpm}
             onTargetBpmChange={setTargetBpm}
-            bestBpm={bestBpm}
+            // Le meilleur tempo de la biblio melange les instruments : a
+            // plusieurs, on le lit dans la courbe de l'instrument choisi.
+            bestBpm={
+              myInstruments.isMulti
+                ? bpmPoints && bpmPoints.length > 0
+                  ? Math.max(...bpmPoints.map((point) => point.bpm))
+                  : null
+                : bestBpm
+            }
             points={bpmPoints}
           />
 

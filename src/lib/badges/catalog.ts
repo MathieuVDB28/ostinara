@@ -11,6 +11,8 @@
  * des donnees, lisibles cote client comme cote serveur.
  */
 
+import type { Instrument } from "@/types";
+
 export type BadgeFamily = "repertoire" | "pratique" | "commu";
 
 export type BadgeIcon =
@@ -32,6 +34,11 @@ interface BadgeBase {
   id: string;
   family: BadgeFamily;
   title: string;
+  /**
+   * Le titre selon l'instrument principal du musicien, quand il ne
+   * parle pas a tous : on ne se fait pas de corne en tenant des baguettes.
+   */
+  titles?: Partial<Record<Instrument, string>>;
   icon: BadgeIcon;
 }
 
@@ -121,6 +128,7 @@ export const BADGES: BadgeDef[] = [
     kind: "tiered",
     family: "pratique",
     title: "Corne aux doigts",
+    titles: { drums: "Ampoules aux baguettes", keys: "Ivoire usé" },
     icon: "clock",
     tiers: [10, 50, 100],
     goal: (n) => `Cumule ${n} h de pratique`,
@@ -196,12 +204,20 @@ export const BADGES_BY_ID: Record<string, BadgeDef> = Object.fromEntries(
   BADGES.map((badge) => [badge.id, badge])
 );
 
-/** « Répertoire · Argent », ou le titre seul pour un badge recurrent. */
-export function badgeLabel(badgeId: string, level: number): string {
+/** Le titre d'un badge pour l'instrument principal de celui qui l'a. */
+export function badgeTitle(badgeId: string, instrument?: Instrument | null): string {
   const def = BADGES_BY_ID[badgeId];
   if (!def) return "Badge";
-  if (def.kind !== "tiered") return def.title;
-  return `${def.title} · ${TIER_NAMES[level - 1] ?? ""}`;
+  return (instrument && def.titles?.[instrument]) || def.title;
+}
+
+/** « Répertoire · Argent », ou le titre seul pour un badge recurrent. */
+export function badgeLabel(badgeId: string, level: number, instrument?: Instrument | null): string {
+  const def = BADGES_BY_ID[badgeId];
+  if (!def) return "Badge";
+  const title = badgeTitle(badgeId, instrument);
+  if (def.kind !== "tiered") return title;
+  return `${title} · ${TIER_NAMES[level - 1] ?? ""}`;
 }
 
 /** Ce que le niveau a demande, pour le toast et la notification. */

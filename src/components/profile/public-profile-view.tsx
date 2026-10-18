@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ExternalLink, Heart, Lock, X } from "lucide-react";
-import type { CoverWithSong, PracticeSessionWithSong, PublicProfile, SessionMood, Song } from "@/types";
+import type { CoverWithSong, Instrument, PracticeSessionWithSong, PublicProfile, SessionMood, Song } from "@/types";
 import { GEAR_TYPE_LABELS } from "@/types";
 import { ProfileIdentity } from "./profile-identity";
 import { ProfileShowcase } from "./profile-showcase";
@@ -133,7 +133,7 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
             favoriteGear={data.favorite_gear}
           />
 
-          <FriendBadges badges={badges} />
+          <FriendBadges badges={badges} instrument={profile.instruments?.find((i) => i.is_primary)?.instrument} />
 
           {/* Onglets locaux, style Atelier comme ceux du profil */}
           <div role="tablist" aria-label={`Profil de ${name}`} className="mb-5 flex gap-6 overflow-x-auto border-b border-border [scrollbar-width:none]">
@@ -469,7 +469,7 @@ function FriendSongSheet({
 }
 
 /** Les badges obtenus, en un rang de medailles. Rien quand il n'y en a pas. */
-function FriendBadges({ badges }: { badges: BadgeStatus[] }) {
+function FriendBadges({ badges, instrument }: { badges: BadgeStatus[]; instrument?: Instrument }) {
   const unlocked = badges
     .filter((badge) => badge.level > 0)
     .sort((a, b) => (b.unlockedAt ?? "").localeCompare(a.unlockedAt ?? ""));
@@ -489,7 +489,7 @@ function FriendBadges({ badges }: { badges: BadgeStatus[] }) {
           <li key={badge.id} className="flex w-[72px] shrink-0 flex-col items-center gap-1 text-center">
             <BadgeMedal badgeId={badge.id} level={badge.level} count={badge.count} />
             <span className="line-clamp-2 text-[11px] font-semibold leading-tight">
-              {badgeLabel(badge.id, badge.level)}
+              {badgeLabel(badge.id, badge.level, instrument)}
             </span>
           </li>
         ))}
