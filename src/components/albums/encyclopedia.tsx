@@ -52,7 +52,6 @@ async function ArtistEncyclopediaContent({ artist }: { artist: CatalogArtist }) 
 
   return (
     <>
-      {encyclopedia.members.length > 0 && <BandLineup members={encyclopedia.members} />}
       {(encyclopedia.article || encyclopedia.facts.length > 0) && (
         <WikiPanel
           variant="artist"
@@ -62,6 +61,7 @@ async function ArtistEncyclopediaContent({ artist }: { artist: CatalogArtist }) 
           wikidataId={encyclopedia.wikidataId}
         />
       )}
+      {encyclopedia.members.length > 0 && <BandLineup members={encyclopedia.members} />}
     </>
   );
 }

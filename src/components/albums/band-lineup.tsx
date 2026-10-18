@@ -4,7 +4,7 @@ import type { Instrument, WikiBandMember } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { instrumentMeta } from "@/lib/instruments";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
-import { HEADINGS, SPACING } from "./wiki-panel";
+import { HEADINGS } from "./wiki-panel";
 
 /** « depuis 1983 », « 1982–1986 », « 1996 ». */
 function period(member: WikiBandMember): string {
@@ -27,7 +27,7 @@ export function BandLineup({ members }: { members: WikiBandMember[] }) {
   const folded = current.length > 0 ? former : [];
 
   return (
-    <section className={SPACING.artist}>
+    <section className="mt-8">
       <h2 className={HEADINGS.artist}>
         Line-up<span className="tabular font-bold text-muted-foreground"> · {members.length}</span>
       </h2>

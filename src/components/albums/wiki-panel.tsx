@@ -12,9 +12,6 @@ export const HEADINGS = {
   artist: "mb-1 border-b border-border pb-2 text-lg font-extrabold tracking-[-0.01em]",
 };
 
-/** L'album espace ses sections par le haut, l'artiste par le bas. */
-export const SPACING = { album: "mt-8", artist: "mb-8" };
-
 interface Props {
   variant: keyof typeof HEADINGS;
   title: string;
@@ -36,7 +33,7 @@ export function WikiPanel({ variant, title, article, facts, wikidataId, previous
   const shownIntro = expanded ? intro : intro.slice(0, 1);
 
   return (
-    <section className={SPACING[variant]}>
+    <section className="mt-8">
       <div className={`flex items-baseline justify-between gap-3 ${HEADINGS[variant]}`}>
         <h2>{title}</h2>
         {article && article.lang !== "fr" && (
@@ -173,7 +170,7 @@ export function WikiAttribution({ article, wikidataId }: { article: WikiArticle 
 
 export function WikiSkeleton({ variant }: { variant: keyof typeof HEADINGS }) {
   return (
-    <div className={`${SPACING[variant]} animate-pulse`} aria-hidden="true">
+    <div className="mt-8 animate-pulse" aria-hidden="true">
       <div className={HEADINGS[variant]}>
         <div className="h-3 w-24 rounded bg-muted" />
       </div>

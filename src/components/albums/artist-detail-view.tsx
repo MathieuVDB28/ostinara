@@ -83,8 +83,6 @@ export function ArtistDetailView({ artist, albums, communityStats, library, ency
           library={library}
         />
 
-        {encyclopedia}
-
         {/* Discography */}
         <h2 className="mb-3 border-b border-border pb-2 text-lg font-extrabold tracking-[-0.01em]">
           Discographie<span className="tabular font-bold text-muted-foreground"> · {albums.length}</span>
@@ -153,6 +151,8 @@ export function ArtistDetailView({ artist, albums, communityStats, library, ency
             })}
           </div>
         )}
+
+        {encyclopedia}
       </div>
     </div>
   );
