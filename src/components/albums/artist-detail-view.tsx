@@ -13,6 +13,8 @@ interface Props {
   albums: CatalogAlbum[];
   communityStats: Record<string, AlbumCommunityStats>;
   library: ArtistLibraryContext;
+  /** Line-up et article Wikipedia, rendus cote serveur en streaming. */
+  encyclopedia?: React.ReactNode;
 }
 
 function formatFollowers(n: number): string {
@@ -21,7 +23,7 @@ function formatFollowers(n: number): string {
   return n.toString();
 }
 
-export function ArtistDetailView({ artist, albums, communityStats, library }: Props) {
+export function ArtistDetailView({ artist, albums, communityStats, library, encyclopedia }: Props) {
   const router = useRouter();
   const artistImage = artist.images[0]?.url;
 
@@ -80,6 +82,8 @@ export function ArtistDetailView({ artist, albums, communityStats, library }: Pr
           communityStats={communityStats}
           library={library}
         />
+
+        {encyclopedia}
 
         {/* Discography */}
         <h2 className="mb-3 border-b border-border pb-2 text-lg font-extrabold tracking-[-0.01em]">

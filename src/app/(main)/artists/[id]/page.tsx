@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getArtistDetails, getArtistAlbums } from "@/lib/services/deezer";
 import { getAlbumsCommunityStats, getArtistLibraryContext } from "@/lib/actions/albums";
 import { ArtistDetailView } from "@/components/albums/artist-detail-view";
+import { ArtistEncyclopediaSection } from "@/components/albums/encyclopedia";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -23,6 +24,12 @@ export default async function ArtistDetailPage({ params }: Props) {
   ]);
 
   return (
-    <ArtistDetailView artist={artist} albums={albums} communityStats={communityStats} library={library} />
+    <ArtistDetailView
+      artist={artist}
+      albums={albums}
+      communityStats={communityStats}
+      library={library}
+      encyclopedia={<ArtistEncyclopediaSection artist={artist} />}
+    />
   );
 }

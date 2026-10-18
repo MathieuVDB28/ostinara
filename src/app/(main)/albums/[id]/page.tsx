@@ -6,6 +6,7 @@ import {
   resolveLegacyAlbumId,
 } from "@/lib/actions/albums";
 import { AlbumDetailView } from "@/components/albums/album-detail-view";
+import { AlbumEncyclopediaSection } from "@/components/albums/encyclopedia";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -31,5 +32,12 @@ export default async function AlbumDetailPage({ params }: Props) {
 
   if (!album) notFound();
 
-  return <AlbumDetailView album={album} stats={stats} userReview={userReview} />;
+  return (
+    <AlbumDetailView
+      album={album}
+      stats={stats}
+      userReview={userReview}
+      encyclopedia={<AlbumEncyclopediaSection album={album} />}
+    />
+  );
 }

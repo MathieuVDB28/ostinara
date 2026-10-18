@@ -17,13 +17,15 @@ interface Props {
   album: CatalogAlbumDetails;
   stats: AlbumCommunityStats | null;
   userReview: AlbumReview | null;
+  /** Wikipedia et Wikidata, rendus cote serveur en streaming. */
+  encyclopedia?: React.ReactNode;
 }
 
 function starsFromDb(dbRating: number) {
   return dbRating / 2;
 }
 
-export function AlbumDetailView({ album, stats, userReview: initialReview }: Props) {
+export function AlbumDetailView({ album, stats, userReview: initialReview, encyclopedia }: Props) {
   const router = useRouter();
   const nextSteps = useNextSteps();
   const [userReview, setUserReview] = useState(initialReview);
@@ -282,6 +284,8 @@ export function AlbumDetailView({ album, stats, userReview: initialReview }: Pro
           </div>
         )}
       </div>
+
+      {encyclopedia}
 
       {/* Titres : le coeur marque le morceau prefere */}
       {tracks.length > 0 && (

@@ -194,6 +194,64 @@ export interface AlbumCommunityStats {
   review_count: number;
 }
 
+// Encyclopedie : l'article Wikipedia et la fiche Wikidata d'un album ou d'un artiste
+export type WikiLang = 'fr' | 'en';
+
+export interface WikiSection {
+  title: string;
+  paragraphs: string[];
+  /** Les sous-sections (=== … ===), a plat. */
+  subsections: { title: string; paragraphs: string[] }[];
+}
+
+export interface WikiArticle {
+  title: string;
+  url: string;
+  /** Peut differer de la langue demandee : l'anglais sert de secours. */
+  lang: WikiLang;
+  intro: string[];
+  sections: WikiSection[];
+}
+
+/** Une ligne de la fiche : « Producteur » → « Daft Punk, Todd Edwards ». */
+export interface WikiFact {
+  label: string;
+  value: string;
+}
+
+export interface WikiAlbumLink {
+  name: string;
+  /** Pour la page /albums/{id}, quand on le trouve sur Deezer. */
+  deezerId?: string;
+}
+
+export interface AlbumEncyclopedia {
+  wikidataId: string;
+  article: WikiArticle | null;
+  facts: WikiFact[];
+  previous: WikiAlbumLink | null;
+  next: WikiAlbumLink | null;
+}
+
+export interface WikiBandMember {
+  name: string;
+  /** Libelles Wikidata, deja traduits (« guitare », « chant »). */
+  instruments: string[];
+  /** Ses instruments vus par l'app, pour reconnaitre son poste. */
+  posts: Instrument[];
+  since?: string;
+  until?: string;
+  current: boolean;
+}
+
+export interface ArtistEncyclopedia {
+  wikidataId: string;
+  article: WikiArticle | null;
+  facts: WikiFact[];
+  /** Vide pour un artiste solo, ou quand Wikidata ne les connait pas. */
+  members: WikiBandMember[];
+}
+
 // Albums de la semaine : les ecoutes de toute la communaute, agregees
 export interface WeeklyAlbum {
   /** deezer_id, ou « titre|artiste » pour les albums ajoutes a la main */

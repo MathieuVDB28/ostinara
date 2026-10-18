@@ -301,7 +301,8 @@ function clean(value: string): string {
   return value.replace(/\s*[([].*?[)\]]\s*/g, ' ').replace(/\s+-\s+.*$/, '').trim();
 }
 
-function normalize(value: string): string {
+/** Un titre comparable : sans accents, ni casse, ni « (Remastered) ». */
+export function normalize(value: string): string {
   return value
     .toLowerCase()
     .normalize('NFD')
