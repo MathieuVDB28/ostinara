@@ -1,9 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { exerciseFitsInstrument } from "@/lib/instruments";
+import { getMyPrimaryInstrument } from "@/lib/instruments-server";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import type {
+  Instrument,
   Exercise,
   ExerciseWithProgress,
   UserExercise,
@@ -43,12 +46,28 @@ export async function getExercises(filters?: {
     query = query.eq("difficulty", filters.difficulty);
   }
 
-  const { data: exercises, error: exercisesError } = await query;
+  const [{ data: allExercises, error: exercisesError }, { data: myInstruments }] = await Promise.all([
+    query,
+    supabase.from("profile_instruments").select("instrument").eq("user_id", user.id),
+  ]);
 
   if (exercisesError) {
     console.error("Error fetching exercises:", exercisesError);
     return [];
   }
+
+  /*
+   * Seulement ce qui parle a mes instruments : un batteur ne voit pas le
+   * sweep picking. Les exercices pour tous (liste vide) et ceux que j'ai
+   * crees restent toujours la.
+   */
+  const played = (myInstruments ?? []).map((row) => row.instrument as Instrument);
+  const exercises = (allExercises ?? []).filter(
+    (exercise) =>
+      exercise.created_by === user.id ||
+      played.length === 0 ||
+      played.some((instrument) => exerciseFitsInstrument(exercise, instrument))
+  );
 
   // Récupérer la progression de l'utilisateur
   const { data: userProgress, error: progressError } = await supabase
@@ -403,6 +422,7 @@ export async function createExercise(
       duration_minutes: input.duration_minutes,
       is_system: false,
       shared_with_friends: input.shared_with_friends || false,
+      instruments: input.instruments ?? [await getMyPrimaryInstrument()],
       created_by: user.id,
     })
     .select()

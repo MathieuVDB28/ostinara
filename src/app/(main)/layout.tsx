@@ -13,7 +13,10 @@ import { PracticeSessionProvider } from "@/components/providers/practice-session
 import { CommandPaletteProvider } from "@/components/search/command-palette";
 import { OfflineProvider } from "@/components/offline/offline-provider";
 import { NextStepsProvider } from "@/components/next-steps/next-steps-provider";
+import { InstrumentsProvider } from "@/components/providers/instruments-provider";
+import { PROFILE_INSTRUMENTS_SELECT } from "@/lib/instruments";
 import type { BadgeCounts } from "@/lib/navigation";
+import type { ProfileInstrument } from "@/types";
 
 export default async function MainLayout({
   children,
@@ -39,7 +42,7 @@ export default async function MainLayout({
   ] = await Promise.all([
     supabase
       .from("profiles")
-      .select("username, display_name, avatar_url")
+      .select(`username, display_name, avatar_url, ${PROFILE_INSTRUMENTS_SELECT}`)
       .eq("id", user.id)
       .single(),
     getPendingRequestsCount(),
@@ -48,6 +51,12 @@ export default async function MainLayout({
     // Les badges debloques depuis la derniere page : le toast les annonce.
     getUnseenBadges(),
   ]);
+
+  // Pas encore d'instrument (nouveau compte, ou compte d'avant le choix) :
+  // on le demande une fois, il decide des exercices et des outils.
+  if (profile && profile.instruments?.length === 0) {
+    redirect("/bienvenue");
+  }
 
   const badges: BadgeCounts = {
     friends: pendingFriends,
@@ -75,6 +84,7 @@ export default async function MainLayout({
       ecrire : c'est le seul endroit de l'app ou l'on perd quelque chose
       quand le reseau manque.
     */
+    <InstrumentsProvider instruments={(profile?.instruments ?? []) as ProfileInstrument[]}>
     <OfflineProvider>
     {/* Les ponts entre features (« et maintenant ? ») : au-dessus du chrono,
         parce que la fin de session est l'un des moments qui les ouvrent. */}
@@ -107,5 +117,6 @@ export default async function MainLayout({
     </PracticeSessionProvider>
     </NextStepsProvider>
     </OfflineProvider>
+    </InstrumentsProvider>
   );
 }

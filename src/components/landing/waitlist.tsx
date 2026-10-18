@@ -5,8 +5,9 @@ import Link from "next/link";
 import { joinWaitlist } from "@/lib/actions/waitlist";
 import { EARLY_BIRD, isEarlyBird, offeredPlan } from "@/lib/waitlist";
 import { PLANS } from "@/lib/stripe/config";
+import { INSTRUMENTS } from "@/lib/instruments";
 import { Icon } from "@/components/ui/icon";
-import type { UserPlan } from "@/types";
+import type { Instrument, UserPlan } from "@/types";
 
 /*
  * La liste d'attente de la page d'accueil. Deux formulaires (le hero et
@@ -18,6 +19,8 @@ import type { UserPlan } from "@/types";
 interface WaitlistState {
   plan: UserPlan;
   setPlan: (plan: UserPlan) => void;
+  instruments: Instrument[];
+  toggleInstrument: (instrument: Instrument) => void;
   joined: Joined | null;
   setJoined: (joined: Joined) => void;
 }
@@ -40,10 +43,16 @@ function useWaitlist() {
 
 export function WaitlistProvider({ children }: { children: React.ReactNode }) {
   const [plan, setPlan] = useState<UserPlan>("pro");
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [joined, setJoined] = useState<Joined | null>(null);
 
+  const toggleInstrument = (instrument: Instrument) =>
+    setInstruments((current) =>
+      current.includes(instrument) ? current.filter((i) => i !== instrument) : [...current, instrument],
+    );
+
   return (
-    <WaitlistContext.Provider value={{ plan, setPlan, joined, setJoined }}>
+    <WaitlistContext.Provider value={{ plan, setPlan, instruments, toggleInstrument, joined, setJoined }}>
       {children}
     </WaitlistContext.Provider>
   );
@@ -67,7 +76,7 @@ interface WaitlistFormProps {
 }
 
 export function WaitlistForm({ id }: WaitlistFormProps) {
-  const { plan, setPlan, joined, setJoined } = useWaitlist();
+  const { plan, setPlan, instruments, toggleInstrument, joined, setJoined } = useWaitlist();
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -76,8 +85,12 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    if (instruments.length === 0) {
+      setError("Dis-nous de quoi tu joues.");
+      return;
+    }
     startTransition(async () => {
-      const result = await joinWaitlist({ email, plan, website, source: readSource() });
+      const result = await joinWaitlist({ email, plan, instruments, website, source: readSource() });
       if (result.success) {
         setJoined({ email: email.trim(), rank: result.rank, confirmationSent: result.confirmationSent });
       } else {
@@ -90,6 +103,38 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="w-full max-w-xl">
+      <fieldset className="mb-4">
+        <legend className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          Tu joues de quoi&nbsp;?
+        </legend>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {INSTRUMENTS.map((option) => {
+            const selected = instruments.includes(option.value);
+            return (
+              <label
+                key={option.value}
+                className={`inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring ${
+                  selected
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-input bg-card hover:bg-accent"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  name={`${id}-instruments`}
+                  value={option.value}
+                  checked={selected}
+                  onChange={() => toggleInstrument(option.value)}
+                  className="sr-only"
+                />
+                <Icon name={option.icon} className="h-4 w-4" />
+                {option.label}
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+
       <fieldset>
         <legend className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           Le plan qui t&apos;intéresse
@@ -203,7 +248,7 @@ function WaitlistSuccess({ email, rank, confirmationSent }: Joined) {
     const url = `${window.location.origin}/acces-anticipe`;
     const shareData = {
       title: "Ostinara",
-      text: "L'app pour suivre sa progression à la guitare — je viens de rejoindre l'accès anticipé :",
+      text: "L'app pour suivre sa progression en musique, seul ou en groupe — je viens de rejoindre l'accès anticipé :",
       url,
     };
     try {

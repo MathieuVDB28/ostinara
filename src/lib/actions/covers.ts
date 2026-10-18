@@ -488,7 +488,7 @@ export async function getCoversFeed(limit = 30): Promise<CoverFeedItem[]> {
       ...(withCoverGear(cover) as CoverWithSong),
       author: (authors.get(cover.user_id) ?? {
         id: cover.user_id,
-        username: "guitariste",
+        username: "musicien",
         display_name: undefined,
         avatar_url: undefined,
         plan: "free",
@@ -548,7 +548,7 @@ export async function getCoverForReply(
     cover: cover as CoverWithSong,
     author: (author ?? {
       id: cover.user_id,
-      username: "guitariste",
+      username: "musicien",
     }) as Pick<Profile, "id" | "username" | "display_name">,
   };
 }

@@ -6,6 +6,8 @@ import type { PitchDetectionResult } from "@/types";
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const A4_FREQUENCY = 440;
 const MIN_FREQUENCY = 50; // below A1 (55 Hz), lowest note of Drop A
+/** Basse : sous le Si grave d'une 5 cordes (30,9 Hz). */
+export const BASS_MIN_FREQUENCY = 28;
 const MAX_FREQUENCY = 1400; // well above highest guitar note
 const RMS_THRESHOLD = 0.015; // noise gate
 
@@ -43,7 +45,7 @@ function frequencyToNote(freq: number): PitchDetectionResult {
  * Autocorrelation-based pitch detection.
  * Finds the fundamental frequency from time-domain audio data.
  */
-function detectPitch(buffer: Float32Array, sampleRate: number): number | null {
+function detectPitch(buffer: Float32Array, sampleRate: number, minFrequency: number): number | null {
   // Check signal level (RMS)
   let rms = 0;
   for (let i = 0; i < buffer.length; i++) {
@@ -61,7 +63,7 @@ function detectPitch(buffer: Float32Array, sampleRate: number): number | null {
 
   // Min/max lag based on frequency range
   const minLag = Math.floor(sampleRate / MAX_FREQUENCY);
-  const maxLag = Math.floor(sampleRate / MIN_FREQUENCY);
+  const maxLag = Math.floor(sampleRate / minFrequency);
 
   for (let lag = minLag; lag < maxLag && lag < bufferLength; lag++) {
     let sum = 0;
@@ -112,14 +114,25 @@ function detectPitch(buffer: Float32Array, sampleRate: number): number | null {
 
   const frequency = sampleRate / refinedLag;
 
-  if (frequency < MIN_FREQUENCY || frequency > MAX_FREQUENCY) {
+  if (frequency < minFrequency || frequency > MAX_FREQUENCY) {
     return null;
   }
 
   return frequency;
 }
 
-export function usePitchDetection(): UsePitchDetectionReturn {
+/** 8192 echantillons couvrent quatre periodes d'un Si grave de basse ; 4096 suffisent a la guitare. */
+function fftSizeFor(minFrequency: number): number {
+  return minFrequency < MIN_FREQUENCY ? 8192 : 4096;
+}
+
+/**
+ * @param minFrequency La note la plus grave a reconnaitre. Plus elle est
+ * basse, plus la fenetre d'analyse s'allonge (une basse a besoin de
+ * plusieurs periodes de 30 Hz) et plus le calcul coute : la guitare garde
+ * donc sa fenetre courte.
+ */
+export function usePitchDetection(minFrequency: number = MIN_FREQUENCY): UsePitchDetectionReturn {
   const [result, setResult] = useState<PitchDetectionResult | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -129,6 +142,12 @@ export function usePitchDetection(): UsePitchDetectionReturn {
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
   const isActiveRef = useRef(false);
+  // Lu a chaque image : changer d'instrument ne coupe pas le micro.
+  const minFrequencyRef = useRef(minFrequency);
+  useEffect(() => {
+    minFrequencyRef.current = minFrequency;
+    if (analyserRef.current) analyserRef.current.fftSize = fftSizeFor(minFrequency);
+  }, [minFrequency]);
 
   const start = useCallback(async () => {
     setError(null);
@@ -142,7 +161,7 @@ export function usePitchDetection(): UsePitchDetectionReturn {
 
       const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 4096; // Good resolution for low guitar frequencies
+      analyser.fftSize = fftSizeFor(minFrequencyRef.current);
       analyser.smoothingTimeConstant = 0.8;
 
       source.connect(analyser);
@@ -151,12 +170,15 @@ export function usePitchDetection(): UsePitchDetectionReturn {
       isActiveRef.current = true;
       setIsActive(true);
 
-      const buffer = new Float32Array(analyser.fftSize);
+      let buffer = new Float32Array(analyser.fftSize);
       const analyze = () => {
         if (!isActiveRef.current) return;
 
+        // La fenetre a change avec l'instrument : nouveau tampon.
+        if (buffer.length !== analyser.fftSize) buffer = new Float32Array(analyser.fftSize);
+
         analyser.getFloatTimeDomainData(buffer);
-        const frequency = detectPitch(buffer, audioContext.sampleRate);
+        const frequency = detectPitch(buffer, audioContext.sampleRate, minFrequencyRef.current);
         setResult(frequency ? frequencyToNote(frequency) : null);
 
         rafRef.current = requestAnimationFrame(analyze);

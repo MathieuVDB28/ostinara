@@ -116,7 +116,7 @@ export function CoverFeedCard({
 
   const liked = state.mine.includes(QUICK_EMOJI);
   const authorName =
-    item.author.display_name || item.author.username || "Guitariste";
+    item.author.display_name || item.author.username || "Musicien";
 
   const chip =
     "inline-flex min-h-[38px] items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";

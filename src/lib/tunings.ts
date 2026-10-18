@@ -56,6 +56,32 @@ export const TUNING_GROUPS: TuningGroup[] = [
   },
 ];
 
+/**
+ * Les accordages de basse, pour l'accordeur. Les noms reprennent ceux de la
+ * guitare (un morceau en drop D l'est aux deux instruments) : `value` reste
+ * celui de TUNING_GROUPS quand il existe.
+ */
+export const BASS_TUNING_GROUPS: TuningGroup[] = [
+  {
+    label: "4 cordes",
+    tunings: [
+      { value: "Standard", label: "Standard", notes: "E A D G", pitches: ["E1", "A1", "D2", "G2"] },
+      { value: "Half Step Down", label: "Half Step Down", notes: "Eb Ab Db Gb", pitches: ["Eb1", "Ab1", "Db2", "Gb2"] },
+      { value: "Full Step Down", label: "Full Step Down", notes: "D G C F", pitches: ["D1", "G1", "C2", "F2"] },
+      { value: "Drop D", label: "Drop D", notes: "D A D G", pitches: ["D1", "A1", "D2", "G2"] },
+      { value: "Drop C", label: "Drop C", notes: "C G C F", pitches: ["C1", "G1", "C2", "F2"] },
+    ],
+  },
+  {
+    label: "5 et 6 cordes",
+    tunings: [
+      { value: "Standard 5", label: "5 cordes", notes: "B E A D G", pitches: ["B0", "E1", "A1", "D2", "G2"] },
+      { value: "High C 5", label: "5 cordes, Do aigu", notes: "E A D G C", pitches: ["E1", "A1", "D2", "G2", "C3"] },
+      { value: "Standard 6", label: "6 cordes", notes: "B E A D G C", pitches: ["B0", "E1", "A1", "D2", "G2", "C3"] },
+    ],
+  },
+];
+
 // Flat list of all tuning values (for validation, filters, etc.)
 export const ALL_TUNINGS = TUNING_GROUPS.flatMap((g) => g.tunings.map((t) => t.value));
 

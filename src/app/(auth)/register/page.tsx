@@ -53,7 +53,7 @@ export default function RegisterPage() {
       <div className="text-center">
         <h1 className="font-display text-5xl font-extrabold uppercase leading-none">Créer un compte</h1>
         <p className="mt-2 text-muted-foreground">
-          Rejoins la communauté des guitaristes
+          Rejoins la communauté des musiciens
         </p>
       </div>
 
@@ -67,7 +67,7 @@ export default function RegisterPage() {
             name="username"
             type="text"
             required
-            placeholder="guitar_hero"
+            placeholder="groove_machine"
             className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>

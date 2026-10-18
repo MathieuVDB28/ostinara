@@ -37,6 +37,17 @@ export interface Song {
   created_at: string;
   updated_at: string;
   covers_count?: number;
+  /**
+   * Statut et progression par instrument. `status` et `progress_percent`
+   * ci-dessus en sont la synthese (le meilleur des deux), tenue par la base.
+   */
+  parts?: SongPart[];
+}
+
+export interface SongPart {
+  instrument: Instrument;
+  status: SongStatus;
+  progress_percent: number;
 }
 
 export type SongOrigin = "album" | "friend" | "challenge";
@@ -59,6 +70,11 @@ export interface CreateSongInput {
 }
 
 export interface UpdateSongInput {
+  /**
+   * L'instrument vise par `status` et `progress_percent` (partie du
+   * morceau). Absent : l'instrument principal. Pas une colonne de songs.
+   */
+  instrument?: Instrument;
   title?: string;
   artist?: string;
   album?: string;
@@ -206,6 +222,18 @@ export interface WeeklyAlbums {
 // Types pour le profil
 export type UserPlan = 'free' | 'pro' | 'band';
 
+// Les instruments du musicien (cf. src/lib/instruments.ts pour les libelles)
+export type Instrument = 'guitar' | 'bass' | 'drums' | 'keys' | 'other';
+export type SkillLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+
+export interface ProfileInstrument {
+  instrument: Instrument;
+  level: SkillLevel;
+  is_primary: boolean;
+  /** Precise « autre » : ukulele, violon… */
+  custom_label?: string | null;
+}
+
 // Types pour les abonnements Stripe
 export type SubscriptionStatus = 'none' | 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete' | 'incomplete_expired' | 'unpaid' | 'paused';
 
@@ -230,6 +258,8 @@ export interface Profile {
   stripe_subscription_id?: string;
   subscription_status?: SubscriptionStatus;
   subscription_period_end?: string;
+  /** Joint depuis profile_instruments quand la requete le demande. */
+  instruments?: ProfileInstrument[];
 }
 
 // Types pour les liens sociaux
@@ -516,6 +546,8 @@ export interface PracticeSession {
   notes: string | null;
   /** Les lignes d'une session a plusieurs morceaux partagent cet id. */
   session_group_id?: string | null;
+  /** L'instrument joue pendant la session. */
+  instrument?: Instrument | null;
   created_at: string;
   updated_at: string;
 }
@@ -539,6 +571,8 @@ export interface CreatePracticeSessionInput {
    */
   songs?: PracticeSessionSongEntry[];
   song_id?: string;
+  /** L'instrument joue. Absent : l'instrument principal. */
+  instrument?: Instrument;
   duration_minutes: number;
   practiced_at?: string;
   bpm_achieved?: number;
@@ -987,7 +1021,15 @@ export type ExerciseCategory =
   | 'chord_changes' // Changements d'accords
   | 'fingerstyle'   // Fingerpicking
   | 'technique'     // Technique générale
-  | 'rhythm';       // Exercices rythmiques
+  | 'rhythm'        // Exercices rythmiques
+  | 'rudiments'     // Batterie : rudiments
+  | 'grooves'       // Batterie, basse : grooves
+  | 'fills'         // Batterie : breaks
+  | 'independence'  // Batterie, clavier : independance des membres / mains
+  | 'slap'          // Basse : slap
+  | 'walking_bass'  // Basse : walking bass
+  | 'voicings'      // Clavier : renversements, voicings
+  | 'reading';      // Lecture
 
 export type ExerciseDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 
@@ -1007,6 +1049,8 @@ export interface Exercise {
   duration_minutes: number;
   is_system: boolean;
   shared_with_friends: boolean;
+  /** Les instruments concernes ; vide : tous. */
+  instruments: Instrument[];
   created_by?: string;
   created_at: string;
   updated_at: string;
@@ -1064,6 +1108,7 @@ export interface CreateExerciseInput {
   tips: string[];
   duration_minutes: number;
   shared_with_friends?: boolean;
+  instruments?: Instrument[];
 }
 
 // Types pour le Métronome
@@ -1104,6 +1149,14 @@ export const EXERCISE_CATEGORY_LABELS: Record<ExerciseCategory, string> = {
   fingerstyle: 'Fingerstyle',
   technique: 'Technique',
   rhythm: 'Rythme',
+  rudiments: 'Rudiments',
+  grooves: 'Grooves',
+  fills: 'Breaks',
+  independence: 'Indépendance',
+  slap: 'Slap',
+  walking_bass: 'Walking bass',
+  voicings: 'Voicings',
+  reading: 'Lecture',
 };
 
 // Labels pour les subdivisions

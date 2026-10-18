@@ -12,13 +12,13 @@ import type { UserPlan } from "@/types";
 export const metadata: Metadata = {
   // URL absolue de l'image d'apercu (opengraph-image.tsx).
   metadataBase: process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL) : undefined,
-  title: "Ostinara — L'app des guitaristes · Accès anticipé",
+  title: "Ostinara — L'app des musiciens · Accès anticipé",
   description:
-    "Métronome, accordeur, carnet de pratique, setlists, covers et défis entre amis. Tout ce dont un guitariste a besoin, au même endroit. Inscris-toi pour l'accès anticipé.",
+    "Métronome, accordeur, carnet de pratique, setlists, covers et défis entre amis. Guitare, basse, batterie ou clavier, seul ou en groupe. Inscris-toi pour l'accès anticipé.",
   openGraph: {
     title: "Ostinara — Joue. Mesure. Partage.",
     description:
-      "L'app des guitaristes : ta progression mesurée au tempo, ton répertoire, tes covers et ton groupe. Accès anticipé ouvert.",
+      "L'app des musiciens : ta progression mesurée au tempo, ton répertoire, tes covers et ton groupe. Accès anticipé ouvert.",
     type: "website",
     locale: "fr_FR",
     siteName: "Ostinara",
@@ -43,7 +43,7 @@ const domains = [
     icon: "library_music",
     title: "Tes morceaux en étagères",
     description:
-      "Ce que tu travailles, ce que tu veux apprendre, ce que tu maîtrises. Accordage, capo, tablature et tempo cible au même endroit.",
+      "Ce que tu travailles, ce que tu veux apprendre, ce que tu maîtrises. Tablature, accordage et tempo cible au même endroit.",
   },
   {
     tab: "Commu",
@@ -60,7 +60,7 @@ const toolbox = [
   { icon: "tuner", name: "Accordeur", detail: "Détection de note en temps réel au micro" },
   { icon: "timer", name: "Sessions", detail: "Chrono, BPM atteint, sections travaillées, humeur du jour" },
   { icon: "chart", name: "Progression", detail: "Calendrier de pratique, séries, courbe de tempo par morceau" },
-  { icon: "exercise", name: "Exercices", detail: "Gammes, arpèges, picking : du tempo de départ au tempo cible" },
+  { icon: "exercise", name: "Exercices", detail: "Adaptés à ton instrument, du tempo de départ au tempo cible" },
   { icon: "repeat", name: "Routines", detail: "Ta séance type, morceaux et exercices, relancée en un geste" },
   { icon: "setlist", name: "Setlists", detail: "Glisser-déposer, sections jouées, export PDF pour la scène" },
   { icon: "groups", name: "Groupes", detail: "Répétitions, RSVP, rappels, chat, setlists partagées" },
@@ -100,7 +100,7 @@ const faq = [
   },
   {
     q: "Je débute, c'est pour moi ?",
-    a: "Oui. Ostinara est pensé pour les guitaristes amateurs à intermédiaires : savoir ce que tu travailles et voir que tu progresses, c'est ce qui donne envie de continuer.",
+    a: "Oui. Ostinara est pensé pour les musiciens amateurs à intermédiaires, guitare, basse, batterie ou clavier : savoir ce que tu travailles et voir que tu progresses, c'est ce qui donne envie de continuer.",
   },
   {
     q: "Et mon groupe ?",
@@ -181,7 +181,7 @@ export default async function AccesAnticipe() {
               <span className="text-primary">Partage.</span>
             </h1>
             <p className="mt-6 max-w-xl font-serif text-lg italic leading-relaxed text-foreground/80 sm:text-xl">
-              L&apos;app des guitaristes. Suis tes morceaux, mesure ta progression au
+              L&apos;app des musiciens. Suis tes morceaux, mesure ta progression au
               tempo et partage tes covers avec tes amis. Tout au même endroit.
             </p>
             {offerOpen && (
@@ -306,7 +306,7 @@ export default async function AccesAnticipe() {
                 Dans la <span className="text-primary">housse</span>
               </h2>
               <p className="mt-4 max-w-sm leading-relaxed text-muted-foreground">
-                Les outils du quotidien du guitariste, du premier accord à la
+                Les outils du quotidien du musicien, de la première mesure à la
                 répète du vendredi soir.
               </p>
             </div>
@@ -431,7 +431,7 @@ export default async function AccesAnticipe() {
             <div>
               <p className="font-display text-xl font-extrabold uppercase">Ostinara</p>
               <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
-                L&apos;application tout-en-un pour les guitaristes qui veulent progresser et partager.
+                L&apos;application tout-en-un pour les musiciens qui veulent progresser et partager.
               </p>
               <a
                 href="mailto:contact@ostinara.app"

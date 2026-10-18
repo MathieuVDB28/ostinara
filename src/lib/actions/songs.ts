@@ -7,6 +7,7 @@ import { createActivity } from "./activities";
 import { updateChallengeProgress } from "./challenges";
 import type {
   CreateSongInput,
+  Instrument,
   UpdateSongInput,
   Song,
   SongOrigin,
@@ -15,6 +16,10 @@ import type {
 } from "@/types";
 import { syncBadges } from "@/lib/badges/sync";
 import { findSongTempo } from "@/lib/services/tempo";
+import { getMyPrimaryInstrument } from "@/lib/instruments-server";
+
+/** Les parties d'un morceau, a joindre a une requete sur songs. */
+const SONG_PARTS_SELECT = "parts:song_parts(instrument, status, progress_percent)";
 
 export async function getSongs(): Promise<Song[]> {
   const supabase = await createClient();
@@ -26,7 +31,7 @@ export async function getSongs(): Promise<Song[]> {
 
   const { data, error } = await supabase
     .from("songs")
-    .select("*, covers(count)")
+    .select(`*, covers(count), ${SONG_PARTS_SELECT}`)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -52,7 +57,7 @@ export async function getSong(id: string): Promise<Song | null> {
 
   const { data, error } = await supabase
     .from("songs")
-    .select("*")
+    .select(`*, ${SONG_PARTS_SELECT}`)
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
@@ -265,31 +270,37 @@ export async function updateSong(
     return { success: false, error: "Non authentifié" };
   }
 
+  /*
+   * Statut et progression appartiennent a une partie du morceau (un
+   * instrument) : ils s'ecrivent dans song_parts, et la base en tire la
+   * synthese sur songs. Le reste (titre, tempo, tab…) va sur songs.
+   */
+  const { instrument: requestedInstrument, status, progress_percent, ...songChanges } = input;
+  const touchesPart = status !== undefined || progress_percent !== undefined;
+  const instrument: Instrument | null = touchesPart
+    ? requestedInstrument ?? (await getMyPrimaryInstrument())
+    : null;
+
   // Le statut avant la mise a jour : c'est la transition qui fait l'activite
   let previousStatus: SongStatus | null = null;
-  if (input.status) {
-    const { data: currentSong } = await supabase
-      .from("songs")
+  if (instrument) {
+    const { data: currentPart } = await supabase
+      .from("song_parts")
       .select("status")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single();
+      .eq("song_id", id)
+      .eq("instrument", instrument)
+      .maybeSingle();
 
-    if (currentSong) {
-      previousStatus = currentSong.status as SongStatus;
-    }
+    // Pas encore de partie sur cet instrument : on part de « à apprendre ».
+    previousStatus = (currentPart?.status as SongStatus | undefined) ?? "want_to_learn";
   }
 
-  // Maitrise, c'est 100 % — quel que soit l'ecran qui le decide. Seul le
-  // glissement le disait ; la fiche du morceau laissait l'ancienne valeur.
-  const changes: UpdateSongInput =
-    input.status === "mastered" && input.progress_percent === undefined
-      ? { ...input, progress_percent: 100 }
-      : input;
-
-  const { data: updatedSong, error } = await supabase
-    .from("songs")
-    .update(changes)
+  // Un changement de statut seul ne touche pas songs : on relit le morceau
+  // (et on verifie au passage qu'il est bien a nous).
+  const songQuery = Object.keys(songChanges).length > 0
+    ? supabase.from("songs").update(songChanges)
+    : supabase.from("songs").select();
+  const { data: updatedSong, error } = await songQuery
     .eq("id", id)
     .eq("user_id", user.id)
     .select()
@@ -300,24 +311,55 @@ export async function updateSong(
     return { success: false, error: "Erreur lors de la mise à jour" };
   }
 
-  const progressType = progressActivityType(previousStatus, input.status);
-  if (progressType && updatedSong) {
-    // Une seule activite par morceau et par etape : repasser un morceau en
-    // « à apprendre » puis de nouveau en « en cours » ne renotifie pas.
-    const { data: alreadyPosted } = await supabase
+  if (instrument) {
+    // Maitrise, c'est 100 % — quel que soit l'ecran qui le decide.
+    const part: { status?: SongStatus; progress_percent?: number } = {};
+    if (status !== undefined) part.status = status;
+    if (progress_percent !== undefined) part.progress_percent = progress_percent;
+    if (status === "mastered" && progress_percent === undefined) part.progress_percent = 100;
+
+    const { error: partError } = await supabase
+      .from("song_parts")
+      .upsert(
+        { song_id: id, user_id: user.id, instrument, ...part },
+        { onConflict: "song_id,instrument" }
+      );
+
+    if (partError) {
+      console.error("Error updating song part:", partError);
+      return { success: false, error: "Erreur lors de la mise à jour" };
+    }
+  }
+
+  const progressType = progressActivityType(previousStatus, status);
+  if (progressType && updatedSong && instrument) {
+    // Une seule activite par morceau, par instrument et par etape :
+    // repasser un morceau en « à apprendre » puis de nouveau en « en
+    // cours » ne renotifie pas, mais le maitriser a la basse apres la
+    // guitare, si. Les activites d'avant les instruments n'en portent pas :
+    // elles valent pour l'instrument principal.
+    const { data: posted } = await supabase
       .from("activities")
-      .select("id")
+      .select("metadata")
       .eq("user_id", user.id)
       .eq("type", progressType)
-      .eq("reference_id", id)
-      .limit(1)
-      .maybeSingle();
+      .eq("reference_id", id);
+
+    const primary = await getMyPrimaryInstrument();
+    const alreadyPosted = (posted ?? []).some(
+      (activity) => ((activity.metadata as { instrument?: Instrument } | null)?.instrument ?? primary) === instrument
+    );
 
     if (!alreadyPosted) {
       await createActivity({
         type: progressType,
         reference_id: id,
-        metadata: { title: updatedSong.title, artist: updatedSong.artist, cover_url: updatedSong.cover_url },
+        metadata: {
+          title: updatedSong.title,
+          artist: updatedSong.artist,
+          cover_url: updatedSong.cover_url,
+          instrument,
+        },
       });
     }
 
@@ -480,9 +522,13 @@ export async function setSongTargetBpm(
     return { success: false, error: "Erreur lors de la mise à jour du tempo" };
   }
 
-  // Changer la cible change la lecture de la progression : on la reecrit.
+  // Changer la cible change la lecture de la progression : on la reecrit,
+  // pour chaque instrument travaille sur ce morceau.
   const { syncSongProgressFromTempo } = await import("./practice");
-  await syncSongProgressFromTempo(songId);
+  const { data: parts } = await supabase.from("song_parts").select("instrument").eq("song_id", songId);
+  await Promise.all(
+    (parts ?? []).map((part) => syncSongProgressFromTempo(songId, part.instrument as Instrument))
+  );
 
   revalidatePath("/biblio");
   revalidatePath("/jouer");

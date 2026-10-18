@@ -33,7 +33,10 @@ import { getSongBpmProgress } from "@/lib/actions/practice";
 import { saveSongTabStructure } from "@/lib/actions/songs";
 import { songTargetBpm, slowPracticeFloor } from "@/lib/song-progress";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
+import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { instrumentLabel, instrumentMeta } from "@/lib/instruments";
 import type {
+  Instrument,
   Song,
   SongBpmPoint,
   SongDifficulty,
@@ -83,6 +86,7 @@ export function EditSongModal({
 }: EditSongModalProps) {
   const router = useRouter();
   const nextSteps = useNextSteps();
+  const myInstruments = useMyInstruments();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +110,11 @@ export function EditSongModal({
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
   const [difficulty, setDifficulty] = useState<SongDifficulty | "">("");
-  const [status, setStatus] = useState<SongStatus>("want_to_learn");
+  /*
+   * Un statut par instrument (song_parts). Un instrument encore jamais
+   * travaille sur ce morceau n'a pas de statut tant qu'on n'en choisit pas.
+   */
+  const [partStatuses, setPartStatuses] = useState<Partial<Record<Instrument, SongStatus>>>({});
   /*
    * Le curseur « 0-100 % » a disparu. Ce qu'un guitariste decide a propos
    * d'un morceau, c'est un tempo a atteindre ; ce qu'il constate, c'est le
@@ -129,7 +137,11 @@ export function EditSongModal({
       setTitle(song.title);
       setArtist(song.artist);
       setDifficulty(song.difficulty || "");
-      setStatus(song.status);
+      setPartStatuses(
+        song.parts
+          ? Object.fromEntries(song.parts.map((part) => [part.instrument, part.status]))
+          : { [myInstruments.primary]: song.status }
+      );
       setTargetBpm(song.target_bpm ? String(song.target_bpm) : "");
       setTabStructure(null);
       setTuning(song.tuning);
@@ -183,6 +195,20 @@ export function EditSongModal({
     setLoadingCovers(false);
   };
 
+  // L'accordage parle aux cordes, le capo a la guitare seule. « Autre »
+  // (ukulele, violon…) garde les deux.
+  const showTuning = ["guitar", "bass", "other"].some((i) => myInstruments.plays(i as Instrument));
+  const showCapo = ["guitar", "other"].some((i) => myInstruments.plays(i as Instrument));
+
+  // Les instruments qu'on joue, plus ceux ou le morceau a deja une partie
+  // (un ancien instrument principal, par exemple).
+  const statusRows = [
+    ...myInstruments.instruments,
+    ...(song?.parts ?? [])
+      .filter((part) => !myInstruments.plays(part.instrument))
+      .map((part) => ({ instrument: part.instrument, custom_label: null })),
+  ];
+
   const handleSave = async () => {
     if (!song) return;
 
@@ -196,11 +222,10 @@ export function EditSongModal({
       return;
     }
 
-    const result = await updateSong(song.id, {
+    let result = await updateSong(song.id, {
       title,
       artist,
       difficulty: difficulty || undefined,
-      status,
       target_bpm: parsedTarget ?? undefined,
       tuning,
       capo_position: capo,
@@ -208,13 +233,25 @@ export function EditSongModal({
       notes: notes || undefined,
     });
 
+    // Puis chaque partie dont le statut a change : une activite par
+    // instrument, comme une maitrise a la basse apres la guitare.
+    const previous = (instrument: Instrument) =>
+      song.parts ? song.parts.find((part) => part.instrument === instrument)?.status : song.status;
+    const changed = (Object.entries(partStatuses) as [Instrument, SongStatus][]).filter(
+      ([instrument, status]) => status !== previous(instrument)
+    );
+    for (const [instrument, status] of changed) {
+      if (!result.success) break;
+      result = await updateSong(song.id, { instrument, status });
+    }
+
     if (result.success) {
       onUpdate();
       onClose();
-      if (status === "mastered" && song.status !== "mastered") {
+      if (changed.some(([, status]) => status === "mastered") && song.status !== "mastered") {
         nextSteps.show({
           kind: "song_mastered",
-          song: { ...song, title, artist, status, progress_percent: 100 },
+          song: { ...song, title, artist, status: "mastered", progress_percent: 100 },
         });
       }
     } else {
@@ -413,29 +450,46 @@ export function EditSongModal({
         {/* Details Tab */}
         {activeTab === "details" && (
         <div className="space-y-6 p-6">
-          {/* Statut */}
+          {/* Statut, par instrument quand on en joue plusieurs */}
           <div>
             <span id="song-status-label" className="mb-2 block text-sm font-medium">Statut</span>
-            <div
-              role="radiogroup"
-              aria-labelledby="song-status-label"
-              className="grid grid-cols-3 gap-0.5 rounded-xl border border-border bg-card p-[3px]"
-            >
-              {statusOptions.map((option) => (
-                <button
-                  key={option.value}
-                  role="radio"
-                  aria-checked={status === option.value}
-                  onClick={() => setStatus(option.value)}
-                  className={`min-h-[36px] rounded-[9px] text-sm font-semibold transition-colors ${
-                    status === option.value
-                      ? "bg-secondary text-foreground shadow-[inset_0_0_0_1px_var(--border)]"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+            <div className="space-y-2.5" aria-labelledby="song-status-label" role="group">
+              {statusRows.map((entry) => {
+                const current = partStatuses[entry.instrument] ?? null;
+                return (
+                  <div key={entry.instrument} className={statusRows.length > 1 ? "flex items-center gap-3" : ""}>
+                    {statusRows.length > 1 && (
+                      <span className="flex w-28 shrink-0 items-center gap-1.5 truncate text-xs font-semibold text-muted-foreground">
+                        <Icon name={instrumentMeta(entry.instrument).icon} className="h-3.5 w-3.5 shrink-0" />
+                        {instrumentLabel(entry)}
+                      </span>
+                    )}
+                    <div
+                      role="radiogroup"
+                      aria-label={`Statut à la ${instrumentLabel(entry).toLowerCase()}`}
+                      className="grid flex-1 grid-cols-3 gap-0.5 rounded-xl border border-border bg-card p-[3px]"
+                    >
+                      {statusOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          role="radio"
+                          aria-checked={current === option.value}
+                          onClick={() =>
+                            setPartStatuses((statuses) => ({ ...statuses, [entry.instrument]: option.value }))
+                          }
+                          className={`min-h-[36px] rounded-[9px] text-sm font-semibold transition-colors ${
+                            current === option.value
+                              ? "bg-secondary text-foreground shadow-[inset_0_0_0_1px_var(--border)]"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -478,8 +532,8 @@ export function EditSongModal({
             </div>
           </div>
 
-          {/* Guitar settings */}
-          <div className="grid gap-4 sm:grid-cols-3">
+          {/* Reglages : accordage pour les cordes, capo pour la guitare */}
+          <div className={`grid gap-4 ${showCapo ? "sm:grid-cols-3" : showTuning ? "sm:grid-cols-2" : ""}`}>
             <div>
               <label className="mb-1 block text-sm font-medium">Difficulté</label>
               <select
@@ -494,7 +548,7 @@ export function EditSongModal({
                 ))}
               </select>
             </div>
-            <div>
+            {showTuning && <div>
               <label className="mb-1 block text-sm font-medium">Tuning</label>
               <select
                 value={tuning}
@@ -511,8 +565,8 @@ export function EditSongModal({
                   </optgroup>
                 ))}
               </select>
-            </div>
-            <div>
+            </div>}
+            {showCapo && <div>
               <label className="mb-1 block text-sm font-medium">Capo</label>
               <select
                 value={capo}
@@ -526,7 +580,7 @@ export function EditSongModal({
                   </option>
                 ))}
               </select>
-            </div>
+            </div>}
           </div>
 
           {/* Notes */}

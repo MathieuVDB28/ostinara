@@ -2,18 +2,37 @@
 
 import { useState } from "react";
 import { ChevronDown, Mic } from "lucide-react";
-import { usePitchDetection } from "@/lib/hooks/use-pitch-detection";
-import { TUNING_GROUPS, pitchToFrequency } from "@/lib/tunings";
+import { BASS_MIN_FREQUENCY, usePitchDetection } from "@/lib/hooks/use-pitch-detection";
+import { BASS_TUNING_GROUPS, TUNING_GROUPS, pitchToFrequency, type TuningGroup } from "@/lib/tunings";
+import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
 import { TunerGauge } from "./tuner-gauge";
 import type { TuningPreset } from "@/types";
 
-const TUNING_PRESETS: TuningPreset[] = TUNING_GROUPS.flatMap((group) =>
-  group.tunings.map((t) => ({
-    name: t.value,
-    notes: t.pitches,
-    frequencies: t.pitches.map(pitchToFrequency),
-  }))
-);
+/** Les deux instruments a cordes qu'on accorde. */
+type TunedInstrument = "guitar" | "bass";
+
+function presetsOf(groups: TuningGroup[]): TuningPreset[] {
+  return groups.flatMap((group) =>
+    group.tunings.map((t) => ({
+      name: t.value,
+      notes: t.pitches,
+      frequencies: t.pitches.map(pitchToFrequency),
+    }))
+  );
+}
+
+const TUNINGS: Record<TunedInstrument, { groups: TuningGroup[]; presets: TuningPreset[] }> = {
+  guitar: { groups: TUNING_GROUPS, presets: presetsOf(TUNING_GROUPS) },
+  bass: { groups: BASS_TUNING_GROUPS, presets: presetsOf(BASS_TUNING_GROUPS) },
+};
+
+/** L'accordeur s'ouvre sur l'instrument principal s'il a des cordes. */
+function defaultInstrument(primary: string, plays: (i: TunedInstrument) => boolean): TunedInstrument {
+  if (primary === "bass") return "bass";
+  if (primary === "guitar" || plays("guitar")) return "guitar";
+  return plays("bass") ? "bass" : "guitar";
+}
 
 function getClosestString(
   frequency: number,
@@ -38,11 +57,20 @@ function getClosestString(
   };
 }
 
-export function GuitarTuner() {
+export function InstrumentTuner() {
+  const myInstruments = useMyInstruments();
+  const [instrument, setInstrument] = useState<TunedInstrument>(() =>
+    defaultInstrument(myInstruments.primary, myInstruments.plays)
+  );
   const [selectedPreset, setSelectedPreset] = useState(0);
-  const { result, isActive, error, start, stop } = usePitchDetection();
+  const { result, isActive, error, start, stop } = usePitchDetection(
+    instrument === "bass" ? BASS_MIN_FREQUENCY : undefined
+  );
 
-  const preset = TUNING_PRESETS[selectedPreset];
+  const { groups, presets } = TUNINGS[instrument];
+  const preset = presets[selectedPreset] ?? presets[0];
+  // Guitare et basse a la fois (ou ni l'une ni l'autre : on accorde celle d'un ami).
+  const showSwitch = myInstruments.plays("guitar") === myInstruments.plays("bass");
   const closestString = result ? getClosestString(result.frequency, preset) : null;
 
   const absCents = closestString ? Math.abs(closestString.cents) : 50;
@@ -76,16 +104,29 @@ export function GuitarTuner() {
    */
   return (
     <div className="flex flex-col items-center gap-5 py-2">
+      {showSwitch && (
+        <InstrumentSwitch
+          options={[{ instrument: "guitar" }, { instrument: "bass" }]}
+          value={instrument}
+          onChange={(next) => {
+            setInstrument(next as TunedInstrument);
+            setSelectedPreset(0);
+          }}
+          label="Instrument à accorder"
+          className="justify-center"
+        />
+      )}
+
       <label className="relative">
         <span className="sr-only">Accordage</span>
         <select
           value={preset.name}
           onChange={(e) =>
-            setSelectedPreset(TUNING_PRESETS.findIndex((p) => p.name === e.target.value))
+            setSelectedPreset(presets.findIndex((p) => p.name === e.target.value))
           }
           className="h-9 appearance-none rounded-full border border-border bg-card pl-4 pr-9 font-mono text-xs font-semibold focus:border-primary focus:outline-none"
         >
-          {TUNING_GROUPS.map((group) => (
+          {groups.map((group) => (
             <optgroup key={group.label} label={group.label}>
               {group.tunings.map((t) => (
                 <option key={t.value} value={t.value}>
@@ -129,7 +170,10 @@ export function GuitarTuner() {
         </p>
       )}
 
-      <div className="grid w-full grid-cols-6 gap-1.5">
+      <div
+        className="grid w-full gap-1.5"
+        style={{ gridTemplateColumns: `repeat(${strings.length}, minmax(0, 1fr))` }}
+      >
         {strings.map((string) => (
           <div
             key={`${preset.name}-${string.number}`}

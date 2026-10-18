@@ -20,7 +20,7 @@ const features = [
     icon: "library_music",
     title: "Tes morceaux en étagères",
     description:
-      "Ce que tu travailles, ce que tu veux apprendre, ce que tu maîtrises. Accordage, capo, tablature et tempo cible au même endroit.",
+      "Ce que tu travailles, ce que tu veux apprendre, ce que tu maîtrises. Tablature, accordage et tempo cible au même endroit.",
   },
   {
     tab: "Commu",
@@ -79,7 +79,7 @@ export default function Home() {
       <section className="mx-auto grid max-w-6xl items-end gap-10 px-5 pb-16 pt-14 sm:pt-20 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:pb-24">
         <div>
           <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-            L&apos;app des guitaristes · Stay tuned
+            L&apos;app des musiciens · Stay tuned
           </p>
           <h1 className="mt-4 font-display text-[clamp(64px,13vw,148px)] font-extrabold uppercase leading-[0.84] tracking-[-0.005em]">
             Joue.
@@ -90,7 +90,7 @@ export default function Home() {
           </h1>
           <p className="mt-6 max-w-xl font-serif text-lg italic leading-relaxed text-foreground/80 sm:text-xl">
             Suis tes morceaux, mesure ta progression au tempo et partage tes
-            covers avec tes amis. Tout ce dont un guitariste a besoin, au même
+            covers avec tes amis. Tout ce dont un musicien a besoin, au même
             endroit.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -180,7 +180,7 @@ export default function Home() {
           <div>
             <p className="font-display text-xl font-extrabold uppercase">Ostinara</p>
             <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              L&apos;application tout-en-un pour les guitaristes qui veulent progresser et partager.
+              L&apos;application tout-en-un pour les musiciens qui veulent progresser et partager.
             </p>
             <p className="mt-2 text-sm text-muted-foreground">contact@ostinara.app</p>
           </div>

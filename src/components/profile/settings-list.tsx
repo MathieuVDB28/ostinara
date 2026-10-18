@@ -7,6 +7,7 @@ import { NotificationSetting, PracticeRemindersSetting } from "./notification-se
 import { SubscriptionStatusBadge } from "@/components/subscription";
 import type { UserProfile } from "@/types";
 import { Icon } from "@/components/ui/icon";
+import { instrumentLabel, sortInstruments } from "@/lib/instruments";
 
 interface SettingsListProps {
   profile: UserProfile;
@@ -49,12 +50,22 @@ function Row({ row }: { row: SettingsRow }) {
  * illisible. Chaque ligne pousse une vue de detail.
  */
 export function SettingsList({ profile }: SettingsListProps) {
+  const instruments = sortInstruments(profile.instruments ?? []);
+
   const account: SettingsRow[] = [
     {
       href: "/profile/edit",
       label: "Mon profil",
       description: "Nom, bio, avatar, liens et vitrine",
       icon: "person",
+    },
+    {
+      href: "/profil/reglages/instruments",
+      label: "Mes instruments",
+      description: instruments.length
+        ? instruments.map(instrumentLabel).join(" · ")
+        : "Dis-nous ce que tu joues",
+      icon: "music_note",
     },
     {
       href: "/profile/edit?tab=privacy",

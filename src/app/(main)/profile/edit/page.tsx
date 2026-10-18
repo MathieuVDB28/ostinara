@@ -315,7 +315,7 @@ function EditProfilePageContent() {
         </div>
         <h2 className="font-display text-4xl font-extrabold uppercase leading-none">{profile.display_name || profile.username}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Guitariste {profile.plan !== "free" ? `• Ostinara ${profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1)}` : "amateur"}
+          {profile.plan !== "free" ? `Ostinara ${profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1)}` : "Compte gratuit"}
         </p>
       </div>
 

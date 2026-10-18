@@ -9,11 +9,13 @@ import { useOffline } from "@/components/offline/offline-provider";
 import { updateSong } from "@/lib/actions/songs";
 import { songTargetBpm } from "@/lib/song-progress";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
+import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
 import type { SessionSongTime } from "@/components/providers/practice-session-provider";
 import { MoodSelector } from "./mood-selector";
 import { SectionsSelector } from "./sections-selector";
 import { EnergySelector } from "./energy-selector";
-import type { Song, SongStatus, SessionMood, EnergyLevel, SongSection } from "@/types";
+import type { Instrument, Song, SongStatus, SessionMood, EnergyLevel, SongSection } from "@/types";
 
 /** Un morceau de la session, tel qu'on l'edite dans la modale. */
 interface Entry {
@@ -104,6 +106,11 @@ export function AddSessionModal({
    * ecrit directement si le reseau est la, met en file sinon.
    */
   const { saveSession, isOnline } = useOffline();
+
+  // L'instrument de la session : le principal, sauf si on en joue plusieurs
+  // et qu'on choisit l'autre. Le statut des morceaux vise cette partie-la.
+  const myInstruments = useMyInstruments();
+  const [instrument, setInstrument] = useState<Instrument>(myInstruments.primary);
 
   // Champs du formulaire
   const [entries, setEntries] = useState<Entry[]>(() =>
@@ -214,6 +221,7 @@ export function AddSessionModal({
           }))
         : undefined,
       song_id: single?.songId ?? undefined,
+      instrument,
       duration_minutes: totalMinutes,
       practiced_at: new Date(practicedAt).toISOString(),
       bpm_achieved: single ? (single.bpm ? parseInt(single.bpm) : undefined) : bpmAchieved ? parseInt(bpmAchieved) : undefined,
@@ -236,6 +244,7 @@ export function AddSessionModal({
           .filter((entry) => entry.songId && (entry.status !== null || entry.percent !== null))
           .map((entry) =>
             updateSong(entry.songId!, {
+              instrument,
               ...(entry.status !== null ? { status: entry.status } : {}),
               ...(entry.status === "mastered"
                 ? { progress_percent: 100 }
@@ -249,7 +258,7 @@ export function AddSessionModal({
       // Chaque morceau boucle pendant la session ouvre sa suite.
       for (const entry of entries) {
         const song = songs.find((item) => item.id === entry.songId);
-        if (entry.status === "mastered" && song && song.status !== "mastered") {
+        if (entry.status === "mastered" && song && partOf(song, instrument).status !== "mastered") {
           nextSteps.show({
             kind: "song_mastered",
             song: { ...song, status: "mastered", progress_percent: 100 },
@@ -289,7 +298,7 @@ export function AddSessionModal({
       {/*
         Fin de session, style Atelier (docs/refonte-ui.md) : le recapitulatif
         tient en chiffres, l'humeur en un appui, la note en serif — c'est la
-        voix du guitariste, pas un champ de formulaire.
+        voix du musicien, pas un champ de formulaire.
       */}
       <div className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-background p-5 shadow-md sm:p-6">
         {/* Header */}
@@ -353,6 +362,20 @@ export function AddSessionModal({
         )}
 
         <div className="space-y-6">
+          {myInstruments.isMulti && (
+            <div>
+              <p className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                Instrument
+              </p>
+              <InstrumentSwitch
+                options={myInstruments.instruments}
+                value={instrument}
+                onChange={setInstrument}
+                label="Instrument joué pendant la session"
+              />
+            </div>
+          )}
+
           {/*
             Les morceaux de la session. Le chrono les a suivis : chaque
             morceau ouvert pendant la session y est, avec son temps. On
@@ -369,6 +392,7 @@ export function AddSessionModal({
                     key={entry.songId ?? "free"}
                     entry={entry}
                     song={entry.songId ? songs.find((song) => song.id === entry.songId) ?? null : null}
+                    instrument={instrument}
                     showMinutes={isMulti}
                     canEditSong={isOnline}
                     onChange={(patch) => updateEntry(index, patch)}
@@ -658,20 +682,24 @@ function EntryRow({
   song,
   showMinutes,
   canEditSong,
+  instrument,
   onChange,
   onRemove,
 }: {
   entry: Entry;
   song: Song | null;
+  /** L'instrument de la session : on lit et on regle cette partie du morceau. */
+  instrument: Instrument;
   showMinutes: boolean;
   /** Hors ligne, statut et progression ne partiraient pas : on les cache. */
   canEditSong: boolean;
   onChange: (patch: Partial<Entry>) => void;
   onRemove: () => void;
 }) {
-  const status = entry.status ?? song?.status ?? null;
+  const part = song ? partOf(song, instrument) : null;
+  const status = entry.status ?? part?.status ?? null;
   const hasTarget = song ? songTargetBpm(song) !== null : false;
-  const percent = entry.percent ?? song?.progress_percent ?? 0;
+  const percent = entry.percent ?? part?.progress_percent ?? 0;
 
   return (
     <li className="space-y-3 border-b border-border py-3">
@@ -761,6 +789,18 @@ function EntryRow({
       )}
     </li>
   );
+}
+
+/**
+ * La partie d'un morceau pour un instrument. Pas encore travaille sur cet
+ * instrument : « à apprendre », a zero.
+ */
+function partOf(song: Song, instrument: Instrument): { status: SongStatus; progress_percent: number } {
+  const part = song.parts?.find((row) => row.instrument === instrument);
+  if (part) return part;
+  // Morceau charge sans ses parties (cache hors ligne) : la synthese.
+  if (!song.parts) return { status: song.status, progress_percent: song.progress_percent };
+  return { status: "want_to_learn", progress_percent: 0 };
 }
 
 /** La progression en douze frettes, a toucher. */

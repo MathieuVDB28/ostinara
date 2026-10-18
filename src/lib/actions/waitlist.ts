@@ -4,11 +4,14 @@ import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isEmailConfigured, sendEmail } from "@/lib/email/resend";
 import { waitlistConfirmationEmail } from "@/lib/email/waitlist-confirmation";
-import type { UserPlan } from "@/types";
+import { INSTRUMENT_VALUES } from "@/lib/instruments";
+import type { Instrument, UserPlan } from "@/types";
 
 export interface JoinWaitlistInput {
   email: string;
   plan: UserPlan;
+  /** Ce que joue l'inscrit : au moins un instrument. */
+  instruments: Instrument[];
   /** D'ou vient le visiteur : ?ref=… ou ?utm_source=… */
   source?: string | null;
   /** Champ piege, invisible pour un humain. Rempli = robot. */
@@ -43,12 +46,16 @@ export async function joinWaitlist(input: JoinWaitlistInput): Promise<JoinWaitli
   if (!PLANS.includes(input.plan)) {
     return { success: false, error: "Choisis un plan." };
   }
+  const instruments = [...new Set(input.instruments ?? [])];
+  if (instruments.length === 0 || instruments.some((i) => !INSTRUMENT_VALUES.includes(i))) {
+    return { success: false, error: "Dis-nous de quoi tu joues." };
+  }
 
   const source = input.source?.trim().toLowerCase().slice(0, 64) || null;
 
   const supabase = await createClient();
   const { data, error } = await supabase
-    .rpc("join_waitlist", { p_email: email, p_plan: input.plan, p_source: source })
+    .rpc("join_waitlist", { p_email: email, p_plan: input.plan, p_source: source, p_instruments: instruments })
     .maybeSingle<{ signup_rank: number; unsubscribe_token: string }>();
 
   if (error) {

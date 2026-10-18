@@ -25,6 +25,14 @@ const CATEGORY_MARK: Record<ExerciseCategory, string> = {
   fingerstyle: "FI",
   technique: "TE",
   rhythm: "RY",
+  rudiments: "RU",
+  grooves: "GR",
+  fills: "BR",
+  independence: "IN",
+  slap: "SL",
+  walking_bass: "WB",
+  voicings: "VO",
+  reading: "LE",
 };
 
 /**

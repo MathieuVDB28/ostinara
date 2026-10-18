@@ -2,8 +2,10 @@
 
 import { Check, FileText, Video } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
+import { Icon } from "@/components/ui/icon";
 import { songTempoProgress } from "@/lib/song-progress";
-import type { Song, SongDifficulty } from "@/types";
+import { instrumentMeta, sortInstruments } from "@/lib/instruments";
+import type { Song, SongDifficulty, SongStatus } from "@/types";
 
 interface SongCardProps {
   song: Song;
@@ -85,12 +87,18 @@ export function songProgress(song: Song, bestBpm?: number | null) {
  * style Etagere) : les lignes reposent sur le fond, separees par un filet,
  * et toute la ligne ouvre la fiche.
  */
+const PART_STATUS_LABEL: Record<SongStatus, string> = {
+  want_to_learn: "à apprendre",
+  learning: "en cours",
+  mastered: "maîtrisé",
+};
+
 export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
   const isLearning = song.status === "learning";
   const isMastered = song.status === "mastered";
   const { tempo, percent } = songProgress(song, bestBpm);
 
-  // Une seule ligne de metadonnees, dans l'ordre ou un guitariste en a
+  // Une seule ligne de metadonnees, dans l'ordre ou un musicien en a
   // besoin avant de jouer : accordage, tempo, capo. Le tempo affiche est
   // celui qu'on vise, pas celui de l'enregistrement original.
   const meta = [
@@ -125,6 +133,25 @@ export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
           {meta.length > 0 && (
             <span className="tabular truncate text-[11px] text-muted-foreground">
               {meta.join(" · ")}
+            </span>
+          )}
+
+          {/* Travaille sur plusieurs instruments : ou en est chacun. */}
+          {song.parts && song.parts.length > 1 && (
+            <span className="inline-flex items-center gap-2 text-[11px] text-muted-foreground">
+              {sortInstruments(song.parts.map((part) => ({ ...part, is_primary: false }))).map((part) => (
+                <span
+                  key={part.instrument}
+                  title={`${instrumentMeta(part.instrument).label} · ${PART_STATUS_LABEL[part.status]}`}
+                  className={`inline-flex items-center gap-0.5 ${part.status === "mastered" ? "text-success" : ""}`}
+                >
+                  <Icon name={instrumentMeta(part.instrument).icon} className="h-3.5 w-3.5" />
+                  {part.status === "mastered" && <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />}
+                  <span className="sr-only">
+                    {instrumentMeta(part.instrument).label} : {PART_STATUS_LABEL[part.status]}
+                  </span>
+                </span>
+              ))}
             </span>
           )}
 

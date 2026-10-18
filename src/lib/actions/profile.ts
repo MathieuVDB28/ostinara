@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import { PROFILE_INSTRUMENTS_SELECT } from "@/lib/instruments";
 import type {
   UserProfile,
   PublicProfile,
@@ -113,7 +114,7 @@ export async function getMyProfile(): Promise<UserProfile | null> {
   // Récupérer le profil
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*")
+    .select(`*, ${PROFILE_INSTRUMENTS_SELECT}`)
     .eq("id", user.id)
     .single();
 
@@ -200,7 +201,7 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
   // Récupérer le profil de base
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*")
+    .select(`*, ${PROFILE_INSTRUMENTS_SELECT}`)
     .eq("id", userId)
     .single();
 

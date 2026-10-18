@@ -41,7 +41,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
   },
   pro: {
     name: 'Pro',
-    description: 'Pour les guitaristes sérieux',
+    description: 'Pour les musiciens sérieux',
     features: [
       'Morceaux illimités',
       'Covers illimités',

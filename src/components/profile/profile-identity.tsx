@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { FavoriteAlbum, FavoriteSong, Profile } from "@/types";
 import { SocialLinks } from "./social-links";
 import { Icon } from "@/components/ui/icon";
+import { InstrumentChips } from "@/components/instruments/instrument-chips";
 
 export interface IdentityStat {
   label: string;
@@ -105,6 +106,9 @@ export function ProfileIdentity({
           )}
         </h1>
         <p className="truncate text-sm text-muted-foreground">@{profile.username}</p>
+
+        {/* L'instrument fait partie de l'identite : visible meme sur un profil prive. */}
+        <InstrumentChips instruments={profile.instruments} className="mt-2" />
 
         {showDetails && profile.bio && (
           <p className="mt-1.5 line-clamp-3 max-w-prose font-serif text-[15px] italic leading-relaxed">

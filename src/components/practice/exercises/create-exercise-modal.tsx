@@ -4,7 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createExercise } from "@/lib/actions/exercises";
 import { EXERCISE_CATEGORY_LABELS } from "@/types";
-import type { ExerciseCategory, ExerciseDifficulty } from "@/types";
+import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
+import { EXERCISE_CATEGORIES } from "@/lib/instruments";
+import type { ExerciseCategory, ExerciseDifficulty, Instrument } from "@/types";
 
 interface CreateExerciseModalProps {
   isOpen: boolean;
@@ -18,9 +21,7 @@ const DIFFICULTY_OPTIONS: { value: ExerciseDifficulty; label: string }[] = [
   { value: "expert", label: "Expert" },
 ];
 
-const CATEGORY_OPTIONS = Object.entries(EXERCISE_CATEGORY_LABELS).map(
-  ([value, label]) => ({ value: value as ExerciseCategory, label })
-);
+const ALL_CATEGORIES = Object.keys(EXERCISE_CATEGORY_LABELS) as ExerciseCategory[];
 
 const TIME_SIGNATURE_OPTIONS = ["4/4", "3/4", "6/8", "2/4", "5/4", "7/8", "12/8"];
 
@@ -42,6 +43,16 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
   const [instructions, setInstructions] = useState<string[]>([""]);
   const [tips, setTips] = useState<string[]>([""]);
   const [sharedWithFriends, setSharedWithFriends] = useState(false);
+  // Pour quel instrument : le principal par defaut, null pour tous.
+  const myInstruments = useMyInstruments();
+  const [instrument, setInstrument] = useState<Instrument | null>(myInstruments.primary);
+  const categoryOptions = instrument ? EXERCISE_CATEGORIES[instrument] : ALL_CATEGORIES;
+
+  const chooseInstrument = (next: Instrument | null) => {
+    setInstrument(next);
+    const options = next ? EXERCISE_CATEGORIES[next] : ALL_CATEGORIES;
+    if (!options.includes(category)) setCategory(options[0]);
+  };
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -74,6 +85,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
     setInstructions([""]);
     setTips([""]);
     setSharedWithFriends(false);
+    setInstrument(myInstruments.primary);
     setError("");
   };
 
@@ -106,6 +118,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
       tips: tips.filter((t) => t.trim()),
       duration_minutes: durationMinutes,
       shared_with_friends: sharedWithFriends,
+      instruments: instrument ? [instrument] : [],
     });
 
     setLoading(false);
@@ -180,6 +193,21 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
               />
             </div>
 
+            {/* Instrument : seulement si on en joue plusieurs, « Tous » pour la mise en place */}
+            {myInstruments.isMulti && (
+              <div>
+                <span className="mb-1 block text-sm font-medium">Pour</span>
+                <InstrumentSwitch
+                  options={myInstruments.instruments}
+                  value={instrument}
+                  onChange={chooseInstrument}
+                  allLabel="Tous les instruments"
+                  onAll={() => chooseInstrument(null)}
+                  label="Instrument de l'exercice"
+                />
+              </div>
+            )}
+
             {/* Catégorie + Difficulté */}
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -189,8 +217,8 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
                   onChange={(e) => setCategory(e.target.value as ExerciseCategory)}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary"
                 >
-                  {CATEGORY_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  {categoryOptions.map((value) => (
+                    <option key={value} value={value}>{EXERCISE_CATEGORY_LABELS[value]}</option>
                   ))}
                 </select>
               </div>

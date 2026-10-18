@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
+import { instrumentPhrase } from "@/lib/instruments";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { sendPushNotification, sendPushNotificationToMultipleUsers } from "@/lib/notifications";
 import type { NotificationPayload, NotificationType } from "@/lib/notifications";
@@ -46,7 +47,7 @@ function getNotificationForActivity(
       return {
         payload: {
           title: "Nouveau morceau en cours",
-          body: `${userName} a commencé à apprendre "${metadata?.title}"`,
+          body: `${userName} a commencé à apprendre "${metadata?.title}" ${instrumentPhrase(metadata?.instrument)}`.trim(),
           data: { url: "/commu" },
         },
         notificationType: "song_learning",
@@ -55,7 +56,9 @@ function getNotificationForActivity(
       return {
         payload: {
           title: "Morceau maîtrisé !",
-          body: `${userName} a maîtrisé "${metadata?.title}" - ${metadata?.artist}`,
+          body: [`${userName} a maîtrisé "${metadata?.title}"`, instrumentPhrase(metadata?.instrument), `- ${metadata?.artist}`]
+            .filter(Boolean)
+            .join(" "),
           data: { url: "/feed" },
         },
         notificationType: "song_mastered",

@@ -4,7 +4,10 @@ import { useState, useMemo } from "react";
 import { ChevronDown, Plus, Search } from "lucide-react";
 import { ExerciseCard } from "./exercise-card";
 import { EXERCISE_CATEGORY_LABELS } from "@/types";
-import type { ExerciseWithProgress, ExerciseCategory, ExerciseDifficulty } from "@/types";
+import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
+import { EXERCISE_CATEGORIES, exerciseFitsInstrument } from "@/lib/instruments";
+import type { ExerciseWithProgress, ExerciseCategory, ExerciseDifficulty, Instrument } from "@/types";
 
 interface ExerciseListProps {
   exercises: ExerciseWithProgress[];
@@ -26,12 +29,24 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
   const [selectedDifficulty, setSelectedDifficulty] = useState<ExerciseDifficulty | "all">("all");
   const [selectedSource, setSelectedSource] = useState<SourceFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  // Plusieurs instruments : on travaille sur un a la fois, le principal
+  // d'abord. Le serveur a deja ecarte ce qui ne parle a aucun des miens.
+  const myInstruments = useMyInstruments();
+  const [instrument, setInstrument] = useState<Instrument | null>(
+    myInstruments.isMulti ? myInstruments.primary : null
+  );
 
+  const forInstrument = useMemo(
+    () => (instrument ? exercises.filter((e) => exerciseFitsInstrument(e, instrument)) : exercises),
+    [exercises, instrument]
+  );
+
+  // Les categories presentes, dans l'ordre propre a l'instrument.
   const categories = useMemo(() => {
-    const cats = new Set<ExerciseCategory>();
-    exercises.forEach((e) => cats.add(e.category));
-    return Array.from(cats);
-  }, [exercises]);
+    const present = new Set(forInstrument.map((e) => e.category));
+    const order = EXERCISE_CATEGORIES[instrument ?? myInstruments.primary];
+    return [...order.filter((cat) => present.has(cat)), ...[...present].filter((cat) => !order.includes(cat))];
+  }, [forInstrument, instrument, myInstruments.primary]);
 
   const hasCustomExercises = useMemo(
     () => exercises.some((e) => !e.is_system && !e.is_from_friend),
@@ -44,7 +59,7 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
   );
 
   const filteredExercises = useMemo(() => {
-    return exercises.filter((exercise) => {
+    return forInstrument.filter((exercise) => {
       // Filtre par source
       if (selectedSource === "system" && !exercise.is_system) return false;
       if (selectedSource === "mine" && (exercise.is_system || exercise.is_from_friend)) return false;
@@ -69,7 +84,7 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
       }
       return true;
     });
-  }, [exercises, selectedSource, selectedCategory, selectedDifficulty, searchQuery]);
+  }, [forInstrument, selectedSource, selectedCategory, selectedDifficulty, searchQuery]);
 
   // Grouper par catégorie si "all" est sélectionné
   const groupedExercises = useMemo(() => {
@@ -78,6 +93,10 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
     }
 
     const grouped: Record<string, ExerciseWithProgress[]> = {};
+    // Les groupes suivent l'ordre des categories de l'instrument.
+    categories.forEach((cat) => {
+      if (filteredExercises.some((e) => e.category === cat)) grouped[cat] = [];
+    });
     filteredExercises.forEach((exercise) => {
       if (!grouped[exercise.category]) {
         grouped[exercise.category] = [];
@@ -85,7 +104,7 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
       grouped[exercise.category].push(exercise);
     });
     return grouped;
-  }, [filteredExercises, selectedCategory]);
+  }, [filteredExercises, selectedCategory, categories]);
 
   const chip = (active: boolean) =>
     `inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-border px-3 text-xs font-semibold transition-colors ${
@@ -107,6 +126,17 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
    */
   return (
     <div className="flex flex-col gap-3">
+      {myInstruments.isMulti && (
+        <InstrumentSwitch
+          options={myInstruments.instruments}
+          value={instrument}
+          onChange={(next) => {
+            setInstrument(next);
+            setSelectedCategory("all");
+          }}
+          label="Exercices pour"
+        />
+      )}
       <div className="flex items-center gap-2">
         <label className="relative min-w-0 flex-1">
           <span className="sr-only">Rechercher un exercice</span>

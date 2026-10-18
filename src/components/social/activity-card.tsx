@@ -1,5 +1,6 @@
 "use client";
 
+import { instrumentPhrase } from "@/lib/instruments";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -279,7 +280,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
       {activity.type === "song_mastered" && activity.song && (
         <Poster
           src={activity.song.cover_url}
-          eyebrow="Maîtrisé"
+          eyebrow={`Maîtrisé ${instrumentPhrase(meta.instrument)}`.trim()}
           title={activity.song.title}
           subtitle={activity.song.artist}
           aspect="aspect-[16/10]"
@@ -288,7 +289,16 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
 
       {/* Lignes compactes */}
       {(activity.type === "song_added" || activity.type === "song_learning") && activity.song && (
-        <Compact src={activity.song.cover_url} type={activity.type} label={activity.song.artist} title={activity.song.title} />
+        <Compact
+          src={activity.song.cover_url}
+          type={activity.type}
+          label={
+            activity.type === "song_learning" && instrumentPhrase(meta.instrument)
+              ? `${activity.song.artist} · ${instrumentPhrase(meta.instrument)}`
+              : activity.song.artist
+          }
+          title={activity.song.title}
+        />
       )}
 
       {activity.type === "song_wishlisted" && activity.wishlistSong && (

@@ -51,9 +51,9 @@ const bitter = Bitter({
 });
 
 export const metadata: Metadata = {
-  title: "Ostinara - Track your guitar journey",
-  description: "Track your progress, manage your repertoire, and share your covers with friends. The ultimate app for guitarists.",
-  keywords: ["guitar", "music", "practice", "covers", "learning", "progress tracker"],
+  title: "Ostinara - Track your music journey",
+  description: "Track your progress, manage your repertoire, and share your covers with friends. The ultimate app for musicians and bands.",
+  keywords: ["music", "guitar", "bass", "drums", "piano", "band", "practice", "covers", "learning", "progress tracker"],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

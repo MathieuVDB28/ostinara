@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { createSong } from "@/lib/actions/songs";
 import type { CreateSongInput, SongDifficulty } from "@/types";
+import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { TUNING_GROUPS } from "@/lib/tunings";
 
 export interface CatalogResult {
@@ -35,6 +36,10 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
   const [difficulty, setDifficulty] = useState<SongDifficulty | "">("");
   const [tuning, setTuning] = useState("Standard");
   const [capo, setCapo] = useState(0);
+  // Accordage pour les cordes, capo pour la guitare (cf. la fiche morceau).
+  const myInstruments = useMyInstruments();
+  const showTuning = (["guitar", "bass", "other"] as const).some((i) => myInstruments.plays(i));
+  const showCapo = (["guitar", "other"] as const).some((i) => myInstruments.plays(i));
   const [tabsUrl, setTabsUrl] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -283,7 +288,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                     <option value="expert">Expert</option>
                   </select>
                 </div>
-                <div>
+                {showTuning && <div>
                   <label className="mb-1 block text-sm font-medium">Tuning</label>
                   <select
                     value={tuning}
@@ -300,10 +305,10 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                       </optgroup>
                     ))}
                   </select>
-                </div>
+                </div>}
               </div>
 
-              <div>
+              {showCapo && <div>
                 <label className="mb-1 block text-sm font-medium">Capo</label>
                 <input
                   type="number"
@@ -313,7 +318,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                   onChange={(e) => setCapo(parseInt(e.target.value) || 0)}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
-              </div>
+              </div>}
 
               <div>
                 <label className="mb-1 block text-sm font-medium">Lien tablature</label>

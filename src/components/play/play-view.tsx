@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Gauge, Timer } from "lucide-react";
+import { AudioLines, Gauge, Timer } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Metronome } from "@/components/practice/metronome/metronome";
 import { ExerciseList } from "@/components/practice/exercises/exercise-list";
@@ -17,6 +17,7 @@ import { CarnetView } from "./carnet-view";
 import { PlaySetlistPanel } from "./play-setlist-panel";
 import { PlayQueuePanel, STORAGE_KEY } from "./play-queue-panel";
 import { usePracticeSession } from "@/components/providers/practice-session-provider";
+import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { updateSong } from "@/lib/actions/songs";
 import { deleteRoutine } from "@/lib/actions/routines";
 import { songTargetBpm, slowPracticeFloor } from "@/lib/song-progress";
@@ -183,6 +184,10 @@ export function PlayView({
 
   const [currentBpm, setCurrentBpm] = useState(initialBpm);
   const [tunerOpen, setTunerOpen] = useState(false);
+  // L'accordeur sert aux cordes ; un batteur ou un claviériste ne garde
+  // que la reconnaissance de morceau dans la feuille.
+  const myInstruments = useMyInstruments();
+  const hasStrings = ["guitar", "bass", "other"].some((i) => myInstruments.plays(i as "guitar" | "bass" | "other"));
 
   // Routines : relancer depuis le Carnet charge la routine dans la session.
   const [routineLoad, setRoutineLoad] = useState<{
@@ -306,7 +311,7 @@ export function PlayView({
    * Choisir un morceau cale le metronome.
    *
    * C'etait le trou du pont annonce en v3.0 : on selectionnait un morceau
-   * et le metronome restait sur 120, a charge pour le guitariste d'aller
+   * et le metronome restait sur 120, a charge pour le musicien d'aller
    * lire le tempo ailleurs et de le ressaisir.
    */
   const handleSelectSong = useCallback(
@@ -377,8 +382,12 @@ export function PlayView({
               aria-haspopup="dialog"
               className="flex min-h-[38px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Gauge className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-              Accorder
+              {hasStrings ? (
+                <Gauge className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+              ) : (
+                <AudioLines className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+              )}
+              {hasStrings ? "Accorder" : "Reconnaître"}
             </button>
 
             {isPracticing ? (
@@ -584,6 +593,7 @@ export function PlayView({
         isOpen={tunerOpen}
         onClose={() => setTunerOpen(false)}
         isPaid={isPaid}
+        showTuner={hasStrings}
       />
     </div>
   );

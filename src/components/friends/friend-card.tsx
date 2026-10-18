@@ -6,6 +6,7 @@ import { profileHref } from "@/lib/navigation";
 import { UserMinus } from "lucide-react";
 import type { Friend } from "@/types";
 import { removeFriend } from "@/lib/actions/friends";
+import { instrumentLabel } from "@/lib/instruments";
 
 interface FriendCardProps {
   friend: Friend;
@@ -32,6 +33,7 @@ export function FriendCard({ friend, onRefresh }: FriendCardProps) {
   };
 
   const name = friend.profile.display_name || friend.profile.username;
+  const primary = friend.profile.instruments?.find((i) => i.is_primary);
 
   /*
    * Une ligne par ami (style Fanzine, docs/refonte-ui.md) : l'avatar,
@@ -66,7 +68,8 @@ export function FriendCard({ friend, onRefresh }: FriendCardProps) {
           )}
         </p>
         <p className="truncate text-xs text-muted-foreground">
-          @{friend.profile.username} · ami depuis le {formatDate(friend.since)}
+          @{friend.profile.username}
+          {primary && ` · ${instrumentLabel(primary)}`} · ami depuis le {formatDate(friend.since)}
         </p>
       </div>
       </Link>

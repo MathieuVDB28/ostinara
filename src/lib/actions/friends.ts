@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { PROFILE_INSTRUMENTS_SELECT } from "@/lib/instruments";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import { sendPushNotification } from "@/lib/notifications";
@@ -369,8 +370,8 @@ export async function getFriends(): Promise<Friend[]> {
       `
       id,
       created_at,
-      requester:profiles!friendships_requester_id_fkey(id, username, display_name, avatar_url, plan),
-      addressee:profiles!friendships_addressee_id_fkey(id, username, display_name, avatar_url, plan)
+      requester:profiles!friendships_requester_id_fkey(id, username, display_name, avatar_url, plan, ${PROFILE_INSTRUMENTS_SELECT}),
+      addressee:profiles!friendships_addressee_id_fkey(id, username, display_name, avatar_url, plan, ${PROFILE_INSTRUMENTS_SELECT})
     `
     )
     .eq("status", "accepted")

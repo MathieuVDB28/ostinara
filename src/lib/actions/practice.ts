@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { updateChallengeProgress } from "./challenges";
 import { derivedProgressPercent } from "@/lib/song-progress";
+import { getMyPrimaryInstrument } from "@/lib/instruments-server";
 import type {
   SongBpmPoint,
   PracticeSession,
@@ -21,6 +22,7 @@ import type {
   MoodDistribution,
   SongPracticeDistribution,
   SessionMood,
+  Instrument,
 } from "@/types";
 import { syncBadges } from "@/lib/badges/sync";
 
@@ -177,9 +179,12 @@ export async function createPracticeSession(
     return { success: false, error: "Non authentifié" };
   }
 
-  // Ce qui vaut pour toute la session : date, ressenti, objectifs, notes.
+  const instrument = input.instrument ?? (await getMyPrimaryInstrument());
+
+  // Ce qui vaut pour toute la session : instrument, date, ressenti, objectifs, notes.
   const shared = {
     user_id: user.id,
+    instrument,
     practiced_at: input.practiced_at || new Date().toISOString(),
     mood: input.mood || null,
     energy_level: input.energy_level || null,
@@ -229,7 +234,7 @@ export async function createPracticeSession(
 
   // La progression de chaque morceau suit son tempo, plus le curseur.
   const songIds = [...new Set(entries.map((entry) => entry.song_id).filter((id): id is string => Boolean(id)))];
-  await Promise.all(songIds.map((songId) => syncSongProgressFromTempo(songId)));
+  await Promise.all(songIds.map((songId) => syncSongProgressFromTempo(songId, instrument)));
 
   revalidatePath("/progress");
   revalidatePath("/library");
@@ -252,42 +257,60 @@ export async function createPracticeSession(
  * historique sans rien dire de plus juste.
  */
 export async function syncSongProgressFromTempo(
-  songId: string
+  songId: string,
+  instrument?: Instrument | null
 ): Promise<{ success: boolean; percent?: number }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
   if (!user) return { success: false };
 
+  /*
+   * Par instrument : le tempo tenu a la batterie ne dit rien de la partie
+   * de guitare. La progression s'ecrit sur la partie (song_parts), la
+   * base en tire la synthese sur songs.
+   */
+  const part = instrument ?? (await getMyPrimaryInstrument());
+
   const { data: song } = await supabase
     .from("songs")
-    .select("id, status, target_bpm, tab_bpm, spotify_bpm, progress_percent")
+    .select("id, target_bpm, tab_bpm, spotify_bpm, parts:song_parts(instrument, status, progress_percent)")
     .eq("id", songId)
     .eq("user_id", user.id)
     .maybeSingle();
 
   if (!song) return { success: false };
 
+  const current = (song.parts as { instrument: Instrument; status: Song["status"]; progress_percent: number }[] | null)
+    ?.find((row) => row.instrument === part);
+
   const { data: sessions } = await supabase
     .from("practice_sessions")
     .select("bpm_achieved")
     .eq("user_id", user.id)
     .eq("song_id", songId)
+    .eq("instrument", part)
     .not("bpm_achieved", "is", null)
     .order("bpm_achieved", { ascending: false })
     .limit(1);
 
   const bestBpm = sessions?.[0]?.bpm_achieved ?? null;
-  const percent = derivedProgressPercent(song, bestBpm);
+  const percent = derivedProgressPercent(
+    { ...song, status: current?.status ?? "want_to_learn" },
+    bestBpm
+  );
 
-  if (percent === null || percent === song.progress_percent) {
-    return { success: true, percent: song.progress_percent };
+  if (percent === null || percent === current?.progress_percent) {
+    return { success: true, percent: current?.progress_percent };
   }
 
+  // Premiere session sur cet instrument : la partie nait ici, encore
+  // « à apprendre » — le statut reste une decision du musicien.
   await supabase
-    .from("songs")
-    .update({ progress_percent: percent })
-    .eq("id", songId)
-    .eq("user_id", user.id);
+    .from("song_parts")
+    .upsert(
+      { song_id: songId, user_id: user.id, instrument: part, progress_percent: percent },
+      { onConflict: "song_id,instrument" }
+    );
 
   return { success: true, percent };
 }
@@ -337,23 +360,26 @@ export async function updatePracticeSession(
     return { success: false, error: "Non authentifié" };
   }
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("practice_sessions")
     .update({
       ...input,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("instrument")
+    .single();
 
   if (error) {
     console.error("Error updating practice session:", error);
     return { success: false, error: "Erreur lors de la mise à jour" };
   }
 
-  // Corriger un tempo a la baisse doit corriger la progression du morceau.
+  // Corriger un tempo a la baisse doit corriger la progression du morceau,
+  // sur l'instrument de la session.
   if (input.song_id) {
-    await syncSongProgressFromTempo(input.song_id);
+    await syncSongProgressFromTempo(input.song_id, updated?.instrument as Instrument | null);
   }
 
   revalidatePath("/progress");

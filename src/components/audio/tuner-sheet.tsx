@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { X } from "lucide-react";
-import { GuitarTuner } from "./guitar-tuner";
+import { InstrumentTuner } from "./instrument-tuner";
 import { SongIdentifier } from "./song-identifier";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
 
@@ -10,6 +10,8 @@ interface TunerSheetProps {
   isOpen: boolean;
   onClose: () => void;
   isPaid: boolean;
+  /** Faux pour un batteur ou un claviériste : il ne reste que la reconnaissance. */
+  showTuner?: boolean;
 }
 
 /**
@@ -25,7 +27,7 @@ interface TunerSheetProps {
  * libere le micro a son demontage, l'onglet le gardait ouvert tant
  * qu'on n'avait pas change de segment.
  */
-export function TunerSheet({ isOpen, onClose, isPaid }: TunerSheetProps) {
+export function TunerSheet({ isOpen, onClose, isPaid, showTuner = true }: TunerSheetProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   // Le focus revient au bouton qui a ouvert la feuille, pas en haut de page.
   const openerRef = useRef<HTMLElement | null>(null);
@@ -85,7 +87,7 @@ export function TunerSheet({ isOpen, onClose, isPaid }: TunerSheetProps) {
             id="tuner-sheet-title"
             className="font-display text-3xl font-extrabold uppercase leading-none tracking-[0.01em]"
           >
-            Accordeur
+            {showTuner ? "Accordeur" : "Reconnaissance"}
           </h2>
           <button
             onClick={handleClose}
@@ -97,11 +99,11 @@ export function TunerSheet({ isOpen, onClose, isPaid }: TunerSheetProps) {
         </div>
 
         <div className="space-y-5 px-4 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] sm:pb-5">
-          <GuitarTuner />
+          {showTuner && <InstrumentTuner />}
 
           {/* L'identification de morceau reste une fonction payante */}
           {isPaid ? (
-            <div className="border-t border-border pt-4">
+            <div className={showTuner ? "border-t border-border pt-4" : ""}>
               <SongIdentifier />
             </div>
           ) : (

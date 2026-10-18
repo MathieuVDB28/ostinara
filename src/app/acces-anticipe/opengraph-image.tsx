@@ -6,7 +6,7 @@ import { ImageResponse } from "next/og";
  * lien s'afficherait en texte nu. Palette claire de globals.css.
  */
 
-export const alt = "Ostinara — Joue. Mesure. Partage. L'app des guitaristes.";
+export const alt = "Ostinara — Joue. Mesure. Partage. L'app des musiciens.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -26,7 +26,7 @@ async function loadDisplayFont(text: string): Promise<ArrayBuffer | null> {
 }
 
 export default async function OpengraphImage() {
-  const glyphs = "OSTINARAJOUE.MESURE.PARTAGE.L'APP DES GUITARISTESACCÈS ANTICIPÉ·92/104BPM";
+  const glyphs = "OSTINARAJOUE.MESURE.PARTAGE.L'APP DES MUSICIENSACCÈS ANTICIPÉ·92/104BPM";
   const font = await loadDisplayFont(glyphs);
   const display = font ? "Barlow Condensed" : "sans-serif";
 
@@ -78,7 +78,7 @@ export default async function OpengraphImage() {
           </div>
         </div>
         <span style={{ fontSize: 30, color: "#5e5850", textTransform: "uppercase" }}>
-          L&apos;app des guitaristes
+          L&apos;app des musiciens
         </span>
       </div>
     ),

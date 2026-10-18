@@ -114,7 +114,7 @@ export default function CGU() {
                 « CGU ») ont pour objet de définir les conditions dans
                 lesquelles les utilisateurs peuvent accéder et utiliser le
                 service Ostinara, une application web progressive (PWA) dédiée
-                aux guitaristes.
+                aux musiciens.
               </p>
               <p>
                 Le service permet notamment de gérer une bibliothèque de
