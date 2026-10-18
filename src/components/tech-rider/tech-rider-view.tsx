@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveTechRider } from "@/lib/actions/tech-riders";
+import { bandPosteLabel } from "@/lib/instruments";
 import { TechRiderStagePlot } from "./tech-rider-stage-plot";
 // Meme raison que pour les setlists : le moteur PDF reste hors du bundle
 // initial et n'arrive qu'au moment de l'export.
@@ -68,6 +69,26 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
         position_y: 40 + Math.random() * 30,
       },
     ]);
+  };
+
+  /*
+   * Partir du groupe plutot que d'une page blanche : un musicien par
+   * membre, avec son poste. Les positions s'etalent sur la largeur de
+   * scene, on les ajuste ensuite sur le plan.
+   */
+  const prefillFromBand = () => {
+    const count = band.members.length;
+    setMusicians(
+      band.members.map((member, index) => ({
+        id: crypto.randomUUID(),
+        name: member.profile?.display_name || member.profile?.username || "",
+        instrument: bandPosteLabel(member) ?? "",
+        needs: "",
+        monitor: true,
+        position_x: count > 1 ? 15 + (70 * index) / (count - 1) : 50,
+        position_y: member.instrument === "drums" ? 30 : 60,
+      }))
+    );
   };
 
   const updateMusician = (
@@ -338,10 +359,17 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
         </div>
 
         {musicians.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            Aucun musicien ajouté. Clique sur &quot;Ajouter&quot; pour
-            commencer.
-          </p>
+          <div className="py-8 text-center text-sm text-muted-foreground">
+            <p>Aucun musicien ajouté.</p>
+            {canEdit && band.members.length > 0 && (
+              <button
+                onClick={prefillFromBand}
+                className="mt-3 inline-flex min-h-[40px] items-center rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                Partir des {band.members.length} membres du groupe
+              </button>
+            )}
+          </div>
         ) : (
           <div className="space-y-3">
             {musicians.map((musician) => (

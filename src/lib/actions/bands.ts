@@ -5,6 +5,7 @@ import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import { sendPushNotification } from "@/lib/notifications";
 import type {
+  Instrument,
   Band,
   BandWithMembers,
   BandMemberWithProfile,
@@ -587,4 +588,37 @@ export async function searchUsersForBandInvite(
   }
 
   return users as Profile[];
+}
+
+// === Changer le poste d'un membre (soi-meme, ou proprietaire / admin) ===
+export async function setBandMemberInstrument(
+  bandId: string,
+  userId: string,
+  instrument: Instrument,
+  label?: string | null
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: "Non authentifie" };
+  }
+
+  const { error } = await supabase.rpc("set_band_member_instrument", {
+    p_band_id: bandId,
+    p_user_id: userId,
+    p_instrument: instrument,
+    p_label: instrument === "other" ? label?.trim().slice(0, 40) || null : null,
+  });
+
+  if (error) {
+    console.error("Error setting band member instrument:", error);
+    return {
+      success: false,
+      error: error.message.includes("Droits") ? "Seul un admin peut changer le poste d'un autre membre." : "Erreur lors de la mise a jour du poste",
+    };
+  }
+
+  revalidatePath(`/commu/groupes/${bandId}`);
+  return { success: true };
 }

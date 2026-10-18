@@ -5,9 +5,11 @@ import type { JamPresenceState } from "@/types";
 interface JamParticipantsProps {
   participants: JamPresenceState[];
   hostId: string;
+  /** Le poste de chaque membre du groupe, par user_id. */
+  postes?: Record<string, string | null>;
 }
 
-export function JamParticipants({ participants, hostId }: JamParticipantsProps) {
+export function JamParticipants({ participants, hostId, postes = {} }: JamParticipantsProps) {
   return (
     <div className="rounded-xl border border-border bg-card">
       <div className="border-b border-border p-3">
@@ -57,6 +59,9 @@ export function JamParticipants({ participants, hostId }: JamParticipantsProps) 
                   <p className="truncate text-sm font-medium">
                     {participant.display_name || participant.username}
                   </p>
+                  {postes[participant.user_id] && (
+                    <p className="truncate text-xs text-muted-foreground">{postes[participant.user_id]}</p>
+                  )}
                 </div>
 
                 {/* Host badge */}

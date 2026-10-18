@@ -80,3 +80,39 @@ export const EXERCISE_CATEGORIES: Record<Instrument, ExerciseCategory[]> = {
 export function exerciseFitsInstrument(exercise: { instruments?: Instrument[] | null }, instrument: Instrument): boolean {
   return !exercise.instruments?.length || exercise.instruments.includes(instrument);
 }
+
+/** Le poste d'un membre de groupe, en toutes lettres. */
+export function bandPosteLabel(member: { instrument?: Instrument | null; instrument_label?: string | null }): string | null {
+  if (!member.instrument) return null;
+  return instrumentLabel({ instrument: member.instrument, custom_label: member.instrument_label });
+}
+
+export interface LineupPoste<M> {
+  /** Cle stable : l'instrument, ou « other:chant ». */
+  key: string;
+  label: string;
+  instrument: Instrument;
+  members: M[];
+}
+
+/**
+ * Les postes d'un groupe, dans l'ordre de INSTRUMENTS : chaque « autre »
+ * nomme (chant, saxo) fait son propre poste. Les membres sans poste n'y
+ * figurent pas.
+ */
+export function bandLineup<M extends { instrument?: Instrument | null; instrument_label?: string | null }>(
+  members: M[]
+): LineupPoste<M>[] {
+  const postes = new Map<string, LineupPoste<M>>();
+  for (const member of members) {
+    if (!member.instrument) continue;
+    const label = bandPosteLabel(member)!;
+    const key = member.instrument === "other" ? `other:${label.toLowerCase()}` : member.instrument;
+    const poste = postes.get(key) ?? { key, label, instrument: member.instrument, members: [] };
+    poste.members.push(member);
+    postes.set(key, poste);
+  }
+  return [...postes.values()].sort(
+    (a, b) => INSTRUMENT_VALUES.indexOf(a.instrument) - INSTRUMENT_VALUES.indexOf(b.instrument)
+  );
+}

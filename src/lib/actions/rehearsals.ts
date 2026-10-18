@@ -39,7 +39,7 @@ export async function getBandRehearsals(bandId: string): Promise<RehearsalWithDe
     .from("rehearsals")
     .select(`
       *,
-      band:bands(*),
+      band:bands(*, members:band_members(user_id, instrument, instrument_label)),
       setlist:setlists(id, name, description),
       creator:profiles!rehearsals_created_by_fkey(id, username, display_name, avatar_url, plan),
       participants:rehearsal_participants(
@@ -68,7 +68,7 @@ export async function getRehearsal(rehearsalId: string): Promise<RehearsalWithDe
     .from("rehearsals")
     .select(`
       *,
-      band:bands(*),
+      band:bands(*, members:band_members(user_id, instrument, instrument_label)),
       setlist:setlists(id, name, description),
       creator:profiles!rehearsals_created_by_fkey(id, username, display_name, avatar_url, plan),
       participants:rehearsal_participants(
@@ -116,7 +116,7 @@ export async function getUpcomingRehearsals(): Promise<RehearsalWithDetails[]> {
     .from("rehearsals")
     .select(`
       *,
-      band:bands(*),
+      band:bands(*, members:band_members(user_id, instrument, instrument_label)),
       setlist:setlists(id, name, description),
       creator:profiles!rehearsals_created_by_fkey(id, username, display_name, avatar_url, plan),
       participants:rehearsal_participants(

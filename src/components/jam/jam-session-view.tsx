@@ -8,6 +8,8 @@ import { JamParticipants } from "./jam-participants";
 import { JamSongQueue } from "./jam-song-queue";
 import { JamTabsViewer } from "./jam-tabs-viewer";
 import { leaveJamSession, endJamSession } from "@/lib/actions/jam-sessions";
+import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { bandPosteLabel } from "@/lib/instruments";
 import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type { JamSessionWithDetails, JamSessionMessageWithProfile, Profile } from "@/types";
 
@@ -24,6 +26,16 @@ export function JamSessionView({
 }: JamSessionViewProps) {
   const router = useRouter();
   const isHost = initialSession.host_id === currentUser.id;
+
+  // Le poste de chacun : celui qu'il tient dans le groupe, sinon (jam
+  // perso) son instrument principal pour soi-meme.
+  const myInstruments = useMyInstruments();
+  const bandMembers = initialSession.band?.members ?? [];
+  const myInstrument =
+    bandMembers.find((member) => member.user_id === currentUser.id)?.instrument ?? myInstruments.primary;
+  const postes = Object.fromEntries(
+    bandMembers.map((member) => [member.user_id, bandPosteLabel(member)])
+  ) as Record<string, string | null>;
   const isPersonalJam = !initialSession.band_id;
 
   const {
@@ -228,6 +240,7 @@ export function JamSessionView({
               bpm={metronome.bpm}
               timeSignatureBeats={metronome.timeSignature.beats}
               isPlaying={metronome.isPlaying}
+              instrument={myInstrument}
               isHost={isHost}
             />
           )}
@@ -261,7 +274,7 @@ export function JamSessionView({
         {!isPersonalJam && (
           <div className="flex flex-col gap-4 border-l border-border p-4 overflow-hidden">
             {/* Participants */}
-            <JamParticipants participants={participants} hostId={session.host_id} />
+            <JamParticipants participants={participants} hostId={session.host_id} postes={postes} />
 
             {/* Chat */}
             <JamChat

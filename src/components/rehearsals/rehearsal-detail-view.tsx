@@ -17,6 +17,8 @@ import type {
   BandMessageWithProfile,
 } from "@/types";
 import { Icon } from "@/components/ui/icon";
+import { bandPosteLabel, instrumentMeta } from "@/lib/instruments";
+import { rehearsalLineup } from "@/lib/rehearsal-lineup";
 
 interface RehearsalDetailViewProps {
   rehearsal: RehearsalWithDetails;
@@ -52,6 +54,13 @@ export function RehearsalDetailView({
   const declinedCount = rehearsal.participants.filter(
     (p) => p.status === "declined"
   ).length;
+
+  const bandMembers = rehearsal.band.members ?? [];
+  const lineup = rehearsalLineup(bandMembers, rehearsal.participants);
+  const posteOf = (userId: string) => {
+    const member = bandMembers.find((m) => m.user_id === userId);
+    return member ? bandPosteLabel(member) : null;
+  };
 
   const handleRsvp = async (status: RehearsalRsvpStatus) => {
     setRsvpLoading(true);
@@ -275,6 +284,37 @@ export function RehearsalDetailView({
             )}
           </div>
 
+          {/* Line-up par poste */}
+          {lineup.length > 0 && (
+            <div>
+              <h3 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                Line-up
+              </h3>
+              <ul>
+                {lineup.map((poste) => (
+                  <li key={poste.key} className="flex items-center gap-3 border-b border-border py-2">
+                    <Icon name={instrumentMeta(poste.instrument).icon} className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="flex-1 truncate text-sm font-semibold">{poste.label}</span>
+                    <span
+                      className={`text-xs font-semibold ${
+                        poste.state === "accepted"
+                          ? "text-success"
+                          : poste.state === "declined"
+                            ? "text-destructive"
+                            : "text-muted-foreground"
+                      }`}
+                    >
+                      {poste.state === "accepted" && "Confirmé"}
+                      {poste.state === "maybe" && "Peut-être"}
+                      {poste.state === "invited" && "Pas encore de réponse"}
+                      {poste.state === "declined" && "Personne"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Participants */}
           <div>
             <div className="mb-1 flex items-center justify-between border-b border-border pb-1.5">
@@ -304,8 +344,11 @@ export function RehearsalDetailView({
                       (p.profile.display_name?.[0] || p.profile.username[0]).toUpperCase()
                     )}
                   </div>
-                  <span className="flex-1 truncate text-sm">
+                  <span className="min-w-0 flex-1 truncate text-sm">
                     {p.profile.display_name || p.profile.username}
+                    {posteOf(p.user_id) && (
+                      <span className="text-muted-foreground"> · {posteOf(p.user_id)}</span>
+                    )}
                   </span>
                   <span
                     className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase ${

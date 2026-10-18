@@ -1,5 +1,6 @@
 "use client";
 
+import { rehearsalLineup } from "@/lib/rehearsal-lineup";
 import type { RehearsalWithDetails } from "@/types";
 import { RSVP_COLORS, RSVP_LABELS } from "@/types";
 import { Icon } from "@/components/ui/icon";
@@ -46,6 +47,13 @@ export function RehearsalCard({ rehearsal, currentUserId, onClick }: RehearsalCa
   const dateIsTomorrow = isTomorrow(rehearsal.date);
 
   const date = new Date(rehearsal.date);
+  // Les postes ou tout le monde a dit non : la repete se fera sans eux.
+  const missing =
+    rehearsal.status === "scheduled"
+      ? rehearsalLineup(rehearsal.band?.members ?? [], rehearsal.participants)
+          .filter((poste) => poste.state === "declined")
+          .map((poste) => poste.label)
+      : [];
   const tag = "rounded border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]";
 
   /*
@@ -96,6 +104,12 @@ export function RehearsalCard({ rehearsal, currentUserId, onClick }: RehearsalCa
             .filter(Boolean)
             .join(" · ")}
         </span>
+
+        {missing.length > 0 && (
+          <span className="mt-1 block truncate text-xs font-semibold text-destructive">
+            Manque : {missing.join(", ")}
+          </span>
+        )}
 
         {myRsvp && (
           <span className={`mt-1.5 inline-flex rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase ${RSVP_COLORS[myRsvp.status]}`}>

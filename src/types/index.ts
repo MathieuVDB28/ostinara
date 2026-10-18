@@ -719,6 +719,10 @@ export interface BandMember {
   user_id: string;
   role: BandMemberRole;
   joined_at: string;
+  /** Le poste tenu dans ce groupe (pas forcement l'instrument principal). */
+  instrument?: Instrument | null;
+  /** Precise « autre » : chant, saxo… */
+  instrument_label?: string | null;
 }
 
 export interface BandMemberWithProfile extends BandMember {
@@ -1464,7 +1468,8 @@ export interface RehearsalParticipantWithProfile extends RehearsalParticipant {
 }
 
 export interface RehearsalWithDetails extends Rehearsal {
-  band: Band;
+  /** `members` : les postes du groupe, charges par la fiche d'une repete. */
+  band: Band & { members?: Pick<BandMember, "user_id" | "instrument" | "instrument_label">[] };
   setlist?: Setlist | null;
   participants: RehearsalParticipantWithProfile[];
   creator: Profile;

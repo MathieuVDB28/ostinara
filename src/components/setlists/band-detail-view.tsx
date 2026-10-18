@@ -11,6 +11,8 @@ import { StartJamModal } from "@/components/jam/start-jam-modal";
 import { CreateRehearsalModal } from "@/components/rehearsals/create-rehearsal-modal";
 import { RehearsalCard } from "@/components/rehearsals/rehearsal-card";
 import { RehearsalCalendar } from "@/components/rehearsals/rehearsal-calendar";
+import { BandMemberPoste } from "./band-member-poste";
+import { bandLineup } from "@/lib/instruments";
 import type {
   BandWithMembers,
   SetlistWithDetails,
@@ -52,6 +54,9 @@ export function BandDetailView({
 
   const handleRefresh = () => router.refresh();
   const isOwner = band.owner_id === currentUserId;
+  const myRole = band.members.find((member) => member.user_id === currentUserId)?.role;
+  const isAdmin = isOwner || myRole === "owner" || myRole === "admin";
+  const lineup = bandLineup(band.members);
 
   const upcomingRehearsals = rehearsals.filter(
     (rehearsal) =>
@@ -232,6 +237,13 @@ export function BandDetailView({
         <h2 className={`border-b border-border pb-2 ${SECTION_TITLE}`}>
           Membres <span className="tabular">· {band.members.length}</span>
         </h2>
+        {/* Le line-up en une ligne : qui tient quoi, d'un coup d'oeil. */}
+        {lineup.length > 0 && (
+          <p className="border-b border-border py-2 text-xs text-muted-foreground">
+            <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em]">Line-up</span>{" "}
+            {lineup.map((poste) => (poste.members.length > 1 ? `${poste.label} ×${poste.members.length}` : poste.label)).join(" · ")}
+          </p>
+        )}
         <ul>
           {band.members.map((member) => (
             <li key={member.id} className="flex items-center gap-3 border-b border-border py-3">
@@ -255,7 +267,11 @@ export function BandDetailView({
                 <p className="truncate font-display text-lg font-extrabold uppercase leading-tight">
                   {member.profile?.display_name || member.profile?.username}
                 </p>
-                <p className="truncate text-xs capitalize text-muted-foreground">{member.role}</p>
+                <BandMemberPoste
+                  bandId={band.id}
+                  member={member}
+                  canEdit={member.user_id === currentUserId || isAdmin}
+                />
               </div>
               {member.user_id === band.owner_id && (
                 <span className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">

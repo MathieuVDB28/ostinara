@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { extractSongsterrId, findSongsterrTrack } from "@/lib/services/songsterr";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { sendPushNotificationToMultipleUsers } from "@/lib/notifications";
 import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type {
   ExerciseCategory,
+  Instrument,
   JamSession,
   JamSessionWithDetails,
   JamSessionMessage,
@@ -546,4 +548,19 @@ export async function getBandSetlistsForJam(
       (i: { item_type: string }) => i.item_type === "song"
     ).length,
   })) as SetlistWithDetails[];
+}
+
+// === La piste Songsterr a choisir pour son poste ===
+export async function getJamTrackHint(
+  tabsUrl: string,
+  instrument: Instrument
+): Promise<{ name: string } | null> {
+  const user = await getAuthenticatedUser();
+  if (!user) return null;
+
+  const songId = extractSongsterrId(tabsUrl);
+  if (!songId) return null;
+
+  const track = await findSongsterrTrack(songId, instrument);
+  return track ? { name: track.name } : null;
 }

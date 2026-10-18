@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { SetlistItemWithSongOwner, PlayedSection } from "@/types";
+import { getJamTrackHint } from "@/lib/actions/jam-sessions";
+import { instrumentPhrase } from "@/lib/instruments";
+import type { Instrument, SetlistItemWithSongOwner, PlayedSection } from "@/types";
 
 interface JamTabsViewerProps {
   currentItem: SetlistItemWithSongOwner | null;
@@ -9,6 +11,8 @@ interface JamTabsViewerProps {
   timeSignatureBeats: number;
   isPlaying: boolean;
   isHost: boolean;
+  /** Le poste de celui qui regarde : sa piste est signalee. */
+  instrument: Instrument;
 }
 
 export function JamTabsViewer({
@@ -16,6 +20,7 @@ export function JamTabsViewer({
   bpm,
   timeSignatureBeats,
   isPlaying,
+  instrument,
 }: JamTabsViewerProps) {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [sectionProgress, setSectionProgress] = useState(0);
@@ -332,6 +337,39 @@ export function JamTabsViewer({
           </button>
         </div>
       )}
+
+      {tabsUrl && <TrackHint tabsUrl={tabsUrl} instrument={instrument} />}
     </div>
+  );
+}
+
+/**
+ * La piste a prendre dans Songsterr pour son poste : chacun la sienne, sur
+ * le meme morceau. Songsterr ne s'ouvre pas directement sur une piste, on
+ * en donne le nom.
+ */
+function TrackHint({ tabsUrl, instrument }: { tabsUrl: string; instrument: Instrument }) {
+  const [hint, setHint] = useState<{ url: string; name: string } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getJamTrackHint(tabsUrl, instrument)
+      .then((result) => {
+        if (!cancelled) setHint(result ? { url: tabsUrl, name: result.name } : null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [tabsUrl, instrument]);
+
+  // L'indice d'un morceau precedent ne s'affiche pas sur le suivant.
+  if (!hint || hint.url !== tabsUrl) return null;
+
+  return (
+    <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+      Ta piste {instrumentPhrase(instrument)} dans Songsterr :{" "}
+      <span className="font-semibold text-foreground">« {hint.name} »</span>
+    </p>
   );
 }

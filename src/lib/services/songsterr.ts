@@ -1,4 +1,4 @@
-import type { SongsterrTabStructure, PlayedSection } from '@/types';
+import type { SongsterrTabStructure, PlayedSection, Instrument } from '@/types';
 // Les deux helpers d'URL vivent a part : ils sont aussi lus par des
 // composants clients, qui n'ont pas a appeler Songsterr.
 import { extractSongsterrId, getSongsterrUrl } from '@/lib/songsterr-url';
@@ -155,4 +155,71 @@ export async function findSongsterrSong(title: string, artist: string): Promise<
   const exact = results.find((song) => song.title.trim().toLowerCase() === title.trim().toLowerCase());
   const same = results.find((song) => normalize(song.title) === wantedTitle);
   return (exact ?? same)?.songId ?? null;
+}
+
+/** Une piste de la fiche Songsterr (seulement les champs lus). */
+interface SongsterrMetaTrack {
+  instrumentId: number;
+  instrument: string;
+  name: string;
+  views?: number;
+  isVocalTrack?: boolean;
+  isEmpty?: boolean;
+}
+
+/**
+ * La piste a choisir pour un instrument : la plus jouee parmi celles qui
+ * lui correspondent.
+ *
+ * Les `instrumentId` suivent la numerotation General MIDI (0-7 pianos,
+ * 16-23 orgues, 24-31 guitares, 32-39 basses) ; Songsterr note la
+ * batterie 1024. Le nom de l'instrument rattrape les cas limites.
+ *
+ * On ne sait pas ouvrir Songsterr directement sur une piste (le suffixe de
+ * piste saute a la redirection) : l'appelant affiche son nom, pour qu'on
+ * la choisisse dans le lecteur.
+ */
+export async function findSongsterrTrack(
+  songId: number,
+  instrument: Instrument
+): Promise<{ index: number; name: string } | null> {
+  if (instrument === 'other') return null;
+  try {
+    const res = await fetch(`https://www.songsterr.com/api/meta/${songId}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return null;
+    const meta = (await res.json()) as { tracks?: SongsterrMetaTrack[] };
+
+    const fits = (track: SongsterrMetaTrack): boolean => {
+      const id = track.instrumentId;
+      const name = track.instrument.toLowerCase();
+      switch (instrument) {
+        case 'drums':
+          return id === 1024 || name.includes('drum');
+        case 'bass':
+          return (id >= 32 && id <= 39) || name.includes('bass');
+        case 'keys':
+          return (id >= 0 && id <= 7) || (id >= 16 && id <= 23) || /piano|organ|keyboard|synth/.test(name);
+        case 'guitar':
+          return (id >= 24 && id <= 31) || (name.includes('guitar') && !name.includes('bass'));
+        default:
+          return false;
+      }
+    };
+
+    let best: { index: number; name: string; views: number } | null = null;
+    (meta.tracks ?? []).forEach((track, index) => {
+      if (track.isVocalTrack || track.isEmpty || !fits(track)) return;
+      const views = track.views ?? 0;
+      if (!best || views > best.views) best = { index, name: track.name, views };
+    });
+
+    if (!best) return null;
+    const { index, name } = best;
+    return { index, name };
+  } catch (e) {
+    console.error('Error fetching Songsterr tracks:', e);
+    return null;
+  }
 }
