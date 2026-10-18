@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { getStripeServer } from '@/lib/stripe/server';
 import { getPriceIdFromEnv, BillingInterval } from '@/lib/stripe/config';
@@ -45,8 +46,13 @@ export async function POST(req: NextRequest) {
       });
       customerId = customer.id;
 
-      // Sauvegarder le customer ID dans Supabase
-      await supabase
+      // Sauvegarder le customer ID dans Supabase. Colonne verrouillee pour
+      // les utilisateurs (cf. migration 20261027) : on passe par le service role.
+      const supabaseAdmin = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      await supabaseAdmin
         .from('profiles')
         .update({ stripe_customer_id: customerId })
         .eq('id', user.id);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { setMyInstruments } from "@/lib/actions/instruments";
 import { INSTRUMENTS, SKILL_LEVELS, sortInstruments } from "@/lib/instruments";
 import { Icon } from "@/components/ui/icon";
@@ -9,6 +10,8 @@ import type { Instrument, ProfileInstrument, SkillLevel } from "@/types";
 interface Props {
   initial: ProfileInstrument[];
   submitLabel: string;
+  /** Nombre d'instruments autorise par le plan ; null = illimite. */
+  limit: number | null;
   /** Appele apres l'enregistrement : redirection ou message. */
   onSaved: () => void;
 }
@@ -25,8 +28,11 @@ interface Draft {
  * Une liste plutot qu'une grille de tuiles : chaque instrument coche se
  * deplie sur place pour le niveau, sans deuxieme ecran. Le premier coche
  * devient le principal ; on change ensuite d'un geste.
+ *
+ * Plan Free : une fois la limite atteinte, les autres instruments se
+ * grisent et un lien mene aux plans. Qui en a deja plus les garde.
  */
-export function InstrumentPicker({ initial, submitLabel, onSaved }: Props) {
+export function InstrumentPicker({ initial, submitLabel, limit, onSaved }: Props) {
   const [drafts, setDrafts] = useState<Partial<Record<Instrument, Draft>>>(() =>
     Object.fromEntries(
       initial.map((i) => [i.instrument, { level: i.level, customLabel: i.custom_label ?? "" }]),
@@ -39,6 +45,8 @@ export function InstrumentPicker({ initial, submitLabel, onSaved }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const selected = INSTRUMENTS.filter((i) => drafts[i.value]).map((i) => i.value);
+  const cap = limit === null ? Infinity : Math.max(limit, initial.length);
+  const atCap = selected.length >= cap;
 
   const toggle = (value: Instrument) => {
     setError(null);
@@ -47,6 +55,7 @@ export function InstrumentPicker({ initial, submitLabel, onSaved }: Props) {
       delete next[value];
       if (primary === value) setPrimary(selected.find((v) => v !== value) ?? null);
     } else {
+      if (atCap) return;
       next[value] = { level: null, customLabel: "" };
       if (!primary) setPrimary(value);
     }
@@ -85,12 +94,16 @@ export function InstrumentPicker({ initial, submitLabel, onSaved }: Props) {
         {INSTRUMENTS.map((instrument) => {
           const draft = drafts[instrument.value];
           const isPrimary = primary === instrument.value;
+          const locked = !draft && atCap;
           return (
             <li key={instrument.value}>
-              <label className="flex min-h-[60px] cursor-pointer items-center gap-3.5 py-3 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring">
+              <label
+                className={`flex min-h-[60px] items-center ${locked ? "cursor-not-allowed opacity-50" : "cursor-pointer"} gap-3.5 py-3 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring`}
+              >
                 <input
                   type="checkbox"
                   checked={Boolean(draft)}
+                  disabled={locked}
                   onChange={() => toggle(instrument.value)}
                   className="sr-only"
                 />
@@ -176,6 +189,16 @@ export function InstrumentPicker({ initial, submitLabel, onSaved }: Props) {
           );
         })}
       </ul>
+
+      {limit !== null && atCap && (
+        <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+          <Icon name="lock" className="h-4 w-4" />
+          Plan Free : {limit} instruments max.
+          <Link href="/pricing" className="font-semibold text-foreground underline underline-offset-2">
+            Passe Pro pour en jouer plus
+          </Link>
+        </p>
+      )}
 
       {error && (
         <p role="alert" className="mt-3 text-sm font-semibold text-destructive">

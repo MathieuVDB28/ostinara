@@ -12,6 +12,7 @@ export interface PlanConfig {
     friends: number;
     wishlist: number;
     albumWishlist: number;
+    instruments: number;
   };
   monthly?: {
     price: number;
@@ -27,6 +28,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
     description: 'Pour découvrir Ostinara',
     features: [
       '10 morceaux max',
+      '2 instruments max',
       '3 covers max',
       '5 amis max',
       '20 morceaux wishlist',
@@ -37,6 +39,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
       friends: 5,
       wishlist: 20,
       albumWishlist: 20,
+      instruments: 2,
     },
   },
   pro: {
@@ -44,6 +47,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
     description: 'Pour les musiciens sérieux',
     features: [
       'Morceaux illimités',
+      'Instruments illimités',
       'Covers illimités',
       'Amis illimités',
       'Wishlist illimitée',

@@ -226,7 +226,7 @@ export default function CGU() {
                 {[
                   {
                     name: "Free",
-                    desc: "Accès limité (10 morceaux, 3 covers, 5 amis)",
+                    desc: "Accès limité (10 morceaux, 3 covers, 5 amis, 2 instruments)",
                   },
                   {
                     name: "Pro",

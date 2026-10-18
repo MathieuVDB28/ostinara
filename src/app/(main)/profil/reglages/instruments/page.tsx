@@ -1,4 +1,4 @@
-import { getMyInstruments } from "@/lib/actions/instruments";
+import { getMyInstrumentLimit, getMyInstruments } from "@/lib/actions/instruments";
 import { InstrumentsSettings } from "./instruments-settings";
 
 export const metadata = {
@@ -6,6 +6,6 @@ export const metadata = {
 };
 
 export default async function InstrumentsSettingsPage() {
-  const instruments = await getMyInstruments();
-  return <InstrumentsSettings initial={instruments} />;
+  const [instruments, limit] = await Promise.all([getMyInstruments(), getMyInstrumentLimit()]);
+  return <InstrumentsSettings initial={instruments} limit={limit} />;
 }

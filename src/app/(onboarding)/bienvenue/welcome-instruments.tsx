@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { InstrumentPicker } from "@/components/instruments/instrument-picker";
 
-export function WelcomeInstruments() {
+export function WelcomeInstruments({ limit }: { limit: number | null }) {
   const router = useRouter();
 
   return (
@@ -23,6 +23,7 @@ export function WelcomeInstruments() {
 
       <InstrumentPicker
         initial={[]}
+        limit={limit}
         submitLabel="C'est parti"
         onSaved={() => router.replace("/accueil")}
       />

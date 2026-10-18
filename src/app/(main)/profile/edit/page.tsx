@@ -633,7 +633,7 @@ function EditProfilePageContent() {
                 <div className="mt-6 rounded-lg bg-primary/10 p-4">
                   <p className="text-sm text-primary">
                     <strong>Passe Pro</strong> pour débloquer morceaux illimités,
-                    covers illimités, et bien plus encore !
+                    covers illimités, instruments illimités, et bien plus encore !
                   </p>
                 </div>
               )}

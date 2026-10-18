@@ -8,9 +8,10 @@ import type { ProfileInstrument } from "@/types";
 
 interface Props {
   initial: ProfileInstrument[];
+  limit: number | null;
 }
 
-export function InstrumentsSettings({ initial }: Props) {
+export function InstrumentsSettings({ initial, limit }: Props) {
   const router = useRouter();
 
   return (
@@ -30,6 +31,7 @@ export function InstrumentsSettings({ initial }: Props) {
       </p>
       <InstrumentPicker
         initial={initial}
+        limit={limit}
         submitLabel="Enregistrer"
         onSaved={() => router.push("/profil/reglages")}
       />

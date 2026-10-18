@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/supabase/server";
-import { getMyInstruments } from "@/lib/actions/instruments";
+import { getMyInstrumentLimit, getMyInstruments } from "@/lib/actions/instruments";
 import { WelcomeInstruments } from "./welcome-instruments";
 
 export const metadata = {
@@ -15,5 +15,5 @@ export default async function BienvenuePage() {
   const instruments = await getMyInstruments();
   if (instruments.length > 0) redirect("/accueil");
 
-  return <WelcomeInstruments />;
+  return <WelcomeInstruments limit={await getMyInstrumentLimit()} />;
 }

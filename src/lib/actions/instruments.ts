@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { INSTRUMENT_VALUES, SKILL_LEVEL_VALUES } from "@/lib/instruments";
+import { PLANS } from "@/lib/stripe/config";
 import type { ProfileInstrument } from "@/types";
 
 // === Ses instruments, pour pre-remplir le choix ===
@@ -21,6 +22,16 @@ export async function getMyInstruments(): Promise<ProfileInstrument[]> {
     return [];
   }
   return (data ?? []) as ProfileInstrument[];
+}
+
+// === Combien d'instruments son plan autorise (null = illimite) ===
+export async function getMyInstrumentLimit(): Promise<number | null> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+  if (!user) return null;
+
+  const { data } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
+  return data?.plan === "free" || !data?.plan ? PLANS.free.limits!.instruments : null;
 }
 
 // === Remplacer ses instruments (onboarding et reglages) ===
@@ -44,6 +55,19 @@ export async function setMyInstruments(
   }
   if (instruments.filter((i) => i.is_primary).length !== 1) {
     return { success: false, error: "Choisis ton instrument principal." };
+  }
+
+  // Plan Free : 2 instruments. Qui en avait deja plus (avant la limite, ou
+  // apres un retour au Free) les garde, mais n'en ajoute pas.
+  const limit = await getMyInstrumentLimit();
+  if (limit !== null && instruments.length > limit) {
+    const current = await getMyInstruments();
+    if (instruments.length > Math.max(limit, current.length)) {
+      return {
+        success: false,
+        error: `Le plan Free est limité à ${limit} instruments. Passe en Pro pour en ajouter plus !`,
+      };
+    }
   }
 
   const payload = instruments.map((i) => ({
