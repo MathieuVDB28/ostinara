@@ -112,7 +112,6 @@ const footerLinks = {
   Produit: [
     { label: "Fonctionnalités", href: "#features" },
     { label: "Tarifs", href: "#tarifs" },
-    { label: "Connexion", href: "/login" },
   ],
   Légal: [
     { label: "Mentions légales", href: "/mentions-legales" },
@@ -142,7 +141,8 @@ export default async function AccesAnticipe() {
       <div className="min-h-screen bg-background">
         <nav className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-            <Link href="/" className="flex items-center gap-2.5">
+            {/* Pas vers la home : elle ouvre l'inscription directe, hors liste. */}
+            <Link href="#" className="flex items-center gap-2.5">
               <Image src="/logo.png" alt="" width={32} height={32} className="rounded-md" />
               <span className="font-display text-2xl font-extrabold uppercase leading-none tracking-[0.02em]">
                 Ostinara
@@ -154,12 +154,6 @@ export default async function AccesAnticipe() {
                 className="hidden rounded-full px-3.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
               >
                 Tarifs
-              </Link>
-              <Link
-                href="/login"
-                className="rounded-full px-3.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Connexion
               </Link>
               <Link
                 href="#acces"
