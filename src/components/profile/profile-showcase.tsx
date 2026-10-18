@@ -53,7 +53,10 @@ const KIND_LABEL: Record<ShowcaseKind, [one: string, many: string]> = {
  *
  * Elle retrouve donc un rang par type, avec son intitule ecrit — mais
  * seulement pour les types remplis, et sur des vignettes restees petites.
- * Le sens revient sans reprendre les 475 px.
+ * Le sens revient sans reprendre les 475 px. Sur grand ecran, les rangs
+ * se posent cote a cote (et passent a la ligne s'il en reste un de trop) :
+ * empiles, ils laissaient un grand vide a droite et repoussaient la
+ * progression plus bas.
  */
 export function ProfileShowcase({
   favoriteSongs,
@@ -158,7 +161,7 @@ export function ProfileShowcase({
         )}
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:gap-x-10">
         {groups.map((group) => {
           const [one, many] = KIND_LABEL[group.kind];
           const label = group.items.length > 1 ? many : one;
