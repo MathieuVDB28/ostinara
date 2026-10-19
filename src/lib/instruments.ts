@@ -1,42 +1,37 @@
 import type { ExerciseCategory, GearType, Instrument, ProfileInstrument, SkillLevel } from "@/types";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
+import type { EnumsT } from "@/i18n/types";
 
 /**
  * Les instruments qu'Ostinara connait, dans l'ordre d'affichage.
  *
  * `icon` est un nom de la table de src/components/ui/icon.tsx. La basse
  * n'a pas d'icone a elle chez Lucide : elle partage celle de la guitare.
+ * Les libelles sont dans messages/<langue>/enums.json (enums.instrument).
  */
-export const INSTRUMENTS: { value: Instrument; label: string; icon: string }[] = [
-  { value: "guitar", label: "Guitare", icon: "guitar" },
-  { value: "bass", label: "Basse", icon: "guitar" },
-  { value: "drums", label: "Batterie", icon: "drums" },
-  { value: "keys", label: "Clavier / piano", icon: "piano" },
-  { value: "other", label: "Autre", icon: "music_note" },
+export const INSTRUMENTS: { value: Instrument; icon: string }[] = [
+  { value: "guitar", icon: "guitar" },
+  { value: "bass", icon: "guitar" },
+  { value: "drums", icon: "drums" },
+  { value: "keys", icon: "piano" },
+  { value: "other", icon: "music_note" },
 ];
 
-export const SKILL_LEVELS: { value: SkillLevel; label: string }[] = [
-  { value: "beginner", label: "Débutant" },
-  { value: "intermediate", label: "Intermédiaire" },
-  { value: "advanced", label: "Avancé" },
-  { value: "expert", label: "Expert" },
-];
+export const SKILL_LEVEL_VALUES: SkillLevel[] = ["beginner", "intermediate", "advanced", "expert"];
 
 export const INSTRUMENT_VALUES = INSTRUMENTS.map((i) => i.value);
-export const SKILL_LEVEL_VALUES = SKILL_LEVELS.map((l) => l.value);
 
 export function instrumentMeta(value: Instrument) {
   return INSTRUMENTS.find((i) => i.value === value) ?? INSTRUMENTS[INSTRUMENTS.length - 1];
 }
 
 /** « Basse », ou ce que le musicien a ecrit pour « autre ». */
-export function instrumentLabel(entry: Pick<ProfileInstrument, "instrument" | "custom_label">): string {
+export function instrumentLabel(entry: Pick<ProfileInstrument, "instrument" | "custom_label">, t: EnumsT): string {
   if (entry.instrument === "other" && entry.custom_label) return entry.custom_label;
-  return instrumentMeta(entry.instrument).label;
+  return t(`instrument.${instrumentMeta(entry.instrument).value}`);
 }
 
-export function skillLevelLabel(value: SkillLevel): string {
-  return SKILL_LEVELS.find((l) => l.value === value)?.label ?? value;
+export function skillLevelLabel(value: SkillLevel, t: EnumsT): string {
+  return SKILL_LEVEL_VALUES.includes(value) ? t(`skillLevel.${value}`) : value;
 }
 
 /** L'instrument principal d'abord, puis l'ordre de INSTRUMENTS. */
@@ -51,17 +46,11 @@ export function sortInstruments<T extends Pick<ProfileInstrument, "instrument" |
 /** Le fragment `select` a joindre a une requete sur profiles. */
 export const PROFILE_INSTRUMENTS_SELECT = "instruments:profile_instruments(instrument, level, is_primary, custom_label)";
 
-const PHRASES: Record<Instrument, string> = {
-  guitar: "à la guitare",
-  bass: "à la basse",
-  drums: "à la batterie",
-  keys: "au clavier",
-  other: "",
-};
-
 /** « à la basse », pour une phrase du feed. Vide pour « autre » ou inconnu. */
-export function instrumentPhrase(value: unknown): string {
-  return typeof value === "string" && value in PHRASES ? PHRASES[value as Instrument] : "";
+export function instrumentPhrase(value: unknown, t: EnumsT): string {
+  return typeof value === "string" && INSTRUMENT_VALUES.includes(value as Instrument)
+    ? t(`instrumentPhrase.${value as Instrument}`)
+    : "";
 }
 
 /**
@@ -73,8 +62,14 @@ export const EXERCISE_CATEGORIES: Record<Instrument, ExerciseCategory[]> = {
   bass: ["grooves", "scales", "arpeggios", "slap", "walking_bass", "technique", "rhythm"],
   drums: ["rudiments", "grooves", "fills", "independence", "technique", "rhythm", "reading"],
   keys: ["scales", "arpeggios", "voicings", "independence", "technique", "reading", "rhythm"],
-  other: Object.keys(EXERCISE_CATEGORY_LABELS) as ExerciseCategory[],
+  other: [
+    "scales", "arpeggios", "picking", "chord_changes", "fingerstyle", "technique", "rhythm",
+    "rudiments", "grooves", "fills", "independence", "slap", "walking_bass", "voicings", "reading",
+  ],
 };
+
+/** Toutes les categories d'exercices, dans l'ordre d'affichage. */
+export const ALL_EXERCISE_CATEGORIES: ExerciseCategory[] = EXERCISE_CATEGORIES.other;
 
 /** Un exercice vaut-il pour cet instrument ? Liste vide : pour tous. */
 export function exerciseFitsInstrument(exercise: { instruments?: Instrument[] | null }, instrument: Instrument): boolean {
@@ -82,9 +77,12 @@ export function exerciseFitsInstrument(exercise: { instruments?: Instrument[] | 
 }
 
 /** Le poste d'un membre de groupe, en toutes lettres. */
-export function bandPosteLabel(member: { instrument?: Instrument | null; instrument_label?: string | null }): string | null {
+export function bandPosteLabel(
+  member: { instrument?: Instrument | null; instrument_label?: string | null },
+  t: EnumsT
+): string | null {
   if (!member.instrument) return null;
-  return instrumentLabel({ instrument: member.instrument, custom_label: member.instrument_label });
+  return instrumentLabel({ instrument: member.instrument, custom_label: member.instrument_label }, t);
 }
 
 export interface LineupPoste<M> {
@@ -101,12 +99,13 @@ export interface LineupPoste<M> {
  * figurent pas.
  */
 export function bandLineup<M extends { instrument?: Instrument | null; instrument_label?: string | null }>(
-  members: M[]
+  members: M[],
+  t: EnumsT
 ): LineupPoste<M>[] {
   const postes = new Map<string, LineupPoste<M>>();
   for (const member of members) {
     if (!member.instrument) continue;
-    const label = bandPosteLabel(member)!;
+    const label = bandPosteLabel(member, t)!;
     const key = member.instrument === "other" ? `other:${label.toLowerCase()}` : member.instrument;
     const poste = postes.get(key) ?? { key, label, instrument: member.instrument, members: [] };
     poste.members.push(member);

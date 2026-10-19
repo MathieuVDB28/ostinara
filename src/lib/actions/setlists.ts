@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
@@ -150,12 +151,12 @@ export async function createSetlistWithItems(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const trimmed = name.trim();
   if (!trimmed) {
-    return { success: false, error: "Donne un nom à la setlist" };
+    return { success: false, error: await tErr("setlistNameRequired") };
   }
 
   const { data: setlist, error } = await supabase
@@ -166,7 +167,7 @@ export async function createSetlistWithItems(
 
   if (error || !setlist) {
     console.error("Error creating setlist:", error);
-    return { success: false, error: "Erreur lors de la creation" };
+    return { success: false, error: await tErr("createFailed") };
   }
 
   if (items.length > 0) {
@@ -195,7 +196,7 @@ export async function createSetlistWithItems(
       console.error("Error inserting setlist items:", itemsError);
       // Rollback : pas de setlist a moitie remplie.
       await supabase.from("setlists").delete().eq("id", setlist.id);
-      return { success: false, error: "Erreur lors de l'ajout des elements" };
+      return { success: false, error: await tErr("itemsAddFailed") };
     }
   }
 
@@ -218,7 +219,7 @@ export async function createSetlist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // If band_id is provided, check membership
@@ -231,7 +232,7 @@ export async function createSetlist(
       .single();
 
     if (!membership) {
-      return { success: false, error: "Tu n'es pas membre de ce groupe" };
+      return { success: false, error: await tErr("notBandMember") };
     }
   }
 
@@ -247,7 +248,7 @@ export async function createSetlist(
 
   if (error) {
     console.error("Error creating setlist:", error);
-    return { success: false, error: "Erreur lors de la creation" };
+    return { success: false, error: await tErr("createFailed") };
   }
 
   // Create activity
@@ -270,7 +271,7 @@ export async function updateSetlist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -280,7 +281,7 @@ export async function updateSetlist(
 
   if (error) {
     console.error("Error updating setlist:", error);
-    return { success: false, error: "Erreur lors de la mise a jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   revalidatePath("/setlists");
@@ -296,7 +297,7 @@ export async function deleteSetlist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -306,7 +307,7 @@ export async function deleteSetlist(
 
   if (error) {
     console.error("Error deleting setlist:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/setlists");
@@ -321,7 +322,7 @@ export async function addSetlistItem(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Get current max position
@@ -356,7 +357,7 @@ export async function addSetlistItem(
 
   if (error) {
     console.error("Error adding item:", error);
-    return { success: false, error: "Erreur lors de l'ajout" };
+    return { success: false, error: await tErr("addFailed") };
   }
 
   revalidatePath(`/setlists/${input.setlist_id}`);
@@ -378,7 +379,7 @@ export async function addSongToSetlist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const [{ data: song }, { data: existing }] = await Promise.all([
@@ -397,7 +398,7 @@ export async function addSongToSetlist(
   ]);
 
   if (!song) {
-    return { success: false, error: "Morceau introuvable" };
+    return { success: false, error: await tErr("songNotFound") };
   }
 
   if (existing && existing.length > 0) {
@@ -433,7 +434,7 @@ export async function updateSetlistItem(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { data: item } = await supabase
@@ -449,7 +450,7 @@ export async function updateSetlistItem(
 
   if (error) {
     console.error("Error updating item:", error);
-    return { success: false, error: "Erreur lors de la mise a jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   if (item) {
@@ -466,7 +467,7 @@ export async function deleteSetlistItem(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Get item info before deletion
@@ -483,7 +484,7 @@ export async function deleteSetlistItem(
 
   if (error) {
     console.error("Error deleting item:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   // Reorder remaining items
@@ -507,7 +508,7 @@ export async function reorderSetlistItems(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Get current position
@@ -518,7 +519,7 @@ export async function reorderSetlistItems(
     .single();
 
   if (!item) {
-    return { success: false, error: "Item non trouve" };
+    return { success: false, error: await tErr("itemNotFound") };
   }
 
   const oldPosition = item.position;
@@ -537,7 +538,7 @@ export async function reorderSetlistItems(
 
   if (error) {
     console.error("Error reordering items:", error);
-    return { success: false, error: "Erreur lors du reordonnancement" };
+    return { success: false, error: await tErr("reorderFailed") };
   }
 
   revalidatePath(`/setlists/${setlistId}`);
@@ -553,13 +554,13 @@ export async function duplicateSetlist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Get original setlist with items
   const original = await getSetlist(setlistId);
   if (!original) {
-    return { success: false, error: "Setlist non trouvee" };
+    return { success: false, error: await tErr("setlistNotFound") };
   }
 
   // Create new setlist
@@ -579,7 +580,7 @@ export async function duplicateSetlist(
 
   if (setlistError) {
     console.error("Error duplicating setlist:", setlistError);
-    return { success: false, error: "Erreur lors de la duplication" };
+    return { success: false, error: await tErr("duplicateFailed") };
   }
 
   // Copy all items
@@ -613,7 +614,7 @@ export async function duplicateSetlist(
       console.error("Error copying items:", itemsError);
       // Rollback
       await supabase.from("setlists").delete().eq("id", newSetlist.id);
-      return { success: false, error: "Erreur lors de la copie des morceaux" };
+      return { success: false, error: await tErr("songsCopyFailed") };
     }
   }
 

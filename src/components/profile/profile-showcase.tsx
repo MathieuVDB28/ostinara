@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GEAR_TYPE_LABELS } from "@/types";
+import { useTranslations } from "next-intl";
 import type { FavoriteAlbum, FavoriteGear, FavoriteSong } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { Cover } from "@/components/ui/cover";
@@ -36,13 +36,6 @@ const KIND_ICON: Record<ShowcaseKind, string> = {
   gear: "guitar",
 };
 
-/** Singulier, pluriel — un rang d'un seul element ne s'annonce pas au pluriel. */
-const KIND_LABEL: Record<ShowcaseKind, [one: string, many: string]> = {
-  song: ["Morceau favori", "Morceaux favoris"],
-  album: ["Album favori", "Albums favoris"],
-  gear: ["Matos favori", "Matos favoris"],
-};
-
 /**
  * La vitrine : morceaux, albums et matos favoris.
  *
@@ -65,6 +58,8 @@ export function ProfileShowcase({
   editable = false,
 }: ProfileShowcaseProps) {
   const pathname = usePathname();
+  const t = useTranslations("profile.showcase");
+  const te = useTranslations("enums");
 
   // La vitrine appartient a l'accueil du profil : la trainer au-dessus
   // de Matos et Reglages obligerait a la depasser a chaque fois.
@@ -101,7 +96,7 @@ export function ProfileShowcase({
       key: favorite.id,
       kind: "gear",
       title: `${favorite.gear.brand} ${favorite.gear.model}`.trim(),
-      subtitle: GEAR_TYPE_LABELS[favorite.gear.type] ?? "Matos",
+      subtitle: favorite.gear.type ? te(`gearType.${favorite.gear.type}`) : t("gear"),
       coverUrl: favorite.gear.image_url,
     }));
 
@@ -127,9 +122,9 @@ export function ProfileShowcase({
       >
         <Icon name="favorite" className="h-6 w-6 text-muted-foreground" />
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium">Compose ta vitrine</span>
+          <span className="block text-sm font-medium">{t("compose")}</span>
           <span className="block text-xs text-muted-foreground">
-            Tes morceaux, albums et matos favoris — visibles sur ton profil
+            {t("composeHint")}
           </span>
         </span>
         <Icon name="chevron_right" className="h-6 w-6 text-muted-foreground" />
@@ -149,22 +144,22 @@ export function ProfileShowcase({
           id="showcase-heading"
           className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground"
         >
-          {editable ? "Ma vitrine" : "Vitrine"}
+          {editable ? t("mine") : t("theirs")}
         </h2>
         {editable && (
           <Link
             href="/profile/edit?tab=favorites"
             className="text-xs font-semibold text-foreground underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Modifier
+            {t("edit")}
           </Link>
         )}
       </div>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:gap-x-10">
         {groups.map((group) => {
-          const [one, many] = KIND_LABEL[group.kind];
-          const label = group.items.length > 1 ? many : one;
+          // Un rang d'un seul element ne s'annonce pas au pluriel.
+          const label = t(`kinds.${group.kind}`, { count: group.items.length });
           const headingId = `showcase-${group.kind}`;
 
           return (

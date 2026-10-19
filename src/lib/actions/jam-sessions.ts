@@ -1,10 +1,11 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { extractSongsterrId, findSongsterrTrack } from "@/lib/services/songsterr";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
-import { sendPushNotificationToMultipleUsers } from "@/lib/notifications";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
+import { sendPushNotificationToMultipleUsers, type PushT } from "@/lib/notifications";
+import { getTranslations } from "next-intl/server";
 import type {
   ExerciseCategory,
   Instrument,
@@ -40,7 +41,7 @@ export async function createJamSession(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Band jam: check plan and membership
@@ -49,7 +50,7 @@ export async function createJamSession(
     if (!hasPlan) {
       return {
         success: false,
-        error: "Tu dois avoir le plan Band pour demarrer une Jam de groupe",
+        error: await tErr("bandPlanForJam"),
       };
     }
 
@@ -61,7 +62,7 @@ export async function createJamSession(
       .single();
 
     if (!membership) {
-      return { success: false, error: "Tu n'es pas membre de ce groupe" };
+      return { success: false, error: await tErr("notBandMember") };
     }
 
     // Check for existing active band session
@@ -73,7 +74,7 @@ export async function createJamSession(
       .single();
 
     if (existingSession) {
-      return { success: false, error: "Une session Jam est deja en cours" };
+      return { success: false, error: await tErr("jamAlreadyRunning") };
     }
   } else {
     // Personal jam: check for existing active personal session
@@ -86,7 +87,7 @@ export async function createJamSession(
       .single();
 
     if (existingSession) {
-      return { success: false, error: "Tu as deja une session Jam en cours" };
+      return { success: false, error: await tErr("ownJamRunning") };
     }
   }
 
@@ -110,16 +111,17 @@ export async function createJamSession(
       .single();
 
     if (firstItem) {
+      // Ecrit en base, partage par toute la session : dans la langue de l'hote.
+      const tc = await getTranslations("common");
+      const te = await getTranslations("enums");
       currentSong =
         firstItem.item_type === "exercise"
           ? {
               song_id: null,
-              song_title: firstItem.exercise_name || "Exercice",
+              song_title: firstItem.exercise_name || tc("exercise"),
               song_artist: firstItem.exercise_category
-                ? EXERCISE_CATEGORY_LABELS[
-                    firstItem.exercise_category as ExerciseCategory
-                  ]
-                : "Exercice",
+                ? te(`exerciseCategory.${firstItem.exercise_category as ExerciseCategory}`)
+                : tc("exercise"),
             }
           : {
               song_id: firstItem.song_id,
@@ -147,7 +149,7 @@ export async function createJamSession(
 
   if (error) {
     console.error("Error creating jam session:", error);
-    return { success: false, error: "Erreur lors de la creation de la session" };
+    return { success: false, error: await tErr("sessionCreateFailed") };
   }
 
   // Add host as first participant
@@ -178,14 +180,14 @@ export async function createJamSession(
 
     if (members && members.length > 0) {
       const hostName =
-        hostProfile?.display_name || hostProfile?.username || "Un membre";
+        hostProfile?.display_name || hostProfile?.username || null;
       const notifications = members.map((m) => ({
         userId: m.user_id,
-        payload: {
-          title: "Jam Session demarre !",
-          body: `${hostName} a demarre une Jam Session dans ${band?.name}`,
+        payload: (t: PushT) => ({
+          title: t("jamStarted.title"),
+          body: t("jamStarted.body", { name: hostName ?? t("someMember"), band: band?.name ?? "" }),
           data: { url: `/jam/${session.id}` },
-        },
+        }),
         notificationType: "jam_session_started" as const,
       }));
 
@@ -331,7 +333,7 @@ export async function joinJamSession(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Check if already participant
@@ -361,7 +363,7 @@ export async function joinJamSession(
 
   if (error) {
     console.error("Error joining jam session:", error);
-    return { success: false, error: "Erreur lors de la connexion" };
+    return { success: false, error: await tErr("connectFailed") };
   }
 
   return { success: true };
@@ -375,7 +377,7 @@ export async function leaveJamSession(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -386,7 +388,7 @@ export async function leaveJamSession(
 
   if (error) {
     console.error("Error leaving jam session:", error);
-    return { success: false, error: "Erreur lors de la deconnexion" };
+    return { success: false, error: await tErr("disconnectFailed") };
   }
 
   return { success: true };
@@ -411,7 +413,7 @@ export async function updateJamSessionState(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const updateData: Record<string, unknown> = { ...updates };
@@ -439,7 +441,7 @@ export async function updateJamSessionState(
 
   if (error) {
     console.error("Error updating jam session:", error);
-    return { success: false, error: "Erreur lors de la mise a jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   return { success: true };
@@ -465,11 +467,11 @@ export async function sendJamMessage(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   if (!content.trim()) {
-    return { success: false, error: "Message vide" };
+    return { success: false, error: await tErr("emptyMessage") };
   }
 
   const { data: message, error } = await supabase
@@ -484,7 +486,7 @@ export async function sendJamMessage(
 
   if (error) {
     console.error("Error sending message:", error);
-    return { success: false, error: "Erreur lors de l'envoi" };
+    return { success: false, error: await tErr("sendFailed") };
   }
 
   return { success: true, message: message as JamSessionMessage };

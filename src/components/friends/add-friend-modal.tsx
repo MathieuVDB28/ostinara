@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { searchUsers, sendFriendRequest } from "@/lib/actions/friends";
 import type { UserSearchResult } from "@/types";
 
@@ -12,6 +13,8 @@ interface AddFriendModalProps {
 }
 
 export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalProps) {
+  const t = useTranslations("friends.add");
+  const tc = useTranslations("common");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +47,7 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
     const result = await sendFriendRequest(userId);
 
     if (result.success) {
-      setSuccessMessage(`Demande envoyee a @${username}`);
+      setSuccessMessage(t("sent", { username }));
       // Update local state
       setResults((prev) =>
         prev.map((u) =>
@@ -53,7 +56,7 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
       );
       onSuccess();
     } else {
-      setError(result.error || "Erreur");
+      setError(result.error || tc("genericError"));
     }
 
     setSending(null);
@@ -87,15 +90,15 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
   const getStatusLabel = (status: UserSearchResult["friendshipStatus"]) => {
     switch (status) {
       case "self":
-        return { text: "Toi", disabled: true };
+        return { text: t("self"), disabled: true };
       case "accepted":
-        return { text: "Ami", disabled: true };
+        return { text: t("friend"), disabled: true };
       case "pending":
-        return { text: "En attente", disabled: true };
+        return { text: t("pending"), disabled: true };
       case "blocked":
-        return { text: "Bloque", disabled: true };
+        return { text: t("blocked"), disabled: true };
       default:
-        return { text: "Ajouter", disabled: false };
+        return { text: t("add"), disabled: false };
     }
   };
 
@@ -111,8 +114,8 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Ajouter un ami</h2>
-          <button aria-label="Fermer"
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
+          <button aria-label={tc("close")}
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -136,7 +139,7 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher par nom d'utilisateur..."
+            placeholder={t("placeholder")}
             className="w-full rounded-lg border border-input bg-background py-3 pl-10 pr-4 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             autoFocus
           />
@@ -211,13 +214,13 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
 
           {query && !loading && results.length === 0 && (
             <div className="py-8 text-center text-muted-foreground">
-              Aucun utilisateur trouve
+              {t("none")}
             </div>
           )}
 
           {!query && (
             <div className="py-8 text-center text-muted-foreground">
-              Recherche un utilisateur par son nom
+              {t("hint")}
             </div>
           )}
         </div>

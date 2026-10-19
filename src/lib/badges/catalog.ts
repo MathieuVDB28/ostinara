@@ -12,6 +12,15 @@
  */
 
 import type { Instrument } from "@/types";
+import type { Translator } from "@/i18n/types";
+
+/** Les textes (titres, objectifs, niveaux) : messages/<langue>/badges.json. */
+export type BadgesT = Translator<"badges">;
+
+export type BadgeId =
+  | "repertoire" | "bibliotheque" | "tempo"
+  | "sessions" | "serie" | "heures" | "mois-varie" | "mois-assidu" | "semaine-bouclee"
+  | "scene" | "melomane" | "entoure" | "competiteur";
 
 export type BadgeFamily = "repertoire" | "pratique" | "commu";
 
@@ -31,45 +40,29 @@ export type BadgeIcon =
   | "circle_check";
 
 interface BadgeBase {
-  id: string;
+  id: BadgeId;
   family: BadgeFamily;
-  title: string;
   /**
-   * Le titre selon l'instrument principal du musicien, quand il ne
-   * parle pas a tous : on ne se fait pas de corne en tenant des baguettes.
+   * Les instruments qui ont leur propre titre (catalog.<id>.titles.<instrument>),
+   * quand le titre ne parle pas a tous : on ne se fait pas de corne en
+   * tenant des baguettes.
    */
-  titles?: Partial<Record<Instrument, string>>;
+  titles?: Instrument[];
   icon: BadgeIcon;
 }
 
 export interface TieredBadgeDef extends BadgeBase {
   kind: "tiered";
-  /** Seuils des niveaux bronze, argent, or. */
+  /** Seuils des niveaux bronze, argent, or. L'objectif (catalog.<id>.goal) recoit le seuil en {count}. */
   tiers: [number, number, number];
-  /** L'objectif d'un niveau, ex. « Maîtrise 10 morceaux ». */
-  goal: (threshold: number) => string;
 }
 
 export interface RecurringBadgeDef extends BadgeBase {
   kind: "monthly" | "weekly";
   threshold: number;
-  goal: string;
 }
 
 export type BadgeDef = TieredBadgeDef | RecurringBadgeDef;
-
-export const TIER_NAMES = ["Bronze", "Argent", "Or"] as const;
-
-export const FAMILY_LABELS: Record<BadgeFamily, string> = {
-  repertoire: "Répertoire",
-  pratique: "Pratique",
-  commu: "Commu",
-};
-
-/** « 1 morceau », « 10 morceaux ». */
-function plural(n: number, one: string, many: string): string {
-  return `${n} ${n > 1 ? many : one}`;
-}
 
 export const BADGES: BadgeDef[] = [
   // Repertoire
@@ -77,31 +70,22 @@ export const BADGES: BadgeDef[] = [
     id: "repertoire",
     kind: "tiered",
     family: "repertoire",
-    title: "Répertoire",
     icon: "graduation",
     tiers: [1, 10, 25],
-    goal: (n) => (n === 1 ? "Maîtrise ton premier morceau" : `Maîtrise ${n} morceaux`),
   },
   {
     id: "bibliotheque",
     kind: "tiered",
     family: "repertoire",
-    title: "Bibliothèque",
     icon: "library",
     tiers: [1, 10, 50],
-    goal: (n) => (n === 1 ? "Ajoute ton premier morceau" : `Ajoute ${n} morceaux`),
   },
   {
     id: "tempo",
     kind: "tiered",
     family: "repertoire",
-    title: "Dans le tempo",
     icon: "gauge",
     tiers: [1, 5, 15],
-    goal: (n) =>
-      n === 1
-        ? "Atteins le tempo cible d'un morceau"
-        : `Atteins le tempo cible de ${n} morceaux`,
   },
 
   // Pratique
@@ -109,56 +93,44 @@ export const BADGES: BadgeDef[] = [
     id: "sessions",
     kind: "tiered",
     family: "pratique",
-    title: "Assiduité",
     icon: "calendar_check",
     tiers: [1, 50, 250],
-    goal: (n) => (n === 1 ? "Enregistre ta première session" : `Enregistre ${n} sessions`),
   },
   {
     id: "serie",
     kind: "tiered",
     family: "pratique",
-    title: "Régularité",
     icon: "flame",
     tiers: [7, 30, 100],
-    goal: (n) => `Joue ${n} jours d'affilée`,
   },
   {
     id: "heures",
     kind: "tiered",
     family: "pratique",
-    title: "Corne aux doigts",
-    titles: { drums: "Ampoules aux baguettes", keys: "Ivoire usé" },
+    titles: ["drums", "keys"],
     icon: "clock",
     tiers: [10, 50, 100],
-    goal: (n) => `Cumule ${n} h de pratique`,
   },
   {
     id: "mois-varie",
     kind: "monthly",
     family: "pratique",
-    title: "Mois éclectique",
     icon: "shuffle",
     threshold: 5,
-    goal: "Joue 5 morceaux différents dans le mois",
   },
   {
     id: "mois-assidu",
     kind: "monthly",
     family: "pratique",
-    title: "Mois assidu",
     icon: "calendar",
     threshold: 20,
-    goal: "Enregistre 20 sessions dans le mois",
   },
   {
     id: "semaine-bouclee",
     kind: "weekly",
     family: "pratique",
-    title: "Semaine bouclée",
     icon: "circle_check",
     threshold: 1,
-    goal: "Termine tous les objectifs de ton plan de la semaine",
   },
 
   // Commu
@@ -166,65 +138,70 @@ export const BADGES: BadgeDef[] = [
     id: "scene",
     kind: "tiered",
     family: "commu",
-    title: "Sur scène",
     icon: "video",
     tiers: [1, 3, 10],
-    goal: (n) => (n === 1 ? "Publie ta première cover" : `Publie ${plural(n, "cover", "covers")}`),
   },
   {
     id: "melomane",
     kind: "tiered",
     family: "commu",
-    title: "Mélomane",
     icon: "disc",
     tiers: [1, 10, 50],
-    goal: (n) => (n === 1 ? "Note ton premier album" : `Note ${n} albums`),
   },
   {
     id: "entoure",
     kind: "tiered",
     family: "commu",
-    title: "Bien entouré",
     icon: "users",
     tiers: [1, 5, 15],
-    goal: (n) => (n === 1 ? "Ajoute ton premier ami" : `Compte ${n} amis`),
   },
   {
     id: "competiteur",
     kind: "tiered",
     family: "commu",
-    title: "Compétiteur",
     icon: "trophy",
     tiers: [1, 5, 15],
-    goal: (n) => (n === 1 ? "Remporte ton premier défi" : `Remporte ${n} défis`),
   },
 ];
 
-export const BADGES_BY_ID: Record<string, BadgeDef> = Object.fromEntries(
+export const BADGES_BY_ID: Record<string, BadgeDef | undefined> = Object.fromEntries(
   BADGES.map((badge) => [badge.id, badge])
 );
 
 /** Le titre d'un badge pour l'instrument principal de celui qui l'a. */
-export function badgeTitle(badgeId: string, instrument?: Instrument | null): string {
+export function badgeTitle(badgeId: string, instrument: Instrument | null | undefined, t: BadgesT): string {
   const def = BADGES_BY_ID[badgeId];
-  if (!def) return "Badge";
-  return (instrument && def.titles?.[instrument]) || def.title;
+  if (!def) return t("fallback");
+  if (instrument && def.titles?.includes(instrument)) {
+    return t(`catalog.${def.id}.titles.${instrument}` as Parameters<BadgesT>[0]);
+  }
+  return t(`catalog.${def.id}.title`);
+}
+
+/** Le nom d'un niveau (« Argent »). */
+export function tierName(level: number, t: BadgesT): string {
+  return level >= 1 && level <= 3 ? t(`tier.${String(level) as "1" | "2" | "3"}`) : "";
 }
 
 /** « Répertoire · Argent », ou le titre seul pour un badge recurrent. */
-export function badgeLabel(badgeId: string, level: number, instrument?: Instrument | null): string {
+export function badgeLabel(badgeId: string, level: number, instrument: Instrument | null | undefined, t: BadgesT): string {
   const def = BADGES_BY_ID[badgeId];
-  if (!def) return "Badge";
-  const title = badgeTitle(badgeId, instrument);
+  if (!def) return t("fallback");
+  const title = badgeTitle(badgeId, instrument, t);
   if (def.kind !== "tiered") return title;
-  return `${title} · ${TIER_NAMES[level - 1] ?? ""}`;
+  return `${title} · ${tierName(level, t)}`;
+}
+
+/** L'objectif d'un badge a paliers pour un seuil donne. */
+export function badgeGoalFor(def: BadgeDef, threshold: number, t: BadgesT): string {
+  return t(`catalog.${def.id}.goal`, { count: threshold });
 }
 
 /** Ce que le niveau a demande, pour le toast et la notification. */
-export function badgeGoal(badgeId: string, level: number): string {
+export function badgeGoal(badgeId: string, level: number, t: BadgesT): string {
   const def = BADGES_BY_ID[badgeId];
   if (!def) return "";
-  return def.kind === "tiered" ? def.goal(def.tiers[level - 1]) : def.goal;
+  return badgeGoalFor(def, def.kind === "tiered" ? def.tiers[level - 1] : def.threshold, t);
 }
 
 // ---------------------------------------------------------------------------

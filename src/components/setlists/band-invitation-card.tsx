@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import {
   acceptBandInvitation,
   declineBandInvitation,
@@ -16,6 +18,9 @@ export function BandInvitationCard({
   invitation,
   onAction,
 }: BandInvitationCardProps) {
+  const t = useTranslations("setlists.invitation");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const [loading, setLoading] = useState<"accept" | "decline" | null>(null);
 
   const handleAccept = async () => {
@@ -52,14 +57,15 @@ export function BandInvitationCard({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p className="font-medium">
-          <span className="text-primary">
-            {invitation.inviter?.display_name || invitation.inviter?.username || "Quelqu'un"}
-          </span>{" "}
-          t&apos;invite a rejoindre{" "}
-          <span className="font-semibold">{invitation.band?.name || "un groupe"}</span>
+          {t.rich("text", {
+            name: invitation.inviter?.display_name || invitation.inviter?.username || tc("someone"),
+            band: invitation.band?.name || t("aBand"),
+            who: (chunks) => <span className="text-primary">{chunks}</span>,
+            strong: (chunks) => <span className="font-semibold">{chunks}</span>,
+          })}
         </p>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          {new Date(invitation.created_at).toLocaleDateString("fr-FR", {
+          {new Date(invitation.created_at).toLocaleDateString(intlLocale, {
             day: "numeric",
             month: "long",
           })}
@@ -73,14 +79,14 @@ export function BandInvitationCard({
           disabled={loading !== null}
           className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
         >
-          {loading === "decline" ? "..." : "Refuser"}
+          {loading === "decline" ? "..." : tc("decline")}
         </button>
         <button
           onClick={handleAccept}
           disabled={loading !== null}
           className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
         >
-          {loading === "accept" ? "..." : "Accepter"}
+          {loading === "accept" ? "..." : tc("accept")}
         </button>
       </div>
     </div>

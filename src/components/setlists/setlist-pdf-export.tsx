@@ -10,7 +10,20 @@ import {
   pdf,
 } from "@react-pdf/renderer";
 import type { SetlistWithDetails, SetlistItemWithSongOwner } from "@/types";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import type { CommonT, EnumsT, Translator } from "@/i18n/types";
+
+/**
+ * Le PDF est rendu hors de l'arbre React (pdf().toBlob()) : il n'a pas
+ * acces au contexte next-intl. Le bouton lui passe donc ses traductions.
+ */
+interface PdfLabels {
+  t: Translator<"setlists.pdf">;
+  tc: CommonT;
+  te: EnumsT;
+  intlLocale: string;
+}
 
 // Styles pour le PDF
 const styles = StyleSheet.create({
@@ -204,17 +217,17 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
 
-function formatTotalDuration(seconds: number): string {
+function formatTotalDuration(seconds: number, tc: CommonT): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   if (hours > 0) {
-    return `${hours}h ${minutes.toString().padStart(2, "0")}min`;
+    return tc("duration.hoursMinutesPadded", { h: hours, m: minutes.toString().padStart(2, "0") });
   }
-  return `${minutes} min`;
+  return tc("duration.minutes", { m: minutes });
 }
 
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("fr-FR", {
+function formatDate(dateString: string, intlLocale: string): string {
+  return new Date(dateString).toLocaleDateString(intlLocale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -224,9 +237,10 @@ function formatDate(dateString: string): string {
 
 interface SetlistPDFProps {
   setlist: SetlistWithDetails;
+  labels: PdfLabels;
 }
 
-function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
+function SetlistPDFDocument({ setlist, labels: { t, tc, te, intlLocale } }: SetlistPDFProps) {
   const items = setlist.items;
   const songCount = items.filter((i) => i.item_type === "song").length;
   const totalDuration = items.reduce(
@@ -253,15 +267,15 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
           <View style={styles.metaRow}>
             {setlist.concert_date && (
               <View style={styles.metaItem}>
-                <Text style={styles.metaLabel}>Date: </Text>
+                <Text style={styles.metaLabel}>{t("date")}</Text>
                 <Text style={styles.metaValue}>
-                  {formatDate(setlist.concert_date)}
+                  {formatDate(setlist.concert_date, intlLocale)}
                 </Text>
               </View>
             )}
             {setlist.venue && (
               <View style={styles.metaItem}>
-                <Text style={styles.metaLabel}>Lieu: </Text>
+                <Text style={styles.metaLabel}>{t("venue")}</Text>
                 <Text style={styles.metaValue}>{setlist.venue}</Text>
               </View>
             )}
@@ -271,18 +285,18 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{songCount}</Text>
               <Text style={styles.statLabel}>
-                morceau{songCount > 1 ? "x" : ""}
+                {t("songs", { count: songCount })}
               </Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>
-                {formatTotalDuration(totalDuration)}
+                {formatTotalDuration(totalDuration, tc)}
               </Text>
-              <Text style={styles.statLabel}>durée totale</Text>
+              <Text style={styles.statLabel}>{t("totalDuration")}</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{items.length}</Text>
-              <Text style={styles.statLabel}>éléments</Text>
+              <Text style={styles.statLabel}>{t("items")}</Text>
             </View>
           </View>
         </View>
@@ -290,9 +304,9 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
         {/* Items table header */}
         <View style={styles.itemsHeader}>
           <Text style={[styles.itemsHeaderText, styles.colNumber]}>#</Text>
-          <Text style={[styles.itemsHeaderText, styles.colTitle]}>Titre</Text>
-          <Text style={[styles.itemsHeaderText, styles.colArtist]}>Artiste</Text>
-          <Text style={[styles.itemsHeaderText, styles.colDuration]}>Durée</Text>
+          <Text style={[styles.itemsHeaderText, styles.colTitle]}>{t("title")}</Text>
+          <Text style={[styles.itemsHeaderText, styles.colArtist]}>{t("artist")}</Text>
+          <Text style={[styles.itemsHeaderText, styles.colDuration]}>{t("duration")}</Text>
         </View>
 
         {/* Items list */}
@@ -303,13 +317,13 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
                 <View style={styles.sectionRow}>
                   <Text style={styles.itemNumber}>-</Text>
                   <Text style={styles.sectionLabel}>
-                    {item.section_name || "Section"}
+                    {item.section_name || t("section")}
                   </Text>
                 </View>
                 {item.transition_seconds && item.transition_seconds > 0 && (
                   <View style={styles.transitionRow}>
                     <Text style={styles.transitionText}>
-                      ↓ Transition: {formatDuration(item.transition_seconds)}
+                      {t("transition", { duration: formatDuration(item.transition_seconds) })}
                     </Text>
                   </View>
                 )}
@@ -324,7 +338,7 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
                   <Text style={styles.itemNumber}>♦</Text>
                   <View style={styles.colTitle}>
                     <Text style={styles.exerciseLabel}>
-                      {item.exercise_name || "Exercice"}
+                      {item.exercise_name || t("exercise")}
                     </Text>
                     {item.notes && (
                       <Text style={styles.itemNotes}>{item.notes}</Text>
@@ -332,8 +346,8 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
                   </View>
                   <Text style={styles.itemArtist}>
                     {item.exercise_category
-                      ? EXERCISE_CATEGORY_LABELS[item.exercise_category]
-                      : "Exercice"}
+                      ? te(`exerciseCategory.${item.exercise_category}`)
+                      : t("exercise")}
                     {item.bpm ? ` · ${item.bpm} bpm` : ""}
                   </Text>
                   <Text style={styles.itemDuration}>
@@ -345,7 +359,7 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
                 {item.transition_seconds && item.transition_seconds > 0 && (
                   <View style={styles.transitionRow}>
                     <Text style={styles.transitionText}>
-                      ↓ Transition: {formatDuration(item.transition_seconds)}
+                      {t("transition", { duration: formatDuration(item.transition_seconds) })}
                     </Text>
                   </View>
                 )}
@@ -379,7 +393,7 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
               {item.transition_seconds && item.transition_seconds > 0 && (
                 <View style={styles.transitionRow}>
                   <Text style={styles.transitionText}>
-                    ↓ Transition: {formatDuration(item.transition_seconds)}
+                    {t("transition", { duration: formatDuration(item.transition_seconds) })}
                   </Text>
                 </View>
               )}
@@ -390,14 +404,11 @@ function SetlistPDFDocument({ setlist }: SetlistPDFProps) {
         {/* Footer */}
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
-            Généré le{" "}
-            {new Date().toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
+            {t("generatedOn", {
+              date: new Date().toLocaleDateString(intlLocale, { day: "numeric", month: "long", year: "numeric" }),
             })}
           </Text>
-          <Text style={styles.footerText}>Ostinara - Setlist Builder</Text>
+          <Text style={styles.footerText}>{t("footer")}</Text>
         </View>
       </Page>
     </Document>
@@ -409,13 +420,17 @@ interface SetlistPDFExportProps {
 }
 
 export function SetlistPDFExport({ setlist }: SetlistPDFExportProps) {
+  const t = useTranslations("setlists.pdf");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
   const [generating, setGenerating] = useState(false);
 
   const handleExport = async () => {
     setGenerating(true);
 
     try {
-      const blob = await pdf(<SetlistPDFDocument setlist={setlist} />).toBlob();
+      const blob = await pdf(<SetlistPDFDocument setlist={setlist} labels={{ t, tc, te, intlLocale }} />).toBlob();
 
       // Create download link
       const url = URL.createObjectURL(blob);
@@ -428,7 +443,7 @@ export function SetlistPDFExport({ setlist }: SetlistPDFExportProps) {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("Erreur lors de la génération du PDF");
+      alert(t("error"));
     } finally {
       setGenerating(false);
     }
@@ -461,7 +476,7 @@ export function SetlistPDFExport({ setlist }: SetlistPDFExportProps) {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          Génération...
+          {t("generating")}
         </>
       ) : (
         <>
@@ -478,7 +493,7 @@ export function SetlistPDFExport({ setlist }: SetlistPDFExportProps) {
               d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          Export PDF
+          {t("export")}
         </>
       )}
     </button>

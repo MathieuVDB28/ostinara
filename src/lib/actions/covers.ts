@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
@@ -77,7 +78,7 @@ export async function canUploadCover(): Promise<{
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { allowed: false, reason: "Non authentifié" };
+    return { allowed: false, reason: await tErr("notAuthenticated") };
   }
 
   const { data: profile } = await supabase
@@ -100,7 +101,7 @@ export async function canUploadCover(): Promise<{
   if (currentCount >= FREE_PLAN_COVER_LIMIT) {
     return {
       allowed: false,
-      reason: `Tu as atteint la limite de ${FREE_PLAN_COVER_LIMIT} covers. Passe en Pro pour en ajouter plus !`,
+      reason: await tErr("coverLimit", { limit: FREE_PLAN_COVER_LIMIT }),
       limit: FREE_PLAN_COVER_LIMIT,
       current: currentCount
     };
@@ -118,7 +119,7 @@ export async function createCover(input: CreateCoverInput): Promise<{
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Vérifier la limite du plan
@@ -136,7 +137,7 @@ export async function createCover(input: CreateCoverInput): Promise<{
     .single();
 
   if (!song) {
-    return { success: false, error: "Morceau non trouvé" };
+    return { success: false, error: await tErr("songNotFound") };
   }
 
   /*
@@ -153,7 +154,7 @@ export async function createCover(input: CreateCoverInput): Promise<{
       .eq("id", input.reply_to_cover_id)
       .maybeSingle();
     if (!parent) {
-      return { success: false, error: "Cover d'origine introuvable" };
+      return { success: false, error: await tErr("originalCoverNotFound") };
     }
     replyTo = parent.id;
   }
@@ -171,7 +172,7 @@ export async function createCover(input: CreateCoverInput): Promise<{
 
   if (error) {
     console.error("Error creating cover:", error);
-    return { success: false, error: "Erreur lors de l'ajout du cover" };
+    return { success: false, error: await tErr("coverAddFailed") };
   }
 
   /*
@@ -227,7 +228,7 @@ export async function updateCover(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -238,7 +239,7 @@ export async function updateCover(
 
   if (error) {
     console.error("Error updating cover:", error);
-    return { success: false, error: "Erreur lors de la mise à jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   revalidatePath("/covers");
@@ -250,7 +251,7 @@ export async function deleteCover(id: string): Promise<{ success: boolean; error
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Récupérer le cover pour supprimer les fichiers storage
@@ -262,7 +263,7 @@ export async function deleteCover(id: string): Promise<{ success: boolean; error
     .single();
 
   if (!cover) {
-    return { success: false, error: "Cover non trouvé" };
+    return { success: false, error: await tErr("coverNotFound") };
   }
 
   // Supprimer de la base de données
@@ -274,7 +275,7 @@ export async function deleteCover(id: string): Promise<{ success: boolean; error
 
   if (error) {
     console.error("Error deleting cover:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   // Supprimer les fichiers du storage
@@ -566,7 +567,7 @@ export async function ensureSongForCoverReply(
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
 
-  if (!user) return { success: false, error: "Non authentifié" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   const { data: cover } = await supabase
     .from("covers")
@@ -579,7 +580,7 @@ export async function ensureSongForCoverReply(
     | undefined;
 
   if (!source) {
-    return { success: false, error: "Morceau d'origine introuvable" };
+    return { success: false, error: await tErr("originalSongNotFound") };
   }
 
   /*
@@ -619,7 +620,7 @@ export async function ensureSongForCoverReply(
     console.error("Error creating song for cover reply:", error);
     return {
       success: false,
-      error: "Impossible d'ajouter ce morceau à ta bibliothèque",
+      error: await tErr("cannotAddSongToLibrary"),
     };
   }
 

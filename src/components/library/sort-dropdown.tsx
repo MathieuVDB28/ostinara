@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { ArrowDownUp, ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { SortOption } from "@/types";
 
 interface SortDropdownProps {
@@ -9,17 +10,13 @@ interface SortDropdownProps {
   onChange: (value: SortOption) => void;
 }
 
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: "date_desc", label: "Plus récent" },
-  { value: "date_asc", label: "Plus ancien" },
-  { value: "title_asc", label: "Titre A-Z" },
-  { value: "title_desc", label: "Titre Z-A" },
-  { value: "progress_desc", label: "Progression" },
-  { value: "difficulty_asc", label: "Difficulté croissante" },
-  { value: "difficulty_desc", label: "Difficulté décroissante" },
+const SORT_VALUES: SortOption[] = [
+  "date_desc", "date_asc", "title_asc", "title_desc", "progress_desc", "difficulty_asc", "difficulty_desc",
 ];
 
 export function SortDropdown({ value, onChange }: SortDropdownProps) {
+  const t = useTranslations("library.sort");
+  const sortOptions = SORT_VALUES.map((option) => ({ value: option, label: t(option) }));
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -47,14 +44,14 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
     return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
-  const currentLabel = sortOptions.find((opt) => opt.value === value)?.label || "Trier";
+  const currentLabel = sortOptions.find((opt) => opt.value === value)?.label || t("label");
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
-        aria-label={`Trier : ${currentLabel}`}
+        aria-label={t("aria", { label: currentLabel })}
         className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ArrowDownUp className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />

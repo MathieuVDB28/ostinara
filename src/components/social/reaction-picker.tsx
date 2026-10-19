@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { EmojiPicker } from "frimousse";
+import { useLocale, useTranslations } from "next-intl";
 import { Icon } from "@/components/ui/icon";
 
 /** Les reactions d'un geste, en tete du selecteur. */
@@ -26,6 +27,9 @@ interface ReactionPickerProps {
  * deborderait de l'ecran des que le bouton n'est pas a gauche.
  */
 export function ReactionPicker({ selected, onSelect, onClose }: ReactionPickerProps) {
+  const t = useTranslations("social");
+  const tc = useTranslations("common");
+  const locale = useLocale();
   const [showAll, setShowAll] = useState(false);
 
   return (
@@ -48,7 +52,7 @@ export function ReactionPicker({ selected, onSelect, onClose }: ReactionPickerPr
           <button
             type="button"
             onClick={() => setShowAll((open) => !open)}
-            aria-label="Tous les emojis"
+            aria-label={t("allEmojis")}
             aria-expanded={showAll}
             className={`ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground ${
               showAll ? "bg-accent text-foreground" : ""
@@ -60,21 +64,21 @@ export function ReactionPicker({ selected, onSelect, onClose }: ReactionPickerPr
 
         {showAll && (
           <EmojiPicker.Root
-            locale="fr"
+            locale={locale}
             columns={8}
             onEmojiSelect={({ emoji }) => onSelect(emoji)}
             className="flex h-72 flex-col border-t border-border pt-2"
           >
             <EmojiPicker.Search
-              placeholder="Rechercher un emoji"
+              placeholder={t("searchEmoji")}
               className="mb-1 w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
             <EmojiPicker.Viewport className="relative flex-1 outline-none">
               <EmojiPicker.Loading className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
-                Chargement…
+                {tc("loading")}
               </EmojiPicker.Loading>
               <EmojiPicker.Empty className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
-                Aucun emoji trouvé
+                {t("noEmoji")}
               </EmojiPicker.Empty>
               <EmojiPicker.List
                 className="select-none pb-1"

@@ -5,6 +5,9 @@ import dynamic from "next/dynamic";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import type { CommonT } from "@/i18n/types";
 import {
   DndContext,
   closestCenter,
@@ -56,22 +59,22 @@ interface SetlistDetailViewProps {
   userPlan: UserPlan;
 }
 
-function formatDuration(seconds: number): string {
+function formatDuration(seconds: number, t: CommonT): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
 
   if (hours > 0) {
-    return `${hours}h ${minutes.toString().padStart(2, "0")}min`;
+    return t("duration.hoursMinutesPadded", { h: hours, m: minutes.toString().padStart(2, "0") });
   }
   if (minutes > 0) {
-    return `${minutes}min ${secs.toString().padStart(2, "0")}s`;
+    return t("duration.minutesSeconds", { m: minutes, s: secs.toString().padStart(2, "0") });
   }
-  return `${secs}s`;
+  return t("duration.seconds", { s: secs });
 }
 
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("fr-FR", {
+function formatDate(dateString: string, intlLocale: string): string {
+  return new Date(dateString).toLocaleDateString(intlLocale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -96,6 +99,9 @@ export function SetlistDetailView({
   songSources,
   userPlan,
 }: SetlistDetailViewProps) {
+  const t = useTranslations("setlists.detail");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const router = useRouter();
   const [setlist, setSetlist] = useState(initialSetlist);
   const [items, setItems] = useState(initialSetlist.items);
@@ -173,7 +179,7 @@ export function SetlistDetailView({
   };
 
   const handleDeleteItem = async (itemId: string) => {
-    if (!confirm("Supprimer cet element ?")) return;
+    if (!confirm(t("confirmDeleteItem"))) return;
 
     // Optimistic update
     setItems(items.filter((i) => i.id !== itemId));
@@ -209,7 +215,7 @@ export function SetlistDetailView({
     if (result.success && result.session) {
       router.push(`/jam/${result.session.id}`);
     } else {
-      alert(result.error || "Erreur lors du lancement de la Jam");
+      alert(result.error || t("jamFailed"));
       setLaunchingJam(false);
     }
   };
@@ -221,7 +227,7 @@ export function SetlistDetailView({
         className="-ml-1 mb-3 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
       >
         <Icon name="chevron_left" className="h-4 w-4" strokeWidth={2.25} />
-        Groupes et setlists
+        {t("back")}
       </button>
 
       {/* Header */}
@@ -229,7 +235,7 @@ export function SetlistDetailView({
         {isEditingHeader ? (
           <div className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium">Nom</label>
+              <label className="mb-1 block text-sm font-medium">{t("name")}</label>
               <input
                 type="text"
                 value={name}
@@ -240,7 +246,7 @@ export function SetlistDetailView({
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium">
-                Description
+                {tc("description")}
               </label>
               <textarea
                 value={description}
@@ -252,7 +258,7 @@ export function SetlistDetailView({
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  Date du concert
+                  {t("concertDate")}
                 </label>
                 <input
                   type="date"
@@ -262,12 +268,12 @@ export function SetlistDetailView({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium">Lieu</label>
+                <label className="mb-1 block text-sm font-medium">{t("venue")}</label>
                 <input
                   type="text"
                   value={venue}
                   onChange={(e) => setVenue(e.target.value)}
-                  placeholder="Ex: Le Bataclan"
+                  placeholder={t("venuePlaceholder")}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
               </div>
@@ -277,14 +283,14 @@ export function SetlistDetailView({
                 onClick={() => setIsEditingHeader(false)}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
               >
-                Annuler
+                {tc("cancel")}
               </button>
               <button
                 onClick={handleSaveHeader}
                 disabled={saving || !name.trim()}
                 className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
               >
-                {saving ? "Sauvegarde..." : "Sauvegarder"}
+                {saving ? tc("savingShort") : tc("saveShort")}
               </button>
             </div>
           </div>
@@ -306,10 +312,10 @@ export function SetlistDetailView({
 
             {/* Les chiffres du set, style Atelier */}
             <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-border py-3 sm:grid-cols-4">
-              <SetStat label="morceaux" value={String(songCount)} />
-              <SetStat label="durée" value={formatDuration(totalDuration)} />
-              {setlist.concert_date && <SetStat label="concert" value={formatDate(setlist.concert_date)} small />}
-              {setlist.venue && <SetStat label="lieu" value={setlist.venue} small />}
+              <SetStat label={t("statSongs")} value={String(songCount)} />
+              <SetStat label={t("statDuration")} value={formatDuration(totalDuration, tc)} />
+              {setlist.concert_date && <SetStat label={t("statConcert")} value={formatDate(setlist.concert_date, intlLocale)} small />}
+              {setlist.venue && <SetStat label={t("statVenue")} value={setlist.venue} small />}
             </dl>
 
             <div className="mt-4 flex flex-wrap gap-1.5">
@@ -320,17 +326,17 @@ export function SetlistDetailView({
                   className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
                 >
                   <Icon name="music_note" className="h-4 w-4" />
-                  {launchingJam ? "Lancement…" : setlist.band_id ? "Lancer un jam" : "Lancer un jam solo"}
+                  {launchingJam ? t("launching") : setlist.band_id ? t("startJam") : t("startSoloJam")}
                 </button>
               )}
               <button onClick={() => setIsEditingHeader(true)} className={ACTION}>
                 <Icon name="edit" className="h-4 w-4" />
-                Modifier
+                {tc("edit")}
               </button>
               <SetlistPDFExport setlist={setlist} />
               <button onClick={handleDuplicate} className={ACTION}>
                 <Icon name="layers" className="h-4 w-4" />
-                Dupliquer
+                {t("duplicate")}
               </button>
               {confirmDelete ? (
                 <span className="flex items-center gap-1.5">
@@ -338,10 +344,10 @@ export function SetlistDetailView({
                     onClick={handleDeleteSetlist}
                     className="inline-flex min-h-[38px] items-center rounded-full bg-destructive px-3.5 text-[13px] font-semibold text-destructive-foreground hover:opacity-90"
                   >
-                    Confirmer la suppression
+                    {t("confirmDelete")}
                   </button>
                   <button onClick={() => setConfirmDelete(false)} className={ACTION}>
-                    Annuler
+                    {tc("cancel")}
                   </button>
                 </span>
               ) : (
@@ -350,7 +356,7 @@ export function SetlistDetailView({
                   className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold text-destructive transition-colors hover:bg-destructive/10"
                 >
                   <Icon name="delete" className="h-4 w-4" />
-                  Supprimer
+                  {tc("delete")}
                 </button>
               )}
             </div>
@@ -362,14 +368,14 @@ export function SetlistDetailView({
       <div className="mb-6">
         <div className="mb-1 flex items-baseline justify-between border-b border-border pb-2">
           <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
-            Programme
+            {t("program")}
           </h2>
           <button
             onClick={() => setShowAddModal(true)}
             className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
           >
             <Icon name="add" className="h-3.5 w-3.5" strokeWidth={2} />
-            Ajouter
+            {t("add")}
           </button>
         </div>
 
@@ -398,13 +404,13 @@ export function SetlistDetailView({
           </DndContext>
         ) : (
           <div className="flex flex-col items-start gap-2 py-8">
-            <p className="text-muted-foreground">Aucun morceau dans cette setlist.</p>
+            <p className="text-muted-foreground">{t("empty")}</p>
             <button
               onClick={() => setShowAddModal(true)}
               className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-border px-4 text-sm font-semibold transition-colors hover:bg-accent"
             >
               <Icon name="add" className="h-4 w-4" />
-              Ajouter ton premier morceau
+              {t("addFirst")}
             </button>
           </div>
         )}

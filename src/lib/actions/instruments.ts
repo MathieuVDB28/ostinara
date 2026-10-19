@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { INSTRUMENT_VALUES, SKILL_LEVEL_VALUES } from "@/lib/instruments";
@@ -39,22 +40,22 @@ export async function setMyInstruments(
   instruments: ProfileInstrument[],
 ): Promise<{ success: boolean; error?: string }> {
   const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Non authentifié" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   if (instruments.length === 0) {
-    return { success: false, error: "Choisis au moins un instrument." };
+    return { success: false, error: await tErr("oneInstrumentRequired") };
   }
   if (new Set(instruments.map((i) => i.instrument)).size !== instruments.length) {
-    return { success: false, error: "Chaque instrument une seule fois." };
+    return { success: false, error: await tErr("instrumentOnce") };
   }
   if (instruments.some((i) => !INSTRUMENT_VALUES.includes(i.instrument))) {
-    return { success: false, error: "Instrument inconnu." };
+    return { success: false, error: await tErr("unknownInstrument") };
   }
   if (instruments.some((i) => !SKILL_LEVEL_VALUES.includes(i.level))) {
-    return { success: false, error: "Indique ton niveau pour chaque instrument." };
+    return { success: false, error: await tErr("levelPerInstrument") };
   }
   if (instruments.filter((i) => i.is_primary).length !== 1) {
-    return { success: false, error: "Choisis ton instrument principal." };
+    return { success: false, error: await tErr("primaryRequired") };
   }
 
   // Plan Free : 2 instruments. Qui en avait deja plus (avant la limite, ou
@@ -65,7 +66,7 @@ export async function setMyInstruments(
     if (instruments.length > Math.max(limit, current.length)) {
       return {
         success: false,
-        error: `Le plan Free est limité à ${limit} instruments. Passe en Pro pour en ajouter plus !`,
+        error: await tErr("instrumentLimit", { limit }),
       };
     }
   }
@@ -82,7 +83,7 @@ export async function setMyInstruments(
 
   if (error) {
     console.error("Error setting instruments:", error);
-    return { success: false, error: "Oups, ça n'est pas passé. Réessaie dans un instant." };
+    return { success: false, error: await tErr("oops") };
   }
 
   // L'instrument s'affiche dans le profil et conditionne le layout principal.

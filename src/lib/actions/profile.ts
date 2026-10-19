@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { PROFILE_INSTRUMENTS_SELECT } from "@/lib/instruments";
@@ -32,22 +33,22 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: boole
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const file = formData.get("avatar") as File;
   if (!file) {
-    return { success: false, error: "Aucun fichier fourni" };
+    return { success: false, error: await tErr("noFile") };
   }
 
   // Vérifier le type de fichier
   if (!file.type.startsWith("image/")) {
-    return { success: false, error: "Le fichier doit être une image" };
+    return { success: false, error: await tErr("fileMustBeImage") };
   }
 
   // Vérifier la taille (max 2MB)
   if (file.size > 2 * 1024 * 1024) {
-    return { success: false, error: "L'image ne doit pas dépasser 2MB" };
+    return { success: false, error: await tErr("imageTooLarge") };
   }
 
   // Nom du fichier : userId/avatar.ext
@@ -75,7 +76,7 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: boole
 
   if (uploadError) {
     console.error("Upload error:", uploadError);
-    return { success: false, error: `Erreur lors de l'upload: ${uploadError.message}` };
+    return { success: false, error: await tErr("uploadFailed", { message: uploadError.message }) };
   }
 
   // Récupérer l'URL publique
@@ -91,7 +92,7 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: boole
 
   if (updateError) {
     console.error("Profile update error:", updateError);
-    return { success: false, error: "Erreur lors de la mise à jour du profil" };
+    return { success: false, error: await tErr("profileUpdateFailed") };
   }
 
   revalidatePath("/profile");
@@ -501,12 +502,12 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ succes
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Validation basique côté serveur
   if (input.bio && input.bio.length > 160) {
-    return { success: false, error: "La bio ne peut pas dépasser 160 caractères" };
+    return { success: false, error: await tErr("bioLength") };
   }
 
   const { error } = await supabase
@@ -516,7 +517,7 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ succes
 
   if (error) {
     console.error("Error updating profile:", error);
-    return { success: false, error: "Erreur lors de la mise à jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   revalidatePath("/profile");
@@ -534,7 +535,7 @@ export async function setFavoriteSong(input: SetFavoriteSongInput): Promise<{ su
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Vérifier que le morceau appartient à l'utilisateur
@@ -546,7 +547,7 @@ export async function setFavoriteSong(input: SetFavoriteSongInput): Promise<{ su
     .single();
 
   if (!song) {
-    return { success: false, error: "Morceau non trouvé" };
+    return { success: false, error: await tErr("songNotFound") };
   }
 
   // Upsert : remplace si position existante, sinon insère
@@ -562,7 +563,7 @@ export async function setFavoriteSong(input: SetFavoriteSongInput): Promise<{ su
 
   if (error) {
     console.error("Error setting favorite song:", error);
-    return { success: false, error: "Erreur lors de l'ajout aux favoris" };
+    return { success: false, error: await tErr("favoriteFailed") };
   }
 
   revalidatePath("/profile");
@@ -579,7 +580,7 @@ export async function removeFavoriteSong(position: number): Promise<{ success: b
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -590,7 +591,7 @@ export async function removeFavoriteSong(position: number): Promise<{ success: b
 
   if (error) {
     console.error("Error removing favorite song:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/profile");
@@ -607,7 +608,7 @@ export async function setFavoriteAlbum(input: SetFavoriteAlbumInput): Promise<{ 
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Upsert : remplace si position existante, sinon insère
@@ -622,7 +623,7 @@ export async function setFavoriteAlbum(input: SetFavoriteAlbumInput): Promise<{ 
 
   if (error) {
     console.error("Error setting favorite album:", error);
-    return { success: false, error: "Erreur lors de l'ajout aux favoris" };
+    return { success: false, error: await tErr("favoriteFailed") };
   }
 
   revalidatePath("/profile");
@@ -639,7 +640,7 @@ export async function removeFavoriteAlbum(position: number): Promise<{ success: 
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -650,7 +651,7 @@ export async function removeFavoriteAlbum(position: number): Promise<{ success: 
 
   if (error) {
     console.error("Error removing favorite album:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/profile");

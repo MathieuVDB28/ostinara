@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
@@ -34,7 +35,7 @@ export async function addToWishlist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Vérifier si déjà dans la wishlist (par deezer_id)
@@ -47,7 +48,7 @@ export async function addToWishlist(
       .single();
 
     if (existing) {
-      return { success: false, error: "Ce morceau est déjà dans ta wishlist" };
+      return { success: false, error: await tErr("songAlreadyInWishlist") };
     }
   }
 
@@ -61,7 +62,7 @@ export async function addToWishlist(
       .single();
 
     if (existingInLibrary) {
-      return { success: false, error: "Ce morceau est déjà dans ta bibliothèque" };
+      return { success: false, error: await tErr("songAlreadyInLibrary") };
     }
   }
 
@@ -81,7 +82,7 @@ export async function addToWishlist(
     if (count && count >= 20) {
       return {
         success: false,
-        error: "Tu as atteint la limite de 20 morceaux dans ta wishlist. Passe en Pro pour en ajouter plus !"
+        error: await tErr("wishlistSongLimit")
       };
     }
   }
@@ -97,7 +98,7 @@ export async function addToWishlist(
 
   if (error) {
     console.error("Error adding to wishlist:", error);
-    return { success: false, error: "Erreur lors de l'ajout à la wishlist" };
+    return { success: false, error: await tErr("wishlistAddFailed") };
   }
 
   // Créer une activité pour le feed
@@ -123,7 +124,7 @@ export async function removeFromWishlist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -134,7 +135,7 @@ export async function removeFromWishlist(
 
   if (error) {
     console.error("Error removing from wishlist:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/library");

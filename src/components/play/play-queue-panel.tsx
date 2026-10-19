@@ -9,10 +9,11 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { PlayStepper, type PlayStep } from "./play-stepper";
+import { ALL_EXERCISE_CATEGORIES } from "@/lib/instruments";
 import { createRoutineWithItems } from "@/lib/actions/routines";
 import type { SaveSessionItemInput } from "@/lib/actions/setlists";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type {
   Song,
   ExerciseWithProgress,
@@ -67,6 +68,10 @@ export function PlayQueuePanel({
   userPlan,
   loadRoutine,
 }: PlayQueuePanelProps) {
+  const t = useTranslations("play.queue");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const categoryLabel = (category: ExerciseCategory) => te(`exerciseCategory.${category}`);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -121,7 +126,7 @@ export function PlayQueuePanel({
         return {
           uid: uid(),
           kind: "express",
-          name: it.exercise_name ?? "Exercice",
+          name: it.exercise_name ?? tc("exercise"),
           category: it.exercise_category,
           bpm: it.bpm ?? undefined,
         };
@@ -143,8 +148,8 @@ export function PlayQueuePanel({
             item,
             song,
             exercise: null as ExerciseWithProgress | null,
-            label: song?.title ?? "Morceau supprimé",
-            sub: song?.artist ?? "Plus dans ta bibliothèque",
+            label: song?.title ?? t("deletedSong"),
+            sub: song?.artist ?? t("notInLibrary"),
             valid: !!song,
           };
         }
@@ -155,10 +160,10 @@ export function PlayQueuePanel({
             item,
             song: null as Song | null,
             exercise,
-            label: exercise?.name ?? "Exercice supprimé",
+            label: exercise?.name ?? t("deletedExercise"),
             sub: exercise
-              ? EXERCISE_CATEGORY_LABELS[exercise.category]
-              : "Plus dans ta bibliothèque",
+              ? categoryLabel(exercise.category)
+              : t("notInLibrary"),
             valid: !!exercise,
           };
         }
@@ -168,12 +173,13 @@ export function PlayQueuePanel({
           exercise: null as ExerciseWithProgress | null,
           label: item.name,
           sub: item.category
-            ? EXERCISE_CATEGORY_LABELS[item.category]
-            : "Exercice express",
+            ? categoryLabel(item.category)
+            : t("express"),
           valid: true,
         };
       }),
-    [queue, songs, exercises]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [queue, songs, exercises, t]
   );
 
   const steps: PlayStep[] = useMemo(
@@ -319,9 +325,9 @@ export function PlayQueuePanel({
     if (result.success) {
       setShowSave(false);
       setSaveName("");
-      setSaveMessage("Routine enregistrée — tu la retrouves dans le Carnet.");
+      setSaveMessage(t("routineSaved"));
     } else {
-      setSaveMessage(result.error || "Erreur lors de l'enregistrement");
+      setSaveMessage(result.error || tc("genericError"));
     }
   };
 
@@ -332,13 +338,13 @@ export function PlayQueuePanel({
       {/* ---- Constructeur ---- */}
       <div className="space-y-4 rounded-xl border border-border p-4">
         <h2 className="font-display text-2xl font-extrabold uppercase leading-none">
-          Monte ta session
+          {t("build")}
         </h2>
 
         {/* Ajouter un morceau */}
         <div>
           <label className="mb-1.5 block text-sm font-medium">
-            Ajouter un morceau
+            {t("addSong")}
           </label>
           <div className="relative">
             <Search
@@ -350,7 +356,7 @@ export function PlayQueuePanel({
               type="text"
               value={songQuery}
               onChange={(e) => setSongQuery(e.target.value)}
-              placeholder="Rechercher dans ta bibliothèque..."
+              placeholder={t("searchLibrary")}
               className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary"
             />
           </div>
@@ -376,7 +382,7 @@ export function PlayQueuePanel({
         {/* Ajouter un exercice (biblio) */}
         <div className="border-t border-border pt-4">
           <label className="mb-1.5 block text-sm font-medium">
-            Ajouter un exercice
+            {t("addExercise")}
           </label>
           <div className="relative">
             <Search
@@ -388,7 +394,7 @@ export function PlayQueuePanel({
               type="text"
               value={exerciseQuery}
               onChange={(e) => setExerciseQuery(e.target.value)}
-              placeholder="Rechercher un exercice..."
+              placeholder={t("searchExercise")}
               className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary"
             />
           </div>
@@ -404,7 +410,7 @@ export function PlayQueuePanel({
                 <Plus className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2} aria-hidden="true" />
                 <span className="truncate font-medium">{exercise.name}</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {EXERCISE_CATEGORY_LABELS[exercise.category]}
+                  {categoryLabel(exercise.category)}
                 </span>
               </button>
             ))}
@@ -413,13 +419,13 @@ export function PlayQueuePanel({
           {/* Exo express */}
           <div className="mt-3 rounded-lg border border-dashed border-border p-3">
             <p className="mb-2 text-xs font-medium text-muted-foreground">
-              Ou un exercice express
+              {t("orExpress")}
             </p>
             <input
               type="text"
               value={expressName}
               onChange={(e) => setExpressName(e.target.value)}
-              placeholder="Ex: Échauffement 5 min..."
+              placeholder={t("expressPlaceholder")}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
             <div className="mt-2 flex gap-2">
@@ -430,20 +436,18 @@ export function PlayQueuePanel({
                 }
                 className="flex-1 rounded-lg border border-input bg-background px-2 py-2 text-sm focus:border-primary"
               >
-                <option value="">Catégorie</option>
-                {(Object.keys(EXERCISE_CATEGORY_LABELS) as ExerciseCategory[]).map(
-                  (cat) => (
-                    <option key={cat} value={cat}>
-                      {EXERCISE_CATEGORY_LABELS[cat]}
-                    </option>
-                  )
-                )}
+                <option value="">{t("category")}</option>
+                {ALL_EXERCISE_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {categoryLabel(cat)}
+                  </option>
+                ))}
               </select>
               <input
                 type="number"
                 value={expressBpm || ""}
                 onChange={(e) => setExpressBpm(parseInt(e.target.value) || 0)}
-                placeholder="BPM"
+                placeholder={t("bpm")}
                 min="20"
                 max="300"
                 className="w-20 rounded-lg border border-input bg-background px-2 py-2 text-sm focus:border-primary"
@@ -453,7 +457,7 @@ export function PlayQueuePanel({
                 disabled={!expressName.trim()}
                 className="shrink-0 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                Ajouter
+                {tc("add")}
               </button>
             </div>
           </div>
@@ -465,7 +469,7 @@ export function PlayQueuePanel({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
-              Ta session · {queue.length}
+              {t("yourSession", { count: queue.length })}
             </h3>
             <div className="flex items-center gap-3">
               <button
@@ -473,14 +477,14 @@ export function PlayQueuePanel({
                 disabled={validCount === 0}
                 className="text-xs font-semibold text-foreground hover:underline disabled:opacity-40"
               >
-                Enregistrer comme routine
+                {t("saveAsRoutine")}
               </button>
               <button
                 onClick={clearAll}
                 className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-destructive"
               >
                 <Trash2 className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-                Vider
+                {t("clear")}
               </button>
             </div>
           </div>
@@ -491,7 +495,7 @@ export function PlayQueuePanel({
                 type="text"
                 value={saveName}
                 onChange={(e) => setSaveName(e.target.value)}
-                placeholder="Nom de la routine"
+                placeholder={t("routineName")}
                 className="flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:border-primary"
               />
               <button
@@ -499,7 +503,7 @@ export function PlayQueuePanel({
                 disabled={saving || !saveName.trim()}
                 className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {saving ? "..." : "Enregistrer"}
+                {saving ? "..." : tc("save")}
               </button>
             </div>
           )}
@@ -525,7 +529,7 @@ export function PlayQueuePanel({
                       : "bg-primary/15 text-primary"
                   }`}
                 >
-                  {entry.item.kind === "song" ? "Morceau" : "Exo"}
+                  {entry.item.kind === "song" ? t("song") : t("exo")}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{entry.label}</p>
@@ -537,7 +541,7 @@ export function PlayQueuePanel({
                   <button
                     onClick={() => move(entry.item.uid, -1)}
                     disabled={i === 0}
-                    aria-label="Monter"
+                    aria-label={t("moveUp")}
                     className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-30"
                   >
                     <ChevronUp className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
@@ -545,14 +549,14 @@ export function PlayQueuePanel({
                   <button
                     onClick={() => move(entry.item.uid, 1)}
                     disabled={i === entries.length - 1}
-                    aria-label="Descendre"
+                    aria-label={t("moveDown")}
                     className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-30"
                   >
                     <ChevronDown className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                   </button>
                   <button
                     onClick={() => remove(entry.item.uid)}
-                    aria-label="Retirer"
+                    aria-label={t("remove")}
                     className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   >
                     <X className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
@@ -569,7 +573,7 @@ export function PlayQueuePanel({
         <div className="border-t border-border pt-5">
           <PlayStepper
             steps={steps}
-            title="Ma session"
+            title={t("mySession")}
             songPracticeStats={songPracticeStats}
             currentBpm={currentBpm}
             onRequestBpm={onRequestBpm}
@@ -581,8 +585,7 @@ export function PlayQueuePanel({
       ) : (
         queue.length === 0 && (
           <p className="text-center text-sm text-muted-foreground">
-            Ajoute des morceaux et des exercices ci-dessus pour composer ta
-            session, puis déroule-la avec le métronome.
+            {t("hint")}
           </p>
         )
       )}

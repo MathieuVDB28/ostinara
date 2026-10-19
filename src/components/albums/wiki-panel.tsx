@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import type { WikiAlbumLink, WikiArticle, WikiFact } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
@@ -28,6 +29,8 @@ interface Props {
  * l'album, l'encyclopedie est la pour qui veut lire.
  */
 export function WikiPanel({ variant, title, article, facts, wikidataId, previous, next }: Props) {
+  const t = useTranslations("albums.wiki");
+  const locale = useLocale();
   const [expanded, setExpanded] = useState(false);
   const intro = article?.intro ?? [];
   const shownIntro = expanded ? intro : intro.slice(0, 1);
@@ -36,9 +39,10 @@ export function WikiPanel({ variant, title, article, facts, wikidataId, previous
     <section className="mt-8">
       <div className={`flex items-baseline justify-between gap-3 ${HEADINGS[variant]}`}>
         <h2>{title}</h2>
-        {article && article.lang !== "fr" && (
+        {/* L'article de secours, quand la langue de l'app n'en a pas. */}
+        {article && article.lang !== locale && (
           <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-normal text-muted-foreground">
-            Article en {article.lang === "en" ? "anglais" : article.lang}
+            {t("articleIn", { lang: article.lang })}
           </span>
         )}
       </div>
@@ -47,7 +51,7 @@ export function WikiPanel({ variant, title, article, facts, wikidataId, previous
         <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 gap-y-1.5 py-3 text-sm">
           {facts.map((fact) => (
             <div key={fact.label} className="contents">
-              <dt className="text-muted-foreground">{fact.label}</dt>
+              <dt className="text-muted-foreground">{t(`facts.${fact.label}`)}</dt>
               <dd className="font-medium">{fact.value}</dd>
             </div>
           ))}
@@ -74,7 +78,7 @@ export function WikiPanel({ variant, title, article, facts, wikidataId, previous
               onClick={() => setExpanded((value) => !value)}
               className="mt-2 inline-flex min-h-[36px] items-center gap-1 text-sm font-semibold text-primary underline-offset-2 hover:underline"
             >
-              {expanded ? "Réduire" : "Lire la suite"}
+              {expanded ? t("collapse") : t("readMore")}
               <Icon name={expanded ? "expand_less" : "expand_more"} className="h-4 w-4" strokeWidth={2.25} />
             </button>
           )}
@@ -117,6 +121,7 @@ export function WikiPanel({ variant, title, article, facts, wikidataId, previous
 }
 
 function AlbumNeighbour({ album, direction }: { album?: WikiAlbumLink | null; direction: "previous" | "next" }) {
+  const t = useTranslations("albums.wiki");
   const isNext = direction === "next";
   if (!album) return <span />;
 
@@ -124,7 +129,7 @@ function AlbumNeighbour({ album, direction }: { album?: WikiAlbumLink | null; di
     <>
       {!isNext && <Icon name="chevron_left" className="h-4 w-4 shrink-0" strokeWidth={2.25} />}
       <span className="min-w-0">
-        <span className="block text-xs text-muted-foreground">{isNext ? "Album suivant" : "Album précédent"}</span>
+        <span className="block text-xs text-muted-foreground">{isNext ? t("nextAlbum") : t("previousAlbum")}</span>
         <span className="block truncate font-semibold">{album.name}</span>
       </span>
       {isNext && <Icon name="chevron_right" className="h-4 w-4 shrink-0" strokeWidth={2.25} />}
@@ -143,27 +148,32 @@ function AlbumNeighbour({ album, direction }: { album?: WikiAlbumLink | null; di
 
 /** Le texte vient de Wikipedia, sous CC BY-SA : on cite l'article et la licence. */
 export function WikiAttribution({ article, wikidataId }: { article: WikiArticle | null; wikidataId: string }) {
+  const t = useTranslations("albums.wiki");
+  const locale = useLocale();
   const link = "underline underline-offset-2 hover:text-foreground";
   return (
     <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-      {article && (
-        <>
-          Texte :{" "}
-          <a href={article.url} target="_blank" rel="noopener noreferrer" className={link}>
-            « {article.title} »
-          </a>{" "}
-          sur Wikipédia, sous licence{" "}
-          <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr" target="_blank" rel="noopener noreferrer" className={link}>
-            CC BY-SA 4.0
+      {article &&
+        t.rich("attribution", {
+          title: article.title,
+          article: (chunks) => (
+            <a href={article.url} target="_blank" rel="noopener noreferrer" className={link}>
+              {chunks}
+            </a>
+          ),
+          license: (chunks) => (
+            <a href={`https://creativecommons.org/licenses/by-sa/4.0/deed.${locale}`} target="_blank" rel="noopener noreferrer" className={link}>
+              {chunks}
+            </a>
+          ),
+        })}
+      {t.rich("sheet", {
+        wikidata: (chunks) => (
+          <a href={`https://www.wikidata.org/wiki/${wikidataId}`} target="_blank" rel="noopener noreferrer" className={link}>
+            {chunks}
           </a>
-          .{" "}
-        </>
-      )}
-      Fiche :{" "}
-      <a href={`https://www.wikidata.org/wiki/${wikidataId}`} target="_blank" rel="noopener noreferrer" className={link}>
-        Wikidata
-      </a>
-      .
+        ),
+      })}
     </p>
   );
 }

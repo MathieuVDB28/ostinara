@@ -1,16 +1,18 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import type { CommonT } from "@/i18n/types";
 import type { PracticeStats } from "@/types";
 
 interface StatsSummaryProps {
   stats: PracticeStats;
 }
 
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
+export function formatDuration(minutes: number, t: CommonT): string {
+  if (minutes < 60) return t("duration.minutes", { m: minutes });
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return mins > 0 ? `${hours} h ${mins}` : `${hours} h`;
+  return mins > 0 ? t("duration.hoursMinutes", { h: hours, m: mins }) : t("duration.hours", { h: hours });
 }
 
 /**
@@ -25,31 +27,31 @@ function formatDuration(minutes: number): string {
  * les cartes de session en dessous.
  */
 export function StatsSummary({ stats }: StatsSummaryProps) {
+  const t = useTranslations("progress.stats");
+  const tc = useTranslations("common");
   const items = [
     {
-      label: "Sessions",
+      label: t("sessions"),
       value: String(stats.totalSessions),
       hint: null,
     },
     {
-      label: "Temps total",
-      value: formatDuration(stats.totalMinutes),
+      label: t("totalTime"),
+      value: formatDuration(stats.totalMinutes, tc),
       hint: null,
     },
     {
-      label: "Série",
-      value: `${stats.currentStreak} j`,
+      label: t("streak"),
+      value: tc("duration.days", { d: stats.currentStreak }),
       hint:
         stats.longestStreak > stats.currentStreak
-          ? `record ${stats.longestStreak} j`
+          ? t("record", { d: stats.longestStreak })
           : null,
     },
     {
-      label: "Cette semaine",
-      value: formatDuration(stats.minutesThisWeek),
-      hint: `${stats.sessionsThisWeek} session${
-        stats.sessionsThisWeek > 1 ? "s" : ""
-      }`,
+      label: t("thisWeek"),
+      value: formatDuration(stats.minutesThisWeek, tc),
+      hint: t("sessionsCount", { count: stats.sessionsThisWeek }),
     },
   ];
 

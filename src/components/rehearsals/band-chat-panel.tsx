@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { useBandChat } from "@/lib/hooks/use-band-chat";
 import type { BandMessageWithProfile } from "@/types";
 import { Icon } from "@/components/ui/icon";
@@ -18,7 +20,7 @@ export function BandChatPanel({
   rehearsalId,
   currentUserId,
   initialMessages,
-  title = "Chat",
+  title,
 }: BandChatPanelProps) {
   const { messages, isConnected, sendMessage } = useBandChat({
     bandId,
@@ -27,6 +29,9 @@ export function BandChatPanel({
     initialMessages,
   });
 
+  const t = useTranslations("rehearsals.chat");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -47,7 +52,7 @@ export function BandChatPanel({
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("fr-FR", {
+    return new Date(dateString).toLocaleTimeString(intlLocale, {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -59,9 +64,9 @@ export function BandChatPanel({
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    if (date.toDateString() === today.toDateString()) return "Aujourd'hui";
-    if (date.toDateString() === yesterday.toDateString()) return "Hier";
-    return date.toLocaleDateString("fr-FR", {
+    if (date.toDateString() === today.toDateString()) return tc("relative.todayCap");
+    if (date.toDateString() === yesterday.toDateString()) return tc("relative.yesterdayCap");
+    return date.toLocaleDateString(intlLocale, {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -85,7 +90,7 @@ export function BandChatPanel({
     <div className="flex flex-col rounded-xl border border-border bg-card overflow-hidden h-full">
       {/* Header */}
       <div className="border-b border-border p-3 flex items-center justify-between">
-        <h3 className="font-semibold">{title}</h3>
+        <h3 className="font-semibold">{title ?? t("title")}</h3>
         <div className="flex items-center gap-1.5">
           <span
             className={`h-2 w-2 rounded-full ${
@@ -93,7 +98,7 @@ export function BandChatPanel({
             }`}
           />
           <span className="text-xs text-muted-foreground">
-            {isConnected ? "Connecte" : "Deconnecte"}
+            {isConnected ? t("connected") : t("disconnected")}
           </span>
         </div>
       </div>
@@ -104,10 +109,10 @@ export function BandChatPanel({
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Icon name="chat_bubble_outline" className="h-8 w-8 mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Aucun message pour l&apos;instant
+              {t("empty")}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Commence la conversation !
+              {t("start")}
             </p>
           </div>
         ) : (
@@ -188,11 +193,11 @@ export function BandChatPanel({
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Envoyer un message..."
+            placeholder={t("placeholder")}
             className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             disabled={sending}
           />
-          <button aria-label="Envoyer le message"
+          <button aria-label={t("send")}
             type="submit"
             disabled={!input.trim() || sending}
             className="rounded-xl bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"

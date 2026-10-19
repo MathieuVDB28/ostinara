@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { getTranslations } from "next-intl/server";
 
 /*
  * L'apercu du lien partage sur Insta, Discord, WhatsApp… La page
@@ -6,7 +7,8 @@ import { ImageResponse } from "next/og";
  * lien s'afficherait en texte nu. Palette claire de globals.css.
  */
 
-export const alt = "Ostinara — Joue. Mesure. Partage. L'app des musiciens.";
+// Texte alternatif bilingue : il est fige au build, sans langue de requete.
+export const alt = "Ostinara — Joue. Mesure. Partage. / Play. Measure. Share.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -26,7 +28,16 @@ async function loadDisplayFont(text: string): Promise<ArrayBuffer | null> {
 }
 
 export default async function OpengraphImage() {
-  const glyphs = "OSTINARAJOUE.MESURE.PARTAGE.L'APP DES MUSICIENSACCÈS ANTICIPÉ·92/104BPM";
+  // La langue de qui partage le lien (cookie), sinon celle detectee.
+  const t = await getTranslations("landing");
+  const words = {
+    early: t("early.nav.early"),
+    play: t("early.hero.play"),
+    measure: t("early.hero.measure"),
+    share: t("early.hero.share"),
+    tagline: t("og.tagline"),
+  };
+  const glyphs = `OSTINARA${Object.values(words).join("").toUpperCase()}·92/104BPM`;
   const font = await loadDisplayFont(glyphs);
   const display = font ? "Barlow Condensed" : "sans-serif";
 
@@ -47,13 +58,13 @@ export default async function OpengraphImage() {
       >
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 34, textTransform: "uppercase" }}>
           <span>Ostinara</span>
-          <span style={{ color: "#5e5850" }}>Accès anticipé</span>
+          <span style={{ color: "#5e5850" }}>{words.early}</span>
         </div>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div style={{ display: "flex", flexDirection: "column", fontSize: 150, lineHeight: 0.84, textTransform: "uppercase" }}>
-            <span>Joue.</span>
-            <span>Mesure.</span>
-            <span style={{ color: "#8a5214" }}>Partage.</span>
+            <span>{words.play}</span>
+            <span>{words.measure}</span>
+            <span style={{ color: "#8a5214" }}>{words.share}</span>
           </div>
           <div
             style={{
@@ -78,7 +89,7 @@ export default async function OpengraphImage() {
           </div>
         </div>
         <span style={{ fontSize: 30, color: "#5e5850", textTransform: "uppercase" }}>
-          L&apos;app des musiciens
+          {words.tagline}
         </span>
       </div>
     ),

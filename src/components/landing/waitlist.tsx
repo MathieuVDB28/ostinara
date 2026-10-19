@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useTransition } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { joinWaitlist } from "@/lib/actions/waitlist";
 import { EARLY_BIRD, isEarlyBird, offeredPlan } from "@/lib/waitlist";
 import { PLANS } from "@/lib/stripe/config";
@@ -58,11 +60,7 @@ export function WaitlistProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-const PLAN_OPTIONS: { value: UserPlan; label: string; price: string }[] = [
-  { value: "free", label: "Free", price: "0€" },
-  { value: "pro", label: "Pro", price: "9€/mois" },
-  { value: "band", label: "Band", price: "19€/mois" },
-];
+const PLAN_VALUES: UserPlan[] = ["free", "pro", "band"];
 
 /** D'ou vient le visiteur, pour savoir quelle communaute repond. */
 function readSource(): string | null {
@@ -77,6 +75,20 @@ interface WaitlistFormProps {
 
 export function WaitlistForm({ id }: WaitlistFormProps) {
   const { plan, setPlan, instruments, toggleInstrument, joined, setJoined } = useWaitlist();
+  const t = useTranslations("landing.waitlist");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
+  const euros = (value: number) =>
+    new Intl.NumberFormat(intlLocale, { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value);
+  const PLAN_OPTIONS = PLAN_VALUES.map((value) => {
+    const monthly = PLANS[value].monthly?.price ?? 0;
+    return {
+      value,
+      label: PLANS[value].name,
+      price: monthly ? t("perMonth", { price: euros(monthly) }) : euros(0),
+    };
+  });
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +98,7 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
     event.preventDefault();
     setError(null);
     if (instruments.length === 0) {
-      setError("Dis-nous de quoi tu joues.");
+      setError(t("pickInstrument"));
       return;
     }
     startTransition(async () => {
@@ -94,7 +106,7 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
       if (result.success) {
         setJoined({ email: email.trim(), rank: result.rank, confirmationSent: result.confirmationSent });
       } else {
-        setError(result.error ?? "Oups, ça n'est pas passé.");
+        setError(result.error ?? tc("genericError"));
       }
     });
   };
@@ -105,7 +117,7 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
     <form onSubmit={handleSubmit} noValidate className="w-full max-w-xl">
       <fieldset className="mb-4">
         <legend className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-          Tu joues de quoi&nbsp;?
+          {t("whatDoYouPlay")}
         </legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {INSTRUMENTS.map((option) => {
@@ -128,7 +140,7 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
                   className="sr-only"
                 />
                 <Icon name={option.icon} className="h-4 w-4" />
-                {option.label}
+                {te(`instrument.${option.value}`)}
               </label>
             );
           })}
@@ -137,7 +149,7 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
 
       <fieldset>
         <legend className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-          Le plan qui t&apos;intéresse
+          {t("planLegend")}
         </legend>
         <div className="mt-2 grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-input bg-input">
           {PLAN_OPTIONS.map((option) => {
@@ -174,7 +186,7 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
       </fieldset>
 
       <label htmlFor={`${id}-email`} className="sr-only">
-        Ton adresse email
+        {t("emailLabel")}
       </label>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <input
@@ -183,7 +195,7 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
           inputMode="email"
           autoComplete="email"
           required
-          placeholder="ton@email.com"
+          placeholder={t("emailPlaceholder")}
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           aria-invalid={error ? true : undefined}
@@ -198,11 +210,11 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
           {isPending ? (
             <>
               <Icon name="progress_activity" className="h-5 w-5 animate-spin" />
-              Envoi…
+              {t("sending")}
             </>
           ) : (
             <>
-              Je veux mon accès
+              {t("submit")}
               <Icon name="arrow_forward" className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </>
           )}
@@ -212,7 +224,7 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
       {/* Piege a robots : hors ecran, ignore des lecteurs d'ecran. */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label>
-          Site web
+          {t("honeypot")}
           <input
             type="text"
             tabIndex={-1}
@@ -229,11 +241,13 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
         </p>
       )}
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        Aucun paiement aujourd&apos;hui. On t&apos;écrit seulement au sujet de ton accès —{" "}
-        <Link href="/politique-confidentialite" className="underline underline-offset-2 hover:text-foreground">
-          confidentialité
-        </Link>
-        .
+        {t.rich("noPayment", {
+          link: (chunks) => (
+            <Link href="/politique-confidentialite" className="underline underline-offset-2 hover:text-foreground">
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
     </form>
   );
@@ -241,6 +255,7 @@ export function WaitlistForm({ id }: WaitlistFormProps) {
 
 function WaitlistSuccess({ email, rank, confirmationSent }: Joined) {
   const { plan } = useWaitlist();
+  const t = useTranslations("landing.waitlist");
   const [copied, setCopied] = useState(false);
 
   // Le bouche-a-oreille entre musiciens : partager a son groupe en un geste.
@@ -248,7 +263,7 @@ function WaitlistSuccess({ email, rank, confirmationSent }: Joined) {
     const url = `${window.location.origin}/acces-anticipe`;
     const shareData = {
       title: "Ostinara",
-      text: "L'app pour suivre sa progression en musique, seul ou en groupe — je viens de rejoindre l'accès anticipé :",
+      text: t("shareText"),
       url,
     };
     try {
@@ -268,29 +283,28 @@ function WaitlistSuccess({ email, rank, confirmationSent }: Joined) {
     <div role="status" className="w-full max-w-xl border-y border-border py-6">
       <p className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-success">
         <Icon name="check_circle" className="mr-1.5 inline h-4 w-4 align-[-3px]" />
-        Inscription enregistrée
+        {t("registered")}
       </p>
       <div className="mt-2 flex items-end justify-between gap-4">
-        <p className="font-display text-5xl font-extrabold uppercase leading-[0.9]">C&apos;est noté.</p>
+        <p className="font-display text-5xl font-extrabold uppercase leading-[0.9]">{t("noted")}</p>
         {rank && (
           <p className="tabular font-display text-5xl font-extrabold leading-[0.9]">
-            <span className="text-2xl text-muted-foreground">n°</span>
+            <span className="text-2xl text-muted-foreground">{t("rank")}</span>
             {rank}
           </p>
         )}
       </div>
       {isEarlyBird(rank) && (
         <p className="mt-4 border-l-2 border-primary pl-3 text-sm font-semibold leading-relaxed">
-          Tu fais partie des {EARLY_BIRD.spots} premiers : {EARLY_BIRD.months} mois de{" "}
-          {PLANS[offeredPlan(plan)].name} offerts à l&apos;ouverture de ton accès.
+          {t("earlyBird", { spots: EARLY_BIRD.spots, months: EARLY_BIRD.months, plan: PLANS[offeredPlan(plan)].name })}
         </p>
       )}
       <p className="mt-3 font-serif text-lg italic leading-relaxed text-foreground/80">
         {/* Sans rang, l'adresse etait deja inscrite : aucun email n'est reparti. */}
-        {confirmationSent ? "Confirmation envoyée à " : "On t'écrit à "}
-        <span className="not-italic font-semibold">{email}</span>
-        {confirmationSent ? ". On t'écrit" : ""} dès que ta place est prête. En attendant, fais tourner à ton
-        groupe.
+        {t.rich(confirmationSent ? "confirmationSent" : "willWrite", {
+          email,
+          strong: (chunks) => <span className="not-italic font-semibold">{chunks}</span>,
+        })}
       </p>
       <button
         type="button"
@@ -298,7 +312,7 @@ function WaitlistSuccess({ email, rank, confirmationSent }: Joined) {
         className="mt-5 inline-flex min-h-[46px] items-center gap-2 rounded-xl border border-border px-5 text-sm font-bold transition-colors hover:bg-accent"
       >
         <Icon name={copied ? "check" : "send"} className="h-4 w-4" />
-        {copied ? "Lien copié" : "Partager Ostinara"}
+        {copied ? t("copied") : t("share")}
       </button>
     </div>
   );
@@ -313,6 +327,7 @@ interface PickPlanButtonProps {
 /** Bouton des tarifs : preselectionne le plan et remonte au formulaire. */
 export function PickPlanButton({ plan, primary = false }: PickPlanButtonProps) {
   const { setPlan, joined } = useWaitlist();
+  const t = useTranslations("landing.waitlist");
 
   const handleClick = () => {
     setPlan(plan);
@@ -332,7 +347,7 @@ export function PickPlanButton({ plan, primary = false }: PickPlanButtonProps) {
           : "border border-border hover:bg-accent"
       }`}
     >
-      {joined ? "Tu es sur la liste" : "Je veux ce plan"}
+      {joined ? t("onList") : t("wantPlan")}
     </button>
   );
 }

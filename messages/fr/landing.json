@@ -1,0 +1,213 @@
+{
+  "waitlist": {
+    "pickInstrument": "Dis-nous de quoi tu joues.",
+    "whatDoYouPlay": "Tu joues de quoi ?",
+    "planLegend": "Le plan qui t'intéresse",
+    "perMonth": "{price}/mois",
+    "emailLabel": "Ton adresse email",
+    "emailPlaceholder": "ton@email.com",
+    "sending": "Envoi…",
+    "submit": "Je veux mon accès",
+    "honeypot": "Site web",
+    "noPayment": "Aucun paiement aujourd'hui. On t'écrit seulement au sujet de ton accès — <link>confidentialité</link>.",
+    "shareText": "L'app pour suivre sa progression en musique, seul ou en groupe — je viens de rejoindre l'accès anticipé :",
+    "registered": "Inscription enregistrée",
+    "noted": "C'est noté.",
+    "rank": "n°",
+    "earlyBird": "Tu fais partie des {spots} premiers : {months} mois de {plan} offerts à l'ouverture de ton accès.",
+    "confirmationSent": "Confirmation envoyée à <strong>{email}</strong>. On t'écrit dès que ta place est prête. En attendant, fais tourner à ton groupe.",
+    "willWrite": "On t'écrit à <strong>{email}</strong> dès que ta place est prête. En attendant, fais tourner à ton groupe.",
+    "copied": "Lien copié",
+    "share": "Partager Ostinara",
+    "onList": "Tu es sur la liste",
+    "wantPlan": "Je veux ce plan"
+  },
+  "early": {
+    "meta": {
+      "title": "Ostinara — L'app des musiciens · Accès anticipé",
+      "description": "Métronome, accordeur, carnet de pratique, setlists, covers et défis entre amis. Guitare, basse, batterie ou clavier, seul ou en groupe. Inscris-toi pour l'accès anticipé.",
+      "ogTitle": "Ostinara — Joue. Mesure. Partage.",
+      "ogDescription": "L'app des musiciens : ta progression mesurée au tempo, ton répertoire, tes covers et ton groupe. Accès anticipé ouvert."
+    },
+    "domains": {
+      "play": {
+        "tab": "Jouer",
+        "title": "Un carnet de pratique",
+        "description": "Métronome, accordeur, exercices et chrono de session. Ton tempo tenu est mesuré séance après séance, pas estimé au doigt mouillé."
+      },
+      "library": {
+        "tab": "Biblio",
+        "title": "Tes morceaux en étagères",
+        "description": "Ce que tu travailles, ce que tu veux apprendre, ce que tu maîtrises. Tablature, accordage et tempo cible au même endroit."
+      },
+      "community": {
+        "tab": "Commu",
+        "title": "Tes covers, tes amis",
+        "description": "Publie tes covers, note les albums que tu écoutes, lance des défis de pratique à tes amis musiciens."
+      }
+    },
+    "toolbox": {
+      "metronome": {
+        "name": "Métronome",
+        "detail": "Tap tempo, 7 signatures, subdivisions, accents, mesures muettes"
+      },
+      "tuner": {
+        "name": "Accordeur",
+        "detail": "Détection de note en temps réel au micro"
+      },
+      "sessions": {
+        "name": "Sessions",
+        "detail": "Chrono, BPM atteint, sections travaillées, humeur du jour"
+      },
+      "progress": {
+        "name": "Progression",
+        "detail": "Calendrier de pratique, séries, courbe de tempo par morceau"
+      },
+      "exercises": {
+        "name": "Exercices",
+        "detail": "Adaptés à ton instrument, du tempo de départ au tempo cible"
+      },
+      "routines": {
+        "name": "Routines",
+        "detail": "Ta séance type, morceaux et exercices, relancée en un geste"
+      },
+      "setlists": {
+        "name": "Setlists",
+        "detail": "Glisser-déposer, sections jouées, export PDF pour la scène"
+      },
+      "bands": {
+        "name": "Groupes",
+        "detail": "Répétitions, RSVP, rappels, chat, setlists partagées"
+      },
+      "recognition": {
+        "name": "Reconnaissance",
+        "detail": "Fais écouter un morceau, retrouve-le et ajoute-le"
+      },
+      "challenges": {
+        "name": "Défis",
+        "detail": "Temps de pratique, séries, morceau à maîtriser entre amis"
+      }
+    },
+    "shelf": {
+      "learning": "En cours",
+      "wantToLearn": "À apprendre"
+    },
+    "faq": {
+      "offer": {
+        "q": "C'est quoi l'offre de lancement ?",
+        "a": "Les {spots} premiers inscrits reçoivent {months} mois offerts sur le plan qu'ils ont choisi à l'ouverture de leur accès : Band pour Band, Pro pour Pro, et Pro aussi pour ceux qui ont choisi Free. Sans carte bancaire, sans engagement : à la fin, tu gardes ton plan ou tu repasses en Free."
+      },
+      "when": {
+        "q": "C'est quand ?",
+        "a": "On ouvre l'accès par vagues, dans l'ordre des inscriptions. Tu reçois un email avec ton lien d'accès quand c'est ton tour."
+      },
+      "pay": {
+        "q": "Je paie quelque chose maintenant ?",
+        "a": "Non. Le plan que tu choisis nous dit ce qui t'intéresse, rien de plus. Tu pourras commencer gratuitement et changer de plan quand tu veux."
+      },
+      "phone": {
+        "q": "Ça marche sur mon téléphone ?",
+        "a": "Oui, sur iPhone comme sur Android, et sur ordi. Ostinara s'installe depuis le navigateur sur ton écran d'accueil, comme une app, sans passer par un store."
+      },
+      "beginner": {
+        "q": "Je débute, c'est pour moi ?",
+        "a": "Oui. Ostinara est pensé pour les musiciens amateurs à intermédiaires, guitare, basse, batterie ou clavier : savoir ce que tu travailles et voir que tu progresses, c'est ce qui donne envie de continuer."
+      },
+      "band": {
+        "q": "Et mon groupe ?",
+        "a": "Le plan Band ajoute les espaces groupe : répétitions avec RSVP et rappels, chat, setlists partagées et sessions de jam synchronisées."
+      }
+    },
+    "footer": {
+      "product": "Produit",
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "legal": "Légal",
+      "legalNotice": "Mentions légales",
+      "terms": "CGU",
+      "privacy": "Confidentialité",
+      "tagline": "L'application tout-en-un pour les musiciens qui veulent progresser et partager.",
+      "rights": "© {year} Ostinara. Tous droits réservés."
+    },
+    "nav": {
+      "pricing": "Tarifs",
+      "join": "Rejoindre",
+      "early": "Accès anticipé"
+    },
+    "hero": {
+      "eyebrow": "Accès anticipé · Inscriptions ouvertes",
+      "play": "Joue.",
+      "measure": "Mesure.",
+      "share": "Partage.",
+      "lead": "L'app des musiciens. Suis tes morceaux, mesure ta progression au tempo et partage tes covers avec tes amis. Tout au même endroit.",
+      "offer": "Offre de lancement",
+      "spots": "{left, plural, one {# place} other {# places}} sur {total}",
+      "offerTitle": "{months} mois offerts aux {spots} premiers",
+      "offerHint": "Sur le plan que tu choisis — Pro si tu pars sur Free.",
+      "spotsLeft": "{left} places restantes sur {total}",
+      "tempoHeld": "Tempo tenu · cette semaine",
+      "bpmSong": "Bpm · Blackbird",
+      "streaks": "Séries",
+      "streakValue": "12 j",
+      "thisMonth": "Ce mois",
+      "monthValue": "14 h",
+      "mastered": "Maîtrisés"
+    },
+    "problem": {
+      "title": "Tes tabs dans douze onglets. Ton métronome dans une autre app. Tes covers perdues dans la pellicule. <accent>Et aucune idée de si tu progresses.</accent>",
+      "lead": "Ostinara range tout ça au même endroit, et te montre, chiffres à l'appui, que tes heures de pratique paient."
+    },
+    "features": {
+      "title": "Tout pour progresser, <accent>rien de superflu</accent>"
+    },
+    "toolboxTitle": "Dans la <accent>housse</accent>",
+    "toolboxLead": "Les outils du quotidien du musicien, de la première mesure à la répète du vendredi soir.",
+    "pricing": {
+      "title": "Choisis <accent>ton plan</accent>",
+      "lead": "Rien à payer pour t'inscrire : dis-nous juste ce qui t'intéresse. -20 % en annuel.",
+      "popular": "Populaire",
+      "perMonth": "/mois"
+    },
+    "faqTitle": "Questions",
+    "final": {
+      "eyebrow": "Accès anticipé",
+      "title": "Prends ta place<br></br><accent>sur la liste</accent>",
+      "lead": "Les premiers inscrits ouvrent l'app avant tout le monde. Et nous aident à la façonner.",
+      "offer": "{months} mois offerts sur ton plan aux {spots} premiers.",
+      "offerLeft": "{months} mois offerts sur ton plan aux {spots} premiers · encore {left, plural, one {# place} other {# places}}."
+    },
+    "calendar": {
+      "weeks": "15 semaines",
+      "sessions": "sessions"
+    },
+    "review": {
+      "rated": "a noté un album",
+      "quote": "« Never Going Back Again en open tuning, je l'ai enfin. Trois semaines de picking pour ces trente secondes. »"
+    }
+  },
+  "og": {
+    "tagline": "L'app des musiciens"
+  },
+  "unsubscribe": {
+    "metaTitle": "Désinscription — Ostinara",
+    "title": "Quitter la liste",
+    "incomplete": "Ce lien est incomplet. Écris-nous à <mail>contact@ostinara.app</mail> et on te retire de la liste.",
+    "done": "C'est fait : ton adresse a été supprimée de la liste. Tu peux toujours <link>te réinscrire</link> si tu changes d'avis.",
+    "unknown": "Cette adresse n'est plus sur la liste : rien d'autre à faire.",
+    "warning": "Ton adresse sera supprimée de la liste d'attente, et tu perdras ta place.",
+    "removing": "Suppression…",
+    "submit": "Me retirer de la liste"
+  },
+  "home": {
+    "login": "Connexion",
+    "start": "Commencer",
+    "eyebrow": "L'app des musiciens · Stay tuned",
+    "lead": "Suis tes morceaux, mesure ta progression au tempo et partage tes covers avec tes amis. Tout ce dont un musicien a besoin, au même endroit.",
+    "createAccount": "Créer mon compte",
+    "discover": "Découvrir",
+    "bpm": "Bpm",
+    "finalTitle": "Prêt à tracker<br></br>ta <accent>progression</accent> ?",
+    "startFree": "Commencer gratuitement",
+    "freeHint": "Gratuit jusqu'à 10 morceaux. Sans carte bancaire."
+  }
+}

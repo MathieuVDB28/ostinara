@@ -1,6 +1,10 @@
+/** Les libelles a traduire (namespace `tunings`) ; les autres sont des noms propres. */
+export type TuningLabelKey = "bass4" | "bass56" | "bass5" | "bass5HighC" | "bass6";
+
 export interface TuningOption {
   value: string;
   label: string;
+  labelKey?: TuningLabelKey;
   notes: string;
   /** Cordes à vide avec octave, de la plus grave à la plus aiguë (utilisé par l'accordeur) */
   pitches: string[];
@@ -8,6 +12,7 @@ export interface TuningOption {
 
 export interface TuningGroup {
   label: string;
+  labelKey?: TuningLabelKey;
   tunings: TuningOption[];
 }
 
@@ -64,6 +69,7 @@ export const TUNING_GROUPS: TuningGroup[] = [
 export const BASS_TUNING_GROUPS: TuningGroup[] = [
   {
     label: "4 cordes",
+    labelKey: "bass4",
     tunings: [
       { value: "Standard", label: "Standard", notes: "E A D G", pitches: ["E1", "A1", "D2", "G2"] },
       { value: "Half Step Down", label: "Half Step Down", notes: "Eb Ab Db Gb", pitches: ["Eb1", "Ab1", "Db2", "Gb2"] },
@@ -74,10 +80,11 @@ export const BASS_TUNING_GROUPS: TuningGroup[] = [
   },
   {
     label: "5 et 6 cordes",
+    labelKey: "bass56",
     tunings: [
-      { value: "Standard 5", label: "5 cordes", notes: "B E A D G", pitches: ["B0", "E1", "A1", "D2", "G2"] },
-      { value: "High C 5", label: "5 cordes, Do aigu", notes: "E A D G C", pitches: ["E1", "A1", "D2", "G2", "C3"] },
-      { value: "Standard 6", label: "6 cordes", notes: "B E A D G C", pitches: ["B0", "E1", "A1", "D2", "G2", "C3"] },
+      { value: "Standard 5", label: "5 cordes", labelKey: "bass5", notes: "B E A D G", pitches: ["B0", "E1", "A1", "D2", "G2"] },
+      { value: "High C 5", label: "5 cordes, Do aigu", labelKey: "bass5HighC", notes: "E A D G C", pitches: ["E1", "A1", "D2", "G2", "C3"] },
+      { value: "Standard 6", label: "6 cordes", labelKey: "bass6", notes: "B E A D G C", pitches: ["B0", "E1", "A1", "D2", "G2", "C3"] },
     ],
   },
 ];

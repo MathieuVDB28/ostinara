@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { ChallengeWithDetails } from "@/types";
 import { acceptChallenge, declineChallenge } from "@/lib/actions/challenges";
 
@@ -10,19 +11,10 @@ interface ChallengeInvitationCardProps {
   challenge: ChallengeWithDetails;
 }
 
-const CHALLENGE_TYPE_LABELS: Record<string, string> = {
-  practice_time: "Temps de pratique",
-  streak: "Streak de jours",
-  song_mastery: "Maîtrise de morceau",
-};
-
-const CHALLENGE_TYPE_DESCRIPTIONS: Record<string, string> = {
-  practice_time: "Celui qui pratique le plus de minutes gagne",
-  streak: "Celui qui maintient le plus long streak de jours gagne",
-  song_mastery: "Le premier à maîtriser le morceau gagne",
-};
 
 export function ChallengeInvitationCard({ challenge }: ChallengeInvitationCardProps) {
+  const t = useTranslations("challenges");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +26,7 @@ export function ChallengeInvitationCard({ challenge }: ChallengeInvitationCardPr
     const result = await acceptChallenge(challenge.id);
 
     if (!result.success) {
-      setError(result.error || "Erreur lors de l'acceptation");
+      setError(result.error || tc("genericError"));
       setIsLoading(false);
       return;
     }
@@ -49,7 +41,7 @@ export function ChallengeInvitationCard({ challenge }: ChallengeInvitationCardPr
     const result = await declineChallenge(challenge.id);
 
     if (!result.success) {
-      setError(result.error || "Erreur lors du refus");
+      setError(result.error || tc("genericError"));
       setIsLoading(false);
       return;
     }
@@ -78,32 +70,32 @@ export function ChallengeInvitationCard({ challenge }: ChallengeInvitationCardPr
         )}
         <div>
           <p className="font-medium">{creatorName}</p>
-          <p className="text-sm text-muted-foreground">t'invite à un défi</p>
+          <p className="text-sm text-muted-foreground">{t("invitation.invites")}</p>
         </div>
       </div>
 
       {/* Détails du défi */}
       <div className="mb-4 space-y-2 rounded-lg bg-muted/50 p-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Type</span>
+          <span className="text-sm text-muted-foreground">{t("invitation.type")}</span>
           <span className="text-sm font-medium">
-            {CHALLENGE_TYPE_LABELS[challenge.challenge_type]}
+            {t(`typeLong.${challenge.challenge_type}`)}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Durée</span>
-          <span className="text-sm font-medium">{challenge.duration_days} jours</span>
+          <span className="text-sm text-muted-foreground">{t("invitation.duration")}</span>
+          <span className="text-sm font-medium">{t("invitation.days", { count: challenge.duration_days })}</span>
         </div>
         {challenge.song_title && (
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Morceau</span>
+            <span className="text-sm text-muted-foreground">{t("invitation.song")}</span>
             <span className="text-sm font-medium">
               {challenge.song_title} - {challenge.song_artist}
             </span>
           </div>
         )}
         <p className="mt-2 text-xs text-muted-foreground">
-          {CHALLENGE_TYPE_DESCRIPTIONS[challenge.challenge_type]}
+          {t(`typeDescription.${challenge.challenge_type}`)}
         </p>
       </div>
 
@@ -119,14 +111,14 @@ export function ChallengeInvitationCard({ challenge }: ChallengeInvitationCardPr
           disabled={isLoading}
           className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
         >
-          Refuser
+          {tc("decline")}
         </button>
         <button
           onClick={handleAccept}
           disabled={isLoading}
           className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
         >
-          {isLoading ? "..." : "Accepter"}
+          {isLoading ? "..." : tc("accept")}
         </button>
       </div>
     </div>

@@ -1,0 +1,100 @@
+{
+  "description": {
+    "free": "To discover Ostinara",
+    "pro": "For serious musicians",
+    "band": "For bands"
+  },
+  "features": {
+    "songs10": "Up to 10 songs",
+    "instruments2": "Up to 2 instruments",
+    "covers3": "Up to 3 covers",
+    "friends5": "Up to 5 friends",
+    "wishlist20": "20 wishlist songs",
+    "unlimitedSongs": "Unlimited songs",
+    "unlimitedInstruments": "Unlimited instruments",
+    "unlimitedCovers": "Unlimited covers",
+    "unlimitedFriends": "Unlimited friends",
+    "unlimitedWishlist": "Unlimited wishlist",
+    "advancedStats": "Advanced stats",
+    "deezerTabs": "Deezer player & tabs",
+    "audioRecognition": "Audio recognition",
+    "proBadge": "Pro badge",
+    "everythingPro": "Everything in Pro",
+    "bandSpaces": "Band spaces",
+    "sharedSetlists": "Shared setlists",
+    "bandBadge": "Band badge"
+  },
+  "pricePerYear": "€{price}/year",
+  "pricePerMonth": "€{price}/month",
+  "card": {
+    "start": "Get started",
+    "current": "Current plan",
+    "upgrade": "Switch to this plan",
+    "toFree": "Switch to free",
+    "change": "Change plan",
+    "yours": "Your plan",
+    "popular": "Popular",
+    "perMonth": "/month",
+    "perYear": "/year",
+    "monthlyEquivalent": "that's {price}/month",
+    "loading": "Loading…"
+  },
+  "status": {
+    "active": "Active",
+    "trialing": "Trial",
+    "past_due": "Payment overdue",
+    "canceled": "Canceled",
+    "incomplete": "Incomplete",
+    "incomplete_expired": "Expired",
+    "unpaid": "Unpaid",
+    "paused": "Paused",
+    "renewsOn": "Renews on {date}",
+    "accessUntil": "Access until {date}",
+    "updatePayment": "Update your payment method",
+    "mySubscription": "My subscription",
+    "manage": "Manage",
+    "goPro": "Go Pro",
+    "more": "+{count} more"
+  },
+  "pricing": {
+    "checkoutFailed": "Couldn't start checkout",
+    "title": "Pick your <accent>plan</accent>",
+    "lead": "Unlock all of Ostinara to improve faster.",
+    "faqTitle": "FAQ",
+    "faq": {
+      "change": {
+        "q": "Can I change plans at any time?",
+        "a": "Yes. You can upgrade or downgrade whenever you like. Proration is calculated automatically."
+      },
+      "refund": {
+        "q": "How do refunds work if I downgrade?",
+        "a": "If you move to a lower plan, the difference is credited to your next invoice. The change takes effect immediately."
+      },
+      "cancel": {
+        "q": "What happens if I cancel my subscription?",
+        "a": "You keep access to all paid features until the end of your billing period. After that, you go back to the Free plan."
+      },
+      "payment": {
+        "q": "Which payment methods do you accept?",
+        "a": "All major cards are accepted (Visa, Mastercard, American Express) through our secure partner Stripe."
+      }
+    },
+    "secure": "Secure payment by Stripe"
+  },
+  "account": {
+    "successCheckout": "Your subscription was updated successfully!",
+    "loadFailed": "Couldn't load your subscription",
+    "changeFailed": "Couldn't change plan",
+    "updated": "Your subscription has been updated!",
+    "portalFailed": "Couldn't open the billing portal",
+    "back": "Settings",
+    "title": "My subscription",
+    "lead": "Your plan and billing.",
+    "currentPlan": "Current plan",
+    "loading": "Loading…",
+    "manageBilling": "Manage billing",
+    "upgrade": "Upgrade to a paid plan",
+    "change": "Change plan",
+    "proration": "Plan changes take effect immediately. If you upgrade, you only pay the prorated difference. If you downgrade, the credit is applied to your next invoice."
+  }
+}

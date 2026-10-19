@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
@@ -33,7 +34,7 @@ async function areFriends(userId1: string, userId2: string): Promise<boolean> {
 }
 
 // === Helper: Récupérer le nom d'affichage d'un utilisateur ===
-async function getUserDisplayName(userId: string): Promise<string> {
+async function getUserDisplayName(userId: string): Promise<string | null> {
   const supabase = await createClient();
 
   const { data: profile } = await supabase
@@ -42,7 +43,8 @@ async function getUserDisplayName(userId: string): Promise<string> {
     .eq("id", userId)
     .single();
 
-  return profile?.display_name || profile?.username || "Un ami";
+  // null : le destinataire lira « Un ami » dans sa langue.
+  return profile?.display_name || profile?.username || null;
 }
 
 // === Créer un challenge ===
@@ -53,17 +55,17 @@ export async function createChallenge(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   if (user.id === input.challenger_id) {
-    return { success: false, error: "Tu ne peux pas te défier toi-même" };
+    return { success: false, error: await tErr("cannotChallengeSelf") };
   }
 
   // Vérifier que les utilisateurs sont amis
   const friends = await areFriends(user.id, input.challenger_id);
   if (!friends) {
-    return { success: false, error: "Tu dois être ami avec cette personne pour la défier" };
+    return { success: false, error: await tErr("challengeFriendsOnly") };
   }
 
   // Vérifier qu'il n'y a pas de challenge actif entre ces deux utilisateurs
@@ -77,7 +79,7 @@ export async function createChallenge(
     .single();
 
   if (existingChallenge) {
-    return { success: false, error: "Un défi est déjà en cours avec cette personne" };
+    return { success: false, error: await tErr("challengeAlreadyRunning") };
   }
 
   // Préparer les données du challenge
@@ -88,7 +90,7 @@ export async function createChallenge(
   // Pour les challenges de maîtrise, récupérer les infos du morceau
   if (input.challenge_type === "song_mastery") {
     if (!input.song_id) {
-      return { success: false, error: "Un morceau est requis pour ce type de défi" };
+      return { success: false, error: await tErr("challengeSongRequired") };
     }
 
     const { data: song } = await supabase
@@ -98,7 +100,7 @@ export async function createChallenge(
       .single();
 
     if (!song) {
-      return { success: false, error: "Morceau non trouvé" };
+      return { success: false, error: await tErr("songNotFound") };
     }
 
     songTitle = song.title;
@@ -125,7 +127,7 @@ export async function createChallenge(
 
   if (error) {
     console.error("Error creating challenge:", error);
-    return { success: false, error: "Erreur lors de la création du défi" };
+    return { success: false, error: await tErr("challengeCreateFailed") };
   }
 
   // Créer les records de progression pour les deux participants
@@ -142,24 +144,22 @@ export async function createChallenge(
     console.error("Error creating challenge progress:", progressError);
     // Supprimer le challenge si la création des progress échoue
     await supabase.from("challenges").delete().eq("id", challenge.id);
-    return { success: false, error: "Erreur lors de la création du défi" };
+    return { success: false, error: await tErr("challengeCreateFailed") };
   }
 
   // Envoyer une notification au challenger
   const creatorName = await getUserDisplayName(user.id);
-  const challengeTypeLabels = {
-    practice_time: "temps de pratique",
-    streak: "streak de jours",
-    song_mastery: `maîtrise de "${songTitle}"`,
-  };
-
   await sendPushNotification(
     input.challenger_id,
-    {
-      title: "Nouveau défi !",
-      body: `${creatorName} te lance un défi de ${challengeTypeLabels[input.challenge_type]} !`,
+    (t) => ({
+      title: t("challengeNew.title"),
+      body: t("challengeNew.body", {
+        name: creatorName ?? t("someFriend"),
+        type: input.challenge_type,
+        song: songTitle ?? "",
+      }),
       data: { url: "/challenges" },
-    },
+    }),
     "challenge_created"
   );
 
@@ -175,7 +175,7 @@ export async function acceptChallenge(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Vérifier que le challenge existe et est adressé à l'utilisateur
@@ -188,7 +188,7 @@ export async function acceptChallenge(
     .single();
 
   if (!challenge) {
-    return { success: false, error: "Défi non trouvé" };
+    return { success: false, error: await tErr("challengeNotFound") };
   }
 
   // Calculer les dates de début et fin
@@ -208,7 +208,7 @@ export async function acceptChallenge(
 
   if (error) {
     console.error("Error accepting challenge:", error);
-    return { success: false, error: "Erreur lors de l'acceptation" };
+    return { success: false, error: await tErr("acceptFailed") };
   }
 
   /*
@@ -249,11 +249,11 @@ export async function acceptChallenge(
   const accepterName = await getUserDisplayName(user.id);
   await sendPushNotification(
     challenge.creator_id,
-    {
-      title: "Défi accepté !",
-      body: `${accepterName} a accepté ton défi. C'est parti !`,
+    (t) => ({
+      title: t("challengeAccepted.title"),
+      body: t("challengeAccepted.body", { name: accepterName ?? t("someFriend") }),
       data: { url: "/challenges" },
-    },
+    }),
     "challenge_accepted"
   );
 
@@ -270,7 +270,7 @@ export async function declineChallenge(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Vérifier que le challenge existe et est adressé à l'utilisateur
@@ -283,7 +283,7 @@ export async function declineChallenge(
     .single();
 
   if (!challenge) {
-    return { success: false, error: "Défi non trouvé" };
+    return { success: false, error: await tErr("challengeNotFound") };
   }
 
   // Mettre à jour le statut
@@ -294,18 +294,18 @@ export async function declineChallenge(
 
   if (error) {
     console.error("Error declining challenge:", error);
-    return { success: false, error: "Erreur lors du refus" };
+    return { success: false, error: await tErr("declineFailed") };
   }
 
   // Notifier le créateur
   const declinerName = await getUserDisplayName(user.id);
   await sendPushNotification(
     challenge.creator_id,
-    {
-      title: "Défi refusé",
-      body: `${declinerName} a refusé ton défi`,
+    (t) => ({
+      title: t("challengeDeclined.title"),
+      body: t("challengeDeclined.body", { name: declinerName ?? t("someFriend") }),
       data: { url: "/challenges" },
-    },
+    }),
     "challenge_created" // Utiliser le même type pour ne pas spam
   );
 
@@ -321,7 +321,7 @@ export async function cancelChallenge(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -333,7 +333,7 @@ export async function cancelChallenge(
 
   if (error) {
     console.error("Error cancelling challenge:", error);
-    return { success: false, error: "Erreur lors de l'annulation" };
+    return { success: false, error: await tErr("cancelFailed") };
   }
 
   revalidatePath("/challenges");
@@ -641,22 +641,22 @@ async function completeChallenge(
     // Notifier le gagnant
     await sendPushNotification(
       finalWinnerId,
-      {
-        title: "Tu as gagné ! 🏆",
-        body: `Félicitations, tu as remporté le défi !`,
+      (t) => ({
+        title: t("challengeYouWon.title"),
+        body: t("challengeYouWon.body"),
         data: { url: "/challenges" },
-      },
+      }),
       "challenge_won"
     );
 
     // Notifier le perdant
     await sendPushNotification(
       loserId,
-      {
-        title: "Défi terminé",
-        body: `${winnerName} a remporté le défi. La prochaine sera la bonne !`,
+      (t) => ({
+        title: t("challengeLost.title"),
+        body: t("challengeLost.body", { name: winnerName }),
         data: { url: "/challenges" },
-      },
+      }),
       "challenge_completed"
     );
 
@@ -678,21 +678,21 @@ async function completeChallenge(
     // Égalité - notifier les deux
     await sendPushNotification(
       challenge.creator_id,
-      {
-        title: "Défi terminé - Égalité !",
-        body: "Le défi s'est terminé sur une égalité parfaite !",
+      (t) => ({
+        title: t("challengeTie.title"),
+        body: t("challengeTie.body"),
         data: { url: "/challenges" },
-      },
+      }),
       "challenge_completed"
     );
 
     await sendPushNotification(
       challenge.challenger_id,
-      {
-        title: "Défi terminé - Égalité !",
-        body: "Le défi s'est terminé sur une égalité parfaite !",
+      (t) => ({
+        title: t("challengeTie.title"),
+        body: t("challengeTie.body"),
         data: { url: "/challenges" },
-      },
+      }),
       "challenge_completed"
     );
   }

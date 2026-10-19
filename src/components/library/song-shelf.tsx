@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Cover } from "@/components/ui/cover";
 import { songProgress } from "./song-card";
 import type { Song } from "@/types";
@@ -37,6 +38,7 @@ function albumKey(song: Song): string | null {
  * deplie sur place quand on la touche.
  */
 export function SongShelf({ songs, bestBpm, onSelect, groupByAlbum = true }: SongShelfProps) {
+  const t = useTranslations("library");
   const [openAlbum, setOpenAlbum] = useState<string | null>(null);
 
   const entries = useMemo<ShelfEntry[]>(() => {
@@ -99,7 +101,7 @@ export function SongShelf({ songs, bestBpm, onSelect, groupByAlbum = true }: Son
               type="button"
               onClick={() => setOpenAlbum(isOpen ? null : entry.key)}
               aria-expanded={isOpen}
-              aria-label={`${entry.name}, ${entry.songs.length} morceaux`}
+              aria-label={t("albumGroup", { name: entry.name, count: entry.songs.length })}
               className="group w-[104px] shrink-0 snap-start text-left lg:w-[132px]"
             >
               <ShelfCover src={lead.cover_url} first={first}>
@@ -112,7 +114,7 @@ export function SongShelf({ songs, bestBpm, onSelect, groupByAlbum = true }: Son
                 {lead.status === "learning" && best && (
                   <span className="tabular font-bold text-primary">{progressLabel(best)} </span>
                 )}
-                {entry.songs.length} morceaux
+                {t("songsCount", { count: entry.songs.length })}
               </span>
             </button>
 
@@ -174,9 +176,10 @@ function ShelfSong({
   first: boolean;
   onSelect: (song: Song) => void;
 }) {
+  const t = useTranslations("library");
   const progress = songProgress(song, bestBpm);
   const detail =
-    song.capo_position > 0 ? `Capo ${song.capo_position}` : song.status === "learning" ? song.tuning : song.artist;
+    song.capo_position > 0 ? t("capo", { position: song.capo_position }) : song.status === "learning" ? song.tuning : song.artist;
 
   return (
     <button

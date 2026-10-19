@@ -1,6 +1,8 @@
 "use client";
 
 import { Globe, Lock, Music, Play, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { Cover } from "@/components/ui/cover";
 import type { CoverWithSong, CoverVisibility } from "@/types";
 import { CoverGearLine } from "./cover-gear-line";
@@ -10,10 +12,10 @@ interface CoverCardProps {
   onClick: () => void;
 }
 
-const VISIBILITY: Record<CoverVisibility, { label: string; Icon: typeof Lock }> = {
-  private: { label: "Privé", Icon: Lock },
-  friends: { label: "Amis", Icon: Users },
-  public: { label: "Public", Icon: Globe },
+const VISIBILITY_ICON: Record<CoverVisibility, typeof Lock> = {
+  private: Lock,
+  friends: Users,
+  public: Globe,
 };
 
 /**
@@ -25,8 +27,11 @@ const VISIBILITY: Record<CoverVisibility, { label: string; Icon: typeof Lock }> 
  * d'image.
  */
 export function CoverCard({ cover, onClick }: CoverCardProps) {
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString(intlLocale, {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -35,11 +40,13 @@ export function CoverCard({ cover, onClick }: CoverCardProps) {
 
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return null;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1).replace(".", ",")} Ko`;
-    return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} Mo`;
+    const size = (value: number) => value.toLocaleString(intlLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    if (bytes < 1024 * 1024) return tc("fileSize.kb", { size: size(bytes / 1024) });
+    return tc("fileSize.mb", { size: size(bytes / (1024 * 1024)) });
   };
 
-  const { label, Icon } = VISIBILITY[cover.visibility];
+  const Icon = VISIBILITY_ICON[cover.visibility];
+  const label = te(`visibility.${cover.visibility}`);
   const image = cover.thumbnail_url ?? cover.song.cover_url;
 
   return (

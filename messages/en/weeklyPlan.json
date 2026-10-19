@@ -1,0 +1,49 @@
+{
+  "section": {
+    "intro": "the intro",
+    "verse": "the verse",
+    "chorus": "the chorus",
+    "bridge": "the bridge",
+    "solo": "the solo",
+    "outro": "the outro",
+    "full_song": "the whole song"
+  },
+  "goal": {
+    "tempoTitle": "Get \"{title}\" up to {step} BPM",
+    "tempoBest": "Best tempo held: {best} BPM · target {target}",
+    "tempoNone": "No tempo logged yet · target {target} BPM",
+    "sectionTitle": "Go back over {section} of \"{title}\"",
+    "sectionDetail": "This part gave you trouble last time",
+    "masteryTitle": "Wrap up \"{title}\"",
+    "masteryDetail": "You're holding the target tempo — mark it as \"mastered\"",
+    "startTitle": "Start \"{title}\"",
+    "daysTitle": "Play {days} days this week",
+    "daysLast": "Last week: {count, plural, one {# day} other {# days}}",
+    "daysNone": "No sessions last week — let's ease back in",
+    "coverTitle": "Record your first cover",
+    "coverDetail": "Even a rough one — it's a milestone, not a performance",
+    "minutesTitle": "{minutes} minutes of practice",
+    "minutesLast": "Last week: {minutes} min",
+    "minutesNone": "A first benchmark for the week",
+    "fromAlbum": "Spotted on \"{label}\"",
+    "fromArtist": "Spotted while listening to {artist}",
+    "fromFriend": "Seen at {label}'s",
+    "fromSomeFriend": "Seen at a friend's",
+    "waiting": "{artist} is waiting in \"To learn\""
+  },
+  "unit": {
+    "sessions": "sessions",
+    "days": "days",
+    "min": "min",
+    "BPM": "BPM"
+  },
+  "card": {
+    "title": "Your week · {range}",
+    "lastDay": "last day",
+    "daysLeft": "{count, plural, one {# day} other {# days}}",
+    "regenerate": "Regenerate this week's plan",
+    "done": "Week done. The next plan arrives on Monday.",
+    "progress": "Progress: {percent}%",
+    "work": "Work on it"
+  }
+}

@@ -1,3 +1,4 @@
+import { tErr } from "@/i18n/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { searchSongsterr, getSongsterrUrl } from "@/lib/services/songsterr";
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    return NextResponse.json({ error: await tErr("notAuthenticated") }, { status: 401 });
   }
 
   // Check plan
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     .single();
 
   if (!profile || profile.plan === "free") {
-    return NextResponse.json({ error: "Fonctionnalité Pro/Band uniquement" }, { status: 403 });
+    return NextResponse.json({ error: await tErr("proOnly") }, { status: 403 });
   }
 
   // Fetch from Songsterr (new API)

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { setBandMemberInstrument } from "@/lib/actions/bands";
 import { INSTRUMENTS, bandPosteLabel, instrumentMeta } from "@/lib/instruments";
 import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
@@ -23,6 +24,9 @@ interface Props {
  * c'est la que le chant trouve sa place.
  */
 export function BandMemberPoste({ bandId, member, canEdit }: Props) {
+  const t = useTranslations("setlists.poste");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [instrument, setInstrument] = useState<Instrument | null>(member.instrument ?? null);
@@ -30,7 +34,7 @@ export function BandMemberPoste({ bandId, member, canEdit }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const poste = bandPosteLabel(member);
+  const poste = bandPosteLabel(member, te);
 
   const handleSave = () => {
     if (!instrument) return;
@@ -41,7 +45,7 @@ export function BandMemberPoste({ bandId, member, canEdit }: Props) {
         setEditing(false);
         router.refresh();
       } else {
-        setError(result.error ?? "Oups, ça n'est pas passé.");
+        setError(result.error ?? tc("oops"));
       }
     });
   };
@@ -49,7 +53,7 @@ export function BandMemberPoste({ bandId, member, canEdit }: Props) {
   const summary = (
     <span className="inline-flex items-center gap-1">
       {member.instrument && <Icon name={instrumentMeta(member.instrument).icon} className="h-3.5 w-3.5" />}
-      {poste ?? "Poste à préciser"}
+      {poste ?? t("toDefine")}
     </span>
   );
 
@@ -62,7 +66,7 @@ export function BandMemberPoste({ bandId, member, canEdit }: Props) {
       >
         {summary}
         <Icon name="edit" className="h-3 w-3" />
-        <span className="sr-only">Changer le poste</span>
+        <span className="sr-only">{t("change")}</span>
       </button>
     ) : (
       <span className="text-xs text-muted-foreground">{summary}</span>
@@ -75,7 +79,7 @@ export function BandMemberPoste({ bandId, member, canEdit }: Props) {
         options={INSTRUMENTS.map((i) => ({ instrument: i.value }))}
         value={instrument}
         onChange={setInstrument}
-        label={`Poste de ${member.profile?.display_name || member.profile?.username} dans le groupe`}
+        label={t("of", { name: member.profile?.display_name || member.profile?.username || "" })}
       />
       {instrument === "other" && (
         <input
@@ -83,8 +87,8 @@ export function BandMemberPoste({ bandId, member, canEdit }: Props) {
           value={label}
           onChange={(event) => setLabel(event.target.value)}
           maxLength={40}
-          placeholder="Lequel ? (chant, saxo, percus…)"
-          aria-label="Quel poste ?"
+          placeholder={t("which")}
+          aria-label={t("whichAria")}
           className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
       )}
@@ -100,7 +104,7 @@ export function BandMemberPoste({ bandId, member, canEdit }: Props) {
           disabled={!instrument || isPending}
           className="min-h-[34px] rounded-full bg-primary px-4 text-xs font-bold text-primary-foreground disabled:opacity-60"
         >
-          {isPending ? "Enregistrement…" : "Enregistrer"}
+          {isPending ? tc("saving") : tc("save")}
         </button>
         <button
           type="button"
@@ -112,7 +116,7 @@ export function BandMemberPoste({ bandId, member, canEdit }: Props) {
           }}
           className="min-h-[34px] rounded-full border border-border px-4 text-xs font-semibold text-muted-foreground hover:bg-accent"
         >
-          Annuler
+          {tc("cancel")}
         </button>
       </div>
     </div>

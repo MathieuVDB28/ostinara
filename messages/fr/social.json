@@ -1,0 +1,20 @@
+{
+  "comments": "{count, plural, one {# commentaire} other {# commentaires}}",
+  "comment": "Commenter",
+  "writeComment": "Écrire un commentaire...",
+  "sendComment": "Envoyer le commentaire",
+  "react": "Réagir",
+  "allEmojis": "Tous les emojis",
+  "searchEmoji": "Rechercher un emoji",
+  "noEmoji": "Aucun emoji trouvé",
+  "addFailed": "L'ajout a échoué. Réessaie.",
+  "alreadyInLibrary": "Déjà dans ta biblio",
+  "see": "Voir",
+  "learnToo": "Je l'apprends aussi",
+  "inListenList": "Dans ta liste « À écouter »",
+  "listenToo": "À écouter",
+  "emptyFeed1": "Ton feed",
+  "emptyFeed2": "est <accent>vide</accent>",
+  "emptyFeedHint": "Ajoute des amis pour voir ce qu'ils écoutent, apprennent et jouent.",
+  "findFriends": "Trouver des amis"
+}

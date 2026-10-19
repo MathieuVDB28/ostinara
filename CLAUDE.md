@@ -6,7 +6,7 @@
 
 **Cible** : Musiciens amateurs a intermediaires qui veulent suivre leur apprentissage et partager avec leur cercle d'amis musiciens ; groupes (plan Band) ou chaque membre joue un instrument different.
 
-> L'app a ete concue pour la guitare puis ouverte a tous les instruments (octobre 2026) : voir la section **Instruments** ci-dessous. Certaines parties de ce document decrivant les pages (routes `/library`, `/practice`…) datent d'avant la refonte de navigation (Accueil / Jouer / Biblio / Commu / Profil, cf. `src/lib/navigation.ts`).
+> L'app a ete concue pour la guitare puis ouverte a tous les instruments (octobre 2026) : voir la section **Instruments** ci-dessous. Elle est bilingue francais / anglais depuis octobre 2026 : voir **Langues (i18n)**. Certaines parties de ce document decrivant les pages (routes `/library`, `/practice`…) datent d'avant la refonte de navigation (Accueil / Jouer / Biblio / Commu / Profil, cf. `src/lib/navigation.ts`).
 
 ---
 
@@ -159,6 +159,17 @@ Chaque musicien declare ses instruments a l'onboarding (`/bienvenue`, impose par
 - **Groupes** : `band_members.instrument` / `instrument_label` = poste tenu dans le groupe (instrument principal par defaut, trigger), modifiable via la RPC `set_band_member_instrument`. Line-up des repetes : `src/lib/rehearsal-lineup.ts`.
 - **Accordeur** : guitare + basse (`BASS_TUNING_GROUPS`, detection jusqu'a 28 Hz) ; masque pour batterie/clavier.
 - **Badges** : `titles` par instrument dans `src/lib/badges/catalog.ts` (ex. « Corne aux doigts » / « Ampoules aux baguettes » / « Ivoire usé »), via `badgeLabel(id, level, instrument)`.
+
+### Langues (i18n)
+Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les URL, la langue vit dans le cookie `NEXT_LOCALE` et dans `profiles.locale`.
+- **Detection** (`src/i18n/detect.ts`, appelee par le middleware a la premiere visite) : pays de l'IP (`x-vercel-ip-country`) — francais dans les pays francophones, anglais ailleurs ; pays bilingues (BE, CH, CA, LU…) ou pas d'en-tete : langue du navigateur ; a defaut le francais. Un cookie existant n'est jamais ecrase. Changement : Profil > Reglages > Langue (`LocaleSwitcher`, action `setLocale`), ou le selecteur compact des pages publiques (auth, landing, legal, onboarding).
+- **Messages** : `messages/{fr,en}/<namespace>.json`, un fichier par domaine. `messages/*/index.ts` est **genere** par `npm run check:i18n` (qui verifie aussi que fr et en ont les memes cles et les memes variables ICU) : le lancer apres tout ajout de cle, avant `tsc`. Les cles sont typees (`src/global.d.ts`) : une cle absente casse la compilation.
+- **Ecrire un texte** : jamais de chaine en dur dans l'UI. Client et composants serveur synchrones : `useTranslations("ns")` ; serveur async / server actions : `getTranslations`. Pluriels et variables en ICU (`{count, plural, one {# morceau} other {# morceaux}}`), mise en forme avec `t.rich` (`<strong>`, `<accent>`, `<link>`). Enums (instrument, statut, humeur, type de matos…) : namespace `enums` (``te(`gearType.${type}`)``) ; libelles avec traducteur : `instrumentLabel(entry, te)`, `badgeLabel(id, level, instrument, t)`, etc.
+- **Dates et nombres** : `useIntlLocale()` (client) / `getIntlLocale()` (serveur) → `"fr-FR"` / `"en-US"` ; jamais `"fr-FR"` en dur. Prix toujours en EUR (`Intl.NumberFormat` avec `currency: "EUR"`).
+- **Erreurs des server actions** : `return { success: false, error: await tErr("cle") }` (`src/i18n/server.ts`, namespace `errors`).
+- **Sans requete** (push, cron, emails) : la langue du destinataire, `profiles.locale` (`recipientLocale()`). `sendPushNotification` accepte un payload fonction `(t, locale) => ({ title, body })` evalue par destinataire. Email de la liste d'attente : `waitlist.locale`, traducteur passe a `waitlistConfirmationEmail`. Emails d'auth Supabase : `locale` est dans les metadonnees du compte (`{{ if eq .Data.locale "en" }}` dans les templates).
+- **Contenu en base** : exercices systeme traduits dans `exercises.translations` (`localizeExercise`). Ce que l'utilisateur ecrit (titres, notes) reste tel quel ; quelques valeurs anciennes stockees en francais (unites du plan de la semaine) sont rattrapees a l'affichage.
+- **Cas particuliers** : `/offline` est statique (pre-rendue au build) et choisit sa langue cote client (`OfflineIntl`). Le PDF (react-pdf) est rendu hors de l'arbre React : les traducteurs lui arrivent en props. Pages legales : `legal-fr.tsx` (texte de reference) + `legal-en.tsx` (traduction) dans chaque dossier, bandeau « seule la version francaise fait foi » en anglais ; toute modification du texte francais doit etre reportee dans l'anglais.
 
 ### Plan gating
 - Fonction `requirePaidPlan()` dans `src/lib/actions/plan.ts`
@@ -752,6 +763,14 @@ band_members.instrument_label text             -- precise 'other' (chant, saxo�
 waitlist.instruments instrument[]              -- « Tu joues de quoi ? » de la liste d'attente
 ```
 
+### Colonnes ajoutees pour les langues
+
+```sql
+profiles.locale text                           -- 'fr' | 'en', langue des push, emails et crons (migration 20261028_locale)
+waitlist.locale text                           -- langue de la page d'inscription, celle de l'email de confirmation
+exercises.translations jsonb                   -- { "en": { name, description, instructions[], tips[] } } (migration 20261029_exercise_translations)
+```
+
 ### RPC Functions (Stored Procedures)
 
 ```sql
@@ -1032,6 +1051,9 @@ npm run build
 
 # Linting
 npm run lint
+
+# Traductions : regenere messages/*/index.ts et verifie fr = en
+npm run check:i18n
 
 # Types Supabase (apres modification du schema)
 npx supabase gen types typescript --project-id <id> > src/types/supabase.ts

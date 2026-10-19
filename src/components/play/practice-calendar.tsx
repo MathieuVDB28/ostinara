@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import type { HeatmapData, HeatmapDay } from "@/types";
 
 interface PracticeCalendarProps {
@@ -28,6 +30,8 @@ function parseDay(date: string) {
  * droite. La regularite se lit d'un coup d'oeil, avant les chiffres.
  */
 export function PracticeCalendar({ data, className = "" }: PracticeCalendarProps) {
+  const t = useTranslations("play.calendar");
+  const intlLocale = useIntlLocale();
   const { days } = data;
   if (days.length === 0) return null;
 
@@ -46,7 +50,7 @@ export function PracticeCalendar({ data, className = "" }: PracticeCalendarProps
     if (date.getDate() <= 7 && (!previous || previous.column < column - 1)) {
       months.push({
         column,
-        label: date.toLocaleDateString("fr-FR", { month: "short" }),
+        label: date.toLocaleDateString(intlLocale, { month: "short" }),
       });
     }
   });
@@ -61,8 +65,8 @@ export function PracticeCalendar({ data, className = "" }: PracticeCalendarProps
           day ? (
             <span
               key={day.date}
-              title={`${parseDay(day.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} · ${
-                day.minutes > 0 ? `${day.minutes} min` : "pas joué"
+              title={`${parseDay(day.date).toLocaleDateString(intlLocale, { day: "numeric", month: "short" })} · ${
+                day.minutes > 0 ? t("minutes", { m: day.minutes }) : t("notPlayed")
               }`}
               className={`aspect-square rounded-[2px] ${LEVEL_CLASS[day.level]}`}
             />
@@ -85,7 +89,7 @@ export function PracticeCalendar({ data, className = "" }: PracticeCalendarProps
       </div>
 
       <figcaption className="sr-only">
-        {data.activeDays} jours joués sur les {data.totalDays} derniers.
+        {t("summary", { active: data.activeDays, total: data.totalDays })}
       </figcaption>
     </figure>
   );

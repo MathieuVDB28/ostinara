@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ChevronRight, ListMusic } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { PlayStepper, type PlayStep } from "./play-stepper";
 import type { SaveSessionItemInput } from "@/lib/actions/setlists";
 import type {
@@ -47,6 +48,7 @@ export function PlaySetlistPanel({
   songWorkingBpm,
   userPlan,
 }: PlaySetlistPanelProps) {
+  const t = useTranslations("play.setlistPanel");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const selected = useMemo(
@@ -119,10 +121,9 @@ export function PlaySetlistPanel({
             strokeWidth={1.5}
             aria-hidden="true"
           />
-          <p className="text-sm font-medium">Aucune setlist à jouer</p>
+          <p className="text-sm font-medium">{t("none")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Construis-en une dans Commu › Groupes, ou monte une file à la volée
-            dans l&apos;onglet « File ».
+            {t("noneHint")}
           </p>
         </div>
       );
@@ -130,8 +131,7 @@ export function PlaySetlistPanel({
     return (
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">
-          Choisis une setlist à dérouler : le métronome se cale sur chaque
-          élément, le chrono tourne.
+          {t("choose")}
         </p>
         <div className="divide-y divide-border rounded-xl border border-border">
           {setlists.map((setlist) => {
@@ -152,8 +152,8 @@ export function PlaySetlistPanel({
                   <p className="truncate font-medium">{setlist.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
                     {count > 0
-                      ? `${count} élément${count > 1 ? "s" : ""} à jouer`
-                      : "Aucun morceau ni exercice"}
+                      ? t("items", { count })
+                      : t("empty")}
                     {setlist.band ? ` • ${setlist.band.name}` : ""}
                   </p>
                 </div>
@@ -177,7 +177,7 @@ export function PlaySetlistPanel({
       steps={steps}
       title={selected.name}
       onBack={() => setSelectedId(null)}
-      backLabel="← Changer de setlist"
+      backLabel={t("change")}
       songPracticeStats={songPracticeStats}
       currentBpm={currentBpm}
       onRequestBpm={onRequestBpm}

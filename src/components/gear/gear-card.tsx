@@ -2,12 +2,9 @@
 
 import { useState } from "react";
 import { Drum, Piano } from "lucide-react";
-import type { GearItem, GearType, GearCondition } from "@/types";
-import {
-  GEAR_TYPE_LABELS,
-  GEAR_CONDITION_LABELS,
-  GEAR_CONDITION_COLORS,
-} from "@/types";
+import { useTranslations } from "next-intl";
+import type { GearItem, GearType } from "@/types";
+import { GEAR_CONDITION_COLORS } from "@/types";
 
 interface GearCardProps {
   gear: GearItem;
@@ -154,10 +151,12 @@ function GearTypeIcon({
 export { GearTypeIcon };
 
 export function GearCard({ gear, onClick }: GearCardProps) {
+  const t = useTranslations("gear.card");
+  const te = useTranslations("enums");
   const [showMenu, setShowMenu] = useState(false);
 
   const title = [gear.brand, gear.model].filter(Boolean).join(" ");
-  const subtitle = [gear.year ? String(gear.year) : null, GEAR_TYPE_LABELS[gear.type]]
+  const subtitle = [gear.year ? String(gear.year) : null, te(`gearType.${gear.type}`)]
     .filter(Boolean)
     .join(" · ");
 
@@ -183,7 +182,7 @@ export function GearCard({ gear, onClick }: GearCardProps) {
 
       {/* Center content */}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <h3 className="truncate font-display text-xl font-extrabold uppercase leading-tight">{title || "Sans nom"}</h3>
+        <h3 className="truncate font-display text-xl font-extrabold uppercase leading-tight">{title || t("untitled")}</h3>
         {subtitle && (
           <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
         )}
@@ -192,12 +191,12 @@ export function GearCard({ gear, onClick }: GearCardProps) {
             <span
               className={`rounded border border-border px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em] ${GEAR_CONDITION_COLORS[gear.condition]}`}
             >
-              {GEAR_CONDITION_LABELS[gear.condition]}
+              {te(`gearCondition.${gear.condition}`)}
             </span>
           )}
           {gear.is_active && (
             <span className="rounded border border-success px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em] text-success">
-              Actif
+              {t("active")}
             </span>
           )}
         </div>
@@ -209,6 +208,7 @@ export function GearCard({ gear, onClick }: GearCardProps) {
           e.stopPropagation();
           setShowMenu(!showMenu);
         }}
+        aria-label={t("more")}
         className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground transition-all hover:bg-muted lg:opacity-0 lg:group-hover:opacity-100"
       >
         <svg

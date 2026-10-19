@@ -1,0 +1,20 @@
+{
+  "minus": "Moins {n} BPM",
+  "plus": "Plus {n} BPM",
+  "tempoSr": "Tempo en BPM",
+  "tempo": "Tempo",
+  "signature": "Mesure",
+  "subdivision": "Subdivision",
+  "volume": "Volume",
+  "silence": "Silence",
+  "silentBeats": "Temps muets",
+  "off": "Désactivé",
+  "beat": "Temps {n}{accent, select, yes {, accentué} other {}}{silent, select, yes {, silencieux} other {}}",
+  "tapToMute": "touche un temps pour le rendre muet",
+  "tapToAccent": "touche un temps pour l'accentuer",
+  "stop": "Arrêter le métronome",
+  "start": "Lancer le métronome",
+  "tapTempo": "Taper le tempo",
+  "tap": "Tap",
+  "resetTap": "Réinitialiser le tap tempo"
+}

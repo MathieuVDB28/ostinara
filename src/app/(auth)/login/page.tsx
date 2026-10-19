@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { login } from "@/lib/actions/auth";
 
 export default function LoginPage() {
+  const t = useTranslations("auth.login");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,23 +32,23 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="text-center">
-        <h1 className="font-display text-5xl font-extrabold uppercase leading-none">Connexion</h1>
+        <h1 className="font-display text-5xl font-extrabold uppercase leading-none">{t("title")}</h1>
         <p className="mt-2 text-muted-foreground">
-          Content de te revoir
+          {t("subtitle")}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
-            Email
+            {t("email")}
           </label>
           <input
             id="email"
             name="email"
             type="email"
             required
-            placeholder="toi@exemple.com"
+            placeholder={t("emailPlaceholder")}
             className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
@@ -54,13 +56,13 @@ export default function LoginPage() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label htmlFor="password" className="text-sm font-medium">
-              Mot de passe
+              {t("password")}
             </label>
             <Link
               href="/forgot-password"
               className="text-xs text-muted-foreground hover:text-primary"
             >
-              Mot de passe oublié ?
+              {t("forgot")}
             </Link>
           </div>
           <input
@@ -84,14 +86,14 @@ export default function LoginPage() {
           disabled={loading}
           className="min-h-[48px] w-full rounded-xl bg-primary py-3 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {loading ? "Connexion..." : "Se connecter"}
+          {loading ? t("submitting") : t("submit")}
         </button>
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        Pas encore de compte ?{" "}
+        {t("noAccount")}{" "}
         <Link href="/register" className="font-semibold text-foreground underline underline-offset-2">
-          Créer un compte
+          {t("createAccount")}
         </Link>
       </p>
     </div>

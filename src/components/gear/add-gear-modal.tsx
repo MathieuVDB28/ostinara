@@ -3,12 +3,9 @@
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { gearTypesFor } from "@/lib/instruments";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import type { GearType, GearCondition, GearVisibility, UserPlan } from "@/types";
-import {
-  GEAR_TYPE_LABELS,
-  GEAR_CONDITION_LABELS,
-  GEAR_BRANDS,
-} from "@/types";
+import { GEAR_BRANDS } from "@/types";
 import { createGearItem } from "@/lib/actions/gear";
 import { GearTypeIcon } from "./gear-card";
 
@@ -28,11 +25,7 @@ const CONDITION_OPTIONS: GearCondition[] = [
   "poor",
 ];
 
-const VISIBILITY_OPTIONS: { value: GearVisibility; label: string }[] = [
-  { value: "private", label: "Privé" },
-  { value: "friends", label: "Amis" },
-  { value: "public", label: "Public" },
-];
+const VISIBILITY_OPTIONS: GearVisibility[] = ["private", "friends", "public"];
 
 export function AddGearModal({
   isOpen,
@@ -40,6 +33,9 @@ export function AddGearModal({
   onSaved,
   userPlan,
 }: AddGearModalProps) {
+  const t = useTranslations("gear.form");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   // Le matos de mes instruments d'abord, et le premier preselectionne.
   const myInstruments = useMyInstruments();
   const gearTypes = gearTypesFor(myInstruments.instruments.map((i) => i.instrument));
@@ -127,7 +123,7 @@ export function AddGearModal({
     setError("");
 
     if (!brand.trim() && !model.trim()) {
-      setError("Renseigne au moins la marque ou le modèle.");
+      setError(t("brandOrModel"));
       return;
     }
 
@@ -154,10 +150,10 @@ export function AddGearModal({
         onSaved();
         onClose();
       } else {
-        setError(result.error || "Erreur lors de la création.");
+        setError(result.error || t("createFailed"));
       }
     } catch {
-      setError("Une erreur inattendue est survenue.");
+      setError(t("unexpected"));
     } finally {
       setLoading(false);
     }
@@ -173,8 +169,8 @@ export function AddGearModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
-          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Ajouter du matériel</h2>
-          <button aria-label="Fermer"
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
           >
@@ -188,25 +184,25 @@ export function AddGearModal({
         <form onSubmit={handleSubmit} className="px-6 py-5">
           {/* Type selector - full width */}
           <div className="mb-5">
-            <label className="mb-2 block text-sm font-medium">Type</label>
+            <label className="mb-2 block text-sm font-medium">{t("type")}</label>
             <div className="grid grid-cols-5 gap-2">
-              {gearTypes.map((t) => (
+              {gearTypes.map((gearType) => (
                 <button
-                  key={t}
+                  key={gearType}
                   type="button"
                   onClick={() => {
-                    setType(t);
+                    setType(gearType);
                     setBrand("");
                     setBrandSuggestions([]);
                   }}
                   className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-xs font-medium transition-all ${
-                    type === t
+                    type === gearType
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border/50 hover:border-primary/40 hover:bg-primary/[0.02]"
                   }`}
                 >
-                  <GearTypeIcon type={t} className="h-5 w-5" />
-                  <span>{GEAR_TYPE_LABELS[t]}</span>
+                  <GearTypeIcon type={gearType} className="h-5 w-5" />
+                  <span>{te(`gearType.${gearType}`)}</span>
                 </button>
               ))}
             </div>
@@ -217,7 +213,7 @@ export function AddGearModal({
 
           {/* Brand with autocomplete */}
           <div ref={brandRef} className="relative">
-            <label className="mb-1.5 block text-sm font-medium">Marque</label>
+            <label className="mb-1.5 block text-sm font-medium">{t("brand")}</label>
             <input
               type="text"
               value={brand}
@@ -225,7 +221,7 @@ export function AddGearModal({
               onFocus={() => {
                 if (brandSuggestions.length > 0) setShowBrandDropdown(true);
               }}
-              placeholder="Ex: Fender, Gibson..."
+              placeholder={t("brandPlaceholder")}
               className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
             />
             {showBrandDropdown && brandSuggestions.length > 0 && (
@@ -249,12 +245,12 @@ export function AddGearModal({
 
           {/* Model */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium">Modèle</label>
+            <label className="mb-1.5 block text-sm font-medium">{t("model")}</label>
             <input
               type="text"
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              placeholder="Ex: Stratocaster, Les Paul..."
+              placeholder={t("modelPlaceholder")}
               className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
             />
           </div>
@@ -263,7 +259,7 @@ export function AddGearModal({
           <div className="grid grid-cols-2 gap-3 sm:col-span-2">
             <div>
               <label className="mb-1.5 block text-sm font-medium">
-                Année <span className="text-muted-foreground">(optionnel)</span>
+                {t("year")} <span className="text-muted-foreground">{t("optional")}</span>
               </label>
               <input
                 type="number"
@@ -277,7 +273,7 @@ export function AddGearModal({
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">
-                Couleur / Finition <span className="text-muted-foreground">(optionnel)</span>
+                {t("color")} <span className="text-muted-foreground">{t("optional")}</span>
               </label>
               <input
                 type="text"
@@ -291,7 +287,7 @@ export function AddGearModal({
 
           {/* Condition */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium">État</label>
+            <label className="mb-1.5 block text-sm font-medium">{t("condition")}</label>
             <select
               value={condition}
               onChange={(e) => setCondition(e.target.value as GearCondition)}
@@ -299,7 +295,7 @@ export function AddGearModal({
             >
               {CONDITION_OPTIONS.map((c) => (
                 <option key={c} value={c}>
-                  {GEAR_CONDITION_LABELS[c]}
+                  {te(`gearCondition.${c}`)}
                 </option>
               ))}
             </select>
@@ -308,14 +304,14 @@ export function AddGearModal({
           {/* Serial Number */}
           <div className="sm:col-span-2">
             <label className="mb-1.5 block text-sm font-medium">
-              Numéro de série{" "}
-              <span className="text-muted-foreground">(optionnel · privé)</span>
+              {t("serial")}{" "}
+              <span className="text-muted-foreground">{t("optionalPrivate")}</span>
             </label>
             <input
               type="text"
               value={serialNumber}
               onChange={(e) => setSerialNumber(e.target.value)}
-              placeholder="N° de série"
+              placeholder={t("serialPlaceholder")}
               className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
             />
           </div>
@@ -324,8 +320,8 @@ export function AddGearModal({
           <div className="grid grid-cols-2 gap-3 sm:col-span-2">
             <div>
               <label className="mb-1.5 block text-sm font-medium">
-                Prix d&apos;achat{" "}
-                <span className="text-muted-foreground">(privé)</span>
+                {t("price")}{" "}
+                <span className="text-muted-foreground">{t("private")}</span>
               </label>
               <div className="relative">
                 <input
@@ -344,8 +340,8 @@ export function AddGearModal({
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">
-                Date d&apos;achat{" "}
-                <span className="text-muted-foreground">(optionnel)</span>
+                {t("date")}{" "}
+                <span className="text-muted-foreground">{t("optional")}</span>
               </label>
               <input
                 type="date"
@@ -359,7 +355,7 @@ export function AddGearModal({
           {/* Image URL */}
           <div className="sm:col-span-2">
             <label className="mb-1.5 block text-sm font-medium">
-              Image URL <span className="text-muted-foreground">(optionnel)</span>
+              {t("image")} <span className="text-muted-foreground">{t("optional")}</span>
             </label>
             <input
               type="url"
@@ -373,12 +369,12 @@ export function AddGearModal({
           {/* Notes */}
           <div className="sm:col-span-2">
             <label className="mb-1.5 block text-sm font-medium">
-              Notes <span className="text-muted-foreground">(optionnel)</span>
+              {t("notes")} <span className="text-muted-foreground">{t("optional")}</span>
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Cordes, modifications, réglages..."
+              placeholder={t("notesPlaceholder")}
               rows={2}
               className="w-full resize-none rounded-lg border border-border/50 bg-background px-3 py-2 text-sm transition-colors focus:border-primary"
             />
@@ -392,9 +388,9 @@ export function AddGearModal({
           {/* Active toggle */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium">Utilisation active</p>
+              <p className="text-sm font-medium">{t("active")}</p>
               <p className="text-xs text-muted-foreground">
-                Ce matériel fait partie de votre setup actuel
+                {t("activeHint")}
               </p>
             </div>
             <button
@@ -414,9 +410,9 @@ export function AddGearModal({
 
           {/* Visibility */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Visibilité</label>
+            <label className="mb-2 block text-sm font-medium">{t("visibility")}</label>
             <div className="flex gap-2">
-              {VISIBILITY_OPTIONS.map((v) => (
+              {VISIBILITY_OPTIONS.map((value) => ({ value, label: te(`visibility.${value}`) })).map((v) => (
                 <button
                   key={v.value}
                   type="button"
@@ -447,14 +443,14 @@ export function AddGearModal({
               onClick={onClose}
               className="flex-1 rounded-lg border border-border/50 px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
             >
-              Annuler
+              {tc("cancel")}
             </button>
             <button
               type="submit"
               disabled={loading}
               className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading ? "Enregistrement..." : "Ajouter"}
+              {loading ? t("saving") : t("add")}
             </button>
           </div>
 

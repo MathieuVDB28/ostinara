@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { getChartData } from "@/lib/actions/practice";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
@@ -35,6 +36,8 @@ interface StatsTabProps {
 
 export function StatsTab({ data: initialData }: StatsTabProps) {
   // Plusieurs instruments : les stats d'un seul, ou de tous.
+  const t = useTranslations("progress.statsTab");
+  const te = useTranslations("enums");
   const myInstruments = useMyInstruments();
   const [instrument, setInstrument] = useState<Instrument | null>(null);
   const [data, setData] = useState(initialData);
@@ -57,20 +60,20 @@ export function StatsTab({ data: initialData }: StatsTabProps) {
           options={myInstruments.instruments}
           value={instrument}
           onChange={choose}
-          allLabel="Tous"
+          allLabel={t("all")}
           onAll={() => choose(null)}
-          label="Statistiques pour"
+          label={t("statsFor")}
         />
       )}
 
       {/* Le temps par instrument, quand on en a travaille plusieurs */}
       {distribution.length > 1 && totalMinutes > 0 && (
         <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="mb-4 text-lg font-semibold">Temps par instrument</h3>
+          <h3 className="mb-4 text-lg font-semibold">{t("timePerInstrument")}</h3>
           <ul className="space-y-3">
             {distribution.map((row) => {
               const entry = myInstruments.instruments.find((i) => i.instrument === row.instrument);
-              const label = instrumentLabel(entry ?? { instrument: row.instrument });
+              const label = instrumentLabel(entry ?? { instrument: row.instrument }, te);
               const percent = Math.round((row.minutes / totalMinutes) * 100);
               return (
                 <li key={row.instrument}>

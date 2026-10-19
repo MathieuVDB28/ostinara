@@ -11,11 +11,12 @@ const TARGET_HEIGHT = 720;
 let ffmpegInstance: FFmpeg | null = null;
 
 async function loadFFmpeg(
-  onLoadProgress?: (message: string) => void
+  onLoadProgress?: (message: "loading") => void
 ): Promise<FFmpeg> {
   if (ffmpegInstance?.loaded) return ffmpegInstance;
 
-  onLoadProgress?.("Chargement du moteur de compression...");
+  // Un code plutot qu'un texte : l'appelant le traduit (media.compressionLoading).
+  onLoadProgress?.("loading");
 
   const [{ FFmpeg }, { toBlobURL }] = await Promise.all([
     import("@ffmpeg/ffmpeg"),
@@ -48,7 +49,7 @@ function getVideoDuration(file: File): Promise<number> {
     };
     video.onerror = () => {
       URL.revokeObjectURL(video.src);
-      reject(new Error("Impossible de lire la vidéo"));
+      reject(new Error("video_unreadable"));
     };
     video.src = URL.createObjectURL(file);
   });
@@ -61,7 +62,7 @@ export function needsCompression(file: File): boolean {
 export async function compressVideo(
   file: File,
   onProgress?: (progress: number) => void,
-  onLoadProgress?: (message: string) => void
+  onLoadProgress?: (message: "loading") => void
 ): Promise<File> {
   if (!needsCompression(file)) return file;
 

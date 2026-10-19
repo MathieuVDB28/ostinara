@@ -1,4 +1,5 @@
 import { bandLineup, type LineupPoste } from "@/lib/instruments";
+import type { EnumsT } from "@/i18n/types";
 import type { BandMember, RehearsalParticipant, RehearsalRsvpStatus } from "@/types";
 
 type PosteMember = Pick<BandMember, "user_id" | "instrument" | "instrument_label">;
@@ -18,9 +19,10 @@ export interface RehearsalPoste extends LineupPoste<PosteMember> {
  */
 export function rehearsalLineup(
   members: PosteMember[],
-  participants: Pick<RehearsalParticipant, "user_id" | "status">[]
+  participants: Pick<RehearsalParticipant, "user_id" | "status">[],
+  t: EnumsT
 ): RehearsalPoste[] {
-  return bandLineup(members).map((poste) => {
+  return bandLineup(members, t).map((poste) => {
     const statuses = poste.members.map(
       (member) => participants.find((p) => p.user_id === member.user_id)?.status ?? "invited"
     );

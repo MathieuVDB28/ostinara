@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { StarRating } from "@/components/ui/star-rating";
 import { updateAlbumReview, deleteAlbumReview } from "@/lib/actions/albums";
 import type { CatalogAlbumDetails, AlbumReview, AlbumCommunityStats, CatalogAlbumTrack } from "@/types";
@@ -26,6 +28,11 @@ function starsFromDb(dbRating: number) {
 }
 
 export function AlbumDetailView({ album, stats, userReview: initialReview, encyclopedia }: Props) {
+  const t = useTranslations("albums.detail");
+  const tr = useTranslations("albums.review");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
+  const stars = (value: number) => value.toLocaleString(intlLocale, { maximumFractionDigits: 1 });
   const router = useRouter();
   const nextSteps = useNextSteps();
   const [userReview, setUserReview] = useState(initialReview);
@@ -59,7 +66,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
       });
       setIsEditing(false);
     } else {
-      setEditError(result.error || "Une erreur est survenue");
+      setEditError(result.error || tc("genericError"));
     }
     setIsUpdating(false);
   };
@@ -86,7 +93,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
     });
     if (!result.success) {
       setUserReview(previous);
-      setFavoriteError(result.error || "Le choix n'a pas pu être enregistré.");
+      setFavoriteError(result.error || t("favoriteFailed"));
     }
     setSavingFavorite(false);
   };
@@ -121,7 +128,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
         className="-ml-1 mb-4 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
       >
         <Icon name="chevron_left" className="h-4 w-4" strokeWidth={2.25} />
-        Retour
+        {t("back")}
       </button>
 
       {/* Album header */}
@@ -131,7 +138,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
 
         <div className="min-w-0 flex-1">
           <p className="mb-1 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-            {album.record_type === "single" ? "Single" : album.record_type === "ep" ? "EP" : "Album"}
+            {album.record_type === "single" ? t("single") : album.record_type === "ep" ? t("ep") : t("album")}
           </p>
           <h1 className="text-balance text-[26px] font-extrabold leading-tight tracking-[-0.02em] sm:text-4xl">{album.name}</h1>
 
@@ -151,7 +158,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
             )}
             <span className="flex items-center gap-1">
               <Icon name="music_note" className="h-[15px] w-[15px]" />
-              {album.total_tracks} titre{album.total_tracks > 1 ? "s" : ""}
+              {t("tracks", { count: album.total_tracks })}
             </span>
             {album.label && (
               <span className="flex items-center gap-1">
@@ -167,13 +174,13 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
       {stats && stats.review_count > 0 && (
         <div className="mt-6 flex items-center gap-4 border-y border-border py-4">
           <p className="tabular font-display text-5xl font-extrabold leading-none">
-            {avgStars!.toFixed(1).replace(".", ",")}
+            {avgStars!.toLocaleString(intlLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
             <span className="text-lg text-muted-foreground">/5</span>
           </p>
           <div className="flex flex-col gap-1">
             <StarRating value={avgStars!} size="md" />
             <p className="text-sm text-muted-foreground">
-              Note moyenne · {stats.review_count} avis
+              {t("average", { count: stats.review_count })}
             </p>
           </div>
         </div>
@@ -184,7 +191,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
 
       {/* User review section */}
       <div className="mt-6">
-        <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Ma review</h2>
+        <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("myReview")}</h2>
 
         {userReview ? (
           <div className="py-3">
@@ -192,9 +199,9 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
               <>
                 <div className="mb-5">
                   <div className="mb-2.5 flex items-center justify-between">
-                    <label className="text-sm font-medium">Ta note</label>
+                    <label className="text-sm font-medium">{tr("yourRating")}</label>
                     <span className="tabular font-display text-lg font-bold">
-                      {editRating > 0 ? `${String(editRating).replace(".", ",")} / 5` : "—"}
+                      {editRating > 0 ? tr("ratingValue", { rating: stars(editRating) }) : "—"}
                     </span>
                   </div>
                   <StarRating value={editRating} onChange={setEditRating} size="lg" />
@@ -202,12 +209,12 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
 
                 <div className="mb-5">
                   <label className="mb-2 block text-sm font-medium">
-                    Impression <span className="text-muted-foreground">(optionnel)</span>
+                    {t("impression")} <span className="text-muted-foreground">{tr("optional")}</span>
                   </label>
                   <textarea
                     value={editReview}
                     onChange={(e) => setEditReview(e.target.value)}
-                    placeholder="Qu'est-ce que tu en as pensé ?"
+                    placeholder={tr("placeholder")}
                     rows={4}
                     maxLength={2000}
                     className="w-full resize-none rounded-xl border border-border bg-background p-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -225,14 +232,14 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
                     disabled={isUpdating}
                     className="flex-1 rounded-xl border border-border py-2.5 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
                   >
-                    Annuler
+                    {tc("cancel")}
                   </button>
                   <button
                     onClick={handleUpdate}
                     disabled={isUpdating}
                     className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                   >
-                    {isUpdating ? "Enregistrement..." : "Enregistrer"}
+                    {isUpdating ? tc("saving") : tc("save")}
                   </button>
                 </div>
               </>
@@ -242,7 +249,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
                   <div className="flex items-center gap-2.5">
                     <StarRating value={starsFromDb(userReview.rating)} size="sm" />
                     <span className="tabular font-display text-xl font-bold">
-                      {String(starsFromDb(userReview.rating)).replace(".", ",")} / 5
+                      {tr("ratingValue", { rating: stars(starsFromDb(userReview.rating)) })}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -251,7 +258,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
                       className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent"
                     >
                       <Icon name="edit" className="h-[15px] w-[15px]" />
-                      Modifier
+                      {tc("edit")}
                     </button>
                     <button
                       onClick={handleDelete}
@@ -259,7 +266,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
                       className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm text-destructive transition-colors hover:bg-accent disabled:opacity-50"
                     >
                       <Icon name="delete" className="h-[15px] w-[15px]" />
-                      {isDeleting ? "..." : "Supprimer"}
+                      {isDeleting ? "..." : tc("delete")}
                     </button>
                   </div>
                 </div>
@@ -267,19 +274,19 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
                 {userReview.review ? (
                   <p className="whitespace-pre-wrap font-serif text-[15px] italic leading-relaxed">{userReview.review}</p>
                 ) : (
-                  <p className="text-sm italic text-muted-foreground">Aucune impression ajoutée</p>
+                  <p className="text-sm italic text-muted-foreground">{tr("none")}</p>
                 )}
               </>
             )}
           </div>
         ) : (
           <div className="flex flex-col items-start gap-3 py-5">
-            <p className="text-sm text-muted-foreground">Tu n&apos;as pas encore noté cet album.</p>
+            <p className="text-sm text-muted-foreground">{t("notRated")}</p>
             <Link
               href="/biblio/albums"
               className="inline-flex min-h-[40px] items-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
             >
-              Ajouter une review
+              {t("addReview")}
             </Link>
           </div>
         )}
@@ -292,11 +299,11 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
         <div className="mt-8">
           <div className="mb-1 flex items-baseline justify-between gap-3 border-b border-border pb-1.5">
             <h2 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              Titres
+              {t("tracksTitle")}
             </h2>
             <div className="flex items-baseline gap-3">
               {userReview && (
-                <span className="hidden text-xs text-muted-foreground sm:inline">Touche ton morceau préféré</span>
+                <span className="hidden text-xs text-muted-foreground sm:inline">{t("tapFavorite")}</span>
               )}
               {/* Plusieurs titres d'un coup vers la biblio : le coeur n'en marque qu'un. */}
               <button
@@ -317,7 +324,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
                 className="inline-flex items-center gap-1 text-xs font-semibold text-primary underline-offset-2 hover:underline"
               >
                 <Plus className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />
-                Apprendre des titres
+                {t("learnTracks")}
               </button>
             </div>
           </div>
@@ -325,7 +332,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
           {userReview?.favorite_track_name && (
             <div className="flex flex-wrap items-center justify-between gap-3 py-3">
               <p className="min-w-0 text-sm">
-                <span className="text-muted-foreground">Ton préféré : </span>
+                <span className="text-muted-foreground">{t("yourFavorite")}</span>
                 <span className="font-semibold">{userReview.favorite_track_name}</span>
               </p>
               <AddTrackToLibraryButton

@@ -1,41 +1,41 @@
+import type { CommonT, Translator } from "@/i18n/types";
+
 /**
  * Ce qu'une activite raconte, apres le nom de son auteur.
  *
  * Partage par la carte du feed (composant client) et l'accueil
- * (composant serveur) : une constante exportee d'un module « use client »
- * n'arrive cote serveur que comme reference, pas comme valeur.
+ * (composant serveur) : chacun passe son t() du namespace `activity`.
  */
-export const ACTIVITY_MESSAGES: Record<string, string> = {
-  song_added: "a ajouté un nouveau morceau",
-  song_learning: "a commencé à apprendre un morceau",
-  song_mastered: "a maîtrisé un morceau",
-  cover_posted: "a posté une cover",
-  friend_added: "a un nouvel ami",
-  song_wishlisted: "veut apprendre",
-  setlist_created: "a créé une setlist",
-  band_created: "a créé un groupe",
-  band_joined: "a rejoint un groupe",
-  challenge_created: "a lancé un défi",
-  challenge_accepted: "a accepté un défi",
-  challenge_completed: "a terminé un défi",
-  challenge_won: "a remporté un défi !",
-  album_reviewed: "a écouté un album",
-  album_wishlisted: "veut écouter un album",
-  gear_added: "a ajouté du matos à sa collection",
-  badge_unlocked: "a débloqué un badge",
-};
+const ACTIVITY_TYPES = [
+  "song_added", "song_learning", "song_mastered", "cover_posted", "friend_added",
+  "song_wishlisted", "setlist_created", "band_created", "band_joined",
+  "challenge_created", "challenge_accepted", "challenge_completed", "challenge_won",
+  "album_reviewed", "album_wishlisted", "gear_added", "badge_unlocked",
+] as const;
+
+type ActivityMessageType = (typeof ACTIVITY_TYPES)[number];
+
+/**
+ * `self` : sa propre activite. Le francais garde « Toi a ajouté… », mais
+ * l'anglais conjugue (« You have a new friend », pas « You has »).
+ */
+export function activityMessage(type: string, t: Translator<"activity">, self = false): string {
+  if (!(ACTIVITY_TYPES as readonly string[]).includes(type)) return "";
+  const key = type as ActivityMessageType;
+  return self ? t(`typesSelf.${key}`) : t(`types.${key}`);
+}
 
 /** « 5 min », « 3 h », « 2 j », puis la date. */
-export function formatActivityDate(dateString: string): string {
+export function formatActivityDate(dateString: string, t: CommonT, intlLocale: string): string {
   const date = new Date(dateString);
   const diffMs = Date.now() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return "à l'instant";
-  if (diffMins < 60) return `${diffMins} min`;
-  if (diffHours < 24) return `${diffHours} h`;
-  if (diffDays < 7) return `${diffDays} j`;
-  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  if (diffMins < 1) return t("relative.now");
+  if (diffMins < 60) return t("relative.minutesShort", { count: diffMins });
+  if (diffHours < 24) return t("relative.hoursShort", { count: diffHours });
+  if (diffDays < 7) return t("relative.daysShort", { count: diffDays });
+  return date.toLocaleDateString(intlLocale, { day: "numeric", month: "short" });
 }

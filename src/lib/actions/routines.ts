@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import type { RoutineItem, RoutineWithItems } from "@/types";
@@ -45,12 +46,12 @@ export async function createRoutineWithItems(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const trimmed = name.trim();
   if (!trimmed) {
-    return { success: false, error: "Donne un nom à la routine" };
+    return { success: false, error: await tErr("routineNameRequired") };
   }
 
   const { data: routine, error } = await supabase
@@ -61,7 +62,7 @@ export async function createRoutineWithItems(
 
   if (error || !routine) {
     console.error("Error creating routine:", error);
-    return { success: false, error: "Erreur lors de la creation" };
+    return { success: false, error: await tErr("createFailed") };
   }
 
   if (items.length > 0) {
@@ -87,7 +88,7 @@ export async function createRoutineWithItems(
     if (itemsError) {
       console.error("Error inserting routine items:", itemsError);
       await supabase.from("routines").delete().eq("id", routine.id);
-      return { success: false, error: "Erreur lors de l'ajout des elements" };
+      return { success: false, error: await tErr("itemsAddFailed") };
     }
   }
 
@@ -103,7 +104,7 @@ export async function deleteRoutine(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -114,7 +115,7 @@ export async function deleteRoutine(
 
   if (error) {
     console.error("Error deleting routine:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/jouer");

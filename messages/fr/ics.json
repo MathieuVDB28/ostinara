@@ -1,0 +1,7 @@
+{
+  "band": "Groupe : {name}",
+  "participants": "Participants : {names}",
+  "inOneHour": "Répète dans 1h : {title}",
+  "tomorrow": "Répète demain : {title}",
+  "filename": "repete"
+}

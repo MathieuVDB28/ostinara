@@ -1,7 +1,11 @@
 import webpush from 'web-push';
 import { createClient } from '@supabase/supabase-js';
 import { VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT } from './vapid';
+import { getTranslations } from 'next-intl/server';
 import type { ReminderType } from './practice-reminders';
+import type { Translator } from '@/i18n/types';
+import type { Locale } from '@/i18n/config';
+import { recipientLocale } from '@/i18n/server';
 
 // Supabase client with service role for server-side operations
 const supabaseAdmin = createClient(
@@ -26,6 +30,26 @@ export interface NotificationPayload {
   badge?: string;
   tag?: string;
   data?: Record<string, unknown>;
+}
+
+/** Le t() du namespace `push`, dans la langue du destinataire. */
+export type PushT = Translator<'push'>;
+
+/**
+ * Un payload, ou de quoi le fabriquer dans la langue du destinataire :
+ * une notification envoyee a plusieurs amis part dans la langue de
+ * chacun (profiles.locale), pas dans celle de qui l'a declenchee.
+ */
+export type LocalizedPayload =
+  | NotificationPayload
+  | ((t: PushT, locale: Locale) => NotificationPayload | Promise<NotificationPayload>);
+
+async function resolvePayload(userId: string, payload: LocalizedPayload): Promise<NotificationPayload> {
+  if (typeof payload !== 'function') return payload;
+  const { data } = await supabaseAdmin.from('profiles').select('locale').eq('id', userId).maybeSingle();
+  const locale = recipientLocale(data?.locale);
+  const t = await getTranslations({ locale, namespace: 'push' });
+  return payload(t, locale);
 }
 
 export type NotificationType =
@@ -60,7 +84,7 @@ export type NotificationType =
 
 export async function sendPushNotification(
   userId: string,
-  payload: NotificationPayload,
+  localizedPayload: LocalizedPayload,
   notificationType: NotificationType
 ): Promise<{ success: number; failed: number }> {
   try {
@@ -86,6 +110,8 @@ export async function sendPushNotification(
       console.log(`No push subscriptions found for user ${userId}`);
       return { success: 0, failed: 0 };
     }
+
+    const payload = await resolvePayload(userId, localizedPayload);
 
     const notificationPayload = JSON.stringify({
       title: payload.title,
@@ -147,7 +173,7 @@ export async function sendPushNotification(
 export async function sendPushNotificationToMultipleUsers(
   notifications: Array<{
     userId: string;
-    payload: NotificationPayload;
+    payload: LocalizedPayload;
     notificationType: NotificationType;
   }>
 ): Promise<{ totalSuccess: number; totalFailed: number }> {

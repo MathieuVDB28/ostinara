@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { PROFILE_INSTRUMENTS_SELECT } from "@/lib/instruments";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
@@ -25,7 +26,7 @@ async function canAddFriend(): Promise<{ allowed: boolean; reason?: string }> {
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { allowed: false, reason: "Non authentifié" };
+    return { allowed: false, reason: await tErr("notAuthenticated") };
   }
 
   const { data: profile } = await supabase
@@ -48,7 +49,7 @@ async function canAddFriend(): Promise<{ allowed: boolean; reason?: string }> {
   if (count !== null && count >= FREE_PLAN_FRIENDS_LIMIT) {
     return {
       allowed: false,
-      reason: `Tu as atteint la limite de ${FREE_PLAN_FRIENDS_LIMIT} amis. Passe en Pro pour en ajouter plus !`,
+      reason: await tErr("friendLimit", { limit: FREE_PLAN_FRIENDS_LIMIT }),
     };
   }
 
@@ -113,11 +114,11 @@ export async function sendFriendRequest(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   if (user.id === addresseeId) {
-    return { success: false, error: "Tu ne peux pas t'ajouter toi-même" };
+    return { success: false, error: await tErr("cannotAddSelf") };
   }
 
   // Vérifier la limite d'amis
@@ -137,13 +138,13 @@ export async function sendFriendRequest(
 
   if (existing) {
     if (existing.status === "accepted") {
-      return { success: false, error: "Vous êtes déjà amis" };
+      return { success: false, error: await tErr("alreadyFriends") };
     }
     if (existing.status === "pending") {
-      return { success: false, error: "Une demande est déjà en attente" };
+      return { success: false, error: await tErr("requestPending") };
     }
     if (existing.status === "blocked") {
-      return { success: false, error: "Impossible d'envoyer une demande" };
+      return { success: false, error: await tErr("cannotSendRequest") };
     }
   }
 
@@ -163,18 +164,18 @@ export async function sendFriendRequest(
 
   if (error) {
     console.error("Error sending friend request:", error);
-    return { success: false, error: "Erreur lors de l'envoi de la demande" };
+    return { success: false, error: await tErr("requestSendFailed") };
   }
 
   // Envoyer une notification push au destinataire
-  const senderName = requesterProfile?.display_name || requesterProfile?.username || "Quelqu'un";
+  const senderName = requesterProfile?.display_name || requesterProfile?.username || null;
   await sendPushNotification(
     addresseeId,
-    {
-      title: "Nouvelle demande d'ami",
-      body: `${senderName} veut devenir ton ami !`,
+    (t) => ({
+      title: t("friendRequest.title"),
+      body: t("friendRequest.body", { name: senderName ?? t("someone") }),
       data: { url: "/friends" },
-    },
+    }),
     "friend_request"
   );
 
@@ -190,7 +191,7 @@ export async function acceptFriendRequest(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Vérifier la limite d'amis
@@ -211,7 +212,7 @@ export async function acceptFriendRequest(
     .single();
 
   if (!friendship) {
-    return { success: false, error: "Demande non trouvée" };
+    return { success: false, error: await tErr("requestNotFound") };
   }
 
   // Mettre à jour le statut
@@ -222,7 +223,7 @@ export async function acceptFriendRequest(
 
   if (error) {
     console.error("Error accepting friend request:", error);
-    return { success: false, error: "Erreur lors de l'acceptation" };
+    return { success: false, error: await tErr("acceptFailed") };
   }
 
   // Créer une activité pour l'utilisateur qui accepte
@@ -242,14 +243,14 @@ export async function acceptFriendRequest(
     .single();
 
   // Notifier le demandeur que sa demande a été acceptée
-  const accepterName = accepterProfile?.display_name || accepterProfile?.username || "Quelqu'un";
+  const accepterName = accepterProfile?.display_name || accepterProfile?.username || null;
   await sendPushNotification(
     friendship.requester_id,
-    {
-      title: "Demande acceptée !",
-      body: `${accepterName} a accepté ta demande d'ami`,
+    (t) => ({
+      title: t("friendAccepted.title"),
+      body: t("friendAccepted.body", { name: accepterName ?? t("someone") }),
       data: { url: "/friends" },
-    },
+    }),
     "friend_accepted"
   );
 
@@ -268,7 +269,7 @@ export async function rejectFriendRequest(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -280,7 +281,7 @@ export async function rejectFriendRequest(
 
   if (error) {
     console.error("Error rejecting friend request:", error);
-    return { success: false, error: "Erreur lors du rejet" };
+    return { success: false, error: await tErr("rejectFailed") };
   }
 
   revalidatePath("/friends");
@@ -295,7 +296,7 @@ export async function removeFriend(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -307,7 +308,7 @@ export async function removeFriend(
 
   if (error) {
     console.error("Error removing friend:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/friends");
@@ -322,7 +323,7 @@ export async function blockUser(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Vérifier si une relation existe
@@ -348,7 +349,7 @@ export async function blockUser(
 
   if (error) {
     console.error("Error blocking user:", error);
-    return { success: false, error: "Erreur lors du blocage" };
+    return { success: false, error: await tErr("blockFailed") };
   }
 
   revalidatePath("/friends");

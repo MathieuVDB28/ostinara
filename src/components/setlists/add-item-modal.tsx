@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
+import { ALL_EXERCISE_CATEGORIES } from "@/lib/instruments";
 import { getSongs } from "@/lib/actions/songs";
 import { addSetlistItem } from "@/lib/actions/setlists";
 import { getExercises } from "@/lib/actions/exercises";
 import {
   SECTION_PRESETS,
-  EXERCISE_CATEGORY_LABELS,
   type Song,
   type Profile,
   type ExerciseWithProgress,
@@ -32,6 +33,10 @@ export function AddItemModal({
   position,
   songSources,
 }: AddItemModalProps) {
+  const t = useTranslations("setlists.add");
+  const tp = useTranslations("setlists.presets");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const [tab, setTab] = useState<Tab>("song");
   const [query, setQuery] = useState("");
   const [catalogQuery, setCatalogQuery] = useState("");
@@ -86,9 +91,9 @@ export function AddItemModal({
     setLoadingExercises(true);
     getExercises()
       .then(setExercises)
-      .catch(() => setError("Impossible de charger les exercices"))
+      .catch(() => setError(t("loadExercisesFailed")))
       .finally(() => setLoadingExercises(false));
-  }, [isOpen, tab, exercises.length, loadingExercises]);
+  }, [isOpen, tab, exercises.length, loadingExercises, t]);
 
   // Handle escape key
   useEffect(() => {
@@ -131,14 +136,14 @@ export function AddItemModal({
           // L'API retourne déjà un array formaté avec title, artist, cover_url
           setCatalogResults(
             data.map(
-              (t: {
+              (track: {
                 title: string;
                 artist: string;
                 cover_url?: string;
               }) => ({
-                title: t.title,
-                artist: t.artist,
-                cover_url: t.cover_url,
+                title: track.title,
+                artist: track.artist,
+                cover_url: track.cover_url,
               })
             ) || []
           );
@@ -193,7 +198,7 @@ export function AddItemModal({
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de l'ajout");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -220,7 +225,7 @@ export function AddItemModal({
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de l'ajout");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -242,7 +247,7 @@ export function AddItemModal({
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de l'ajout");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -270,7 +275,7 @@ export function AddItemModal({
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de l'ajout");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -296,7 +301,7 @@ export function AddItemModal({
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de l'ajout");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -322,8 +327,8 @@ export function AddItemModal({
       <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card shadow-md">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-4">
-          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Ajouter un element</h2>
-          <button aria-label="Fermer"
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -366,7 +371,7 @@ export function AddItemModal({
                 d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
               />
             </svg>
-            Morceau
+            {t("song")}
           </button>
           <button
             onClick={() => setTab("section")}
@@ -389,7 +394,7 @@ export function AddItemModal({
                 d="M4 6h16M4 12h16m-7 6h7"
               />
             </svg>
-            Section
+            {t("section")}
           </button>
           <button
             onClick={() => setTab("exercise")}
@@ -412,7 +417,7 @@ export function AddItemModal({
                 d="M6.5 6.5l11 11m-9-13l2 2m-4 0l4 4m9 1l-2-2m4 0l-4-4M3 21l2-2m14-14l2-2"
               />
             </svg>
-            Exercice
+            {t("exercise")}
           </button>
         </div>
 
@@ -429,7 +434,7 @@ export function AddItemModal({
               {/* Library search */}
               <div>
                 <label className="mb-2 block text-sm font-medium">
-                  Depuis ta bibliothèque
+                  {t("fromLibrary")}
                 </label>
                 <div className="relative">
                   <svg
@@ -449,7 +454,7 @@ export function AddItemModal({
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Rechercher un morceau..."
+                    placeholder={t("searchSong")}
                     className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary"
                   />
                 </div>
@@ -499,7 +504,7 @@ export function AddItemModal({
                   ))}
                   {filteredSongs.length === 0 && query && (
                     <p className="py-4 text-center text-sm text-muted-foreground">
-                      Aucun morceau trouve
+                      {t("noSong")}
                     </p>
                   )}
                 </div>
@@ -508,7 +513,7 @@ export function AddItemModal({
               {/* Recherche dans le catalogue */}
               <div className="border-t border-border pt-4">
                 <label className="mb-2 block text-sm font-medium">
-                  Ou depuis Deezer
+                  {t("fromDeezer")}
                 </label>
                 <div className="relative">
                   <svg
@@ -528,14 +533,14 @@ export function AddItemModal({
                     type="text"
                     value={catalogQuery}
                     onChange={(e) => setCatalogQuery(e.target.value)}
-                    placeholder="Rechercher sur Deezer..."
+                    placeholder={t("searchDeezer")}
                     className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary"
                   />
                 </div>
                 <div className="mt-2 max-h-40 space-y-1 overflow-y-auto">
                   {searchingCatalog && (
                     <p className="py-4 text-center text-sm text-muted-foreground">
-                      Recherche...
+                      {t("searching")}
                     </p>
                   )}
                   {catalogResults.map((song, i) => (
@@ -578,17 +583,17 @@ export function AddItemModal({
               {/* Preset sections */}
               <div>
                 <label className="mb-2 block text-sm font-medium">
-                  Sections prédéfinies
+                  {t("presets")}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {SECTION_PRESETS.map((preset) => (
                     <button
-                      key={preset.name}
-                      onClick={() => handleAddSection(preset.name)}
+                      key={preset.key}
+                      onClick={() => handleAddSection(tp(preset.key))}
                       disabled={adding}
                       className={`flex items-center gap-2 rounded-lg p-3 text-left transition-colors ${preset.color} hover:opacity-80 disabled:opacity-50`}
                     >
-                      <span className="font-medium">{preset.name}</span>
+                      <span className="font-medium">{tp(preset.key)}</span>
                     </button>
                   ))}
                 </div>
@@ -597,14 +602,14 @@ export function AddItemModal({
               {/* Custom section */}
               <div className="border-t border-border pt-4">
                 <label className="mb-2 block text-sm font-medium">
-                  Ou section personnalisée
+                  {t("custom")}
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={customSection}
                     onChange={(e) => setCustomSection(e.target.value)}
-                    placeholder="Nom de la section..."
+                    placeholder={t("sectionName")}
                     className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                   <button
@@ -612,7 +617,7 @@ export function AddItemModal({
                     disabled={adding || !customSection.trim()}
                     className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
                   >
-                    Ajouter
+                    {tc("add")}
                   </button>
                 </div>
               </div>
@@ -620,7 +625,7 @@ export function AddItemModal({
               {/* Duration */}
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  Durée (optionnel)
+                  {t("durationOptional")}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -633,7 +638,7 @@ export function AddItemModal({
                     min="0"
                     className="w-20 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
-                  <span className="text-sm text-muted-foreground">minutes</span>
+                  <span className="text-sm text-muted-foreground">{t("minutes")}</span>
                 </div>
               </div>
             </div>
@@ -642,7 +647,7 @@ export function AddItemModal({
               {/* Depuis la bibliotheque d'exercices */}
               <div>
                 <label className="mb-2 block text-sm font-medium">
-                  Depuis ta bibliothèque d&apos;exercices
+                  {t("fromExercises")}
                 </label>
 
                 {/* Filtres par categorie */}
@@ -655,11 +660,9 @@ export function AddItemModal({
                         : "bg-accent text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    Toutes
+                    {t("allCategories")}
                   </button>
-                  {(
-                    Object.keys(EXERCISE_CATEGORY_LABELS) as ExerciseCategory[]
-                  ).map((cat) => (
+                  {ALL_EXERCISE_CATEGORIES.map((cat) => (
                     <button
                       key={cat}
                       onClick={() =>
@@ -671,7 +674,7 @@ export function AddItemModal({
                           : "bg-accent text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      {EXERCISE_CATEGORY_LABELS[cat]}
+                      {te(`exerciseCategory.${cat}`)}
                     </button>
                   ))}
                 </div>
@@ -695,7 +698,7 @@ export function AddItemModal({
                     type="text"
                     value={exerciseQuery}
                     onChange={(e) => setExerciseQuery(e.target.value)}
-                    placeholder="Rechercher un exercice..."
+                    placeholder={t("searchExercise")}
                     className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary"
                   />
                 </div>
@@ -703,7 +706,7 @@ export function AddItemModal({
                 <div className="mt-2 max-h-48 space-y-1 overflow-y-auto">
                   {loadingExercises && (
                     <p className="py-4 text-center text-sm text-muted-foreground">
-                      Chargement...
+                      {tc("loading")}
                     </p>
                   )}
                   {!loadingExercises &&
@@ -734,7 +737,7 @@ export function AddItemModal({
                             {exercise.name}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {EXERCISE_CATEGORY_LABELS[exercise.category]}
+                            {te(`exerciseCategory.${exercise.category}`)}
                             {exercise.target_bpm
                               ? ` • ${exercise.target_bpm} bpm`
                               : ""}
@@ -747,7 +750,7 @@ export function AddItemModal({
                     ))}
                   {!loadingExercises && filteredExercises.length === 0 && (
                     <p className="py-4 text-center text-sm text-muted-foreground">
-                      Aucun exercice trouvé
+                      {t("noExercise")}
                     </p>
                   )}
                 </div>
@@ -756,13 +759,13 @@ export function AddItemModal({
               {/* Exo express */}
               <div className="border-t border-border pt-4">
                 <label className="mb-2 block text-sm font-medium">
-                  Ou un exercice express
+                  {t("express")}
                 </label>
                 <input
                   type="text"
                   value={expressName}
                   onChange={(e) => setExpressName(e.target.value)}
-                  placeholder="Ex: Échauffement, montée de gamme..."
+                  placeholder={t("expressPlaceholder")}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
                 <div className="mt-2 grid grid-cols-3 gap-2">
@@ -775,12 +778,10 @@ export function AddItemModal({
                     }
                     className="rounded-lg border border-input bg-background px-2 py-2 text-sm focus:border-primary"
                   >
-                    <option value="">Catégorie</option>
-                    {(
-                      Object.keys(EXERCISE_CATEGORY_LABELS) as ExerciseCategory[]
-                    ).map((cat) => (
+                    <option value="">{t("category")}</option>
+                    {ALL_EXERCISE_CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
-                        {EXERCISE_CATEGORY_LABELS[cat]}
+                        {te(`exerciseCategory.${cat}`)}
                       </option>
                     ))}
                   </select>
@@ -790,7 +791,7 @@ export function AddItemModal({
                     onChange={(e) =>
                       setExpressDuration(parseInt(e.target.value) || 0)
                     }
-                    placeholder="Durée (min)"
+                    placeholder={t("durationMin")}
                     min="0"
                     className="rounded-lg border border-input bg-background px-2 py-2 text-sm focus:border-primary"
                   />
@@ -800,7 +801,7 @@ export function AddItemModal({
                     onChange={(e) =>
                       setExpressBpm(parseInt(e.target.value) || 0)
                     }
-                    placeholder="BPM"
+                    placeholder={t("bpm")}
                     min="20"
                     max="300"
                     className="rounded-lg border border-input bg-background px-2 py-2 text-sm focus:border-primary"
@@ -811,7 +812,7 @@ export function AddItemModal({
                   disabled={adding || !expressName.trim()}
                   className="mt-2 w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
                 >
-                  Ajouter l&apos;exercice
+                  {t("addExercise")}
                 </button>
               </div>
             </div>

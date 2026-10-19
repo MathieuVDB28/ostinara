@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
@@ -75,7 +76,7 @@ export async function createSong(input: CreateSongInput): Promise<{ success: boo
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Vérifier la limite pour les utilisateurs free (10 morceaux max)
@@ -94,7 +95,7 @@ export async function createSong(input: CreateSongInput): Promise<{ success: boo
     if (count && count >= 10) {
       return {
         success: false,
-        error: "Tu as atteint la limite de 10 morceaux. Passe en Pro pour en ajouter plus !"
+        error: await tErr("songLimit")
       };
     }
   }
@@ -110,7 +111,7 @@ export async function createSong(input: CreateSongInput): Promise<{ success: boo
 
   if (error) {
     console.error("Error creating song:", error);
-    return { success: false, error: "Erreur lors de l'ajout du morceau" };
+    return { success: false, error: await tErr("songAddFailed") };
   }
 
   // Créer une activité pour le feed
@@ -175,7 +176,7 @@ export async function addSongToLibrary(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const sameTitle = `and(title.ilike.${escapeFilter(input.title)},artist.ilike.${escapeFilter(input.artist)})`;
@@ -267,7 +268,7 @@ export async function updateSong(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   /*
@@ -308,7 +309,7 @@ export async function updateSong(
 
   if (error) {
     console.error("Error updating song:", error);
-    return { success: false, error: "Erreur lors de la mise à jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   if (instrument) {
@@ -327,7 +328,7 @@ export async function updateSong(
 
     if (partError) {
       console.error("Error updating song part:", partError);
-      return { success: false, error: "Erreur lors de la mise à jour" };
+      return { success: false, error: await tErr("updateFailed") };
     }
   }
 
@@ -382,7 +383,7 @@ export async function deleteSong(id: string): Promise<{ success: boolean; error?
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -393,7 +394,7 @@ export async function deleteSong(id: string): Promise<{ success: boolean; error?
 
   if (error) {
     console.error("Error deleting song:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/library");
@@ -444,7 +445,7 @@ export async function saveSongTabStructure(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { data: song } = await supabase
@@ -455,7 +456,7 @@ export async function saveSongTabStructure(
     .maybeSingle();
 
   if (!song) {
-    return { success: false, error: "Morceau introuvable" };
+    return { success: false, error: await tErr("songNotFound") };
   }
 
   const { structure } = input;
@@ -479,7 +480,7 @@ export async function saveSongTabStructure(
 
   if (error) {
     console.error("Error saving tab structure:", error);
-    return { success: false, error: "Erreur lors de l'enregistrement de la tablature" };
+    return { success: false, error: await tErr("tabSaveFailed") };
   }
 
   revalidatePath("/biblio");
@@ -501,14 +502,14 @@ export async function setSongTargetBpm(
   targetBpm: number | null
 ): Promise<{ success: boolean; error?: string }> {
   if (targetBpm !== null && (targetBpm < 20 || targetBpm > 300)) {
-    return { success: false, error: "Le tempo doit être compris entre 20 et 300 BPM" };
+    return { success: false, error: await tErr("tempoRange") };
   }
 
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -519,7 +520,7 @@ export async function setSongTargetBpm(
 
   if (error) {
     console.error("Error updating target BPM:", error);
-    return { success: false, error: "Erreur lors de la mise à jour du tempo" };
+    return { success: false, error: await tErr("tempoUpdateFailed") };
   }
 
   // Changer la cible change la lecture de la progression : on la reecrit,

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { CatalogAlbumDetails, CatalogArtist } from "@/types";
 import { getAlbumEncyclopedia, getArtistEncyclopedia } from "@/lib/services/wikipedia";
 import { WikiPanel, WikiSkeleton } from "./wiki-panel";
@@ -18,17 +19,19 @@ export function AlbumEncyclopediaSection({ album }: { album: CatalogAlbumDetails
 
 async function AlbumEncyclopediaContent({ album }: { album: CatalogAlbumDetails }) {
   const mainArtist = album.artists[0];
+  // L'article dans la langue de l'app d'abord, l'autre en secours.
+  const [locale, t] = await Promise.all([getLocale(), getTranslations("albums.wiki")]);
   const encyclopedia = await getAlbumEncyclopedia(album.id, {
     name: album.name,
     artistDeezerId: mainArtist?.id,
     artistName: mainArtist?.name ?? "",
-  });
+  }, locale);
   if (!encyclopedia) return null;
 
   return (
     <WikiPanel
       variant="album"
-      title="À propos de l'album"
+      title={t("aboutAlbum")}
       article={encyclopedia.article}
       facts={encyclopedia.facts}
       wikidataId={encyclopedia.wikidataId}
@@ -47,7 +50,8 @@ export function ArtistEncyclopediaSection({ artist }: { artist: CatalogArtist })
 }
 
 async function ArtistEncyclopediaContent({ artist }: { artist: CatalogArtist }) {
-  const encyclopedia = await getArtistEncyclopedia(artist.id, artist.name);
+  const [locale, t] = await Promise.all([getLocale(), getTranslations("albums.wiki")]);
+  const encyclopedia = await getArtistEncyclopedia(artist.id, artist.name, locale);
   if (!encyclopedia) return null;
 
   return (
@@ -55,7 +59,7 @@ async function ArtistEncyclopediaContent({ artist }: { artist: CatalogArtist }) 
       {(encyclopedia.article || encyclopedia.facts.length > 0) && (
         <WikiPanel
           variant="artist"
-          title="À propos"
+          title={t("about")}
           article={encyclopedia.article}
           facts={encyclopedia.facts}
           wikidataId={encyclopedia.wikidataId}

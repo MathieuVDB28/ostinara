@@ -8,6 +8,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { useTranslations } from "next-intl";
 import type { MoodDistribution } from "@/types";
 
 interface MoodDistributionChartProps {
@@ -15,18 +16,21 @@ interface MoodDistributionChartProps {
 }
 
 export function MoodDistributionChart({ data }: MoodDistributionChartProps) {
+  const t = useTranslations("progress.moodChart");
+  const te = useTranslations("enums");
   const totalSessions = data.reduce((sum, d) => sum + d.count, 0);
+  const chartData = data.map((entry) => ({ ...entry, label: te(`mood.${entry.mood}`) }));
 
   if (data.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="text-lg font-semibold mb-4">Humeur des sessions</h3>
+        <h3 className="text-lg font-semibold mb-4">{t("title")}</h3>
         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
           <svg className="h-12 w-12 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
           </svg>
-          <p className="text-sm">Enregistre ton humeur dans tes sessions</p>
-          <p className="text-xs mt-1">pour voir la distribution</p>
+          <p className="text-sm">{t("empty1")}</p>
+          <p className="text-xs mt-1">{t("empty2")}</p>
         </div>
       </div>
     );
@@ -35,9 +39,9 @@ export function MoodDistributionChart({ data }: MoodDistributionChartProps) {
   return (
     <div className="rounded-xl border border-border bg-card p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Humeur des sessions</h3>
+        <h3 className="text-lg font-semibold">{t("title")}</h3>
         <span className="text-sm text-muted-foreground">
-          {totalSessions} sessions
+          {t("total", { count: totalSessions })}
         </span>
       </div>
 
@@ -45,7 +49,7 @@ export function MoodDistributionChart({ data }: MoodDistributionChartProps) {
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={data as unknown as Record<string, unknown>[]}
+              data={chartData as unknown as Record<string, unknown>[]}
               cx="50%"
               cy="50%"
               innerRadius={50}
@@ -61,14 +65,14 @@ export function MoodDistributionChart({ data }: MoodDistributionChartProps) {
             <Tooltip
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
-                  const item = payload[0].payload as MoodDistribution;
+                  const item = payload[0].payload as MoodDistribution & { label: string };
                   return (
                     <div className="bg-popover text-popover-foreground rounded-lg shadow-md border border-border px-3 py-2">
                       <p className="font-medium">
                         {item.emoji} {item.label}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {item.count} sessions ({item.percentage}%)
+                        {t("tooltip", { count: item.count, percent: item.percentage })}
                       </p>
                     </div>
                   );

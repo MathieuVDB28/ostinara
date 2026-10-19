@@ -1,0 +1,38 @@
+{
+  "add": {
+    "sent": "Demande envoyée à @{username}",
+    "self": "Toi",
+    "friend": "Ami",
+    "pending": "En attente",
+    "blocked": "Bloqué",
+    "add": "Ajouter",
+    "title": "Ajouter un ami",
+    "placeholder": "Rechercher par nom d'utilisateur...",
+    "none": "Aucun utilisateur trouvé",
+    "hint": "Recherche un utilisateur par son nom"
+  },
+  "card": {
+    "confirmRemove": "Supprimer cet ami ?",
+    "since": "ami depuis le {date}",
+    "remove": "Retirer {name} de tes amis"
+  },
+  "view": {
+    "friends": "Amis",
+    "requests": "Demandes",
+    "add": "Ajouter",
+    "limit": "{current}/{limit} amis avec ton plan",
+    "emptyFriendsTitle": "Aucun ami pour le moment",
+    "emptyFriendsDescription": "Ajoute des amis pour voir leurs morceaux et leurs covers.",
+    "emptyFriendsAction": "Ajouter un ami",
+    "emptyRequestsTitle": "Aucune demande en attente",
+    "emptyRequestsDescription": "Les demandes d'amis que tu reçois apparaîtront ici."
+  },
+  "button": {
+    "failed": "Ça n'a pas marché. Réessaie.",
+    "remove": "Retirer",
+    "friendAria": "Ami·e — retirer des amis",
+    "friend": "Ami·e",
+    "sent": "Demande envoyée",
+    "add": "Ajouter"
+  }
+}

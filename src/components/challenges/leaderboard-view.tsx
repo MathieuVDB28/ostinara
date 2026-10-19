@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { LeaderboardEntry, LeaderboardPeriod } from "@/types";
 import { getLeaderboard } from "@/lib/actions/challenges";
 import { Icon } from "@/components/ui/icon";
@@ -11,6 +12,8 @@ interface LeaderboardViewProps {
 }
 
 export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
+  const t = useTranslations("challenges.leaderboard");
+  const tc = useTranslations("challenges.card");
   const [period, setPeriod] = useState<LeaderboardPeriod>("week");
   const [leaderboard, setLeaderboard] = useState(initialLeaderboard);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,9 +31,9 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     if (hours > 0) {
-      return `${hours}h ${mins}m`;
+      return tc("hoursMinutes", { h: hours, m: mins });
     }
-    return `${mins}m`;
+    return tc("minutes", { m: mins });
   };
 
   const getRankDisplay = (rank: number) => {
@@ -54,7 +57,7 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
               : "bg-card border border-border text-muted-foreground hover:bg-muted/80"
           }`}
         >
-          Cette semaine
+          {t("week")}
         </button>
         <button
           onClick={() => handlePeriodChange("month")}
@@ -64,7 +67,7 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
               : "bg-card border border-border text-muted-foreground hover:bg-muted/80"
           }`}
         >
-          Ce mois
+          {t("month")}
         </button>
       </div>
 
@@ -78,9 +81,9 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <Icon name="emoji_events" className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="mb-2 font-semibold">Pas encore de classement</h3>
+          <h3 className="mb-2 font-semibold">{t("empty")}</h3>
           <p className="text-sm text-muted-foreground">
-            Ajoute des amis et pratique pour apparaitre dans le classement !
+            {t("emptyHint")}
           </p>
         </div>
       ) : (
@@ -118,8 +121,7 @@ export function LeaderboardView({ initialLeaderboard }: LeaderboardViewProps) {
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Icon name="play_circle" className="h-4 w-4" />
-                    {entry.sessions_count} session
-                    {entry.sessions_count > 1 ? "s" : ""}
+                    {t("sessions", { count: entry.sessions_count })}
                   </span>
                   <span className="flex items-center gap-1">
                     <Icon name="schedule" className="h-4 w-4" />

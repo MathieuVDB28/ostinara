@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { updateSetlistItem } from "@/lib/actions/setlists";
 import { TabsSearchPanel } from "@/components/library/tabs-search-panel";
 import type {
@@ -26,6 +27,9 @@ export function EditItemModal({
   item,
   userPlan,
 }: EditItemModalProps) {
+  const t = useTranslations("setlists.edit");
+  const tp = useTranslations("setlists.playedPresets");
+  const tc = useTranslations("common");
   const [notes, setNotes] = useState("");
   const [transitionSeconds, setTransitionSeconds] = useState(0);
   const [durationMinutes, setDurationMinutes] = useState(0);
@@ -117,7 +121,7 @@ export function EditItemModal({
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de la sauvegarde");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -212,10 +216,10 @@ export function EditItemModal({
           <div>
             <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
               {isSong
-                ? "Modifier le morceau"
+                ? t("editSong")
                 : isExercise
-                ? "Modifier l'exercice"
-                : "Modifier la section"}
+                ? t("editExercise")
+                : t("editSection")}
             </h2>
             {isSong && (
               <p className="mt-1 text-sm text-muted-foreground">
@@ -223,7 +227,7 @@ export function EditItemModal({
               </p>
             )}
           </div>
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -254,7 +258,7 @@ export function EditItemModal({
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              General
+              {t("general")}
             </button>
             <button
               onClick={() => setActiveTab("tabs")}
@@ -264,7 +268,7 @@ export function EditItemModal({
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Tabs & Sections
+              {t("tabsSections")}
             </button>
           </div>
         )}
@@ -277,13 +281,13 @@ export function EditItemModal({
               {item.item_type === "section" && (
                 <div>
                   <label className="mb-1 block text-sm font-medium">
-                    Nom de la section
+                    {t("sectionName")}
                   </label>
                   <input
                     type="text"
                     value={sectionName}
                     onChange={(e) => setSectionName(e.target.value)}
-                    placeholder="Ex: Pause, Rappel..."
+                    placeholder={t("sectionPlaceholder")}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                 </div>
@@ -293,13 +297,13 @@ export function EditItemModal({
               {isExercise && (
                 <div>
                   <label className="mb-1 block text-sm font-medium">
-                    Nom de l&apos;exercice
+                    {t("exerciseName")}
                   </label>
                   <input
                     type="text"
                     value={exerciseName}
                     onChange={(e) => setExerciseName(e.target.value)}
-                    placeholder="Ex: Échauffement, gamme majeure..."
+                    placeholder={t("exercisePlaceholder")}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                 </div>
@@ -307,11 +311,11 @@ export function EditItemModal({
 
               {/* Notes */}
               <div>
-                <label className="mb-1 block text-sm font-medium">Notes</label>
+                <label className="mb-1 block text-sm font-medium">{t("notes")}</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Notes pour ce morceau..."
+                  placeholder={t("notesPlaceholder")}
                   rows={3}
                   className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
@@ -321,7 +325,7 @@ export function EditItemModal({
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="mb-1 block text-sm font-medium">
-                    Duree (min)
+                    {t("duration")}
                   </label>
                   <input
                     type="number"
@@ -336,7 +340,7 @@ export function EditItemModal({
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium">
-                    Transition (s)
+                    {t("transition")}
                   </label>
                   <input
                     type="number"
@@ -352,7 +356,7 @@ export function EditItemModal({
                 {(isSong || isExercise) && (
                   <div>
                     <label className="mb-1 block text-sm font-medium">
-                      BPM
+                      {t("bpm")}
                     </label>
                     <input
                       type="number"
@@ -386,7 +390,7 @@ export function EditItemModal({
                 </div>
                 <div className="relative flex justify-center">
                   <span className="bg-card px-3 text-sm text-muted-foreground">
-                    Sections jouees
+                    {t("playedSections")}
                   </span>
                 </div>
               </div>
@@ -394,7 +398,7 @@ export function EditItemModal({
               {/* BPM reminder */}
               {bpm <= 0 && (
                 <p className="text-xs text-primary">
-                  Definis un BPM dans l&apos;onglet General pour calculer la duree des sections en jam.
+                  {t("bpmHint")}
                 </p>
               )}
 
@@ -417,6 +421,7 @@ export function EditItemModal({
                         <div className="flex flex-col">
                           <button
                             onClick={() => handleMoveSection(index, "up")}
+                            aria-label={t("moveUp")}
                             disabled={index === 0}
                             className="text-muted-foreground hover:text-foreground disabled:opacity-30"
                           >
@@ -436,6 +441,7 @@ export function EditItemModal({
                           </button>
                           <button
                             onClick={() => handleMoveSection(index, "down")}
+                            aria-label={t("moveDown")}
                             disabled={
                               index === playedSections.length - 1
                             }
@@ -462,14 +468,14 @@ export function EditItemModal({
                             {section.name}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Mesures {section.startMeasure}-{section.endMeasure}{" "}
-                            ({measures} mes.)
+                            {t("measures", { start: section.startMeasure, end: section.endMeasure, count: measures })}
                             {duration !== null && ` ~ ${duration}s`}
                           </p>
                         </div>
 
                         <button
                           onClick={() => handleRemoveSection(index)}
+                          aria-label={t("remove")}
                           className="shrink-0 rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                         >
                           <svg
@@ -493,12 +499,12 @@ export function EditItemModal({
                   {/* Total duration */}
                   {bpm > 0 && playedSections.length > 0 && (
                     <p className="text-xs text-muted-foreground text-right">
-                      Duree totale :{" "}
-                      {Math.floor(sectionsDurationSeconds / 60)}:
-                      {Math.round(sectionsDurationSeconds % 60)
-                        .toString()
-                        .padStart(2, "0")}{" "}
-                      a {bpm} BPM
+                      {t("total", {
+                        duration: `${Math.floor(sectionsDurationSeconds / 60)}:${Math.round(sectionsDurationSeconds % 60)
+                          .toString()
+                          .padStart(2, "0")}`,
+                        bpm,
+                      })}
                     </p>
                   )}
                 </div>
@@ -509,13 +515,13 @@ export function EditItemModal({
                 <div className="rounded-lg border border-chart-2/30 bg-chart-2/5 p-3 space-y-2.5">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-chart-2">
-                      {detectedSections.length} sections detectees
+                      {t("detected", { count: detectedSections.length })}
                     </p>
                     <button
                       onClick={handleAddAllDetected}
                       className="rounded-lg bg-chart-2/20 px-2.5 py-1 text-xs font-medium text-chart-2 transition-colors hover:bg-chart-2/30"
                     >
-                      Tout ajouter
+                      {t("addAll")}
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -535,21 +541,21 @@ export function EditItemModal({
                         >
                           <span className="block text-xs font-medium">{section.name}</span>
                           <span className="block text-[11px] text-muted-foreground">
-                            Mes. {section.startMeasure}-{section.endMeasure} ({measures})
+                            {t("barsShort", { start: section.startMeasure, end: section.endMeasure, count: measures })}
                           </span>
                         </button>
                       );
                     })}
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    Clique sur les sections que tu joues. Les mesures sont remplies automatiquement.
+                    {t("detectedHint")}
                   </p>
                 </div>
               )}
 
               {/* Manual section add */}
               <div className="rounded-lg border border-dashed border-border p-3 space-y-3">
-                <p className="text-sm font-medium">Ajouter manuellement</p>
+                <p className="text-sm font-medium">{t("manual")}</p>
 
                 {/* Preset name buttons (only if no detected sections) */}
                 {detectedSections.length === 0 && (
@@ -557,14 +563,14 @@ export function EditItemModal({
                     {PLAYED_SECTION_PRESETS.map((preset) => (
                       <button
                         key={preset}
-                        onClick={() => setNewSectionName(preset)}
+                        onClick={() => setNewSectionName(tp(preset))}
                         className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                          newSectionName === preset
+                          newSectionName === tp(preset)
                             ? "bg-primary text-primary-foreground"
                             : "bg-accent text-muted-foreground hover:text-foreground"
                         }`}
                       >
-                        {preset}
+                        {tp(preset)}
                       </button>
                     ))}
                   </div>
@@ -573,19 +579,19 @@ export function EditItemModal({
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
                     <label className="mb-1 block text-xs text-muted-foreground">
-                      Nom
+                      {t("name")}
                     </label>
                     <input
                       type="text"
                       value={newSectionName}
                       onChange={(e) => setNewSectionName(e.target.value)}
-                      placeholder="Nom de la section"
+                      placeholder={t("sectionName")}
                       className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm focus:border-primary"
                     />
                   </div>
                   <div className="w-20">
                     <label className="mb-1 block text-xs text-muted-foreground">
-                      Debut
+                      {t("start")}
                     </label>
                     <input
                       type="number"
@@ -599,7 +605,7 @@ export function EditItemModal({
                   </div>
                   <div className="w-20">
                     <label className="mb-1 block text-xs text-muted-foreground">
-                      Fin
+                      {t("end")}
                     </label>
                     <input
                       type="number"
@@ -613,6 +619,7 @@ export function EditItemModal({
                   </div>
                   <button
                     onClick={handleAddSection}
+                    aria-label={t("add")}
                     disabled={
                       !newSectionName.trim() || newSectionStart >= newSectionEnd
                     }
@@ -651,14 +658,14 @@ export function EditItemModal({
               onClick={onClose}
               className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
             >
-              Annuler
+              {tc("cancel")}
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
               className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {saving ? "Sauvegarde..." : "Sauvegarder"}
+              {saving ? tc("savingShort") : tc("saveShort")}
             </button>
           </div>
         </div>

@@ -1,0 +1,143 @@
+{
+  "instrument": {
+    "guitar": "Guitar",
+    "bass": "Bass",
+    "drums": "Drums",
+    "keys": "Keys / piano",
+    "other": "Other"
+  },
+  "instrumentPhrase": {
+    "guitar": "on guitar",
+    "bass": "on bass",
+    "drums": "on drums",
+    "keys": "on keys",
+    "other": ""
+  },
+  "skillLevel": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "expert": "Expert"
+  },
+  "songStatus": {
+    "want_to_learn": "To learn",
+    "learning": "Learning",
+    "mastered": "Mastered"
+  },
+  "difficulty": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "expert": "Expert"
+  },
+  "exerciseCategory": {
+    "scales": "Scales",
+    "arpeggios": "Arpeggios",
+    "picking": "Picking",
+    "chord_changes": "Chord changes",
+    "fingerstyle": "Fingerstyle",
+    "technique": "Technique",
+    "rhythm": "Rhythm",
+    "rudiments": "Rudiments",
+    "grooves": "Grooves",
+    "fills": "Fills",
+    "independence": "Independence",
+    "slap": "Slap",
+    "walking_bass": "Walking bass",
+    "voicings": "Voicings",
+    "reading": "Reading"
+  },
+  "subdivision": {
+    "none": "None",
+    "eighth": "Eighth notes",
+    "triplet": "Triplets",
+    "sixteenth": "Sixteenth notes"
+  },
+  "recurrence": {
+    "none": "One-off",
+    "weekly": "Every week",
+    "biweekly": "Every 2 weeks",
+    "monthly": "Every month"
+  },
+  "rsvp": {
+    "invited": "Pending",
+    "accepted": "Going",
+    "declined": "Not going",
+    "maybe": "Maybe"
+  },
+  "gearType": {
+    "guitar": "Guitar",
+    "bass": "Bass",
+    "amp": "Amp",
+    "effect": "Pedal",
+    "drums": "Drums",
+    "cymbals": "Cymbals",
+    "keyboard": "Keyboard",
+    "accessory": "Accessory",
+    "recording": "Recording",
+    "other": "Other"
+  },
+  "gearCondition": {
+    "mint": "Mint",
+    "excellent": "Excellent",
+    "good": "Good",
+    "fair": "Fair",
+    "poor": "Worn"
+  },
+  "gearPriority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  },
+  "mood": {
+    "frustrated": "Frustrated",
+    "neutral": "Neutral",
+    "good": "Good",
+    "great": "Great",
+    "on_fire": "On fire"
+  },
+  "visibility": {
+    "private": "Private",
+    "friends": "Friends",
+    "public": "Public"
+  },
+  "moodPick": {
+    "frustrated": "Frustrated",
+    "neutral": "Okay",
+    "good": "Good",
+    "great": "Great",
+    "on_fire": "On fire!"
+  },
+  "energy": {
+    "low": "Low",
+    "medium": "Normal",
+    "high": "Full of energy"
+  },
+  "section": {
+    "intro": "Intro",
+    "verse": "Verse",
+    "chorus": "Chorus",
+    "bridge": "Bridge",
+    "solo": "Solo",
+    "outro": "Outro",
+    "full_song": "Full song"
+  },
+  "fullSong": "Full song",
+  "exerciseMark": {
+    "scales": "SC",
+    "arpeggios": "AR",
+    "picking": "PI",
+    "chord_changes": "CH",
+    "fingerstyle": "FI",
+    "technique": "TE",
+    "rhythm": "RH",
+    "rudiments": "RU",
+    "grooves": "GR",
+    "fills": "FL",
+    "independence": "IN",
+    "slap": "SL",
+    "walking_bass": "WB",
+    "voicings": "VO",
+    "reading": "RE"
+  }
+}

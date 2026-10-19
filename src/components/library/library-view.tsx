@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { SongCard } from "./song-card";
 import { SongSwipeRow } from "./song-swipe-row";
 import { SongShelf } from "./song-shelf";
@@ -81,11 +82,7 @@ interface LibraryViewProps {
  * C'est l'ordre dans lequel on ouvre la bibliotheque — pas l'ordre
  * alphabetique de l'enum.
  */
-const STATUS_SECTIONS: { value: SongStatus; label: string; hint: string }[] = [
-  { value: "learning", label: "En cours", hint: "Ce que tu travailles" },
-  { value: "want_to_learn", label: "À apprendre", hint: "Ta file d'attente" },
-  { value: "mastered", label: "Maîtrisés", hint: "Ton répertoire" },
-];
+const STATUS_SECTIONS: SongStatus[] = ["learning", "want_to_learn", "mastered"];
 
 const ALL_PLAYLISTS = "all";
 
@@ -130,6 +127,7 @@ function SongGroup({
   onStatusChange,
   onShowAll,
 }: SongGroupProps) {
+  const t = useTranslations("library");
   const [isExpanded, setIsExpanded] = useState(false);
 
   /*
@@ -169,9 +167,7 @@ function SongGroup({
             strokeWidth={2.25}
             aria-hidden="true"
           />
-          {isExpanded
-            ? "Réduire"
-            : `Voir les ${hidden} autre${hidden > 1 ? "s" : ""}`}
+          {isExpanded ? t("collapse") : t("showOthers", { count: hidden })}
         </button>
       )}
     </div>
@@ -185,6 +181,8 @@ export function LibraryView({
   initialSongId,
   songPracticeStats = {},
 }: LibraryViewProps) {
+  const t = useTranslations("library");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { query: searchQuery } = useBiblioSearch();
 
@@ -379,11 +377,12 @@ export function LibraryView({
    */
   const sections = useMemo(() => {
     if (activeFilter !== "all") return null;
-    return STATUS_SECTIONS.map((section) => ({
-      ...section,
-      songs: filteredSongs.filter((song) => song.status === section.value),
+    return STATUS_SECTIONS.map((value) => ({
+      value,
+      label: t(`sections.${value}`),
+      songs: filteredSongs.filter((song) => song.status === value),
     })).filter((section) => section.songs.length > 0);
-  }, [activeFilter, filteredSongs]);
+  }, [activeFilter, filteredSongs, t]);
 
   /**
    * Le changement de statut par glissement, applique localement avant le
@@ -413,17 +412,16 @@ export function LibraryView({
       <>
         <div className="flex flex-col items-center py-16 text-center">
           <Music className="mb-4 h-10 w-10 text-muted-foreground" strokeWidth={1.25} aria-hidden="true" />
-          <h2 className="mb-2 text-lg font-bold">Ta bibliothèque est vide</h2>
+          <h2 className="mb-2 text-lg font-bold">{t("emptyTitle")}</h2>
           <p className="mb-6 max-w-sm text-muted-foreground">
-            Ajoute un morceau que tu veux apprendre : il ira dans « À apprendre »
-            jusqu&apos;à ce que tu commences à le travailler.
+            {t("emptyHint")}
           </p>
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             <Plus className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
-            Ajouter un morceau
+            {t("song.add")}
           </button>
         </div>
 
@@ -443,7 +441,7 @@ export function LibraryView({
   const chipIdle = "border-border text-muted-foreground hover:text-foreground";
   const chipActive = "border-border bg-secondary text-foreground";
 
-  const listSection = STATUS_SECTIONS.find((section) => section.value === activeFilter);
+  const listLabel = activeFilter !== "all" ? t(`sections.${activeFilter}`) : null;
 
   return (
     <div>
@@ -459,7 +457,7 @@ export function LibraryView({
           className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-          Ajouter un morceau
+          {t("song.add")}
         </button>
       </div>
 
@@ -482,7 +480,7 @@ export function LibraryView({
 
         <div
           role="group"
-          aria-label="Filtrer par playlist"
+          aria-label={t("filterByPlaylist")}
           className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 pr-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:pr-0 [&::-webkit-scrollbar]:hidden"
         >
           <button
@@ -490,7 +488,7 @@ export function LibraryView({
             aria-pressed={activePlaylistId === ALL_PLAYLISTS}
             className={`${chip} ${activePlaylistId === ALL_PLAYLISTS ? chipActive : chipIdle}`}
           >
-            Tous
+            {t("all")}
             <span className="tabular opacity-70">{statusCounts.all}</span>
           </button>
 
@@ -511,7 +509,7 @@ export function LibraryView({
             className={`${chip} border-dashed ${chipIdle}`}
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-            Playlist
+            {t("playlistChip")}
           </button>
         </div>
       </div>
@@ -527,7 +525,7 @@ export function LibraryView({
             onClick={() => setEditingPlaylist(activePlaylist)}
             className="font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Modifier
+            {tc("edit")}
           </button>
         </p>
       )}
@@ -538,7 +536,7 @@ export function LibraryView({
       {filteredSongs.length === 0 ? (
         <div className="flex flex-col items-center py-16 text-center">
           <SearchX className="mb-3 h-8 w-8 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
-          <p className="text-muted-foreground">Aucun morceau trouvé</p>
+          <p className="text-muted-foreground">{t("noSongFound")}</p>
           {hasActiveNarrowing && (
             <button
               onClick={() => {
@@ -549,7 +547,7 @@ export function LibraryView({
               }}
               className="mt-2 min-h-[44px] text-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Réinitialiser les filtres
+              {t("filters.reset")}
             </button>
           )}
         </div>
@@ -572,7 +570,7 @@ export function LibraryView({
                 <button
                   type="button"
                   onClick={() => setActiveFilter(section.value)}
-                  aria-label={`Voir tous les morceaux : ${section.label}`}
+                  aria-label={t("seeAllOf", { section: section.label })}
                   className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <ChevronRight className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
@@ -604,10 +602,10 @@ export function LibraryView({
             className="-ml-1 mb-2 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ChevronLeft className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
-            Tous les morceaux
+            {t("allSongs")}
           </button>
           <h2 className="mb-2 text-2xl font-extrabold tracking-[-0.01em]">
-            {listSection?.label}
+            {listLabel}
             <span className="tabular font-bold text-muted-foreground">
               <span aria-hidden="true"> · </span>
               {filteredSongs.length}
@@ -634,7 +632,7 @@ export function LibraryView({
       <div className="fixed bottom-0 right-0 z-30 flex flex-col items-center gap-3 p-4 pb-[calc(env(safe-area-inset-bottom)+5.5rem)] sm:hidden">
         <button
           onClick={() => setIsAddModalOpen(true)}
-          aria-label="Ajouter un morceau"
+          aria-label={t("song.add")}
           className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Plus className="h-7 w-7" strokeWidth={2} aria-hidden="true" />

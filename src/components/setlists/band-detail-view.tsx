@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { SetlistCard } from "./setlist-card";
 import { CreateSetlistModal } from "./create-setlist-modal";
 import { InviteMemberModal } from "./invite-member-modal";
@@ -45,6 +46,8 @@ export function BandDetailView({
   activeJam,
   currentUserId,
 }: BandDetailViewProps) {
+  const t = useTranslations("setlists.band");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [showInvite, setShowInvite] = useState(false);
   const [showCreateSetlist, setShowCreateSetlist] = useState(false);
@@ -56,7 +59,7 @@ export function BandDetailView({
   const isOwner = band.owner_id === currentUserId;
   const myRole = band.members.find((member) => member.user_id === currentUserId)?.role;
   const isAdmin = isOwner || myRole === "owner" || myRole === "admin";
-  const lineup = bandLineup(band.members);
+  const lineup = bandLineup(band.members, te);
 
   const upcomingRehearsals = rehearsals.filter(
     (rehearsal) =>
@@ -83,7 +86,7 @@ export function BandDetailView({
           className="-ml-1 mb-3 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
           <Icon name="chevron_left" className="h-4 w-4" strokeWidth={2.25} />
-          Groupes
+          {t("bands")}
         </Link>
 
         <div className="flex items-end gap-4">
@@ -114,20 +117,20 @@ export function BandDetailView({
         <div className="-mx-4 mt-4 flex gap-1.5 overflow-x-auto px-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
           <button onClick={() => setShowJam(true)} className={CHIP}>
             <Icon name="music_note" className="h-4 w-4" />
-            Lancer un jam
+            {t("startJam")}
           </button>
           <button onClick={() => setShowCreateRehearsal(true)} className={CHIP}>
             <Icon name="event" className="h-4 w-4" />
-            Planifier une répète
+            {t("planRehearsal")}
           </button>
           <Link href={`/setlists/tech-rider/${band.id}`} className={CHIP}>
             <Icon name="description" className="h-4 w-4" />
-            Fiche technique
+            {t("techRider")}
           </Link>
           {isOwner && (
             <button onClick={() => setShowInvite(true)} className={CHIP}>
               <Icon name="person_add" className="h-4 w-4" />
-              Inviter
+              {t("invite")}
             </button>
           )}
         </div>
@@ -137,14 +140,14 @@ export function BandDetailView({
         <div className="flex items-center gap-3 border-y border-border py-3">
           <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-destructive" />
           <div className="min-w-0 flex-1">
-            <p className="font-display text-xl font-extrabold uppercase leading-none">Jam en cours</p>
-            <p className="truncate text-xs text-muted-foreground">Rejoins la session du groupe</p>
+            <p className="font-display text-xl font-extrabold uppercase leading-none">{t("jamRunning")}</p>
+            <p className="truncate text-xs text-muted-foreground">{t("joinSession")}</p>
           </div>
           <Link
             href={`/jam/${activeJam.id}`}
             className="inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
           >
-            Rejoindre
+            {t("join")}
             <Icon name="chevron_right" className="h-4 w-4" strokeWidth={2.25} />
           </Link>
         </div>
@@ -153,14 +156,14 @@ export function BandDetailView({
       <section>
         <div className="flex items-baseline justify-between gap-3 border-b border-border pb-2">
           <h2 className={SECTION_TITLE}>
-            Setlists{setlists.length > 0 && <span className="tabular"> · {setlists.length}</span>}
+            {t("setlists")}{setlists.length > 0 && <span className="tabular"> · {setlists.length}</span>}
           </h2>
           <button
             onClick={() => setShowCreateSetlist(true)}
             className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
           >
             <Icon name="add" className="h-3.5 w-3.5" strokeWidth={2} />
-            Setlist
+            {t("setlist")}
           </button>
         </div>
 
@@ -175,20 +178,20 @@ export function BandDetailView({
             ))}
           </div>
         ) : (
-          <p className="py-6 text-sm text-muted-foreground">Aucune setlist pour ce groupe.</p>
+          <p className="py-6 text-sm text-muted-foreground">{t("noSetlist")}</p>
         )}
       </section>
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-2">
           <h2 className={SECTION_TITLE}>
-            Répètes à venir
+            {t("upcoming")}
             {upcomingRehearsals.length > 0 && <span className="tabular"> · {upcomingRehearsals.length}</span>}
           </h2>
 
           <div
             role="group"
-            aria-label="Affichage des répètes"
+            aria-label={t("viewAria")}
             className="grid grid-cols-2 gap-0.5 rounded-xl border border-border bg-card p-[3px]"
           >
             {(["list", "calendar"] as const).map((view) => (
@@ -203,7 +206,7 @@ export function BandDetailView({
                 }`}
               >
                 <Icon name={view === "list" ? "list" : "calendar_month"} className="h-3.5 w-3.5" />
-                {view === "list" ? "Liste" : "Calendrier"}
+                {view === "list" ? t("list") : t("calendar")}
               </button>
             ))}
           </div>
@@ -229,18 +232,18 @@ export function BandDetailView({
             ))}
           </div>
         ) : (
-          <p className="py-6 text-sm text-muted-foreground">Aucune répète planifiée.</p>
+          <p className="py-6 text-sm text-muted-foreground">{t("noRehearsal")}</p>
         )}
       </section>
 
       <section>
         <h2 className={`border-b border-border pb-2 ${SECTION_TITLE}`}>
-          Membres <span className="tabular">· {band.members.length}</span>
+          {t("members")} <span className="tabular">· {band.members.length}</span>
         </h2>
         {/* Le line-up en une ligne : qui tient quoi, d'un coup d'oeil. */}
         {lineup.length > 0 && (
           <p className="border-b border-border py-2 text-xs text-muted-foreground">
-            <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em]">Line-up</span>{" "}
+            <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em]">{t("lineup")}</span>{" "}
             {lineup.map((poste) => (poste.members.length > 1 ? `${poste.label} ×${poste.members.length}` : poste.label)).join(" · ")}
           </p>
         )}
@@ -275,7 +278,7 @@ export function BandDetailView({
               </div>
               {member.user_id === band.owner_id && (
                 <span className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-                  Admin
+                  {t("admin")}
                 </span>
               )}
             </li>

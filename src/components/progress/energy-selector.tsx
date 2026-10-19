@@ -1,10 +1,11 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import type { EnumsT } from "@/i18n/types";
 import type { EnergyLevel } from "@/types";
 
 interface EnergyOption {
   value: EnergyLevel;
-  label: string;
   icon: React.ReactNode;
   color: string;
 }
@@ -12,7 +13,6 @@ interface EnergyOption {
 const energyLevels: EnergyOption[] = [
   {
     value: "low",
-    label: "Faible",
     color: "text-chart-2",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -22,7 +22,6 @@ const energyLevels: EnergyOption[] = [
   },
   {
     value: "medium",
-    label: "Normal",
     color: "text-primary",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -32,7 +31,6 @@ const energyLevels: EnergyOption[] = [
   },
   {
     value: "high",
-    label: "Plein d'énergie",
     color: "text-success",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -48,6 +46,7 @@ interface EnergySelectorProps {
 }
 
 export function EnergySelector({ value, onChange }: EnergySelectorProps) {
+  const t = useTranslations("enums");
   return (
     <div className="flex items-center justify-center gap-2">
       {energyLevels.map((energy) => {
@@ -66,10 +65,10 @@ export function EnergySelector({ value, onChange }: EnergySelectorProps) {
                 : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
               }
             `}
-            title={energy.label}
+            title={t(`energy.${energy.value}`)}
           >
             {energy.icon}
-            <span className="text-xs font-medium">{energy.label}</span>
+            <span className="text-xs font-medium">{t(`energy.${energy.value}`)}</span>
           </button>
         );
       })}
@@ -77,7 +76,7 @@ export function EnergySelector({ value, onChange }: EnergySelectorProps) {
   );
 }
 
-export function getEnergyLabel(energy: EnergyLevel | null): string {
+export function getEnergyLabel(energy: EnergyLevel | null, t: EnumsT): string {
   if (!energy) return "";
-  return energyLevels.find(e => e.value === energy)?.label || "";
+  return t(`energy.${energy}`);
 }

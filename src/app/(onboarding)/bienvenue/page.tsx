@@ -2,10 +2,12 @@ import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/supabase/server";
 import { getMyInstrumentLimit, getMyInstruments } from "@/lib/actions/instruments";
 import { WelcomeInstruments } from "./welcome-instruments";
+import { getTranslations } from "next-intl/server";
 
-export const metadata = {
-  title: "Bienvenue | Ostinara",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("meta.welcome");
+  return { title: t("title") };
+}
 
 export default async function BienvenuePage() {
   const user = await getAuthenticatedUser();

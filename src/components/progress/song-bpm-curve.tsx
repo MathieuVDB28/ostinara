@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import type { SongBpmPoint } from "@/types";
 
 /**
@@ -29,8 +31,8 @@ const WIDTH = 320;
 const HEIGHT = 96;
 const PADDING = { top: 10, right: 6, bottom: 4, left: 6 };
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", {
+function formatDate(iso: string, intlLocale: string): string {
+  return new Date(iso).toLocaleDateString(intlLocale, {
     day: "numeric",
     month: "short",
   });
@@ -42,6 +44,8 @@ export function SongBpmCurve({
   floorBpm,
   className = "",
 }: SongBpmCurveProps) {
+  const t = useTranslations("progress.curve");
+  const intlLocale = useIntlLocale();
   const chart = useMemo(() => {
     if (points.length === 0) return null;
 
@@ -97,11 +101,10 @@ export function SongBpmCurve({
         className={` p-4 text-center ${className}`}
       >
         <p className="text-sm text-muted-foreground">
-          Aucun tempo enregistré pour ce morceau
+          {t("none")}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Note le BPM atteint à la fin d&apos;une session : c&apos;est ce qui
-          trace la progression.
+          {t("noneHint")}
         </p>
       </div>
     );
@@ -123,8 +126,7 @@ export function SongBpmCurve({
         </p>
         {points.length > 1 && (
           <p className="tabular text-xs font-medium text-muted-foreground">
-            {gain >= 0 ? "+" : ""}
-            {gain} BPM depuis le {formatDate(chart.first.date)}
+            {t("since", { gain: `${gain >= 0 ? "+" : ""}${gain}`, date: formatDate(chart.first.date, intlLocale) })}
           </p>
         )}
       </div>
@@ -133,11 +135,12 @@ export function SongBpmCurve({
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         className="mt-2 w-full"
         role="img"
-        aria-label={`Courbe de tempo : ${points.length} session${
-          points.length > 1 ? "s" : ""
-        }, de ${chart.first.bpm} à ${chart.last.bpm} BPM${
-          targetBpm ? `, cible ${targetBpm} BPM` : ""
-        }`}
+        aria-label={t("aria", {
+          count: points.length,
+          from: chart.first.bpm,
+          to: chart.last.bpm,
+          target: targetBpm ? String(targetBpm) : "none",
+        })}
       >
         {/* La cible, en pointilles : une ligne a atteindre, pas une donnee. */}
         {chart.targetY !== null && (
@@ -183,13 +186,13 @@ export function SongBpmCurve({
 
       <div className="flex items-baseline justify-between">
         <span className="text-[11px] text-muted-foreground">
-          {formatDate(chart.first.date)}
+          {formatDate(chart.first.date, intlLocale)}
         </span>
         <span className="tabular text-[11px] text-muted-foreground">
-          Meilleur : {chart.best} BPM
+          {t("best", { bpm: chart.best })}
         </span>
         <span className="text-[11px] text-muted-foreground">
-          {formatDate(chart.last.date)}
+          {formatDate(chart.last.date, intlLocale)}
         </span>
       </div>
     </div>

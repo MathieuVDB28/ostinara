@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useOptimistic, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toggleReaction } from "@/lib/actions/activities";
 import { ReactionPicker } from "./reaction-picker";
 import type { ReactionSummary } from "@/types";
@@ -17,6 +18,7 @@ export function ActivityReactions({
   reactions,
   currentUserReactions,
 }: ActivityReactionsProps) {
+  const t = useTranslations("social");
   const [showPicker, setShowPicker] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [optimisticReactions, addOptimisticReaction] = useOptimistic(
@@ -78,7 +80,7 @@ export function ActivityReactions({
       <div className="relative">
         <button
           onClick={() => setShowPicker(!showPicker)}
-          aria-label="Réagir"
+          aria-label={t("react")}
           aria-expanded={showPicker}
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >

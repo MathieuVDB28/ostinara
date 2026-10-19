@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Bookmark, Check, Plus } from "lucide-react";
 import { addSongToLibrary } from "@/lib/actions/songs";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
@@ -50,6 +51,8 @@ function songOf(activity: ActivityWithDetails): Song | null {
 }
 
 function LearnToo({ song, friend }: { song: Song; friend: { id: string; name: string } }) {
+  const t = useTranslations("social");
+  const tc = useTranslations("common");
   const nextSteps = useNextSteps();
   const [state, setState] = useState<"idle" | "already">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +69,7 @@ function LearnToo({ song, friend }: { song: Song; friend: { id: string; name: st
         deezer_id: song.deezer_id,
       }, "want_to_learn", { from: "friend", label: friend.name });
       if (!result.success || !result.song) {
-        setError(result.error || "L'ajout a échoué. Réessaie.");
+        setError(result.error || t("addFailed"));
       } else if (result.alreadyThere) {
         setState("already");
       } else {
@@ -79,9 +82,9 @@ function LearnToo({ song, friend }: { song: Song; friend: { id: string; name: st
     return (
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Check className="h-3.5 w-3.5 text-success" strokeWidth={2.25} aria-hidden="true" />
-        Déjà dans ta biblio
+        {t("alreadyInLibrary")}
         <Link href="/biblio" className="font-semibold text-foreground underline-offset-2 hover:underline">
-          Voir
+          {t("see")}
         </Link>
       </p>
     );
@@ -91,7 +94,7 @@ function LearnToo({ song, friend }: { song: Song; friend: { id: string; name: st
     <div>
       <button type="button" onClick={handleClick} disabled={pending} className={button}>
         <Plus className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />
-        {pending ? "Ajout…" : "Je l'apprends aussi"}
+        {pending ? tc("adding") : t("learnToo")}
       </button>
       {error && <p role="status" className="mt-1.5 text-xs text-destructive">{error}</p>}
     </div>
@@ -99,6 +102,8 @@ function LearnToo({ song, friend }: { song: Song; friend: { id: string; name: st
 }
 
 function ListenToo({ activity }: { activity: ActivityWithDetails }) {
+  const t = useTranslations("social");
+  const tc = useTranslations("common");
   const review = activity.albumReview!;
   const [state, setState] = useState<"idle" | "done">("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -125,9 +130,9 @@ function ListenToo({ activity }: { activity: ActivityWithDetails }) {
     return (
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Check className="h-3.5 w-3.5 text-success" strokeWidth={2.25} aria-hidden="true" />
-        {message ?? "Dans ta liste « À écouter »"}
+        {message ?? t("inListenList")}
         <Link href="/biblio/albums" className="font-semibold text-foreground underline-offset-2 hover:underline">
-          Voir
+          {t("see")}
         </Link>
       </p>
     );
@@ -136,7 +141,7 @@ function ListenToo({ activity }: { activity: ActivityWithDetails }) {
   return (
     <button type="button" onClick={handleClick} disabled={pending} className={button}>
       <Bookmark className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-      {pending ? "Ajout…" : "À écouter"}
+      {pending ? tc("adding") : t("listenToo")}
     </button>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import type { TechRiderMusician, TechRiderStageElement } from "@/types";
 
 interface Props {
@@ -12,16 +13,6 @@ interface Props {
   onRemoveElement: (id: string) => void;
   readOnly?: boolean;
 }
-
-const ELEMENT_LABELS: Record<TechRiderStageElement["type"], string> = {
-  monitor: "Retour",
-  amp: "Ampli",
-  drums: "Batterie",
-  keyboard: "Clavier",
-  di_box: "DI Box",
-  mic_stand: "Micro",
-  custom: "Autre",
-};
 
 const ELEMENT_COLORS: Record<TechRiderStageElement["type"], string> = {
   monitor: "bg-chart-2",
@@ -52,6 +43,8 @@ export function TechRiderStagePlot({
   onRemoveElement,
   readOnly,
 }: Props) {
+  const t = useTranslations("techRider.stage");
+  const elementLabel = (type: TechRiderStageElement["type"]) => t(`elements.${type}`);
   const stageRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState<{
     type: "musician" | "element";
@@ -118,7 +111,7 @@ export function TechRiderStagePlot({
     const element: TechRiderStageElement = {
       id: crypto.randomUUID(),
       type,
-      label: ELEMENT_LABELS[type],
+      label: elementLabel(type),
       x: 40 + Math.random() * 20,
       y: 40 + Math.random() * 20,
     };
@@ -134,7 +127,7 @@ export function TechRiderStagePlot({
       {!readOnly && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground">
-            Ajouter :
+            {t("add")}
           </span>
           {(
             [
@@ -155,7 +148,7 @@ export function TechRiderStagePlot({
               <span
                 className={`inline-block h-3 w-3 rounded-sm ${ELEMENT_COLORS[type]}`}
               />
-              {ELEMENT_LABELS[type]}
+              {elementLabel(type)}
             </button>
           ))}
         </div>
@@ -176,23 +169,23 @@ export function TechRiderStagePlot({
 
         {/* Labels */}
         <div className="pointer-events-none absolute left-1/2 top-1 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          Fond de scène
+          {t("back")}
         </div>
         <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          Public
+          {t("audience")}
         </div>
         <div className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-[11px] font-medium text-muted-foreground [writing-mode:vertical-lr]">
-          Cour (SR)
+          {t("right")}
         </div>
         <div className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 rotate-180 text-[11px] font-medium text-muted-foreground [writing-mode:vertical-lr]">
-          Jardin (SL)
+          {t("left")}
         </div>
 
         {/* Empty state */}
         {musicians.length === 0 && stageElements.length === 0 && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <p className="text-sm text-muted-foreground">
-              Ajoute des musiciens et des éléments pour construire ton plan
+              {t("empty")}
             </p>
           </div>
         )}
@@ -221,7 +214,7 @@ export function TechRiderStagePlot({
               {m.name?.[0]?.toUpperCase() || "?"}
             </div>
             <span className="mt-1 max-w-20 truncate rounded bg-black/60 px-1.5 py-0.5 text-center text-[11px] font-medium leading-tight text-white">
-              {m.name || "Sans nom"}
+              {m.name || t("untitled")}
             </span>
             <span className="max-w-20 truncate text-[11px] text-muted-foreground">
               {m.instrument}
@@ -284,7 +277,7 @@ export function TechRiderStagePlot({
                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
               />
             </svg>
-            Supprimer l&apos;element selectionne
+            {t("deleteSelected")}
           </button>
           <span className="text-xs text-muted-foreground">
             ({stageElements.find((e) => e.id === selected)?.label})
@@ -296,11 +289,12 @@ export function TechRiderStagePlot({
       {(musicians.length > 0 || stageElements.length > 0) && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
           <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Legende :
+            {t("legend")}
           </span>
           <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
             <span className="inline-block h-3 w-3 rounded-full bg-primary/90" />
-            Musicien
+            {t("musician")}
+
           </span>
           {[...new Set(stageElements.map((e) => e.type))].map((type) => (
             <span
@@ -310,7 +304,7 @@ export function TechRiderStagePlot({
               <span
                 className={`inline-block h-3 w-3 rounded-sm ${ELEMENT_COLORS[type]}`}
               />
-              {ELEMENT_LABELS[type]}
+              {elementLabel(type)}
             </span>
           ))}
         </div>

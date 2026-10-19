@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { AudioLines, Gauge, Timer } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Metronome } from "@/components/practice/metronome/metronome";
 import { ExerciseList } from "@/components/practice/exercises/exercise-list";
 import { ExerciseDetailModal } from "@/components/practice/exercises/exercise-detail-modal";
@@ -43,15 +44,15 @@ type PlayTab = "carnet" | "song" | "exercises" | "file" | "setlist";
  * trente secondes. Il vit maintenant dans une feuille (TunerSheet),
  * atteignable depuis l'en-tete quel que soit le segment actif.
  */
-const TABS: { value: PlayTab; label: string }[] = [
+const TABS: PlayTab[] = [
   // Le Carnet ouvre l'onglet : ce qu'on a joue, et ce qu'on va jouer.
-  { value: "carnet", label: "Carnet" },
+  "carnet",
   // Monter une session (morceaux + exos) à la volée et la dérouler.
-  { value: "file", label: "Session" },
-  { value: "song", label: "Morceaux" },
-  { value: "exercises", label: "Exercices" },
+  "file",
+  "song",
+  "exercises",
   // Dérouler une setlist enregistrée.
-  { value: "setlist", label: "Setlists" },
+  "setlist",
 ];
 
 /** Ce que la session plein ecran affiche du morceau. */
@@ -120,6 +121,7 @@ export function PlayView({
   userPlan,
   isPaid,
 }: PlayViewProps) {
+  const t = useTranslations("play.view");
   const router = useRouter();
 
   // Arrivee depuis la recherche globale : l'exercice demande ouvre sa
@@ -373,7 +375,7 @@ export function PlayView({
       <div>
         <div className="flex items-end justify-between gap-3">
           <h1 className="font-display text-[40px] font-extrabold uppercase leading-none tracking-[0.01em] lg:text-5xl">
-            Jouer
+            {t("title")}
           </h1>
 
           <div className="flex items-center gap-2">
@@ -387,7 +389,7 @@ export function PlayView({
               ) : (
                 <AudioLines className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
               )}
-              {hasStrings ? "Accorder" : "Reconnaître"}
+              {hasStrings ? t("tune") : t("recognize")}
             </button>
 
             {isPracticing ? (
@@ -403,7 +405,7 @@ export function PlayView({
                 <span className="tabular font-display text-lg font-bold leading-none">
                   {formatDuration(practiceSession.elapsedSeconds)}
                 </span>
-                <span className="sr-only">Afficher la session en plein écran</span>
+                <span className="sr-only">{t("fullscreen")}</span>
               </button>
             ) : (
               // Les onglets File et Setlist ont leur propre bouton de démarrage (sur l'élément courant).
@@ -415,7 +417,7 @@ export function PlayView({
                   className="hidden min-h-[38px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex"
                 >
                   <Timer className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                  Démarrer une session
+                  {t("startSession")}
                 </button>
               )
             )}
@@ -424,10 +426,10 @@ export function PlayView({
 
         <div
           role="tablist"
-          aria-label="Sections Jouer"
+          aria-label={t("sectionsAria")}
           className="-mx-4 mt-4 flex gap-6 overflow-x-auto border-b border-border px-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden"
         >
-          {TABS.map((tab) => (
+          {TABS.map((value) => ({ value, label: t(`tabs.${value}`) })).map((tab) => (
             <button
               key={tab.value}
               role="tab"
@@ -479,7 +481,7 @@ export function PlayView({
             className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold transition-colors hover:bg-accent sm:hidden"
           >
             <Timer className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-            Démarrer une session
+            {t("startSession")}
           </button>
         )}
         <Metronome
@@ -513,7 +515,7 @@ export function PlayView({
                 </>
               ) : (
                 <p className="py-4 text-center text-sm text-muted-foreground">
-                  Sélectionne un morceau pour voir ta progression
+                  {t("selectSong")}
                 </p>
               )}
 

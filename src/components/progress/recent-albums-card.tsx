@@ -2,6 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import type { CommonT } from "@/i18n/types";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { AlbumReview } from "@/types";
 import { Icon } from "@/components/ui/icon";
@@ -18,19 +21,22 @@ interface RecentAlbumsCardProps {
   albums: AlbumReview[];
 }
 
-function formatWhen(date: string): string {
+function formatWhen(date: string, t: CommonT, intlLocale: string): string {
   const days = Math.floor((Date.now() - new Date(date).getTime()) / 86_400_000);
-  if (days <= 0) return "aujourd'hui";
-  if (days === 1) return "hier";
-  if (days < 7) return `il y a ${days} j`;
-  if (days < 31) return `il y a ${Math.floor(days / 7)} sem.`;
-  return new Date(date).toLocaleDateString("fr-FR", {
+  if (days <= 0) return t("relative.today");
+  if (days === 1) return t("relative.yesterday");
+  if (days < 7) return t("relative.daysAgoShort", { count: days });
+  if (days < 31) return t("relative.weeksAgoShort", { count: Math.floor(days / 7) });
+  return new Date(date).toLocaleDateString(intlLocale, {
     day: "numeric",
     month: "short",
   });
 }
 
 export function RecentAlbumsCard({ albums }: RecentAlbumsCardProps) {
+  const t = useTranslations("progress.recentAlbums");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   if (albums.length === 0) {
     return (
       <section aria-labelledby="recent-albums">
@@ -38,15 +44,15 @@ export function RecentAlbumsCard({ albums }: RecentAlbumsCardProps) {
           id="recent-albums"
           className="mb-3 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
         >
-          Derniers albums écoutés
+          {t("title")}
         </h2>
         <EmptyState
           compact
           icon="album"
-          title="Aucun album noté"
-          description="Note un album que tu viens d'écouter : il apparaîtra ici, et dans ta bibliothèque."
+          title={t("emptyTitle")}
+          description={t("emptyDescription")}
           actions={[
-            { label: "Noter un album", icon: "add", primary: true, href: "/biblio/albums" },
+            { label: t("rate"), icon: "add", primary: true, href: "/biblio/albums" },
           ]}
         />
       </section>
@@ -60,13 +66,13 @@ export function RecentAlbumsCard({ albums }: RecentAlbumsCardProps) {
           id="recent-albums"
           className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
         >
-          Derniers albums écoutés
+          {t("title")}
         </h2>
         <Link
           href="/biblio/albums"
           className="shrink-0 text-xs font-semibold text-foreground underline-offset-2 hover:underline"
         >
-          Tout voir
+          {tc("seeAll")}
         </Link>
       </div>
 
@@ -102,10 +108,10 @@ export function RecentAlbumsCard({ albums }: RecentAlbumsCardProps) {
 
               <span className="tabular shrink-0 text-right text-xs text-muted-foreground">
                 <span className="block font-semibold text-foreground">
-                  {album.rating / 2}
+                  {(album.rating / 2).toLocaleString(intlLocale)}
                   <span className="font-normal text-muted-foreground">/5</span>
                 </span>
-                {formatWhen(album.created_at)}
+                {formatWhen(album.created_at, tc, intlLocale)}
               </span>
             </Link>
           </li>

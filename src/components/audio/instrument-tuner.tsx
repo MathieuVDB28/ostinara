@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, Mic } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { BASS_MIN_FREQUENCY, usePitchDetection } from "@/lib/hooks/use-pitch-detection";
 import { BASS_TUNING_GROUPS, TUNING_GROUPS, pitchToFrequency, type TuningGroup } from "@/lib/tunings";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
@@ -58,6 +59,8 @@ function getClosestString(
 }
 
 export function InstrumentTuner() {
+  const t = useTranslations("audio.tuner");
+  const tt = useTranslations("tunings");
   const myInstruments = useMyInstruments();
   const [instrument, setInstrument] = useState<TunedInstrument>(() =>
     defaultInstrument(myInstruments.primary, myInstruments.plays)
@@ -75,18 +78,18 @@ export function InstrumentTuner() {
 
   const absCents = closestString ? Math.abs(closestString.cents) : 50;
   let statusColor = "text-muted-foreground";
-  let statusText = "En attente...";
+  let statusText = t("waiting");
 
   if (closestString) {
     if (absCents <= 5) {
       statusColor = "text-success";
-      statusText = "Accordé !";
+      statusText = t("inTune");
     } else if (absCents <= 15) {
       statusColor = "text-primary";
-      statusText = closestString.cents < 0 ? "Un peu bas" : "Un peu haut";
+      statusText = closestString.cents < 0 ? t("slightlyFlat") : t("slightlySharp");
     } else {
       statusColor = "text-destructive";
-      statusText = closestString.cents < 0 ? "Trop bas" : "Trop haut";
+      statusText = closestString.cents < 0 ? t("tooFlat") : t("tooSharp");
     }
   }
 
@@ -112,13 +115,13 @@ export function InstrumentTuner() {
             setInstrument(next as TunedInstrument);
             setSelectedPreset(0);
           }}
-          label="Instrument à accorder"
+          label={t("instrumentLabel")}
           className="justify-center"
         />
       )}
 
       <label className="relative">
-        <span className="sr-only">Accordage</span>
+        <span className="sr-only">{t("tuning")}</span>
         <select
           value={preset.name}
           onChange={(e) =>
@@ -127,10 +130,10 @@ export function InstrumentTuner() {
           className="h-9 appearance-none rounded-full border border-border bg-card pl-4 pr-9 font-mono text-xs font-semibold focus:border-primary focus:outline-none"
         >
           {groups.map((group) => (
-            <optgroup key={group.label} label={group.label}>
-              {group.tunings.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label} ({t.notes})
+            <optgroup key={group.label} label={group.labelKey ? tt(group.labelKey) : group.label}>
+              {group.tunings.map((tuning) => (
+                <option key={tuning.value} value={tuning.value}>
+                  {tuning.labelKey ? tt(tuning.labelKey) : tuning.label} ({tuning.notes})
                 </option>
               ))}
             </optgroup>
@@ -166,7 +169,7 @@ export function InstrumentTuner() {
         </>
       ) : (
         <p className="max-w-xs text-center text-sm text-muted-foreground">
-          Joue une corde à vide : l&apos;accordeur reconnaît la note et t&apos;indique si tu es juste.
+          {t("hint")}
         </p>
       )}
 
@@ -182,7 +185,7 @@ export function InstrumentTuner() {
             }`}
           >
             <span className="font-display text-xl font-extrabold leading-none">{string.note}</span>
-            <span className="font-mono text-[9.5px] text-muted-foreground">{string.number}e</span>
+            <span className="font-mono text-[9.5px] text-muted-foreground">{t("stringNumber", { n: string.number })}</span>
           </div>
         ))}
       </div>
@@ -192,7 +195,7 @@ export function InstrumentTuner() {
           onClick={stop}
           className="min-h-[40px] rounded-full border border-border px-6 text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
-          Arrêter
+          {t("stop")}
         </button>
       ) : (
         <button
@@ -200,7 +203,7 @@ export function InstrumentTuner() {
           className="flex min-h-[46px] items-center gap-2 rounded-xl bg-primary px-6 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
         >
           <Mic className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-          Activer l&apos;accordeur
+          {t("start")}
         </button>
       )}
 

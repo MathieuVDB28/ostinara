@@ -1,0 +1,140 @@
+{
+  "someFriend": "A friend",
+  "someone": "Someone",
+  "songAdded": {
+    "title": "New song",
+    "body": "{name} added \"{title}\" to their library"
+  },
+  "songLearning": {
+    "title": "New song in progress",
+    "body": "{name} started learning \"{title}\"{instrument, select, guitar { on guitar} bass { on bass} drums { on drums} keys { on keys} other {}}"
+  },
+  "songMastered": {
+    "title": "Song mastered!",
+    "body": "{name} mastered \"{title}\"{instrument, select, guitar { on guitar} bass { on bass} drums { on drums} keys { on keys} other {}}{artist, select, none {} other { - {artist}}}"
+  },
+  "coverPosted": {
+    "title": "New cover",
+    "body": "{name} posted a new cover!"
+  },
+  "songWishlisted": {
+    "title": "Wishlist",
+    "body": "{name} wants to learn \"{title}\""
+  },
+  "setlistCreated": {
+    "title": "New setlist",
+    "body": "{name} created the setlist \"{setlist}\""
+  },
+  "bandCreated": {
+    "title": "New band",
+    "body": "{name} created the band \"{band}\""
+  },
+  "bandJoined": {
+    "title": "New member",
+    "body": "{name} joined {band}"
+  },
+  "challengeCreated": {
+    "title": "New challenge!",
+    "body": "{name} is challenging you!"
+  },
+  "challengeAccepted": {
+    "title": "Challenge accepted!",
+    "body": "{name} accepted your challenge. Let's go!"
+  },
+  "challengeCompleted": {
+    "title": "Challenge over",
+    "body": "A challenge with {name} just ended"
+  },
+  "challengeWon": {
+    "title": "Victory!",
+    "body": "{name} won a challenge!"
+  },
+  "albumWishlisted": {
+    "title": "Album to listen to",
+    "body": "{name} wants to listen to \"{album}\" by {artist}"
+  },
+  "albumReviewed": {
+    "title": "New listen",
+    "body": "{name} listened to \"{album}\" — {stars}"
+  },
+  "exerciseShared": {
+    "title": "New shared exercise",
+    "body": "{name} shared the exercise \"{exercise}\""
+  },
+  "gearAdded": {
+    "title": "New gear",
+    "body": "{name} added \"{gear}\" to their collection"
+  },
+  "reaction": {
+    "title": "New reaction",
+    "body": "{name} reacted {emoji} to your activity"
+  },
+  "comment": {
+    "title": "New comment",
+    "body": "{name} commented on your activity"
+  },
+  "friendRequest": {
+    "title": "New friend request",
+    "body": "{name} wants to be your friend!"
+  },
+  "friendAccepted": {
+    "title": "Request accepted!",
+    "body": "{name} accepted your friend request"
+  },
+  "rehearsalCreated": {
+    "title": "New rehearsal",
+    "body": "{name} invited you to a rehearsal: {title} - {date}"
+  },
+  "rehearsalUpdated": {
+    "title": "Rehearsal updated",
+    "body": "{name} updated the rehearsal \"{title}\""
+  },
+  "rehearsalAdded": {
+    "title": "Added to a rehearsal",
+    "body": "{name} added you to the rehearsal \"{title}\""
+  },
+  "bandInvitation": {
+    "title": "Band invitation",
+    "body": "{name} invited you to join {band}"
+  },
+  "jamStarted": {
+    "title": "Jam session started!",
+    "body": "{name} started a jam session in {band}"
+  },
+  "someMember": "A member",
+  "challengeNew": {
+    "title": "New challenge!",
+    "body": "{name} challenged you to {type, select, practice_time {a practice time challenge} streak {a daily streak challenge} other {master \"{song}\"}}!"
+  },
+  "challengeDeclined": {
+    "title": "Challenge declined",
+    "body": "{name} declined your challenge"
+  },
+  "challengeYouWon": {
+    "title": "You won! 🏆",
+    "body": "Congrats, you won the challenge!"
+  },
+  "challengeLost": {
+    "title": "Challenge over",
+    "body": "{name} won the challenge. You'll get them next time!"
+  },
+  "challengeTie": {
+    "title": "Challenge over - It's a tie!",
+    "body": "The challenge ended in a perfect tie!"
+  },
+  "reminder": {
+    "streakTitle": "Your {count}-day streak ends tonight",
+    "streakBody": "Ten minutes of playing is enough to keep it going.",
+    "planTitle": "{count, plural, one {You have # goal left this week} other {You have # goals left this week}}",
+    "planBody": "Next up: {goal}. Three days left until Sunday.",
+    "songTitle": "{title} is gathering dust",
+    "songIdleBody": "You haven't played it in {count} days. Shall we pick it back up?",
+    "songNeverBody": "In progress for {count} days with no session yet. Shall we get started?",
+    "pauseTitle": "It's been {count} days since you last played",
+    "pauseBody": "Even fifteen minutes counts."
+  },
+  "rehearsalToday": "Rehearsal today!",
+  "rehearsalTomorrow": "Rehearsal tomorrow!",
+  "rehearsalReminderBody": "{title} with {band} at {time}{location, select, none {} other { - {location}}}",
+  "yourBand": "your band"
+}

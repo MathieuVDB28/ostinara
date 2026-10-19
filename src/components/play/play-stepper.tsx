@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Timer } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { BpmTargetIndicator } from "@/components/practice/song-practice/bpm-target-indicator";
 import { SongTabPanel } from "@/components/practice/song-practice/song-tab-panel";
 import { usePracticeSession } from "@/components/providers/practice-session-provider";
 import type { SaveSessionItemInput } from "@/lib/actions/setlists";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type {
   Song,
   ExerciseWithProgress,
@@ -71,7 +71,7 @@ export function PlayStepper({
   steps,
   title,
   onBack,
-  backLabel = "← Retour",
+  backLabel,
   songPracticeStats,
   currentBpm,
   onRequestBpm,
@@ -79,6 +79,8 @@ export function PlayStepper({
   userPlan,
   sessionItems,
 }: PlayStepperProps) {
+  const t = useTranslations("play.stepper");
+  const te = useTranslations("enums");
   const practiceSession = usePracticeSession();
   const [index, setIndex] = useState(0);
 
@@ -154,7 +156,7 @@ export function PlayStepper({
               onClick={onBack}
               className="text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline"
             >
-              {backLabel}
+              {backLabel ?? t("back")}
             </button>
           )}
           <h2 className="truncate font-display text-2xl font-extrabold uppercase leading-none">
@@ -211,13 +213,13 @@ export function PlayStepper({
             <div className="flex items-center gap-3">
               <span className="rounded-full bg-primary/15 px-2.5 py-1 text-xs font-semibold text-primary">
                 {current.exerciseCategory
-                  ? EXERCISE_CATEGORY_LABELS[current.exerciseCategory]
-                  : "Exercice"}
+                  ? te(`exerciseCategory.${current.exerciseCategory}`)
+                  : t("exercise")}
               </span>
               {bpmFor(current) && (
                 <span className="tabular font-display text-base font-bold">
                   {bpmFor(current)}
-                  <span className="text-xs text-muted-foreground"> bpm</span>
+                  <span className="text-xs text-muted-foreground"> {t("bpm")}</span>
                 </span>
               )}
             </div>
@@ -239,7 +241,7 @@ export function PlayStepper({
         )
       ) : (
         <p className="py-4 text-center text-sm text-muted-foreground">
-          Rien à jouer pour l&apos;instant.
+          {t("nothing")}
         </p>
       )}
 
@@ -252,7 +254,7 @@ export function PlayStepper({
             className="flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border px-4 text-sm font-semibold transition-colors hover:bg-accent disabled:opacity-40"
           >
             <ChevronLeft className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-            Précédent
+            {t("previous")}
           </button>
 
           {!practiceSession.isActive && (
@@ -261,7 +263,7 @@ export function PlayStepper({
               className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-foreground px-4 text-sm font-semibold text-background transition-opacity hover:opacity-90"
             >
               <Timer className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-              Démarrer la session
+              {t("start")}
             </button>
           )}
 
@@ -270,7 +272,7 @@ export function PlayStepper({
             disabled={safeIndex >= steps.length - 1}
             className="flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border px-4 text-sm font-semibold transition-colors hover:bg-accent disabled:opacity-40"
           >
-            Suivant
+            {t("next")}
             <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
           </button>
         </div>

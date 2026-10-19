@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { UserPlus } from "lucide-react";
 import { FriendCard } from "./friend-card";
 import { FriendRequestCard } from "./friend-request-card";
@@ -25,6 +26,7 @@ export function FriendsView({
   initialRequests,
   limitInfo,
 }: FriendsViewProps) {
+  const t = useTranslations("friends.view");
   const router = useRouter();
   const [friends, setFriends] = useState(initialFriends);
   const [requests, setRequests] = useState(initialRequests);
@@ -50,8 +52,8 @@ export function FriendsView({
       <div className="mb-2 flex items-center gap-1.5">
         {(
           [
-            ["friends", "Amis", friends.length],
-            ["requests", "Demandes", requests.length],
+            ["friends", t("friends"), friends.length],
+            ["requests", t("requests"), requests.length],
           ] as const
         ).map(([value, label, count]) => (
           <button
@@ -79,13 +81,13 @@ export function FriendsView({
           className="ml-auto inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
         >
           <UserPlus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-          Ajouter
+          {t("add")}
         </button>
       </div>
 
       {limitInfo && (
         <p className="tabular mb-2 text-xs text-muted-foreground">
-          {limitInfo.current}/{limitInfo.limit} amis avec ton plan
+          {t("limit", { current: limitInfo.current, limit: limitInfo.limit })}
         </p>
       )}
 
@@ -138,15 +140,16 @@ function EmptyState({
   type: "friends" | "requests";
   onAction?: () => void;
 }) {
+  const t = useTranslations("friends.view");
   const config = {
     friends: {
-      title: "Aucun ami pour le moment",
-      description: "Ajoute des amis pour voir leurs morceaux et leurs covers.",
-      actionLabel: "Ajouter un ami",
+      title: t("emptyFriendsTitle"),
+      description: t("emptyFriendsDescription"),
+      actionLabel: t("emptyFriendsAction") as string | undefined,
     },
     requests: {
-      title: "Aucune demande en attente",
-      description: "Les demandes d'amis que tu reçois apparaîtront ici.",
+      title: t("emptyRequestsTitle"),
+      description: t("emptyRequestsDescription"),
       actionLabel: undefined as string | undefined,
     },
   };

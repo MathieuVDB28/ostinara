@@ -10,6 +10,8 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { useTranslations } from "next-intl";
+import { formatDuration } from "../stats-summary";
 import type { SongPracticeDistribution } from "@/types";
 
 interface SongDistributionChartProps {
@@ -30,23 +32,20 @@ const COLORS = [
 ];
 
 export function SongDistributionChart({ data }: SongDistributionChartProps) {
-  const formatMinutes = (minutes: number) => {
-    if (minutes < 60) return `${minutes}min`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h${mins}` : `${hours}h`;
-  };
+  const t = useTranslations("progress.songChart");
+  const tc = useTranslations("common");
+  const formatMinutes = (minutes: number) => formatDuration(minutes, tc);
 
   if (data.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="text-lg font-semibold mb-4">Top morceaux</h3>
+        <h3 className="text-lg font-semibold mb-4">{t("title")}</h3>
         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
           <svg className="h-12 w-12 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
           </svg>
-          <p className="text-sm">Associe des morceaux à tes sessions</p>
-          <p className="text-xs mt-1">pour voir ton top</p>
+          <p className="text-sm">{t("empty1")}</p>
+          <p className="text-xs mt-1">{t("empty2")}</p>
         </div>
       </div>
     );
@@ -57,9 +56,9 @@ export function SongDistributionChart({ data }: SongDistributionChartProps) {
   return (
     <div className="rounded-xl border border-border bg-card p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold">Top morceaux</h3>
+        <h3 className="text-lg font-semibold">{t("title")}</h3>
         <span className="text-sm text-muted-foreground">
-          {formatMinutes(totalMinutes)} au total
+          {t("total", { time: formatMinutes(totalMinutes) })}
         </span>
       </div>
 
@@ -96,7 +95,7 @@ export function SongDistributionChart({ data }: SongDistributionChartProps) {
                       <p className="text-sm text-muted-foreground">{song.songArtist}</p>
                       <div className="mt-1 text-sm">
                         <span className="font-medium text-primary">{formatMinutes(song.totalMinutes)}</span>
-                        <span className="text-muted-foreground"> · {song.totalSessions} sessions</span>
+                        <span className="text-muted-foreground"> · {t("sessions", { count: song.totalSessions })}</span>
                       </div>
                     </div>
                   );

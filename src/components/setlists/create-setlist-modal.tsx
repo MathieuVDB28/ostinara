@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { createSetlist } from "@/lib/actions/setlists";
 import type { BandWithMembers } from "@/types";
 
@@ -17,6 +18,8 @@ export function CreateSetlistModal({
   onSuccess,
   bands,
 }: CreateSetlistModalProps) {
+  const t = useTranslations("setlists.createSetlist");
+  const tc = useTranslations("common");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [concertDate, setConcertDate] = useState("");
@@ -65,7 +68,7 @@ export function CreateSetlistModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError("Le nom est requis");
+      setError(tc("nameRequired"));
       return;
     }
 
@@ -86,7 +89,7 @@ export function CreateSetlistModal({
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Une erreur est survenue");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -102,8 +105,8 @@ export function CreateSetlistModal({
       <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Nouvelle setlist</h2>
-          <button aria-label="Fermer"
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -128,13 +131,13 @@ export function CreateSetlistModal({
           {/* Name */}
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Nom de la setlist *
+              {t("name")}
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Concert du 15 janvier"
+              placeholder={t("namePlaceholder")}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               autoFocus
             />
@@ -143,12 +146,12 @@ export function CreateSetlistModal({
           {/* Description */}
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Description
+              {tc("description")}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Notes sur cette setlist..."
+              placeholder={t("descriptionPlaceholder")}
               rows={2}
               className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
@@ -159,7 +162,7 @@ export function CreateSetlistModal({
             {/* Concert date */}
             <div>
               <label className="mb-1 block text-sm font-medium">
-                Date du concert
+                {t("concertDate")}
               </label>
               <input
                 type="date"
@@ -171,12 +174,12 @@ export function CreateSetlistModal({
 
             {/* Venue */}
             <div>
-              <label className="mb-1 block text-sm font-medium">Lieu</label>
+              <label className="mb-1 block text-sm font-medium">{t("venue")}</label>
               <input
                 type="text"
                 value={venue}
                 onChange={(e) => setVenue(e.target.value)}
-                placeholder="Ex: Le Bataclan"
+                placeholder={t("venuePlaceholder")}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
@@ -186,14 +189,14 @@ export function CreateSetlistModal({
           {bands.length > 0 && (
             <div>
               <label className="mb-1 block text-sm font-medium">
-                Groupe (optionnel)
+                {t("band")}
               </label>
               <select
                 value={bandId}
                 onChange={(e) => setBandId(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               >
-                <option value="">Setlist personnelle</option>
+                <option value="">{t("personal")}</option>
                 {bands.map((band) => (
                   <option key={band.id} value={band.id}>
                     {band.name}
@@ -202,8 +205,8 @@ export function CreateSetlistModal({
               </select>
               <p className="mt-1 text-xs text-muted-foreground">
                 {bandId
-                  ? "Cette setlist sera partagee avec tous les membres du groupe"
-                  : "Cette setlist ne sera visible que par toi"}
+                  ? t("sharedHint")
+                  : t("privateHint")}
               </p>
             </div>
           )}
@@ -222,14 +225,14 @@ export function CreateSetlistModal({
               onClick={onClose}
               className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
             >
-              Annuler
+              {tc("cancel")}
             </button>
             <button
               type="submit"
               disabled={saving || !name.trim()}
               className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {saving ? "Création..." : "Créer"}
+              {saving ? tc("creating") : tc("create")}
             </button>
           </div>
         </form>

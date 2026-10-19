@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import type { PitchDetectionResult } from "@/types";
 
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -133,6 +134,7 @@ function fftSizeFor(minFrequency: number): number {
  * donc sa fenetre courte.
  */
 export function usePitchDetection(minFrequency: number = MIN_FREQUENCY): UsePitchDetectionReturn {
+  const t = useTranslations("media");
   const [result, setResult] = useState<PitchDetectionResult | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -186,14 +188,14 @@ export function usePitchDetection(minFrequency: number = MIN_FREQUENCY): UsePitc
       rafRef.current = requestAnimationFrame(analyze);
     } catch (err) {
       if (err instanceof DOMException && err.name === "NotAllowedError") {
-        setError("Accès au microphone refusé. Autorise l'accès dans les paramètres de ton navigateur.");
+        setError(t("micDenied"));
       } else if (err instanceof DOMException && err.name === "NotFoundError") {
-        setError("Aucun microphone détecté.");
+        setError(t("micNotFound"));
       } else {
-        setError("Impossible d'accéder au microphone.");
+        setError(t("micUnavailable"));
       }
     }
-  }, []);
+  }, [t]);
 
   const stop = useCallback(() => {
     isActiveRef.current = false;

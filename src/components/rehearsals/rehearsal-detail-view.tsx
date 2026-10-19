@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import {
   respondToRehearsal,
   updateRehearsal,
@@ -10,7 +12,7 @@ import {
   deleteRehearsal,
 } from "@/lib/actions/rehearsals";
 import { BandChatPanel } from "./band-chat-panel";
-import { RSVP_COLORS, RSVP_LABELS, RECURRENCE_LABELS } from "@/types";
+import { RSVP_COLORS } from "@/types";
 import type {
   RehearsalWithDetails,
   RehearsalRsvpStatus,
@@ -31,6 +33,10 @@ export function RehearsalDetailView({
   currentUserId,
   messages,
 }: RehearsalDetailViewProps) {
+  const t = useTranslations("rehearsals.detail");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
   const [rehearsal, setRehearsal] = useState(initialRehearsal);
   const [activeTab, setActiveTab] = useState<"details" | "chat">("details");
   const [rsvpLoading, setRsvpLoading] = useState(false);
@@ -56,10 +62,10 @@ export function RehearsalDetailView({
   ).length;
 
   const bandMembers = rehearsal.band.members ?? [];
-  const lineup = rehearsalLineup(bandMembers, rehearsal.participants);
+  const lineup = rehearsalLineup(bandMembers, rehearsal.participants, te);
   const posteOf = (userId: string) => {
     const member = bandMembers.find((m) => m.user_id === userId);
-    return member ? bandPosteLabel(member) : null;
+    return member ? bandPosteLabel(member, te) : null;
   };
 
   const handleRsvp = async (status: RehearsalRsvpStatus) => {
@@ -83,7 +89,7 @@ export function RehearsalDetailView({
   };
 
   const handleCancel = async () => {
-    if (!confirm("Annuler cette repetition ?")) return;
+    if (!confirm(t("confirmCancel"))) return;
     await cancelRehearsal(rehearsal.id);
     setRehearsal((prev) => ({ ...prev, status: "cancelled" }));
   };
@@ -99,7 +105,7 @@ export function RehearsalDetailView({
   };
 
   const formatFullDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString(intlLocale, {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -108,7 +114,7 @@ export function RehearsalDetailView({
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("fr-FR", {
+    return new Date(dateString).toLocaleTimeString(intlLocale, {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -123,7 +129,7 @@ export function RehearsalDetailView({
           className="-ml-1 mb-3 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
           <Icon name="chevron_left" className="h-4 w-4" strokeWidth={2.25} />
-          Groupes
+          {t("bands")}
         </Link>
 
         <div className="flex items-start justify-between gap-4">
@@ -139,7 +145,7 @@ export function RehearsalDetailView({
                   : "border-success text-success"
               }`}
             >
-              {rehearsal.status === "cancelled" ? "Annulée" : "Terminée"}
+              {rehearsal.status === "cancelled" ? t("cancelled") : t("completed")}
             </span>
           )}
         </div>
@@ -148,7 +154,7 @@ export function RehearsalDetailView({
       {/* RSVP Buttons (if active) */}
       {isActive && myParticipant && (
         <div className="border-y border-border py-3">
-          <p className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Ta présence</p>
+          <p className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("yourAttendance")}</p>
           <div className="grid grid-cols-3 gap-1.5">
             {(["accepted", "maybe", "declined"] as RehearsalRsvpStatus[]).map(
               (status) => (
@@ -163,9 +169,9 @@ export function RehearsalDetailView({
                       : "border-border text-muted-foreground hover:bg-accent"
                   } disabled:opacity-50`}
                 >
-                  {status === "accepted" && "Présent·e"}
-                  {status === "maybe" && "Peut-être"}
-                  {status === "declined" && "Absent·e"}
+                  {status === "accepted" && t("accepted")}
+                  {status === "maybe" && t("maybe")}
+                  {status === "declined" && t("declined")}
                 </button>
               )
             )}
@@ -183,7 +189,7 @@ export function RehearsalDetailView({
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          Détails
+          {t("details")}
         </button>
         <button
           onClick={() => setActiveTab("chat")}
@@ -193,7 +199,7 @@ export function RehearsalDetailView({
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          Discussion
+          {t("discussion")}
           {(rehearsal.message_count ?? 0) > 0 && (
             <span className="tabular text-xs text-muted-foreground">
               {rehearsal.message_count}
@@ -224,7 +230,8 @@ export function RehearsalDetailView({
                 href={`/api/rehearsals/${rehearsal.id}/ics`}
                 download
                 className="ml-auto rounded-lg border border-border p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                title="Ajouter au calendrier"
+                title={t("addToCalendar")}
+                aria-label={t("addToCalendar")}
               >
                 <Icon name="calendar_add_on" className="h-[20px] w-[20px]" />
               </a>
@@ -243,7 +250,7 @@ export function RehearsalDetailView({
                       rel="noopener noreferrer"
                       className="text-sm font-semibold text-foreground underline underline-offset-2"
                     >
-                      Voir sur la carte
+                      {t("seeMap")}
                     </a>
                   )}
                 </div>
@@ -256,7 +263,7 @@ export function RehearsalDetailView({
                 <Icon name="queue_music" className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium">{rehearsal.setlist.name}</p>
-                  <p className="text-sm text-muted-foreground">Setlist liée</p>
+                  <p className="text-sm text-muted-foreground">{t("linkedSetlist")}</p>
                 </div>
               </div>
             )}
@@ -266,10 +273,10 @@ export function RehearsalDetailView({
               <div className="flex items-center gap-3 py-3">
                 <Icon name="repeat" className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <p className="font-medium">{RECURRENCE_LABELS[rehearsal.recurrence]}</p>
+                  <p className="font-medium">{te(`recurrence.${rehearsal.recurrence}`)}</p>
                   {rehearsal.recurrence_end_date && (
                     <p className="text-sm text-muted-foreground">
-                      Jusqu&apos;au {new Date(rehearsal.recurrence_end_date).toLocaleDateString("fr-FR")}
+                      {t("until", { date: new Date(rehearsal.recurrence_end_date).toLocaleDateString(intlLocale) })}
                     </p>
                   )}
                 </div>
@@ -288,7 +295,7 @@ export function RehearsalDetailView({
           {lineup.length > 0 && (
             <div>
               <h3 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                Line-up
+                {t("lineup")}
               </h3>
               <ul>
                 {lineup.map((poste) => (
@@ -304,10 +311,10 @@ export function RehearsalDetailView({
                             : "text-muted-foreground"
                       }`}
                     >
-                      {poste.state === "accepted" && "Confirmé"}
-                      {poste.state === "maybe" && "Peut-être"}
-                      {poste.state === "invited" && "Pas encore de réponse"}
-                      {poste.state === "declined" && "Personne"}
+                      {poste.state === "accepted" && t("posteAccepted")}
+                      {poste.state === "maybe" && t("posteMaybe")}
+                      {poste.state === "invited" && t("posteInvited")}
+                      {poste.state === "declined" && t("posteDeclined")}
                     </span>
                   </li>
                 ))}
@@ -319,12 +326,12 @@ export function RehearsalDetailView({
           <div>
             <div className="mb-1 flex items-center justify-between border-b border-border pb-1.5">
               <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                Participants · {rehearsal.participants.length}
+                {t("participants", { count: rehearsal.participants.length })}
               </h3>
               <div className="flex gap-2 text-xs">
-                <span className="text-success">{acceptedCount} oui</span>
-                <span className="text-muted-foreground">{maybeCount} peut-être</span>
-                <span className="text-destructive">{declinedCount} non</span>
+                <span className="text-success">{t("yes", { count: acceptedCount })}</span>
+                <span className="text-muted-foreground">{t("maybeCount", { count: maybeCount })}</span>
+                <span className="text-destructive">{t("no", { count: declinedCount })}</span>
               </div>
             </div>
             <div>
@@ -355,7 +362,7 @@ export function RehearsalDetailView({
                       RSVP_COLORS[p.status]
                     }`}
                   >
-                    {RSVP_LABELS[p.status]}
+                    {te(`rsvp.${p.status}`)}
                   </span>
                 </div>
               ))}
@@ -365,13 +372,13 @@ export function RehearsalDetailView({
           {/* Notes (post-rehearsal) */}
           <div>
             <div className="mb-2 flex items-center justify-between border-b border-border pb-1.5">
-              <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Notes</h3>
+              <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("notes")}</h3>
               {!editingNotes && (
                 <button
                   onClick={() => setEditingNotes(true)}
                   className="text-xs font-semibold text-foreground hover:underline"
                 >
-                  Modifier
+                  {tc("edit")}
                 </button>
               )}
             </div>
@@ -380,7 +387,7 @@ export function RehearsalDetailView({
                 <textarea
                   value={notesText}
                   onChange={(e) => setNotesText(e.target.value)}
-                  placeholder="Notes sur cette répète (morceaux bossés, points à revoir…)"
+                  placeholder={t("notesPlaceholder")}
                   rows={4}
                   className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
@@ -389,19 +396,19 @@ export function RehearsalDetailView({
                     onClick={() => setEditingNotes(false)}
                     className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-accent"
                   >
-                    Annuler
+                    {tc("cancel")}
                   </button>
                   <button
                     onClick={handleSaveNotes}
                     className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
                   >
-                    Sauvegarder
+                    {tc("saveShort")}
                   </button>
                 </div>
               </div>
             ) : (
               <p className={rehearsal.notes ? "font-serif text-[15px] italic leading-relaxed" : "text-sm text-muted-foreground"}>
-                {rehearsal.notes || "Aucune note pour l'instant"}
+                {rehearsal.notes || t("noNotes")}
               </p>
             )}
           </div>
@@ -415,38 +422,38 @@ export function RehearsalDetailView({
                   className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-foreground px-3.5 text-sm font-semibold text-background hover:opacity-90"
                 >
                   <Icon name="check" className="h-[16px] w-[16px]" />
-                  Marquer comme terminée
+                  {t("markDone")}
                 </button>
               )}
               <button
                 onClick={handleCancel}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10"
               >
-                Annuler la répète
+                {t("cancelRehearsal")}
               </button>
               {(isCreator || rehearsal.band.owner_id === currentUserId) && (
                 confirmDelete ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-destructive">Supprimer :</span>
+                    <span className="text-sm text-destructive">{t("deleteLabel")}</span>
                     <button
                       onClick={() => handleDelete(false)}
                       className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:opacity-90"
                     >
-                      Celle-ci
+                      {t("thisOne")}
                     </button>
                     {rehearsal.recurrence !== "none" && (
                       <button
                         onClick={() => handleDelete(true)}
                         className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:opacity-90"
                       >
-                        Toutes
+                        {t("all")}
                       </button>
                     )}
                     <button
                       onClick={() => setConfirmDelete(false)}
                       className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-accent"
                     >
-                      Annuler
+                      {tc("cancel")}
                     </button>
                   </div>
                 ) : (
@@ -454,7 +461,7 @@ export function RehearsalDetailView({
                     onClick={() => setConfirmDelete(true)}
                     className="rounded-lg border border-destructive/50 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10"
                   >
-                    Supprimer
+                    {tc("delete")}
                   </button>
                 )
               )}
@@ -471,7 +478,7 @@ export function RehearsalDetailView({
             rehearsalId={rehearsal.id}
             currentUserId={currentUserId}
             initialMessages={messages}
-            title={`Discussion - ${rehearsal.title}`}
+            title={t("chatTitle", { title: rehearsal.title })}
           />
         </div>
       )}

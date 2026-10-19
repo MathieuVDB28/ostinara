@@ -1,5 +1,8 @@
 "use server";
 
+import { getLocale } from "next-intl/server";
+import { tErr } from "@/i18n/server";
+import { localizeExercise } from "@/lib/exercise-i18n";
 import { revalidatePath } from "next/cache";
 import { exerciseFitsInstrument } from "@/lib/instruments";
 import { getMyPrimaryInstrument } from "@/lib/instruments-server";
@@ -87,11 +90,12 @@ export async function getExercises(filters?: {
     });
   }
 
+  const locale = await getLocale();
   return exercises.map((exercise) => {
     const creator = exercise.creator as { id: string; display_name: string; username: string } | null;
     const isFromFriend = !exercise.is_system && exercise.created_by !== user.id && exercise.shared_with_friends;
     return {
-      ...(exercise as Exercise),
+      ...localizeExercise(exercise as Exercise, locale),
       user_progress: progressMap.get(exercise.id),
       creator_name: creator?.display_name || creator?.username || undefined,
       is_from_friend: isFromFriend,
@@ -132,7 +136,7 @@ export async function getExercise(id: string): Promise<ExerciseWithProgress | nu
   }
 
   return {
-    ...(exercise as Exercise),
+    ...localizeExercise(exercise as Exercise, await getLocale()),
     user_progress: progress as UserExercise | undefined,
   };
 }
@@ -173,7 +177,7 @@ export async function updateUserExerciseProgress(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Vérifier si une progression existe déjà
@@ -201,7 +205,7 @@ export async function updateUserExerciseProgress(
 
     if (error) {
       console.error("Error updating user exercise progress:", error);
-      return { success: false, error: "Erreur lors de la mise à jour" };
+      return { success: false, error: await tErr("updateFailed") };
     }
   } else {
     // Créer une nouvelle progression
@@ -217,7 +221,7 @@ export async function updateUserExerciseProgress(
 
     if (error) {
       console.error("Error creating user exercise progress:", error);
-      return { success: false, error: "Erreur lors de la création" };
+      return { success: false, error: await tErr("createFailed") };
     }
   }
 
@@ -328,7 +332,7 @@ export async function recordExerciseInSession(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase.from("practice_session_exercises").insert({
@@ -340,7 +344,7 @@ export async function recordExerciseInSession(
 
   if (error) {
     console.error("Error recording exercise in session:", error);
-    return { success: false, error: "Erreur lors de l'enregistrement" };
+    return { success: false, error: await tErr("saveFailed") };
   }
 
   return { success: true };
@@ -375,8 +379,9 @@ export async function getRecentlyPracticedExercises(
     return [];
   }
 
+  const locale = await getLocale();
   return userExercises.map((ue) => ({
-    ...(ue.exercise as Exercise),
+    ...localizeExercise(ue.exercise as Exercise, locale),
     user_progress: {
       id: ue.id,
       user_id: ue.user_id,
@@ -403,7 +408,7 @@ export async function createExercise(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { data, error } = await supabase
@@ -430,7 +435,7 @@ export async function createExercise(
 
   if (error) {
     console.error("Error creating exercise:", error);
-    return { success: false, error: "Erreur lors de la création de l'exercice" };
+    return { success: false, error: await tErr("exerciseCreateFailed") };
   }
 
   // Notifier les amis si partagé
@@ -457,7 +462,7 @@ export async function toggleShareExercise(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Récupérer l'exercice
@@ -468,11 +473,11 @@ export async function toggleShareExercise(
     .single();
 
   if (fetchError || !exercise) {
-    return { success: false, error: "Exercice introuvable" };
+    return { success: false, error: await tErr("exerciseNotFound") };
   }
 
   if (exercise.is_system || exercise.created_by !== user.id) {
-    return { success: false, error: "Vous ne pouvez modifier que vos propres exercices" };
+    return { success: false, error: await tErr("ownExercisesOnly") };
   }
 
   const newShared = !exercise.shared_with_friends;
@@ -484,7 +489,7 @@ export async function toggleShareExercise(
 
   if (error) {
     console.error("Error toggling share:", error);
-    return { success: false, error: "Erreur lors de la mise à jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   // Notifier les amis quand on active le partage
@@ -520,7 +525,7 @@ export async function deleteExercise(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -532,7 +537,7 @@ export async function deleteExercise(
 
   if (error) {
     console.error("Error deleting exercise:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/practice");

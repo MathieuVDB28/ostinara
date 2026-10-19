@@ -1,0 +1,113 @@
+{
+  "stepper": {
+    "back": "← Back",
+    "exercise": "Exercise",
+    "bpm": "bpm",
+    "nothing": "Nothing to play yet.",
+    "previous": "Previous",
+    "start": "Start session",
+    "next": "Next"
+  },
+  "resume": {
+    "lastSession": "Last session {when}",
+    "title": "Pick up",
+    "bpmOf": "{achieved} of {target} BPM",
+    "noTarget": "No target tempo: set one on the song sheet to track your BPM curve.",
+    "inProgress": "Session in progress",
+    "resumeAt": "Pick up at {bpm} BPM",
+    "resumeSong": "Pick up this song"
+  },
+  "calendar": {
+    "notPlayed": "not played",
+    "minutes": "{m} min",
+    "summary": "{active} days played out of the last {total}."
+  },
+  "savePrompt": {
+    "title": "Session done",
+    "songs": "{count, plural, one {# song} other {# songs}}",
+    "exercises": "{count, plural, one {# exercise} other {# exercises}}",
+    "keep": " — want to keep this run-through?",
+    "routine": "Make it a routine",
+    "routineHint": "To work on it again — available in your Logbook.",
+    "setlist": "Make it a setlist",
+    "setlistHint": "For the stage — available in Community › Bands.",
+    "noThanks": "No thanks",
+    "routineName": "Routine name",
+    "setlistName": "Setlist name",
+    "saveRoutine": "Save routine",
+    "saveSetlist": "Save setlist"
+  },
+  "setlistPanel": {
+    "none": "No setlists to play",
+    "noneHint": "Build one in Community › Bands, or put together a queue on the fly in the \"Queue\" tab.",
+    "choose": "Pick a setlist to run through: the metronome locks onto each item and the timer runs.",
+    "items": "{count, plural, one {# item to play} other {# items to play}}",
+    "empty": "No songs or exercises",
+    "change": "← Change setlist"
+  },
+  "carnet": {
+    "sessions": "sessions",
+    "total": "total",
+    "hourShort": "h",
+    "dayShort": "d",
+    "streak": "streak · best {record}",
+    "thisWeek": "this week",
+    "min": "min",
+    "inProgress": "Learning",
+    "sessionRunning": "Session in progress",
+    "startSession": "Start a session",
+    "recentSessions": "Recent sessions",
+    "duration": "duration",
+    "freeSession": "Free session",
+    "bpm": "bpm",
+    "routines": "Your routines",
+    "resumeLast": "Pick up your last session",
+    "pending": "{count, plural, one {# item waiting} other {# items waiting}}",
+    "routineCounts": "{songs, plural, one {# song} other {# songs}} · {exercises, plural, one {# exercise} other {# exercises}}",
+    "deleteRoutine": "Delete the routine {name}",
+    "noRoutine": "No routines yet. Put together a session in the Session tab and save it."
+  },
+  "queue": {
+    "deletedSong": "Deleted song",
+    "notInLibrary": "No longer in your library",
+    "deletedExercise": "Deleted exercise",
+    "express": "Quick exercise",
+    "routineSaved": "Routine saved — you'll find it in your Logbook.",
+    "build": "Build your session",
+    "addSong": "Add a song",
+    "searchLibrary": "Search your library...",
+    "addExercise": "Add an exercise",
+    "searchExercise": "Search for an exercise...",
+    "orExpress": "Or a quick exercise",
+    "expressPlaceholder": "E.g. 5-minute warm-up...",
+    "category": "Category",
+    "bpm": "BPM",
+    "yourSession": "Your session · {count}",
+    "saveAsRoutine": "Save as routine",
+    "clear": "Clear",
+    "routineName": "Routine name",
+    "song": "Song",
+    "exo": "Exercise",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove",
+    "mySession": "My session",
+    "hint": "Add songs and exercises above to put together your session, then run through it with the metronome."
+  },
+  "view": {
+    "tabs": {
+      "carnet": "Logbook",
+      "file": "Session",
+      "song": "Songs",
+      "exercises": "Exercises",
+      "setlist": "Setlists"
+    },
+    "title": "Play",
+    "tune": "Tune",
+    "recognize": "Recognize",
+    "fullscreen": "Show the session full screen",
+    "startSession": "Start a session",
+    "sectionsAria": "Play sections",
+    "selectSong": "Select a song to see your progress"
+  }
+}

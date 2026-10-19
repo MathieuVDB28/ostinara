@@ -351,7 +351,7 @@ function namer(labels: Map<string, Entity>, lang: WikiLang) {
       .join(', ');
 }
 
-function pushFact(facts: WikiFact[], label: string, value: string | null | undefined) {
+function pushFact(facts: WikiFact[], label: WikiFact['label'], value: string | null | undefined) {
   if (value) facts.push({ label, value });
 }
 
@@ -398,13 +398,13 @@ export async function getAlbumEncyclopedia(
   const facts: WikiFact[] = [];
   // La sortie originale : Deezer date les reeditions.
   const released = earliest(times(entity, 'P577'));
-  pushFact(facts, 'Sortie', released && formatTime(released, lang));
+  pushFact(facts, 'released', released && formatTime(released, lang));
   const recorded = times(entity, 'P10135');
-  pushFact(facts, 'Enregistrement', recorded.length ? [...new Set(recorded.map((t) => String(t.year)))].join('–') : null);
-  pushFact(facts, 'Studio', names(ids(entity, 'P483'), 3));
-  pushFact(facts, 'Production', names(ids(entity, 'P162')));
-  pushFact(facts, 'Genre', names(ids(entity, 'P136')));
-  pushFact(facts, 'Label', names(ids(entity, 'P264'), 3));
+  pushFact(facts, 'recorded', recorded.length ? [...new Set(recorded.map((t) => String(t.year)))].join('–') : null);
+  pushFact(facts, 'studio', names(ids(entity, 'P483'), 3));
+  pushFact(facts, 'production', names(ids(entity, 'P162')));
+  pushFact(facts, 'genre', names(ids(entity, 'P136')));
+  pushFact(facts, 'label', names(ids(entity, 'P264'), 3));
 
   const [previous, next] = await Promise.all([
     previousId ? albumLink(neighbours.get(previousId), album.artistName, lang) : null,
@@ -640,10 +640,10 @@ export async function getArtistEncyclopedia(
   if (isPerson) {
     const born = earliest(times(entity, 'P569'));
     const place = names(ids(entity, 'P19'), 1);
-    pushFact(facts, 'Naissance', [born && formatTime(born, lang), place].filter(Boolean).join(', '));
+    pushFact(facts, 'born', [born && formatTime(born, lang), place].filter(Boolean).join(', '));
     pushFact(
       facts,
-      'Instruments',
+      'instruments',
       ids(entity, 'P1303')
         .sort((a, b) => instrumentRank(a) - instrumentRank(b))
         .map((id) => INSTRUMENT_NAMES[lang][id] ?? labelOf(labels.get(id), lang))
@@ -652,11 +652,11 @@ export async function getArtistEncyclopedia(
         .join(', ')
     );
   } else {
-    pushFact(facts, 'Origine', names(ids(entity, 'P740'), 1) || names(ids(entity, 'P495'), 1));
+    pushFact(facts, 'origin', names(ids(entity, 'P740'), 1) || names(ids(entity, 'P495'), 1));
   }
-  pushFact(facts, 'Actif', start ? `${start} – ${end ?? (lang === 'fr' ? "aujourd'hui" : 'present')}` : null);
-  pushFact(facts, 'Genre', names(ids(entity, 'P136')));
-  pushFact(facts, 'Label', names(ids(entity, 'P264'), 3));
+  pushFact(facts, 'active', start ? `${start} – ${end ?? (lang === 'fr' ? "aujourd'hui" : 'present')}` : null);
+  pushFact(facts, 'genre', names(ids(entity, 'P136')));
+  pushFact(facts, 'label', names(ids(entity, 'P264'), 3));
 
   if (!article && facts.length === 0 && members.length === 0) return null;
   return { wikidataId: entity.id, article, facts, members };

@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { profileHref } from "@/lib/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import type { FriendRequest } from "@/types";
 import { acceptFriendRequest, rejectFriendRequest } from "@/lib/actions/friends";
 
@@ -13,6 +15,8 @@ interface FriendRequestCardProps {
 }
 
 export function FriendRequestCard({ request, onRefresh }: FriendRequestCardProps) {
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const [loading, setLoading] = useState<"accept" | "reject" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +25,7 @@ export function FriendRequestCard({ request, onRefresh }: FriendRequestCardProps
     setError(null);
     const result = await acceptFriendRequest(request.id);
     if (!result.success) {
-      setError(result.error || "Erreur");
+      setError(result.error || tc("genericError"));
     }
     onRefresh();
     setLoading(null);
@@ -36,7 +40,7 @@ export function FriendRequestCard({ request, onRefresh }: FriendRequestCardProps
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString(intlLocale, {
       day: "numeric",
       month: "short",
     });
@@ -81,14 +85,14 @@ export function FriendRequestCard({ request, onRefresh }: FriendRequestCardProps
             disabled={loading !== null}
             className="min-h-[36px] rounded-full bg-foreground px-3.5 text-xs font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {loading === "accept" ? "..." : "Accepter"}
+            {loading === "accept" ? "..." : tc("accept")}
           </button>
           <button
             onClick={handleReject}
             disabled={loading !== null}
             className="min-h-[36px] rounded-full border border-border px-3.5 text-xs font-semibold transition-colors hover:bg-accent disabled:opacity-50"
           >
-            {loading === "reject" ? "..." : "Refuser"}
+            {loading === "reject" ? "..." : tc("decline")}
           </button>
         </div>
       </div>

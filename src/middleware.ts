@@ -1,8 +1,26 @@
-import { type NextRequest } from 'next/server'
+import { type NextRequest, type NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
+import { isLocale, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from '@/i18n/config'
+import { detectLocale } from '@/i18n/detect'
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  const response = await updateSession(request)
+  return withLocaleCookie(request, response)
+}
+
+/**
+ * Premiere visite : on fige la langue detectee (pays de l'IP, puis langue
+ * du navigateur) dans un cookie. Les visites suivantes le lisent tel quel,
+ * et le choix fait dans Reglages le remplace.
+ */
+function withLocaleCookie(request: NextRequest, response: NextResponse) {
+  if (isLocale(request.cookies.get(LOCALE_COOKIE)?.value)) return response
+  response.cookies.set(LOCALE_COOKIE, detectLocale(request.headers), {
+    path: '/',
+    maxAge: LOCALE_COOKIE_MAX_AGE,
+    sameSite: 'lax',
+  })
+  return response
 }
 
 export const config = {

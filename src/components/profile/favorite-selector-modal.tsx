@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import type { Song } from "@/types";
 import { createClient } from "@/lib/supabase/client";
 
@@ -37,6 +38,8 @@ export function FavoriteSelectorModal({
   onSelectAlbum,
   type,
 }: FavoriteSelectorModalProps) {
+  const t = useTranslations("profile.favorites");
+  const tc = useTranslations("common");
   // Pour les albums, commencer directement sur l'onglet Deezer
   const [activeTab, setActiveTab] = useState<"library" | "catalog">(type === "album" ? "catalog" : "library");
   const [searchQuery, setSearchQuery] = useState("");
@@ -157,9 +160,9 @@ export function FavoriteSelectorModal({
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-border p-6">
           <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
-            {type === "song" ? "Sélectionner un morceau" : "Sélectionner un album"}
+            {type === "song" ? t("selectSong") : t("selectAlbum")}
           </h2>
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -181,7 +184,8 @@ export function FavoriteSelectorModal({
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Ma bibliothèque
+                {t("myLibrary")}
+
                 {activeTab === "library" && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
                 )}
@@ -195,7 +199,8 @@ export function FavoriteSelectorModal({
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Rechercher sur Deezer
+              {t("searchDeezer")}
+
               {activeTab === "catalog" && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
               )}
@@ -215,10 +220,10 @@ export function FavoriteSelectorModal({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={
                 activeTab === "library"
-                  ? "Rechercher dans ta bibliothèque..."
+                  ? t("searchLibrary")
                   : type === "song"
-                  ? "Rechercher un morceau sur Deezer..."
-                  : "Rechercher un album sur Deezer..."
+                  ? t("searchSong")
+                  : t("searchAlbum")
               }
               className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
@@ -265,7 +270,7 @@ export function FavoriteSelectorModal({
               </div>
             ) : (
               <div className="py-12 text-center text-muted-foreground">
-                {searchQuery ? "Aucun morceau trouvé" : "Ta bibliothèque est vide"}
+                {searchQuery ? t("noSong") : t("emptyLibrary")}
               </div>
             )
           ) : activeTab === "catalog" && type === "song" ? (
@@ -302,11 +307,12 @@ export function FavoriteSelectorModal({
               </div>
             ) : searchQuery.length > 2 ? (
               <div className="py-12 text-center text-muted-foreground">
-                Aucun morceau trouvé
+                {t("noSong")}
+
               </div>
             ) : (
               <div className="py-12 text-center text-muted-foreground">
-                Commence à taper pour rechercher sur Deezer
+                {t("typeToSearch")}
               </div>
             )
           ) : activeTab === "catalog" && type === "album" ? (
@@ -345,11 +351,12 @@ export function FavoriteSelectorModal({
               </div>
             ) : searchQuery.length > 2 ? (
               <div className="py-12 text-center text-muted-foreground">
-                Aucun album trouvé
+                {t("noAlbum")}
+
               </div>
             ) : (
               <div className="py-12 text-center text-muted-foreground">
-                Commence à taper pour rechercher sur Deezer
+                {t("typeToSearch")}
               </div>
             )
           ) : null}

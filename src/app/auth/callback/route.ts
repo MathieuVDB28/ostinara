@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -24,6 +25,7 @@ export async function GET(request: Request) {
           username: data.user.user_metadata.username,
           display_name: data.user.user_metadata.display_name,
           plan: "free",
+          locale: await getLocale(),
         });
       }
 

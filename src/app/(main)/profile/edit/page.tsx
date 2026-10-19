@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { getMyProfile, updateProfile, setFavoriteSong, setFavoriteAlbum, removeFavoriteSong, removeFavoriteAlbum, uploadAvatar } from "@/lib/actions/profile";
 import { createSong } from "@/lib/actions/songs";
 import type { UserProfile, UpdateProfileInput, Song } from "@/types";
@@ -22,6 +23,9 @@ const TABS: Tab[] = [
 ];
 
 function EditProfilePageContent() {
+  const t = useTranslations("profile.edit");
+  const tc = useTranslations("common");
+  const tp = useTranslations("plans");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -121,7 +125,7 @@ function EditProfilePageContent() {
       });
 
       if (!createResult.success || !createResult.song) {
-        setError(createResult.error || "Erreur lors de l'ajout du morceau à la bibliothèque");
+        setError(createResult.error || t("addSongFailed"));
         return;
       }
 
@@ -135,7 +139,7 @@ function EditProfilePageContent() {
       const updatedProfile = await getMyProfile();
       if (updatedProfile) setProfile(updatedProfile);
     } else {
-      setError(result.error || "Erreur lors de l'ajout du morceau favori");
+      setError(result.error || t("addFavoriteFailed"));
     }
   };
 
@@ -249,7 +253,7 @@ function EditProfilePageContent() {
         setAvatarPreview(null); // Reset preview car l'avatar est maintenant dans le profil
       }
     } else {
-      setError(result.error || "Erreur lors de l'upload de l'avatar");
+      setError(result.error || t("avatarFailed"));
     }
     setUploadingAvatar(false);
   };
@@ -265,17 +269,12 @@ function EditProfilePageContent() {
   if (!profile) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Erreur lors du chargement du profil</p>
+        <p className="text-muted-foreground">{t("loadFailed")}</p>
       </div>
     );
   }
 
-  const tabs: { value: Tab; label: string }[] = [
-    { value: "profile", label: "Profil" },
-    { value: "favorites", label: "Favoris" },
-    { value: "privacy", label: "Confidentialité" },
-    { value: "subscription", label: "Abonnement" },
-  ];
+  const tabs = TABS.map((value) => ({ value, label: t(`tabs.${value}`) }));
 
   return (
     <div className="mx-auto max-w-4xl p-6">
@@ -297,6 +296,7 @@ function EditProfilePageContent() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingAvatar}
+            aria-label={t("changeAvatar")}
             className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-colors hover:opacity-90 disabled:opacity-50"
           >
             {uploadingAvatar ? (
@@ -315,7 +315,7 @@ function EditProfilePageContent() {
         </div>
         <h2 className="font-display text-4xl font-extrabold uppercase leading-none">{profile.display_name || profile.username}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {profile.plan !== "free" ? `Ostinara ${profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1)}` : "Compte gratuit"}
+          {profile.plan !== "free" ? t("planAccount", { plan: PLANS[profile.plan].name }) : t("freeAccount")}
         </p>
       </div>
 
@@ -342,19 +342,19 @@ function EditProfilePageContent() {
         {activeTab === "profile" && (
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Nom d&apos;affichage</label>
+              <label className="text-sm font-medium">{t("displayName")}</label>
               <input
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Ton nom d'affichage"
+                placeholder={t("displayNamePlaceholder")}
                 className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Bio</label>
+                <label className="text-sm font-medium">{t("bio")}</label>
                 <span className={`text-xs ${bio.length > 160 ? "text-destructive" : "text-muted-foreground"}`}>
                   {bio.length}/160
                 </span>
@@ -363,17 +363,17 @@ function EditProfilePageContent() {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 maxLength={160}
-                placeholder="Parle-nous de toi..."
+                placeholder={t("bioPlaceholder")}
                 rows={3}
                 className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
               />
               <p className="text-xs text-muted-foreground">
-                Max 160 caractères
+                {t("bioMax")}
               </p>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">Liens sociaux</h3>
+              <h3 className="text-sm font-medium">{t("socialLinks")}</h3>
 
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm">
@@ -386,7 +386,7 @@ function EditProfilePageContent() {
                   type="url"
                   value={instagramUrl}
                   onChange={(e) => setInstagramUrl(e.target.value)}
-                  placeholder="https://instagram.com/ton_compte"
+                  placeholder={`https://instagram.com/${t("handlePlaceholder")}`}
                   className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
                 />
               </div>
@@ -402,7 +402,7 @@ function EditProfilePageContent() {
                   type="url"
                   value={tiktokUrl}
                   onChange={(e) => setTiktokUrl(e.target.value)}
-                  placeholder="https://tiktok.com/@ton_compte"
+                  placeholder={`https://tiktok.com/@${t("handlePlaceholder")}`}
                   className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
                 />
               </div>
@@ -418,7 +418,7 @@ function EditProfilePageContent() {
                   type="url"
                   value={twitterUrl}
                   onChange={(e) => setTwitterUrl(e.target.value)}
-                  placeholder="https://twitter.com/ton_compte"
+                  placeholder={`https://twitter.com/${t("handlePlaceholder")}`}
                   className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
                 />
               </div>
@@ -434,7 +434,7 @@ function EditProfilePageContent() {
                   type="url"
                   value={facebookUrl}
                   onChange={(e) => setFacebookUrl(e.target.value)}
-                  placeholder="https://facebook.com/ton_compte"
+                  placeholder={`https://facebook.com/${t("handlePlaceholder")}`}
                   className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-surface-lighter/50"
                 />
               </div>
@@ -446,9 +446,9 @@ function EditProfilePageContent() {
         {activeTab === "favorites" && (
           <div className="space-y-6">
             <div>
-              <h3 className="mb-3 text-lg font-semibold">Morceaux favoris</h3>
+              <h3 className="mb-3 text-lg font-semibold">{t("favoriteSongs")}</h3>
               <p className="mb-4 text-sm text-muted-foreground">
-                Sélectionne jusqu&apos;à 4 morceaux qui te représentent. Clique sur + pour ajouter, glisse pour réorganiser.
+                {t("favoriteSongsHint")}
               </p>
               <FavoritesGrid
                 items={profile.favorite_songs}
@@ -461,9 +461,9 @@ function EditProfilePageContent() {
             </div>
 
             <div>
-              <h3 className="mb-3 text-lg font-semibold">Albums favoris</h3>
+              <h3 className="mb-3 text-lg font-semibold">{t("favoriteAlbums")}</h3>
               <p className="mb-4 text-sm text-muted-foreground">
-                Choisis jusqu&apos;à 4 albums cultes. Recherche-les dans le catalogue pour les ajouter.
+                {t("favoriteAlbumsHint")}
               </p>
               <FavoritesGrid
                 items={profile.favorite_albums}
@@ -481,7 +481,7 @@ function EditProfilePageContent() {
         {activeTab === "privacy" && (
           <div className="space-y-6">
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Visibilité du compte</h3>
+              <h3 className="mb-4 text-lg font-semibold">{t("visibility")}</h3>
               <div className="rounded-lg border border-border p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -496,19 +496,22 @@ function EditProfilePageContent() {
                         </svg>
                       )}
                       <h4 className="font-medium">
-                        {isPrivate ? "Compte privé" : "Compte public"}
+                        {isPrivate ? t("private") : t("public")}
                       </h4>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {isPrivate
-                        ? "Seuls tes amis peuvent voir tes morceaux, favoris et bio. Ton nom et ton avatar restent visibles par tous."
-                        : "Tout le monde peut voir ton profil complet, y compris tes morceaux et favoris."
+                        ? t("privateHint")
+                        : t("publicHint")
                       }
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsPrivate(!isPrivate)}
+                    role="switch"
+                    aria-checked={isPrivate}
+                    aria-label={t("togglePrivate")}
                     className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
                       isPrivate ? "bg-primary" : "bg-muted"
                     }`}
@@ -524,25 +527,25 @@ function EditProfilePageContent() {
             </div>
 
             <div className="rounded-lg bg-muted/50 p-4">
-              <h4 className="mb-2 font-medium">Ce que les autres voient :</h4>
+              <h4 className="mb-2 font-medium">{t("othersSee")}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Ton avatar, nom et nom d&apos;utilisateur
+                  {t("seeIdentity")}
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Ton badge de plan (Free/Pro/Band)
+                  {t("seeBadge")}
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Tes statistiques (nombre de morceaux, covers)
+                  {t("seeStats")}
                 </li>
                 {isPrivate ? (
                   <>
@@ -550,13 +553,13 @@ function EditProfilePageContent() {
                       <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      Ta bio et tes liens sociaux <span className="text-primary">(amis uniquement)</span>
+                      {t("seeBio")} <span className="text-primary">{t("friendsOnly")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      Tes morceaux et favoris <span className="text-primary">(amis uniquement)</span>
+                      {t("seeSongs")} <span className="text-primary">{t("friendsOnly")}</span>
                     </li>
                   </>
                 ) : (
@@ -565,13 +568,13 @@ function EditProfilePageContent() {
                       <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      Ta bio et tes liens sociaux
+                      {t("seeBio")}
                     </li>
                     <li className="flex items-start gap-2">
                       <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      Tes morceaux et favoris
+                      {t("seeSongs")}
                     </li>
                   </>
                 )}
@@ -587,7 +590,7 @@ function EditProfilePageContent() {
             <div className="rounded-xl border border-border bg-card p-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h3 className="mb-2 text-lg font-semibold">Mon plan</h3>
+                  <h3 className="mb-2 text-lg font-semibold">{t("myPlan")}</h3>
                   <SubscriptionStatusBadge
                     plan={profile.plan}
                     status={profile.subscription_status}
@@ -598,7 +601,7 @@ function EditProfilePageContent() {
                   href="/account/subscription"
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                  {profile.plan === "free" ? "Passer Pro" : "Gérer"}
+                  {profile.plan === "free" ? t("goPro") : t("manage")}
                 </Link>
               </div>
             </div>
@@ -606,7 +609,7 @@ function EditProfilePageContent() {
             {/* Résumé du plan */}
             <div className="rounded-xl border border-border bg-card/50 p-6">
               <h3 className="mb-4 text-lg font-semibold">
-                Fonctionnalités de ton plan
+                {t("planFeatures")}
               </h3>
               <ul className="space-y-3">
                 {PLANS[profile.plan].features.map((feature, index) => (
@@ -624,7 +627,7 @@ function EditProfilePageContent() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    <span className="text-muted-foreground">{feature}</span>
+                    <span className="text-muted-foreground">{tp(`features.${feature}`)}</span>
                   </li>
                 ))}
               </ul>
@@ -632,8 +635,7 @@ function EditProfilePageContent() {
               {profile.plan === "free" && (
                 <div className="mt-6 rounded-lg bg-primary/10 p-4">
                   <p className="text-sm text-primary">
-                    <strong>Passe Pro</strong> pour débloquer morceaux illimités,
-                    covers illimités, instruments illimités, et bien plus encore !
+                    {t.rich("upsell", { strong: (chunks) => <strong>{chunks}</strong> })}
                   </p>
                 </div>
               )}
@@ -645,7 +647,7 @@ function EditProfilePageContent() {
                 href="/pricing"
                 className="text-sm text-primary hover:underline"
               >
-                Comparer tous les plans →
+                {t("compare")}
               </Link>
             </div>
           </div>
@@ -665,14 +667,14 @@ function EditProfilePageContent() {
           onClick={() => router.back()}
           className="rounded-lg border border-border px-6 py-2 text-sm font-medium transition-colors hover:bg-accent"
         >
-          Annuler
+          {tc("cancel")}
         </button>
         <button
           onClick={handleSave}
           disabled={saving}
           className="rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
         >
-          {saving ? "Enregistrement..." : "Enregistrer"}
+          {saving ? t("saving") : tc("save")}
         </button>
       </div>
 

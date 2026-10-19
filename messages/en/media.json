@@ -1,0 +1,15 @@
+{
+  "micDenied": "Microphone access denied. Allow access in your browser settings.",
+  "micNotFound": "No microphone found.",
+  "micUnavailable": "Couldn't access the microphone.",
+  "pushIosInstall": "On iPhone, first add the app to your home screen (Share › Add to Home Screen), then open it from the icon.",
+  "pushNotConfigured": "Notifications aren't set up on this server.",
+  "pushSwTimeout": "The service worker isn't responding. Reload the page and try again.",
+  "pushFailed": "Couldn't turn them on. Try again in a moment.",
+  "pushPermissionFailed": "The permission request failed.",
+  "pushDisableFailed": "Couldn't turn them off. Try again in a moment.",
+  "compressionLoading": "Loading the compression engine...",
+  "videoUnreadable": "Couldn't read the video",
+  "listenOnDeezer": "Listen on Deezer",
+  "listenTitleOnDeezer": "Listen to {title} on Deezer"
+}

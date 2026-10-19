@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { logout } from "@/lib/actions/auth";
 import { purgeOfflineData } from "@/lib/offline/purge";
 
@@ -23,6 +24,7 @@ export function LogoutButton({
   label: string;
   className: string;
 }) {
+  const t = useTranslations("nav");
   const [pending, setPending] = useState(false);
 
   const handleClick = async () => {
@@ -38,7 +40,7 @@ export function LogoutButton({
       disabled={pending}
       className={className}
     >
-      {pending ? "Déconnexion…" : label}
+      {pending ? t("loggingOut") : label}
     </button>
   );
 }

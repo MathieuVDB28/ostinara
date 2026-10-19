@@ -1,0 +1,49 @@
+{
+  "section": {
+    "intro": "l'intro",
+    "verse": "le couplet",
+    "chorus": "le refrain",
+    "bridge": "le pont",
+    "solo": "le solo",
+    "outro": "l'outro",
+    "full_song": "le morceau en entier"
+  },
+  "goal": {
+    "tempoTitle": "Passer « {title} » à {step} BPM",
+    "tempoBest": "Meilleur tempo tenu : {best} BPM · cible {target}",
+    "tempoNone": "Aucun tempo enregistré · cible {target} BPM",
+    "sectionTitle": "Reprendre {section} de « {title} »",
+    "sectionDetail": "Ce passage est resté en travers la dernière fois",
+    "masteryTitle": "Boucler « {title} »",
+    "masteryDetail": "Le tempo cible est tenu — passe-le en « maîtrisé »",
+    "startTitle": "Attaquer « {title} »",
+    "daysTitle": "Jouer {days} jours cette semaine",
+    "daysLast": "La semaine dernière : {count, plural, one {# jour} other {# jours}}",
+    "daysNone": "Aucune session la semaine dernière — on repart doucement",
+    "coverTitle": "Enregistrer ta première cover",
+    "coverDetail": "Même approximative — c'est un repère, pas une performance",
+    "minutesTitle": "{minutes} minutes de pratique",
+    "minutesLast": "La semaine dernière : {minutes} min",
+    "minutesNone": "Un premier repère pour la semaine",
+    "fromAlbum": "Repéré sur « {label} »",
+    "fromArtist": "Repéré en écoutant {artist}",
+    "fromFriend": "Vu chez {label}",
+    "fromSomeFriend": "Vu chez un ami",
+    "waiting": "{artist} attend dans « À apprendre »"
+  },
+  "unit": {
+    "sessions": "séances",
+    "days": "jours",
+    "min": "min",
+    "BPM": "BPM"
+  },
+  "card": {
+    "title": "Ta semaine · {range}",
+    "lastDay": "dernier jour",
+    "daysLeft": "{count, plural, one {# jour} other {# jours}}",
+    "regenerate": "Régénérer le plan de la semaine",
+    "done": "Semaine bouclée. Le prochain plan arrive lundi.",
+    "progress": "Progression : {percent} %",
+    "work": "Travailler"
+  }
+}

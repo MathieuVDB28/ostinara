@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { createSong } from "@/lib/actions/songs";
 import type { CreateSongInput, SongDifficulty } from "@/types";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
@@ -24,6 +25,9 @@ interface AddSongModalProps {
 }
 
 export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSongModalProps) {
+  const t = useTranslations("library.song");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const [step, setStep] = useState<"search" | "details">(prefillTrack ? "details" : "search");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CatalogResult[]>([]);
@@ -107,7 +111,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
       onSuccess();
       handleClose();
     } else {
-      setError(result.error || "Erreur lors de l'ajout");
+      setError(result.error || tc("genericError"));
     }
 
     setSaving(false);
@@ -156,9 +160,9 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
-            {step === "search" ? "Ajouter un morceau" : prefillTrack ? "Ajouter à la bibliothèque" : "Détails du morceau"}
+            {step === "search" ? t("add") : prefillTrack ? t("addToLibrary") : t("details")}
           </h2>
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -184,7 +188,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Rechercher un morceau..."
+                placeholder={t("searchPlaceholder")}
                 className="w-full rounded-lg border border-input bg-background py-3 pl-10 pr-4 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 autoFocus
               />
@@ -229,13 +233,13 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
 
               {query && !loading && results.length === 0 && (
                 <div className="py-8 text-center text-muted-foreground">
-                  Aucun résultat pour &quot;{query}&quot;
+                  {t("noResults", { query })}
                 </div>
               )}
 
               {!query && (
                 <div className="py-8 text-center text-muted-foreground">
-                  Recherche un morceau sur Deezer
+                  {t("searchHint")}
                 </div>
               )}
             </div>
@@ -265,7 +269,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                     onClick={() => setStep("search")}
                     className="text-sm text-primary hover:underline"
                   >
-                    Changer
+                    {t("change")}
                   </button>
                 )}
               </div>
@@ -275,21 +279,20 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Difficulté</label>
+                  <label className="mb-1 block text-sm font-medium">{t("difficulty")}</label>
                   <select
                     value={difficulty}
                     onChange={(e) => setDifficulty(e.target.value as SongDifficulty)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   >
-                    <option value="">Non définie</option>
-                    <option value="beginner">Débutant</option>
-                    <option value="intermediate">Intermédiaire</option>
-                    <option value="advanced">Avancé</option>
-                    <option value="expert">Expert</option>
+                    <option value="">{t("undefined")}</option>
+                    {(["beginner", "intermediate", "advanced", "expert"] as const).map((level) => (
+                      <option key={level} value={level}>{te(`difficulty.${level}`)}</option>
+                    ))}
                   </select>
                 </div>
                 {showTuning && <div>
-                  <label className="mb-1 block text-sm font-medium">Tuning</label>
+                  <label className="mb-1 block text-sm font-medium">{t("tuning")}</label>
                   <select
                     value={tuning}
                     onChange={(e) => setTuning(e.target.value)}
@@ -297,9 +300,9 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                   >
                     {TUNING_GROUPS.map((group) => (
                       <optgroup key={group.label} label={group.label}>
-                        {group.tunings.map((t) => (
-                          <option key={t.value} value={t.value}>
-                            {t.label} ({t.notes})
+                        {group.tunings.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label} ({option.notes})
                           </option>
                         ))}
                       </optgroup>
@@ -309,7 +312,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
               </div>
 
               {showCapo && <div>
-                <label className="mb-1 block text-sm font-medium">Capo</label>
+                <label className="mb-1 block text-sm font-medium">{t("capo")}</label>
                 <input
                   type="number"
                   min={0}
@@ -321,7 +324,7 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
               </div>}
 
               <div>
-                <label className="mb-1 block text-sm font-medium">Lien tablature</label>
+                <label className="mb-1 block text-sm font-medium">{t("tabLink")}</label>
                 <input
                   type="url"
                   value={tabsUrl}
@@ -332,11 +335,11 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">Notes</label>
+                <label className="mb-1 block text-sm font-medium">{t("notes")}</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Remarques, astuces..."
+                  placeholder={t("notesPlaceholder")}
                   rows={3}
                   className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 />
@@ -353,14 +356,14 @@ export function AddSongModal({ isOpen, onClose, onSuccess, prefillTrack }: AddSo
                   onClick={() => prefillTrack ? handleClose() : setStep("search")}
                   className="flex-1 rounded-lg border border-border py-2.5 font-medium transition-colors hover:bg-accent"
                 >
-                  {prefillTrack ? "Annuler" : "Retour"}
+                  {prefillTrack ? tc("cancel") : tc("back")}
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
                   className="flex-1 rounded-lg bg-primary py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
                 >
-                  {saving ? "Ajout..." : "Ajouter"}
+                  {saving ? tc("adding") : tc("add")}
                 </button>
               </div>
             </div>

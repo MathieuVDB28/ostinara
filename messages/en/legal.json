@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "notice": {
+      "title": "Legal notice - Ostinara",
+      "description": "Ostinara's legal notice. Information about the publisher, the host and the terms of use."
+    },
+    "terms": {
+      "title": "Terms of Use - Ostinara",
+      "description": "Terms of Use of the Ostinara service. Rules of use, rights and obligations of users."
+    },
+    "privacy": {
+      "title": "Privacy policy - Ostinara",
+      "description": "Ostinara's privacy policy. How your personal data is collected, processed and protected."
+    }
+  },
+  "layout": {
+    "login": "Log in",
+    "start": "Get started",
+    "notice": "Legal notice",
+    "terms": "Terms of use",
+    "privacy": "Privacy",
+    "contact": "Contact",
+    "rights": "© {year} Ostinara. All rights reserved."
+  },
+  "binding": "This translation is provided for your convenience. Only the French version is legally binding."
+}

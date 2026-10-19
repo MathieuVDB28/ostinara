@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { FavoriteSong, FavoriteAlbum } from "@/types";
 
 type FavoriteItem = FavoriteSong | FavoriteAlbum;
@@ -19,6 +20,7 @@ function isFavoriteSong(item: FavoriteItem): item is FavoriteSong {
 }
 
 export function FavoritesGrid({ items, mode, type, onAdd, onRemove, onReorder }: FavoritesGridProps) {
+  const t = useTranslations("profile.favorites");
   const positions = [1, 2, 3, 4];
   const [draggedPosition, setDraggedPosition] = useState<number | null>(null);
   const [dragOverPosition, setDragOverPosition] = useState<number | null>(null);
@@ -159,7 +161,7 @@ export function FavoritesGrid({ items, mode, type, onAdd, onRemove, onReorder }:
                     <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    <span className="text-xs font-medium">Ajouter</span>
+                    <span className="text-xs font-medium">{t("add")}</span>
                   </button>
                 ) : (
                   <div className="flex aspect-square w-full items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 text-muted-foreground">

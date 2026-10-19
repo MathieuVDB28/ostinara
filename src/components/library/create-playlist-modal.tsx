@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { createPlaylist } from "@/lib/actions/playlists";
 
 interface CreatePlaylistModalProps {
@@ -10,6 +11,8 @@ interface CreatePlaylistModalProps {
 }
 
 export function CreatePlaylistModal({ isOpen, onClose, onSuccess }: CreatePlaylistModalProps) {
+  const t = useTranslations("library.playlist");
+  const tc = useTranslations("common");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
@@ -57,7 +60,7 @@ export function CreatePlaylistModal({ isOpen, onClose, onSuccess }: CreatePlayli
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de la création");
+      setError(result.error || tc("genericError"));
     }
 
     setSaving(false);
@@ -74,8 +77,8 @@ export function CreatePlaylistModal({ isOpen, onClose, onSuccess }: CreatePlayli
 
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card shadow-md">
         <div className="flex items-center justify-between border-b border-border p-6">
-          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Nouvelle playlist</h2>
-          <button aria-label="Fermer"
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("new")}</h2>
+          <button aria-label={tc("close")}
             onClick={handleClose}
             className="rounded-lg p-2 transition-colors hover:bg-accent"
           >
@@ -87,12 +90,12 @@ export function CreatePlaylistModal({ isOpen, onClose, onSuccess }: CreatePlayli
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div>
-            <label className="mb-1 block text-sm font-medium">Nom</label>
+            <label className="mb-1 block text-sm font-medium">{t("name")}</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ma playlist..."
+              placeholder={t("namePlaceholder")}
               autoFocus
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
@@ -100,12 +103,12 @@ export function CreatePlaylistModal({ isOpen, onClose, onSuccess }: CreatePlayli
 
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Description <span className="text-muted-foreground">(optionnel)</span>
+              {t("description")} <span className="text-muted-foreground">{t("optional")}</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Décris ta playlist..."
+              placeholder={t("descriptionPlaceholder")}
               rows={3}
               className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
@@ -123,14 +126,14 @@ export function CreatePlaylistModal({ isOpen, onClose, onSuccess }: CreatePlayli
               onClick={handleClose}
               className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
             >
-              Annuler
+              {tc("cancel")}
             </button>
             <button
               type="submit"
               disabled={saving || !name.trim()}
               className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {saving ? "Création..." : "Créer"}
+              {saving ? tc("creating") : tc("create")}
             </button>
           </div>
         </form>

@@ -10,6 +10,7 @@ import {
 } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface BiblioSearchValue {
   query: string;
@@ -53,10 +54,10 @@ export function useBiblioSearch(): BiblioSearchValue {
   return context;
 }
 
-const PLACEHOLDERS: Record<string, string> = {
-  "/biblio": "Rechercher un morceau…",
-  "/biblio/albums": "Rechercher un album…",
-  "/biblio/covers": "Rechercher une cover…",
+const PLACEHOLDERS: Record<string, "songs" | "albums" | "covers"> = {
+  "/biblio": "songs",
+  "/biblio/albums": "albums",
+  "/biblio/covers": "covers",
 };
 
 /**
@@ -65,6 +66,7 @@ const PLACEHOLDERS: Record<string, string> = {
  * toucher, et reste ouvert tant qu'il contient une recherche.
  */
 export function BiblioSearchInput() {
+  const t = useTranslations("library");
   const { query, setQuery } = useBiblioSearch();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -72,7 +74,7 @@ export function BiblioSearchInput() {
 
   // Le placeholder dit ce qui est cherche : sans ca on ne sait pas si la
   // recherche porte sur le segment courant ou sur toute la bibliotheque.
-  const placeholder = PLACEHOLDERS[pathname] ?? "Rechercher…";
+  const placeholder = t(`searchPlaceholder.${PLACEHOLDERS[pathname] ?? "default"}`);
   const expanded = open || query !== "";
 
   return (
@@ -110,7 +112,7 @@ export function BiblioSearchInput() {
           <button
             type="button"
             onClick={() => setQuery("")}
-            aria-label="Effacer la recherche"
+            aria-label={t("clearSearch")}
             className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
           >
             <X className="h-4 w-4" strokeWidth={2} aria-hidden="true" />

@@ -1,9 +1,11 @@
+import { useTranslations } from "next-intl";
 import { Frets } from "@/components/ui/frets";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import {
   BADGES_BY_ID,
+  badgeGoalFor,
   badgeTitle,
-  FAMILY_LABELS,
-  TIER_NAMES,
+  tierName,
   type BadgeFamily,
   type BadgeStatus,
 } from "@/lib/badges/catalog";
@@ -18,8 +20,8 @@ interface BadgesViewProps {
 
 const FAMILIES: BadgeFamily[] = ["repertoire", "pratique", "commu"];
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+function formatDate(iso: string, intlLocale: string): string {
+  return new Date(iso).toLocaleDateString(intlLocale, { day: "numeric", month: "long", year: "numeric" });
 }
 
 /**
@@ -27,6 +29,7 @@ function formatDate(iso: string): string {
  * en condense. Chaque ligne dit ou on en est et ce qu'il reste a faire.
  */
 export function BadgesView({ badges, instrument }: BadgesViewProps) {
+  const t = useTranslations("badges");
   const unlocked = badges.filter((badge) => badge.level > 0).length;
   const tierLevels = badges.reduce((sum, badge) => {
     const def = BADGES_BY_ID[badge.id];
@@ -40,8 +43,8 @@ export function BadgesView({ badges, instrument }: BadgesViewProps) {
   return (
     <div className="space-y-8">
       <dl className="grid grid-cols-2 gap-3 sm:max-w-sm">
-        <Stat label="badges obtenus" value={unlocked} total={badges.length} />
-        <Stat label="niveaux" value={tierLevels} total={tierMax} />
+        <Stat label={t("view.unlocked")} value={unlocked} total={badges.length} />
+        <Stat label={t("view.levels")} value={tierLevels} total={tierMax} />
       </dl>
 
       {FAMILIES.map((family) => (
@@ -50,7 +53,7 @@ export function BadgesView({ badges, instrument }: BadgesViewProps) {
             id={`badges-${family}`}
             className="border-b border-border pb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
           >
-            {FAMILY_LABELS[family]}
+            {t(`family.${family}`)}
           </h2>
           <ul className="lg:grid lg:grid-cols-2 lg:gap-x-10">
             {badges
@@ -80,6 +83,8 @@ function Stat({ label, value, total }: { label: string; value: number; total: nu
 }
 
 function BadgeRow({ badge, instrument }: { badge: BadgeStatus; instrument: Instrument }) {
+  const t = useTranslations("badges");
+  const intlLocale = useIntlLocale();
   const def = BADGES_BY_ID[badge.id];
   if (!def) return null;
 
@@ -89,24 +94,23 @@ function BadgeRow({ badge, instrument }: { badge: BadgeStatus; instrument: Instr
 
   if (def.kind === "tiered") {
     const done = badge.next === null;
-    status = badge.level > 0 ? TIER_NAMES[badge.level - 1] : "À débloquer";
-    goal = done ? "Niveau maximum atteint" : def.goal(badge.next!);
+    status = badge.level > 0 ? tierName(badge.level, t) : t("view.toUnlock");
+    goal = done ? t("view.maxed") : badgeGoalFor(def, badge.next!, t);
     if (!done && badge.value !== null) progress = { value: badge.value, target: badge.next! };
   } else {
-    const period = def.kind === "monthly" ? "ce mois-ci" : "cette semaine";
     status =
       badge.count > 0
-        ? `Obtenu ${badge.count} fois`
+        ? t("view.earnedTimes", { count: badge.count })
         : def.kind === "monthly"
-          ? "À faire chaque mois"
-          : "À faire chaque semaine";
-    goal = def.goal;
+          ? t("view.everyMonth")
+          : t("view.everyWeek");
+    goal = badgeGoalFor(def, def.threshold, t);
     // La semaine se mesure en objectifs du plan, pas en seuil fixe.
     if (def.kind === "monthly" && badge.value !== null) {
       progress = { value: Math.min(badge.value, def.threshold), target: def.threshold };
     }
     if (def.kind === "monthly" && (badge.value ?? 0) >= def.threshold) {
-      goal = `${def.goal} — fait ${period}`;
+      goal = t("view.doneMonth", { goal });
     }
   }
 
@@ -116,7 +120,7 @@ function BadgeRow({ badge, instrument }: { badge: BadgeStatus; instrument: Instr
       <div className="min-w-0">
         <p className="flex items-baseline justify-between gap-2">
           <span className={`truncate font-display text-xl font-extrabold uppercase leading-tight ${badge.level === 0 ? "text-muted-foreground" : ""}`}>
-            {badgeTitle(def.id, instrument)}
+            {badgeTitle(def.id, instrument, t)}
           </span>
           <span className="shrink-0 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
             {status}
@@ -127,7 +131,7 @@ function BadgeRow({ badge, instrument }: { badge: BadgeStatus; instrument: Instr
           <p className="mt-1 flex items-center gap-2">
             <Frets
               value={(Math.min(progress.value, progress.target) / progress.target) * 100}
-              label={`${progress.value} sur ${progress.target}`}
+              label={t("view.progress", { value: progress.value, target: progress.target })}
             />
             <span aria-hidden="true" className="tabular text-xs font-semibold text-muted-foreground">
               {Math.min(progress.value, progress.target)}/{progress.target}
@@ -135,7 +139,7 @@ function BadgeRow({ badge, instrument }: { badge: BadgeStatus; instrument: Instr
           </p>
         ) : (
           badge.unlockedAt && (
-            <p className="mt-0.5 text-xs text-muted-foreground">Le {formatDate(badge.unlockedAt)}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t("view.on", { date: formatDate(badge.unlockedAt, intlLocale) })}</p>
           )
         )}
       </div>

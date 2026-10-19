@@ -1,0 +1,143 @@
+{
+  "instrument": {
+    "guitar": "Guitare",
+    "bass": "Basse",
+    "drums": "Batterie",
+    "keys": "Clavier / piano",
+    "other": "Autre"
+  },
+  "instrumentPhrase": {
+    "guitar": "à la guitare",
+    "bass": "à la basse",
+    "drums": "à la batterie",
+    "keys": "au clavier",
+    "other": ""
+  },
+  "skillLevel": {
+    "beginner": "Débutant",
+    "intermediate": "Intermédiaire",
+    "advanced": "Avancé",
+    "expert": "Expert"
+  },
+  "songStatus": {
+    "want_to_learn": "À apprendre",
+    "learning": "En cours",
+    "mastered": "Maîtrisé"
+  },
+  "difficulty": {
+    "beginner": "Débutant",
+    "intermediate": "Intermédiaire",
+    "advanced": "Avancé",
+    "expert": "Expert"
+  },
+  "exerciseCategory": {
+    "scales": "Gammes",
+    "arpeggios": "Arpèges",
+    "picking": "Picking",
+    "chord_changes": "Accords",
+    "fingerstyle": "Fingerstyle",
+    "technique": "Technique",
+    "rhythm": "Rythme",
+    "rudiments": "Rudiments",
+    "grooves": "Grooves",
+    "fills": "Breaks",
+    "independence": "Indépendance",
+    "slap": "Slap",
+    "walking_bass": "Walking bass",
+    "voicings": "Voicings",
+    "reading": "Lecture"
+  },
+  "subdivision": {
+    "none": "Aucune",
+    "eighth": "Croches",
+    "triplet": "Triolets",
+    "sixteenth": "Doubles croches"
+  },
+  "recurrence": {
+    "none": "Unique",
+    "weekly": "Chaque semaine",
+    "biweekly": "Toutes les 2 semaines",
+    "monthly": "Chaque mois"
+  },
+  "rsvp": {
+    "invited": "En attente",
+    "accepted": "Présent·e",
+    "declined": "Absent·e",
+    "maybe": "Peut-être"
+  },
+  "gearType": {
+    "guitar": "Guitare",
+    "bass": "Basse",
+    "amp": "Ampli",
+    "effect": "Pédale",
+    "drums": "Batterie",
+    "cymbals": "Cymbales",
+    "keyboard": "Clavier",
+    "accessory": "Accessoire",
+    "recording": "Enregistrement",
+    "other": "Autre"
+  },
+  "gearCondition": {
+    "mint": "Neuf",
+    "excellent": "Excellent",
+    "good": "Bon",
+    "fair": "Correct",
+    "poor": "Usé"
+  },
+  "gearPriority": {
+    "low": "Basse",
+    "medium": "Moyenne",
+    "high": "Haute"
+  },
+  "mood": {
+    "frustrated": "Frustré",
+    "neutral": "Neutre",
+    "good": "Bien",
+    "great": "Super",
+    "on_fire": "On fire"
+  },
+  "visibility": {
+    "private": "Privé",
+    "friends": "Amis",
+    "public": "Public"
+  },
+  "moodPick": {
+    "frustrated": "Frustré",
+    "neutral": "Normal",
+    "good": "Bien",
+    "great": "Super",
+    "on_fire": "On fire!"
+  },
+  "energy": {
+    "low": "Faible",
+    "medium": "Normal",
+    "high": "Plein d'énergie"
+  },
+  "section": {
+    "intro": "Intro",
+    "verse": "Couplet",
+    "chorus": "Refrain",
+    "bridge": "Pont",
+    "solo": "Solo",
+    "outro": "Outro",
+    "full_song": "Complet"
+  },
+  "fullSong": "Morceau complet",
+  "exerciseMark": {
+    "scales": "GA",
+    "arpeggios": "AR",
+    "picking": "PI",
+    "chord_changes": "AC",
+    "fingerstyle": "FI",
+    "technique": "TE",
+    "rhythm": "RY",
+    "rudiments": "RU",
+    "grooves": "GR",
+    "fills": "BR",
+    "independence": "IN",
+    "slap": "SL",
+    "walking_bass": "WB",
+    "voicings": "VO",
+    "reading": "LE"
+  }
+}

@@ -1,11 +1,13 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
-import { instrumentPhrase } from "@/lib/instruments";
+import { INSTRUMENT_VALUES } from "@/lib/instruments";
+import { INTL_LOCALE, type Locale } from "@/i18n/config";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { sendPushNotification, sendPushNotificationToMultipleUsers } from "@/lib/notifications";
-import type { NotificationPayload, NotificationType } from "@/lib/notifications";
+import type { LocalizedPayload, NotificationType, PushT } from "@/lib/notifications";
 import type {
   ActivityWithDetails,
   ActivityCommentWithProfile,
@@ -21,165 +23,129 @@ import type {
 import { COVER_GEAR_SELECT, withCoverGear } from "@/lib/cover-gear";
 
 /** « 4,5/5 ★ » : la note est stockee sur 10, une unite par demi-etoile. */
-function formatStars(rating: unknown): string {
+function formatStars(rating: unknown, intlLocale: string): string {
   const value = Number(rating);
   if (!Number.isFinite(value)) return "";
-  return `${(value / 2).toLocaleString("fr-FR", { maximumFractionDigits: 1 })}/5 ★`;
+  return `${(value / 2).toLocaleString(intlLocale, { maximumFractionDigits: 1 })}/5 ★`;
 }
 
-// Mapper les types d'activités vers les types de notifications
+/** L'instrument d'une activite, pour le `select` ICU des messages push. */
+function instrumentArg(value: unknown): string {
+  return typeof value === "string" && (INSTRUMENT_VALUES as string[]).includes(value) ? value : "other";
+}
+
+/**
+ * Mapper les types d'activités vers les types de notifications.
+ *
+ * Le payload est fabrique dans la langue de chaque ami (sendPushNotification
+ * appelle le builder avec son t()). Le nom de l'auteur aussi : « Un ami »
+ * se traduit.
+ */
 function getNotificationForActivity(
   type: CreateActivityInput["type"],
-  userName: string,
+  userName: string | null,
   metadata?: Record<string, unknown>
-): { payload: NotificationPayload; notificationType: NotificationType } | null {
+): { payload: LocalizedPayload; notificationType: NotificationType } | null {
+  const m = (key: string) => String(metadata?.[key] ?? "");
+  const build = (
+    notificationType: NotificationType,
+    url: string,
+    text: (t: PushT, name: string, locale: Locale) => { title: string; body: string }
+  ) => ({
+    notificationType,
+    payload: (t: PushT, locale: Locale) => ({ ...text(t, userName ?? t("someFriend"), locale), data: { url } }),
+  });
+
   switch (type) {
     case "song_added":
-      return {
-        payload: {
-          title: "Nouveau morceau",
-          body: `${userName} a ajouté "${metadata?.title}" à sa bibliothèque`,
-          data: { url: "/feed" },
-        },
-        notificationType: "song_added",
-      };
+      return build("song_added", "/feed", (t, name) => ({
+        title: t("songAdded.title"),
+        body: t("songAdded.body", { name, title: m("title") }),
+      }));
     case "song_learning":
-      return {
-        payload: {
-          title: "Nouveau morceau en cours",
-          body: `${userName} a commencé à apprendre "${metadata?.title}" ${instrumentPhrase(metadata?.instrument)}`.trim(),
-          data: { url: "/commu" },
-        },
-        notificationType: "song_learning",
-      };
+      return build("song_learning", "/commu", (t, name) => ({
+        title: t("songLearning.title"),
+        body: t("songLearning.body", { name, title: m("title"), instrument: instrumentArg(metadata?.instrument) }),
+      }));
     case "song_mastered":
-      return {
-        payload: {
-          title: "Morceau maîtrisé !",
-          body: [`${userName} a maîtrisé "${metadata?.title}"`, instrumentPhrase(metadata?.instrument), `- ${metadata?.artist}`]
-            .filter(Boolean)
-            .join(" "),
-          data: { url: "/feed" },
-        },
-        notificationType: "song_mastered",
-      };
+      return build("song_mastered", "/feed", (t, name) => ({
+        title: t("songMastered.title"),
+        body: t("songMastered.body", {
+          name,
+          title: m("title"),
+          instrument: instrumentArg(metadata?.instrument),
+          artist: m("artist") || "none",
+        }),
+      }));
     case "cover_posted":
-      return {
-        payload: {
-          title: "Nouvelle cover",
-          body: `${userName} a publié une nouvelle cover !`,
-          data: { url: "/feed" },
-        },
-        notificationType: "cover_posted",
-      };
+      return build("cover_posted", "/feed", (t, name) => ({
+        title: t("coverPosted.title"),
+        body: t("coverPosted.body", { name }),
+      }));
     case "song_wishlisted":
-      return {
-        payload: {
-          title: "Wishlist",
-          body: `${userName} veut apprendre "${metadata?.title}"`,
-          data: { url: "/feed" },
-        },
-        notificationType: "song_wishlisted",
-      };
+      return build("song_wishlisted", "/feed", (t, name) => ({
+        title: t("songWishlisted.title"),
+        body: t("songWishlisted.body", { name, title: m("title") }),
+      }));
     case "setlist_created":
-      return {
-        payload: {
-          title: "Nouvelle setlist",
-          body: `${userName} a cree la setlist "${metadata?.name}"`,
-          data: { url: "/feed" },
-        },
-        notificationType: "setlist_created",
-      };
+      return build("setlist_created", "/feed", (t, name) => ({
+        title: t("setlistCreated.title"),
+        body: t("setlistCreated.body", { name, setlist: m("name") }),
+      }));
     case "band_created":
-      return {
-        payload: {
-          title: "Nouveau groupe",
-          body: `${userName} a cree le groupe "${metadata?.band_name}"`,
-          data: { url: "/feed" },
-        },
-        notificationType: "band_created",
-      };
+      return build("band_created", "/feed", (t, name) => ({
+        title: t("bandCreated.title"),
+        body: t("bandCreated.body", { name, band: m("band_name") }),
+      }));
     case "band_joined":
-      return {
-        payload: {
-          title: "Nouveau membre",
-          body: `${userName} a rejoint ${metadata?.band_name}`,
-          data: { url: "/feed" },
-        },
-        notificationType: "band_joined",
-      };
+      return build("band_joined", "/feed", (t, name) => ({
+        title: t("bandJoined.title"),
+        body: t("bandJoined.body", { name, band: m("band_name") }),
+      }));
     case "challenge_created":
-      return {
-        payload: {
-          title: "Nouveau defi !",
-          body: `${userName} te lance un defi !`,
-          data: { url: "/challenges" },
-        },
-        notificationType: "challenge_created",
-      };
+      return build("challenge_created", "/challenges", (t, name) => ({
+        title: t("challengeCreated.title"),
+        body: t("challengeCreated.body", { name }),
+      }));
     case "challenge_accepted":
-      return {
-        payload: {
-          title: "Defi accepte !",
-          body: `${userName} a accepte ton defi. C'est parti !`,
-          data: { url: "/challenges" },
-        },
-        notificationType: "challenge_accepted",
-      };
+      return build("challenge_accepted", "/challenges", (t, name) => ({
+        title: t("challengeAccepted.title"),
+        body: t("challengeAccepted.body", { name }),
+      }));
     case "challenge_completed":
-      return {
-        payload: {
-          title: "Defi termine",
-          body: `Un defi avec ${userName} vient de se terminer`,
-          data: { url: "/challenges" },
-        },
-        notificationType: "challenge_completed",
-      };
+      return build("challenge_completed", "/challenges", (t, name) => ({
+        title: t("challengeCompleted.title"),
+        body: t("challengeCompleted.body", { name }),
+      }));
     case "challenge_won":
-      return {
-        payload: {
-          title: "Victoire !",
-          body: `${userName} a remporte un defi !`,
-          data: { url: "/challenges" },
-        },
-        notificationType: "challenge_won",
-      };
+      return build("challenge_won", "/challenges", (t, name) => ({
+        title: t("challengeWon.title"),
+        body: t("challengeWon.body", { name }),
+      }));
     case "album_wishlisted":
-      return {
-        payload: {
-          title: "Album à écouter",
-          body: `${userName} veut écouter "${metadata?.album_name}" de ${metadata?.artist_name}`,
-          data: { url: "/feed" },
-        },
-        notificationType: "album_reviewed",
-      };
+      return build("album_reviewed", "/feed", (t, name) => ({
+        title: t("albumWishlisted.title"),
+        body: t("albumWishlisted.body", { name, album: m("album_name"), artist: m("artist_name") }),
+      }));
     case "album_reviewed":
-      return {
-        payload: {
-          title: "Nouvelle ecoute",
-          body: `${userName} a écouté "${metadata?.album_name}" — ${formatStars(metadata?.rating)}`,
-          data: { url: "/feed" },
-        },
-        notificationType: "album_reviewed",
-      };
+      return build("album_reviewed", "/feed", (t, name, locale) => ({
+        title: t("albumReviewed.title"),
+        body: t("albumReviewed.body", {
+          name,
+          album: m("album_name"),
+          stars: formatStars(metadata?.rating, INTL_LOCALE[locale]),
+        }),
+      }));
     case "exercise_shared":
-      return {
-        payload: {
-          title: "Nouvel exercice partage",
-          body: `${userName} a partage l'exercice "${metadata?.exercise_name}"`,
-          data: { url: "/practice" },
-        },
-        notificationType: "exercise_shared",
-      };
+      return build("exercise_shared", "/practice", (t, name) => ({
+        title: t("exerciseShared.title"),
+        body: t("exerciseShared.body", { name, exercise: m("exercise_name") }),
+      }));
     case "gear_added":
-      return {
-        payload: {
-          title: "Nouveau matos",
-          body: `${userName} a ajouté "${metadata?.brand} ${metadata?.model}" à sa collection`,
-          data: { url: "/feed" },
-        },
-        notificationType: "gear_added",
-      };
+      return build("gear_added", "/feed", (t, name) => ({
+        title: t("gearAdded.title"),
+        body: t("gearAdded.body", { name, gear: `${m("brand")} ${m("model")}`.trim() }),
+      }));
     default:
       return null;
   }
@@ -193,7 +159,7 @@ export async function createActivity(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase.from("activities").insert({
@@ -205,7 +171,7 @@ export async function createActivity(
 
   if (error) {
     console.error("Error creating activity:", error);
-    return { success: false, error: "Erreur lors de la création de l'activité" };
+    return { success: false, error: await tErr("activityCreateFailed") };
   }
 
   // Envoyer des notifications push aux amis apres la reponse. `after`
@@ -232,7 +198,7 @@ async function notifyFriendsOfActivity(
       .eq("id", userId)
       .single();
 
-    const userName = profile?.display_name || profile?.username || "Un ami";
+    const userName = profile?.display_name || profile?.username || null;
 
     // Récupérer tous les amis
     const { data: friendships } = await supabase
@@ -297,26 +263,26 @@ async function notifyActivityOwner(
       .eq("id", actorId)
       .single();
 
-    const actorName = actorProfile?.display_name || actorProfile?.username || "Quelqu'un";
+    const actorName = actorProfile?.display_name || actorProfile?.username || null;
 
     if (type === "reaction") {
       await sendPushNotification(
         activity.user_id,
-        {
-          title: "Nouvelle reaction",
-          body: `${actorName} a reagi ${emoji} a ton activite`,
+        (t) => ({
+          title: t("reaction.title"),
+          body: t("reaction.body", { name: actorName ?? t("someone"), emoji: emoji ?? "" }),
           data: { url: "/feed" },
-        },
+        }),
         "activity_reaction"
       );
     } else {
       await sendPushNotification(
         activity.user_id,
-        {
-          title: "Nouveau commentaire",
-          body: `${actorName} a commente ton activite`,
+        (t) => ({
+          title: t("comment.title"),
+          body: t("comment.body", { name: actorName ?? t("someone") }),
           data: { url: "/feed" },
-        },
+        }),
         "activity_comment"
       );
     }
@@ -633,7 +599,7 @@ export async function getFeedActivities(
 
 // Une reaction est un seul emoji. Le selecteur en propose tout le
 // catalogue, mais l'action reste appelable avec n'importe quelle chaine.
-const graphemes = new Intl.Segmenter("fr", { granularity: "grapheme" });
+const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 
 function isSingleEmoji(value: string): boolean {
   if (!value || value.length > 32) return false;
@@ -650,11 +616,11 @@ export async function toggleReaction(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   if (!isSingleEmoji(emoji)) {
-    return { success: false, error: "Réaction invalide" };
+    return { success: false, error: await tErr("invalidReaction") };
   }
 
   // Vérifier si la réaction existe déjà
@@ -675,7 +641,7 @@ export async function toggleReaction(
 
     if (error) {
       console.error("Error removing reaction:", error);
-      return { success: false, error: "Erreur lors de la suppression de la réaction" };
+      return { success: false, error: await tErr("reactionDeleteFailed") };
     }
   } else {
     // Ajouter la réaction
@@ -687,7 +653,7 @@ export async function toggleReaction(
 
     if (error) {
       console.error("Error adding reaction:", error);
-      return { success: false, error: "Erreur lors de l'ajout de la réaction" };
+      return { success: false, error: await tErr("reactionAddFailed") };
     }
 
     // Notifier le propriétaire de l'activité
@@ -707,12 +673,12 @@ export async function addComment(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const trimmed = content.trim();
   if (!trimmed || trimmed.length > 500) {
-    return { success: false, error: "Le commentaire doit faire entre 1 et 500 caractères" };
+    return { success: false, error: await tErr("commentLength") };
   }
 
   const { error } = await supabase.from("activity_comments").insert({
@@ -723,7 +689,7 @@ export async function addComment(
 
   if (error) {
     console.error("Error adding comment:", error);
-    return { success: false, error: "Erreur lors de l'ajout du commentaire" };
+    return { success: false, error: await tErr("commentAddFailed") };
   }
 
   // Notifier le propriétaire de l'activité
@@ -741,7 +707,7 @@ export async function deleteComment(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -752,7 +718,7 @@ export async function deleteComment(
 
   if (error) {
     console.error("Error deleting comment:", error);
-    return { success: false, error: "Erreur lors de la suppression du commentaire" };
+    return { success: false, error: await tErr("commentDeleteFailed") };
   }
 
   revalidatePath("/feed");
@@ -920,11 +886,11 @@ export async function toggleCoverReaction(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   if (!isSingleEmoji(emoji)) {
-    return { success: false, error: "Réaction invalide" };
+    return { success: false, error: await tErr("invalidReaction") };
   }
 
   const { data: cover } = await supabase
@@ -935,11 +901,11 @@ export async function toggleCoverReaction(
 
   // La RLS a deja filtre : si la ligne revient, elle est visible.
   if (!cover) {
-    return { success: false, error: "Cover introuvable" };
+    return { success: false, error: await tErr("coverNotFound") };
   }
 
   if (cover.visibility === "private") {
-    return { success: false, error: "Cette cover n'est pas partagée" };
+    return { success: false, error: await tErr("coverNotShared") };
   }
 
   let { data: activity } = await supabase
@@ -955,7 +921,7 @@ export async function toggleCoverReaction(
     if (cover.user_id !== user.id) {
       return {
         success: false,
-        error: "Cette cover n'est pas encore publiée dans le feed",
+        error: await tErr("coverNotInFeed"),
       };
     }
 
@@ -971,7 +937,7 @@ export async function toggleCoverReaction(
       .single();
 
     if (!created) {
-      return { success: false, error: "Erreur lors de la réaction" };
+      return { success: false, error: await tErr("reactionFailed") };
     }
     activity = created;
   }

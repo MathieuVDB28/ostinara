@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import type { useMetronome } from "@/lib/hooks/use-metronome";
 import { TIME_SIGNATURES, type TimeSignature } from "@/types";
 
@@ -11,6 +12,7 @@ interface JamMetronomeProps {
 }
 
 export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
+  const t = useTranslations("jam.metronome");
   const {
     isPlaying,
     currentBeat,
@@ -40,7 +42,7 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
         <h3 className="font-semibold">Metronome</h3>
         {!isHost && (
           <span className="text-xs text-muted-foreground">
-            Synchronise avec le host
+            {t("synced")}
           </span>
         )}
       </div>
@@ -64,7 +66,7 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
       {/* BPM Display */}
       <div className="text-center mb-4">
         <div className="tabular font-display text-7xl font-extrabold leading-none">{bpm}</div>
-        <div className="mt-1 font-mono text-[11px] font-semibold tracking-[0.12em] text-muted-foreground">BPM</div>
+        <div className="mt-1 font-mono text-[11px] font-semibold tracking-[0.12em] text-muted-foreground">{t("bpm")}</div>
       </div>
 
       {/* Controls - Host only */}
@@ -111,7 +113,7 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
 
           {/* Time signature */}
           <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="text-sm text-muted-foreground">Signature :</span>
+            <span className="text-sm text-muted-foreground">{t("signature")}</span>
             <select
               value={`${timeSignature.beats}/${timeSignature.noteValue}`}
               onChange={(e) => {
@@ -134,7 +136,7 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
               onClick={tap}
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent transition-colors"
             >
-              Tap Tempo {tapBpm ? `(${tapBpm})` : ""}
+              {t("tapTempo")} {tapBpm ? `(${tapBpm})` : ""}
             </button>
           </div>
 
@@ -173,7 +175,7 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
         /* Non-host view */
         <div className="text-center space-y-2">
           <div className="text-sm text-muted-foreground">
-            Signature : {formatTimeSignature(timeSignature)}
+            {t("signatureValue", { value: formatTimeSignature(timeSignature) })}
           </div>
           <div
             className={`inline-flex items-center gap-2 rounded-full px-4 py-2 ${
@@ -185,12 +187,12 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
             {isPlaying ? (
               <>
                 <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                En cours
+                {t("playing")}
               </>
             ) : (
               <>
                 <span className="h-2 w-2 rounded-full bg-muted-foreground" />
-                En pause
+                {t("paused")}
               </>
             )}
           </div>

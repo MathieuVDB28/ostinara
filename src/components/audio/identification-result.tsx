@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createSong } from "@/lib/actions/songs";
 import type { AudioIdentificationResult } from "@/types";
 import { Check } from "lucide-react";
@@ -13,6 +14,7 @@ interface IdentificationResultProps {
 }
 
 export function IdentificationResult({ result, onRetry }: IdentificationResultProps) {
+  const t = useTranslations("audio.result");
   const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
@@ -37,7 +39,7 @@ export function IdentificationResult({ result, onRetry }: IdentificationResultPr
     if (success) {
       setAdded(true);
     } else {
-      setAddError(error || "Impossible d'ajouter le morceau");
+      setAddError(error || t("addFailed"));
     }
   };
 
@@ -84,7 +86,7 @@ export function IdentificationResult({ result, onRetry }: IdentificationResultPr
           <div className="border-t border-border px-4 py-2">
             <span className="flex items-center gap-1.5 text-xs text-success">
               <Check className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />
-              Trouvé sur Deezer
+              {t("foundOnDeezer")}
             </span>
           </div>
         )}
@@ -101,7 +103,7 @@ export function IdentificationResult({ result, onRetry }: IdentificationResultPr
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              Ajouté ! Voir la bibliothèque
+              {t("added")}
             </span>
           </button>
         ) : (
@@ -110,7 +112,7 @@ export function IdentificationResult({ result, onRetry }: IdentificationResultPr
             disabled={isAdding}
             className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
           >
-            {isAdding ? "Ajout en cours..." : "Ajouter à ma bibliothèque"}
+            {isAdding ? t("adding") : t("add")}
           </button>
         )}
 
@@ -122,7 +124,7 @@ export function IdentificationResult({ result, onRetry }: IdentificationResultPr
           onClick={onRetry}
           className="w-full rounded-lg border border-border px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
-          Réécouter
+          {t("listenAgain")}
         </button>
       </div>
     </div>

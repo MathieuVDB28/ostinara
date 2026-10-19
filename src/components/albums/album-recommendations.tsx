@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { getAlbumRecommendations } from "@/lib/actions/albums";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
 import { AddAlbumModal } from "./add-album-modal";
@@ -20,6 +21,8 @@ export function AlbumRecommendations({
   onReviewAdded,
   onWishlistAdded,
 }: AlbumRecommendationsProps) {
+  const t = useTranslations("albums.recs");
+  const tc = useTranslations("common");
   const [recommendations, setRecommendations] = useState<AlbumRecommendation[]>([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -44,7 +47,7 @@ export function AlbumRecommendations({
     if (result.success && result.data) {
       setRecommendations(result.data);
     } else if (!result.success) {
-      setError(result.error || "Erreur lors du chargement");
+      setError(result.error || t("loadFailed"));
     }
     setLoading(false);
     setLoaded(true);
@@ -91,12 +94,12 @@ export function AlbumRecommendations({
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-muted-foreground">
           <Icon name="stars" className="h-8 w-8" />
         </div>
-        <h3 className="mb-2 text-lg font-semibold">Fonctionnalité Pro</h3>
+        <h3 className="mb-2 text-lg font-semibold">{t("proTitle")}</h3>
         <p className="mb-6 max-w-sm text-center text-muted-foreground">
-          Passe en Pro pour obtenir des recommandations d&apos;albums personnalisées basées sur tes écoutes
+          {t("proHint")}
         </p>
-        <a href="/settings" className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground">
-          Passer Pro
+        <a href="/pricing" className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground">
+          {t("goPro")}
         </a>
       </div>
     );
@@ -107,7 +110,7 @@ export function AlbumRecommendations({
       <div className="flex items-center justify-center py-16">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Chargement des recommandations...</p>
+          <p className="text-sm text-muted-foreground">{t("loading")}</p>
         </div>
       </div>
     );
@@ -120,17 +123,17 @@ export function AlbumRecommendations({
           <Icon name="recommend" className="h-8 w-8" />
         </div>
         <h3 className="mb-2 text-lg font-semibold">
-          {error ? "Erreur de chargement" : "Aucune recommandation"}
+          {error ? t("errorTitle") : t("noneTitle")}
         </h3>
         <p className="mb-4 max-w-sm text-center text-muted-foreground">
           {error ??
-            "Note des albums ou ajoute des morceaux à ta biblio : les recommandations partent de ce que tu écoutes et joues."}
+            t("noneHint")}
         </p>
         <button
           onClick={loadRecommendations}
           className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground"
         >
-          Réessayer
+          {tc("retry")}
         </button>
       </div>
     );
@@ -141,7 +144,7 @@ export function AlbumRecommendations({
       <div>
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            D&apos;après ce que tu écoutes et joues — clique sur un album pour l&apos;ajouter
+            {t("intro")}
           </p>
           <button
             onClick={loadRecommendations}
@@ -149,7 +152,7 @@ export function AlbumRecommendations({
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Icon name="refresh" className="h-[16px] w-[16px]" />
-            Rafraîchir
+            {t("refresh")}
           </button>
         </div>
 
@@ -208,7 +211,7 @@ export function AlbumRecommendations({
                   )}
                   <p className="mt-1.5 line-clamp-2 text-xs font-medium text-primary">{album.reason}</p>
                   {status === "done" && (
-                    <p className="mt-1 text-xs font-medium text-success">Ajouté à écouter</p>
+                    <p className="mt-1 text-xs font-medium text-success">{t("added")}</p>
                   )}
                 </div>
               </div>
@@ -253,12 +256,13 @@ export function AlbumRecommendations({
                 {selectedAlbum.release_date && (
                   <p className="text-xs text-muted-foreground">
                     {selectedAlbum.release_date.split("-")[0]}
-                    {selectedAlbum.total_tracks ? ` · ${selectedAlbum.total_tracks} titres` : ""}
+                    {selectedAlbum.total_tracks ? t("tracks", { count: selectedAlbum.total_tracks }) : ""}
                   </p>
                 )}
               </div>
               <button
                 onClick={() => setSelectedAlbum(null)}
+                aria-label={tc("close")}
                 className="ml-auto shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-accent"
               >
                 <Icon name="close" className="h-[20px] w-[20px]" />
@@ -280,8 +284,8 @@ export function AlbumRecommendations({
                   )}
                 </div>
                 <div>
-                  <div className="text-sm font-semibold">À écouter</div>
-                  <div className="text-xs text-muted-foreground">Ajouter à ta liste d&apos;attente</div>
+                  <div className="text-sm font-semibold">{t("toListen")}</div>
+                  <div className="text-xs text-muted-foreground">{t("toListenHint")}</div>
                 </div>
               </button>
 
@@ -293,8 +297,8 @@ export function AlbumRecommendations({
                   <Icon name="star" className="h-[20px] w-[20px]" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold">J&apos;ai écouté — noter</div>
-                  <div className="text-xs text-muted-foreground">Donner une note et un avis</div>
+                  <div className="text-sm font-semibold">{t("rate")}</div>
+                  <div className="text-xs text-muted-foreground">{t("rateHint")}</div>
                 </div>
               </button>
 
@@ -309,7 +313,7 @@ export function AlbumRecommendations({
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                     <Headphones className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                   </div>
-                  <div className="text-sm font-semibold">Écouter sur Deezer</div>
+                  <div className="text-sm font-semibold">{t("deezer")}</div>
                 </a>
               )}
             </div>

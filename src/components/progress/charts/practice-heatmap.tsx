@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import { formatDuration } from "../stats-summary";
 import type { HeatmapData, HeatmapDay } from "@/types";
 
 interface PracticeHeatmapProps {
@@ -15,14 +18,24 @@ const LEVEL_COLORS = [
   "bg-success dark:bg-success",  // 4 - max
 ];
 
-const MONTHS_FR = [
-  "Jan", "Fév", "Mar", "Avr", "Mai", "Jun",
-  "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"
-];
-
-const DAYS_FR = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+/** Les noms courts des mois et des jours, dans la langue de l'app. */
+function shortNames(intlLocale: string) {
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).replace(/\.$/, "");
+  const months = Array.from({ length: 12 }, (_, m) =>
+    capitalize(new Date(2024, m, 1).toLocaleDateString(intlLocale, { month: "short" }))
+  );
+  // 7 janvier 2024 : un dimanche.
+  const days = Array.from({ length: 7 }, (_, d) =>
+    capitalize(new Date(2024, 0, 7 + d).toLocaleDateString(intlLocale, { weekday: "short" }))
+  );
+  return { months, days };
+}
 
 export function PracticeHeatmap({ data }: PracticeHeatmapProps) {
+  const t = useTranslations("progress.heatmap");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
+  const { months: MONTHS, days: DAYS } = useMemo(() => shortNames(intlLocale), [intlLocale]);
   const [hoveredDay, setHoveredDay] = useState<HeatmapDay | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
@@ -72,7 +85,7 @@ export function PracticeHeatmap({ data }: PracticeHeatmapProps) {
         if (month !== currentMonth) {
           if (currentMonth !== -1) {
             months.push({
-              label: MONTHS_FR[currentMonth],
+              label: MONTHS[currentMonth],
               colStart: currentMonthStart,
               colSpan: weekIndex - currentMonthStart,
             });
@@ -86,14 +99,14 @@ export function PracticeHeatmap({ data }: PracticeHeatmapProps) {
     // Ajouter le dernier mois
     if (currentMonth !== -1) {
       months.push({
-        label: MONTHS_FR[currentMonth],
+        label: MONTHS[currentMonth],
         colStart: currentMonthStart,
         colSpan: weeks.length - currentMonthStart,
       });
     }
 
     return { weeks, months };
-  }, [data.days]);
+  }, [data.days, MONTHS]);
 
   const handleMouseEnter = (
     day: HeatmapDay,
@@ -110,7 +123,7 @@ export function PracticeHeatmap({ data }: PracticeHeatmapProps) {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString("fr-FR", {
+    return date.toLocaleDateString(intlLocale, {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -118,22 +131,17 @@ export function PracticeHeatmap({ data }: PracticeHeatmapProps) {
     });
   };
 
-  const formatMinutes = (minutes: number) => {
-    if (minutes < 60) return `${minutes} min`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
-  };
+  const formatMinutes = (minutes: number) => formatDuration(minutes, tc);
 
   if (data.days.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="text-lg font-semibold mb-4">Calendrier de pratique</h3>
+        <h3 className="text-lg font-semibold mb-4">{t("title")}</h3>
         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
           <svg className="h-12 w-12 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
           </svg>
-          <p className="text-sm">Pas encore de sessions enregistrées</p>
+          <p className="text-sm">{t("empty")}</p>
         </div>
       </div>
     );
@@ -142,9 +150,12 @@ export function PracticeHeatmap({ data }: PracticeHeatmapProps) {
   return (
     <div className="rounded-xl border border-border bg-card p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Calendrier de pratique</h3>
+        <h3 className="text-lg font-semibold">{t("title")}</h3>
         <div className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{data.activeDays}</span> jours actifs
+          {t.rich("activeDays", {
+            count: data.activeDays,
+            strong: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+          })}
         </div>
       </div>
 
@@ -167,9 +178,9 @@ export function PracticeHeatmap({ data }: PracticeHeatmapProps) {
       <div className="flex">
         {/* Légende des jours */}
         <div className="flex flex-col justify-around text-xs text-muted-foreground mr-2 h-[98px]">
-          <span className="h-[14px] flex items-center">{DAYS_FR[1]}</span>
-          <span className="h-[14px] flex items-center">{DAYS_FR[3]}</span>
-          <span className="h-[14px] flex items-center">{DAYS_FR[5]}</span>
+          <span className="h-[14px] flex items-center">{DAYS[1]}</span>
+          <span className="h-[14px] flex items-center">{DAYS[3]}</span>
+          <span className="h-[14px] flex items-center">{DAYS[5]}</span>
         </div>
 
         {/* Grille des jours */}
@@ -196,14 +207,14 @@ export function PracticeHeatmap({ data }: PracticeHeatmapProps) {
 
       {/* Légende des niveaux */}
       <div className="mt-4 flex items-center justify-end gap-1 text-xs text-muted-foreground">
-        <span>Moins</span>
+        <span>{t("less")}</span>
         {LEVEL_COLORS.map((color, i) => (
           <div
             key={i}
             className={`w-[12px] h-[12px] rounded-sm ${color}`}
           />
         ))}
-        <span>Plus</span>
+        <span>{t("more")}</span>
       </div>
 
       {/* Tooltip */}
@@ -220,10 +231,10 @@ export function PracticeHeatmap({ data }: PracticeHeatmapProps) {
             <p className="font-medium capitalize">{formatDate(hoveredDay.date)}</p>
             {hoveredDay.minutes > 0 ? (
               <p className="text-muted-foreground">
-                {formatMinutes(hoveredDay.minutes)} · {hoveredDay.sessions} session{hoveredDay.sessions > 1 ? "s" : ""}
+                {formatMinutes(hoveredDay.minutes)} · {t("sessions", { count: hoveredDay.sessions })}
               </p>
             ) : (
-              <p className="text-muted-foreground">Pas de pratique</p>
+              <p className="text-muted-foreground">{t("noPractice")}</p>
             )}
           </div>
         </div>

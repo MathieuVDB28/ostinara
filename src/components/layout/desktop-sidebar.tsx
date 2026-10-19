@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { LogoutButton } from "./logout-button";
 import { NavIcon } from "./nav-icon";
 import { ThemeToggle } from "./theme-toggle";
@@ -30,6 +31,7 @@ interface DesktopSidebarProps {
  * ce qui ne correspondait a rien de ce que voyait l'utilisateur mobile.
  */
 export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const { open: openCommandPalette } = useCommandPalette();
 
@@ -51,7 +53,7 @@ export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
           />
         </div>
         <span className="text-xl font-extrabold text-primary">Ostinara</span>
-        <span className="sr-only">, accueil</span>
+        <span className="sr-only">{t("homeSr")}</span>
       </Link>
 
       {/* Navigation */}
@@ -67,14 +69,14 @@ export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
           className="flex min-h-[44px] w-full items-center gap-3 rounded-xl border border-input px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <NavIcon icon="search" className="h-5 w-5 shrink-0" />
-          <span className="flex-1">Rechercher…</span>
+          <span className="flex-1">{t("search")}</span>
           <kbd className="shrink-0 rounded-md border border-border px-1.5 py-0.5 text-[11px]">
             ⌘K
           </kbd>
         </button>
       </div>
 
-      <nav aria-label="Navigation principale" className="flex-1 overflow-y-auto px-3 py-4">
+      <nav aria-label={t("mainNav")} className="flex-1 overflow-y-auto px-3 py-4">
         <div className="space-y-1.5">
           {DESKTOP_TABS.map((tab) => {
             const isTabActive = coversPath(tab.href, pathname);
@@ -97,7 +99,7 @@ export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
                 }`}
               >
                 <NavIcon icon={tab.icon} className="h-5 w-5" />
-                <span className="flex-1">{tab.label}</span>
+                <span className="flex-1">{t(tab.label)}</span>
                 {tabBadge > 0 && (
                   <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground">
                     {tabBadge}
@@ -133,7 +135,7 @@ export function DesktopSidebar({ badges, userInfo }: DesktopSidebarProps) {
         </Link>
         <ThemeToggle />
         <LogoutButton
-          label="Déconnexion"
+          label={t("logout")}
           className="w-full rounded-xl border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-60"
         />
       </div>

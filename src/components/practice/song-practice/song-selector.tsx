@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Check, Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Cover } from "@/components/ui/cover";
 import type { Song } from "@/types";
 
@@ -18,6 +19,8 @@ export function SongSelector({
   onSelectSong,
   onUpdateTargetBpm,
 }: SongSelectorProps) {
+  const t = useTranslations("practice.selector");
+  const tc = useTranslations("common");
   const [searchQuery, setSearchQuery] = useState("");
   const [editingTargetBpm, setEditingTargetBpm] = useState<string | null>(null);
   const [tempTargetBpm, setTempTargetBpm] = useState<string>("");
@@ -49,11 +52,11 @@ export function SongSelector({
   return (
     <div className="flex flex-col gap-3">
       <label className="relative">
-        <span className="sr-only">Rechercher un morceau</span>
+        <span className="sr-only">{t("search")}</span>
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
         <input
           type="search"
-          placeholder="Rechercher un morceau…"
+          placeholder={t("searchPlaceholder")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="min-h-[38px] w-full rounded-xl border border-border bg-card py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
@@ -65,7 +68,7 @@ export function SongSelector({
           <Cover src={selectedSong.cover_url} className="h-12 w-12 rounded-[4px]" />
           <div className="min-w-0 flex-1">
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              Au pupitre
+              {t("onStand")}
             </p>
             <p className="truncate font-semibold">{selectedSong.title}</p>
             <p className="truncate text-sm text-muted-foreground">{selectedSong.artist}</p>
@@ -74,7 +77,7 @@ export function SongSelector({
             <p className="tabular text-right font-display text-2xl font-bold leading-none">
               {selectedSong.target_bpm}
               <span className="block font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-                cible
+                {t("target")}
               </span>
             </p>
           )}
@@ -82,7 +85,7 @@ export function SongSelector({
             onClick={() => onSelectSong(null)}
             className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground"
           >
-            Changer
+            {t("change")}
           </button>
         </div>
       )}
@@ -118,7 +121,7 @@ export function SongSelector({
                       onChange={(e) => setTempTargetBpm(e.target.value)}
                       min={20}
                       max={300}
-                      aria-label={`Tempo cible pour ${song.title}`}
+                      aria-label={t("targetFor", { title: song.title })}
                       className="tabular w-16 rounded-lg border border-border bg-background px-2 py-1 text-center text-sm focus:border-primary focus:outline-none"
                       autoFocus
                       onKeyDown={(e) => {
@@ -128,14 +131,14 @@ export function SongSelector({
                     />
                     <button
                       onClick={() => handleSaveTargetBpm(song.id)}
-                      aria-label="Enregistrer le tempo cible"
+                      aria-label={t("saveTarget")}
                       className="rounded-lg p-1.5 text-success hover:bg-accent"
                     >
                       <Check className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
                     </button>
                     <button
                       onClick={() => setEditingTargetBpm(null)}
-                      aria-label="Annuler"
+                      aria-label={tc("cancel")}
                       className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent"
                     >
                       <X className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
@@ -152,12 +155,12 @@ export function SongSelector({
                     {song.target_bpm ? (
                       <>
                         <span className="font-display text-base font-bold">{song.target_bpm}</span>
-                        <span className="text-muted-foreground"> bpm</span>
+                        <span className="text-muted-foreground"> {t("bpm")}</span>
                       </>
                     ) : (
                       // Visible au doigt ; reveles au survol seulement sur ordi.
                       <span className="font-semibold text-muted-foreground lg:opacity-0 lg:group-hover:opacity-100">
-                        + BPM cible
+                        {t("addTarget")}
                       </span>
                     )}
                   </button>
@@ -168,7 +171,7 @@ export function SongSelector({
         })}
 
         {filteredSongs.length === 0 && (
-          <li className="py-8 text-center text-sm text-muted-foreground">Aucun morceau trouvé</li>
+          <li className="py-8 text-center text-sm text-muted-foreground">{t("none")}</li>
         )}
       </ul>
     </div>

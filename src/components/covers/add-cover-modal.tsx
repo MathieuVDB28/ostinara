@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { VideoUpload } from "./video-upload";
 import { createCover, canUploadCover } from "@/lib/actions/covers";
 import { getUpcomingRehearsalSetlists } from "@/lib/actions/rehearsals";
@@ -19,11 +20,7 @@ interface AddCoverModalProps {
   replyToLabel?: string;
 }
 
-const visibilityOptions: { value: CoverVisibility; label: string }[] = [
-  { value: "private", label: "Privé" },
-  { value: "friends", label: "Amis" },
-  { value: "public", label: "Public" },
-];
+const VISIBILITIES: CoverVisibility[] = ["private", "friends", "public"];
 
 export function AddCoverModal({
   song,
@@ -33,6 +30,11 @@ export function AddCoverModal({
   replyToCoverId,
   replyToLabel,
 }: AddCoverModalProps) {
+  const t = useTranslations("covers.add");
+  const td = useTranslations("covers.detail");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const visibilityOptions = VISIBILITIES.map((value) => ({ value, label: te(`visibility.${value}`) }));
   const nextSteps = useNextSteps();
   const [step, setStep] = useState<"upload" | "details">("upload");
   const [uploadedFile, setUploadedFile] = useState<{
@@ -90,7 +92,7 @@ export function AddCoverModal({
         })
         .catch(console.error);
     } else {
-      setError(result.error || "Erreur lors de l'ajout");
+      setError(result.error || tc("genericError"));
     }
 
     setSaving(false);
@@ -136,10 +138,10 @@ export function AddCoverModal({
           <div>
             <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
               {replyToCoverId
-                ? "Répondre en cover"
+                ? t("reply")
                 : step === "upload"
-                  ? "Ajouter un cover"
-                  : "Détails du cover"}
+                  ? t("add")
+                  : t("details")}
             </h2>
             <p className="text-sm text-muted-foreground">
               {song.title} - {song.artist}
@@ -147,11 +149,11 @@ export function AddCoverModal({
             {replyToLabel && (
               <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Icon name="reply" className="h-[14px] w-[14px]" />
-                En réponse à {replyToLabel}
+                {t("replyTo", { label: replyToLabel })}
               </p>
             )}
           </div>
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -165,12 +167,12 @@ export function AddCoverModal({
         {!canUpload.allowed ? (
           <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive mb-4">
             {canUpload.limit && canUpload.current !== undefined && (
-              <p>Tu as atteint la limite de {canUpload.limit} covers ({canUpload.current}/{canUpload.limit}). Passe en Pro pour en ajouter plus !</p>
+              <p>{t("limit", { limit: canUpload.limit, current: canUpload.current })}</p>
             )}
           </div>
         ) : canUpload.limit && canUpload.current !== undefined && (
           <div className="mb-4 text-sm text-muted-foreground">
-            {canUpload.current}/{canUpload.limit} covers utilisés
+            {t("used", { current: canUpload.current, limit: canUpload.limit })}
           </div>
         )}
 
@@ -206,7 +208,7 @@ export function AddCoverModal({
 
             {/* Visibilité */}
             <div>
-              <label className="mb-2 block text-sm font-medium">Visibilité</label>
+              <label className="mb-2 block text-sm font-medium">{td("visibility")}</label>
               <div className="flex gap-2">
                 {replyVisibilityOptions.map((option) => (
                   <button
@@ -226,11 +228,11 @@ export function AddCoverModal({
 
             {/* Description */}
             <div>
-              <label className="mb-1 block text-sm font-medium">Description (optionnel)</label>
+              <label className="mb-1 block text-sm font-medium">{t("descriptionOptional")}</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Ajoute une description..."
+                placeholder={td("descriptionPlaceholder")}
                 rows={3}
                 className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
@@ -241,7 +243,7 @@ export function AddCoverModal({
                 onClick={() => setStep("upload")}
                 className="flex-1 rounded-lg border border-border py-2.5 font-medium transition-colors hover:bg-accent"
               >
-                Retour
+                {tc("back")}
               </button>
               <button
                 onClick={handleSave}
@@ -249,10 +251,10 @@ export function AddCoverModal({
                 className="flex-1 rounded-lg bg-primary py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
               >
                 {saving
-                  ? "Publication..."
+                  ? t("publishing")
                   : replyToCoverId
-                    ? "Publier la réponse"
-                    : "Publier"}
+                    ? t("publishReply")
+                    : t("publish")}
               </button>
             </div>
           </div>

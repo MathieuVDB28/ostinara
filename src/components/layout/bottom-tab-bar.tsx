@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { NavIcon } from "./nav-icon";
 import { NAV_TABS, coversPath, tabBadgeTotal, type BadgeCounts } from "@/lib/navigation";
 
@@ -18,11 +19,12 @@ interface BottomTabBarProps {
  * de chaque ecran, la navigation n'en est pas une.
  */
 export function BottomTabBar({ badges }: BottomTabBarProps) {
+  const t = useTranslations("nav");
   const pathname = usePathname();
 
   return (
     <nav
-      aria-label="Navigation principale"
+      aria-label={t("mainNav")}
       className="glass fixed bottom-[calc(env(safe-area-inset-bottom)+12px)] left-1/2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full p-1 lg:hidden"
     >
       {NAV_TABS.map((tab) => {
@@ -41,11 +43,11 @@ export function BottomTabBar({ badges }: BottomTabBarProps) {
             }`}
           >
             <NavIcon icon={tab.icon} className="h-[22px] w-[22px]" />
-            <span className="sr-only">{tab.label}</span>
+            <span className="sr-only">{t(tab.label)}</span>
             {badge > 0 && (
               <span
                 className="absolute right-2 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground"
-                aria-label={`${badge} notification${badge > 1 ? "s" : ""}`}
+                aria-label={t("notifications", { count: badge })}
               >
                 {badge}
               </span>

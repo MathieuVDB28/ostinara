@@ -1,0 +1,46 @@
+{
+  "tuner": {
+    "waiting": "En attente...",
+    "inTune": "Accordé !",
+    "slightlyFlat": "Un peu bas",
+    "slightlySharp": "Un peu haut",
+    "tooFlat": "Trop bas",
+    "tooSharp": "Trop haut",
+    "instrumentLabel": "Instrument à accorder",
+    "tuning": "Accordage",
+    "hint": "Joue une corde à vide : l'accordeur reconnaît la note et t'indique si tu es juste.",
+    "stringNumber": "{n}e",
+    "stop": "Arrêter",
+    "start": "Activer l'accordeur"
+  },
+  "sheet": {
+    "tuner": "Accordeur",
+    "recognition": "Reconnaissance",
+    "close": "Fermer l'accordeur",
+    "upsell": "Reconnaissance audio",
+    "upsellHint": "Identifie n'importe quel morceau en quelques secondes. Disponible avec les plans Pro et Band."
+  },
+  "identifier": {
+    "recordFailed": "Enregistrement échoué. Réessaie.",
+    "identifyFailed": "Erreur lors de l'identification",
+    "network": "Erreur de connexion. Vérifie ta connexion internet.",
+    "title": "Identifier un morceau",
+    "hint": "Joue un morceau à proximité ou chante la mélodie. L'app l'identifiera en quelques secondes.",
+    "listen": "Écouter",
+    "identifyNow": "Identifier maintenant",
+    "identifying": "Identification en cours...",
+    "noMatch": "Morceau non reconnu",
+    "noMatchHint": "Essaie de te rapprocher de la source audio ou dans un environnement plus calme.",
+    "retry": "Réessayer",
+    "error": "Erreur",
+    "listening": "Écoute en cours..."
+  },
+  "result": {
+    "addFailed": "Impossible d'ajouter le morceau",
+    "foundOnDeezer": "Trouvé sur Deezer",
+    "added": "Ajouté ! Voir la bibliothèque",
+    "adding": "Ajout en cours...",
+    "add": "Ajouter à ma bibliothèque",
+    "listenAgain": "Réécouter"
+  }
+}

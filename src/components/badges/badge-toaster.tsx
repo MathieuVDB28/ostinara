@@ -3,6 +3,7 @@
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import { markBadgesSeen } from "@/lib/actions/badges";
 import { badgeGoal, badgeLabel, type UserBadgeRow } from "@/lib/badges/catalog";
@@ -25,6 +26,8 @@ const DURATION_MS = 7000;
 export function BadgeToaster({ unseen }: BadgeToasterProps) {
   // Le titre suit l'instrument principal (« Ampoules aux baguettes »).
   const { primary } = useMyInstruments();
+  const t = useTranslations("badges");
+  const tc = useTranslations("common");
   const [visible, setVisible] = useState<UserBadgeRow[]>(unseen);
   const [previous, setPrevious] = useState(unseen);
 
@@ -65,12 +68,12 @@ export function BadgeToaster({ unseen }: BadgeToasterProps) {
           <BadgeMedal badgeId={row.badge_id} level={row.level} size="sm" />
           <Link href="/profil/badges" className="min-w-0 flex-1">
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              Badge débloqué
+              {t("toast.unlocked")}
             </p>
             <p className="truncate font-display text-lg font-extrabold uppercase leading-tight">
-              {badgeLabel(row.badge_id, row.level, primary)}
+              {badgeLabel(row.badge_id, row.level, primary, t)}
             </p>
-            <p className="truncate text-xs text-muted-foreground">{badgeGoal(row.badge_id, row.level)}</p>
+            <p className="truncate text-xs text-muted-foreground">{badgeGoal(row.badge_id, row.level, t)}</p>
           </Link>
           <button
             type="button"
@@ -78,7 +81,7 @@ export function BadgeToaster({ unseen }: BadgeToasterProps) {
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <X className="h-4 w-4" aria-hidden="true" />
-            <span className="sr-only">Fermer</span>
+            <span className="sr-only">{tc("close")}</span>
           </button>
         </div>
       ))}

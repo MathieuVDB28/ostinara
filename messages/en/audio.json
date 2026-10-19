@@ -1,0 +1,46 @@
+{
+  "tuner": {
+    "waiting": "Listening...",
+    "inTune": "In tune!",
+    "slightlyFlat": "Slightly flat",
+    "slightlySharp": "Slightly sharp",
+    "tooFlat": "Too flat",
+    "tooSharp": "Too sharp",
+    "instrumentLabel": "Instrument to tune",
+    "tuning": "Tuning",
+    "hint": "Play an open string: the tuner recognizes the note and tells you if you're in tune.",
+    "stringNumber": "{n, selectordinal, one {#st} two {#nd} few {#rd} other {#th}}",
+    "stop": "Stop",
+    "start": "Start the tuner"
+  },
+  "sheet": {
+    "tuner": "Tuner",
+    "recognition": "Recognition",
+    "close": "Close the tuner",
+    "upsell": "Audio recognition",
+    "upsellHint": "Identify any song in seconds. Available on the Pro and Band plans."
+  },
+  "identifier": {
+    "recordFailed": "Recording failed. Try again.",
+    "identifyFailed": "Couldn't identify the song",
+    "network": "Connection error. Check your internet connection.",
+    "title": "Identify a song",
+    "hint": "Play a song nearby or sing the melody. The app will identify it in a few seconds.",
+    "listen": "Listen",
+    "identifyNow": "Identify now",
+    "identifying": "Identifying...",
+    "noMatch": "Song not recognized",
+    "noMatchHint": "Try moving closer to the sound or somewhere quieter.",
+    "retry": "Try again",
+    "error": "Error",
+    "listening": "Listening..."
+  },
+  "result": {
+    "addFailed": "Couldn't add the song",
+    "foundOnDeezer": "Found on Deezer",
+    "added": "Added! See library",
+    "adding": "Adding...",
+    "add": "Add to my library",
+    "listenAgain": "Listen again"
+  }
+}

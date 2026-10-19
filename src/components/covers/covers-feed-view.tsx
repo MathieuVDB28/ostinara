@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CoverFeedCard } from "./cover-feed-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ensureSongForCoverReply } from "@/lib/actions/covers";
@@ -29,11 +30,7 @@ const AddCoverModal = dynamic(() =>
 
 type FeedFilter = "all" | "friends" | "mine";
 
-const FILTERS: { value: FeedFilter; label: string }[] = [
-  { value: "all", label: "Tout" },
-  { value: "friends", label: "Mes amis" },
-  { value: "mine", label: "Moi" },
-];
+const FILTERS: FeedFilter[] = ["all", "friends", "mine"];
 
 interface CoversFeedViewProps {
   initialItems: CoverFeedItem[];
@@ -51,6 +48,7 @@ export function CoversFeedView({
   canUpload,
   uploadBlockedReason,
 }: CoversFeedViewProps) {
+  const t = useTranslations("covers.feedView");
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [filter, setFilter] = useState<FeedFilter>("all");
@@ -84,7 +82,7 @@ export function CoversFeedView({
       if (!canUpload) {
         setReplyError(
           uploadBlockedReason ??
-            "Tu as atteint la limite de covers de ton plan."
+            t("limit")
         );
         return;
       }
@@ -109,7 +107,7 @@ export function CoversFeedView({
       setPreparingReply(false);
 
       if (!result.success || !result.songId) {
-        setReplyError(result.error ?? "Impossible de préparer la réponse");
+        setReplyError(result.error ?? t("prepareFailed"));
         return;
       }
 
@@ -119,7 +117,7 @@ export function CoversFeedView({
       setReplySong({
         id: result.songId,
         user_id: currentUserId,
-        title: item.song?.title ?? "Morceau",
+        title: item.song?.title ?? t("song"),
         artist: item.song?.artist ?? "",
         cover_url: item.song?.cover_url,
         status: "learning",
@@ -131,7 +129,7 @@ export function CoversFeedView({
       });
       setReplyTo(item);
     },
-    [canUpload, uploadBlockedReason, songs, currentUserId]
+    [canUpload, uploadBlockedReason, songs, currentUserId, t]
   );
 
   const closeReply = () => {
@@ -147,7 +145,7 @@ export function CoversFeedView({
       */}
       <div className="mb-3 flex items-center gap-1.5">
         {items.length > 0 &&
-          FILTERS.map((option) => (
+          FILTERS.map((value) => ({ value, label: t(value) })).map((option) => (
             <button
               key={option.value}
               type="button"
@@ -164,7 +162,7 @@ export function CoversFeedView({
           href="/biblio/covers"
           className="ml-auto inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Mes covers
+          {t("myCovers")}
           <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
         </Link>
       </div>
@@ -178,7 +176,7 @@ export function CoversFeedView({
       {preparingReply && (
         <p className="mb-4 flex items-center gap-2 rounded-xl bg-accent/50 px-4 py-3 text-sm text-muted-foreground">
           <LoaderCircle className="h-[18px] w-[18px] animate-spin" strokeWidth={2} aria-hidden="true" />
-          Préparation de ta réponse…
+          {t("preparing")}
         </p>
       )}
 
@@ -197,11 +195,11 @@ export function CoversFeedView({
         <EmptyState
           compact
           icon="videocam"
-          title="Rien sous ce filtre"
-          description="Tes covers et celles de tes amis sont rangées ailleurs."
+          title={t("nothingHere")}
+          description={t("nothingHereDescription")}
           actions={[
             {
-              label: "Tout voir",
+              label: t("seeAll"),
               primary: true,
               onClick: () => setFilter("all"),
             },
@@ -210,18 +208,18 @@ export function CoversFeedView({
       ) : (
         <EmptyState
           icon="videocam"
-          title="Le feed est vide"
-          description="Une cover, c'est ta version d'un morceau. Publie la tienne, ou ajoute des amis pour voir les leurs."
+          title={t("empty")}
+          description={t("emptyDescription")}
           actions={[
             {
-              label: "Publier une cover",
+              label: t("publish"),
               icon: "videocam",
               primary: true,
               href: "/biblio",
             },
-            { label: "Trouver des amis", icon: "users", href: "/commu/amis" },
+            { label: t("findFriends"), icon: "users", href: "/commu/amis" },
           ]}
-          hint="Seules les covers réglées sur « Amis » ou « Public » arrivent ici. Les privées restent dans ta bibliothèque."
+          hint={t("emptyHint")}
         />
       )}
 

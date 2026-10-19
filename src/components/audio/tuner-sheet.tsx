@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { InstrumentTuner } from "./instrument-tuner";
 import { SongIdentifier } from "./song-identifier";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
@@ -28,6 +29,7 @@ interface TunerSheetProps {
  * qu'on n'avait pas change de segment.
  */
 export function TunerSheet({ isOpen, onClose, isPaid, showTuner = true }: TunerSheetProps) {
+  const t = useTranslations("audio.sheet");
   const panelRef = useRef<HTMLDivElement>(null);
   // Le focus revient au bouton qui a ouvert la feuille, pas en haut de page.
   const openerRef = useRef<HTMLElement | null>(null);
@@ -87,11 +89,11 @@ export function TunerSheet({ isOpen, onClose, isPaid, showTuner = true }: TunerS
             id="tuner-sheet-title"
             className="font-display text-3xl font-extrabold uppercase leading-none tracking-[0.01em]"
           >
-            {showTuner ? "Accordeur" : "Reconnaissance"}
+            {showTuner ? t("tuner") : t("recognition")}
           </h2>
           <button
             onClick={handleClose}
-            aria-label="Fermer l'accordeur"
+            aria-label={t("close")}
             className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
@@ -108,8 +110,8 @@ export function TunerSheet({ isOpen, onClose, isPaid, showTuner = true }: TunerS
             </div>
           ) : (
             <ProUpsell
-              feature="Reconnaissance audio"
-              description="Identifie n'importe quel morceau en quelques secondes. Disponible avec les plans Pro et Band."
+              feature={t("upsell")}
+              description={t("upsellHint")}
             />
           )}
         </div>

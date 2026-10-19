@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Check, Heart, Plus } from "lucide-react";
 import { addAlbumTrackToLibrary } from "@/lib/actions/albums";
 import type { CatalogAlbumTrack } from "@/types";
@@ -29,11 +30,12 @@ interface FavoriteTrackPickerProps {
  * prefere qu'on ne veut plus.
  */
 export function FavoriteTrackPicker({ tracks, value, onChange, disabled, scroll }: FavoriteTrackPickerProps) {
+  const t = useTranslations("albums.tracks");
   const multiDisc = tracks.some((track) => track.disc_number > 1);
 
   return (
     <ol
-      aria-label="Titres de l'album"
+      aria-label={t("aria")}
       className={`divide-y divide-border border-y border-border ${scroll ? "max-h-64 overflow-y-auto" : ""}`}
     >
       {tracks.map((track) => {
@@ -83,6 +85,8 @@ interface AddTrackToLibraryButtonProps {
  * bouton le dit et mene a la bibliotheque.
  */
 export function AddTrackToLibraryButton({ title, artist, album, coverUrl, deezerId }: AddTrackToLibraryButtonProps) {
+  const t = useTranslations("albums.tracks");
+  const tc = useTranslations("common");
   const [state, setState] = useState<"idle" | "added" | "already">("idle");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -100,7 +104,7 @@ export function AddTrackToLibraryButton({ title, artist, album, coverUrl, deezer
       if (result.success) {
         setState(result.alreadyThere ? "already" : "added");
       } else {
-        setError(result.error || "L'ajout a échoué. Réessaie.");
+        setError(result.error || t("addFailed"));
       }
     });
   };
@@ -109,9 +113,9 @@ export function AddTrackToLibraryButton({ title, artist, album, coverUrl, deezer
     return (
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
         <Check className="h-4 w-4 text-success" strokeWidth={2.25} aria-hidden="true" />
-        <span>{state === "added" ? "Ajouté à ta biblio, dans « À apprendre »" : "Déjà dans ta biblio"}</span>
+        <span>{state === "added" ? t("added") : t("already")}</span>
         <Link href="/biblio" className="font-semibold underline-offset-2 hover:underline">
-          Voir
+          {t("see")}
         </Link>
       </p>
     );
@@ -126,7 +130,7 @@ export function AddTrackToLibraryButton({ title, artist, album, coverUrl, deezer
         className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         <Plus className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
-        {pending ? "Ajout…" : "Ajouter à ma biblio"}
+        {pending ? tc("adding") : t("add")}
       </button>
       {error && (
         <p role="status" className="mt-2 text-xs text-destructive">

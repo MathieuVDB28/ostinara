@@ -1,6 +1,8 @@
 "use client";
 
 import { instrumentPhrase } from "@/lib/instruments";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -22,8 +24,8 @@ import { Cover } from "@/components/ui/cover";
 import { BadgeMedal } from "@/components/badges/badge-medal";
 import { badgeGoal, badgeLabel } from "@/lib/badges/catalog";
 import { profileHref } from "@/lib/navigation";
-import { ACTIVITY_MESSAGES, formatActivityDate } from "@/lib/activity-messages";
-import type { ActivityWithDetails, Instrument } from "@/types";
+import { activityMessage, formatActivityDate } from "@/lib/activity-messages";
+import type { ActivityWithDetails, GearType, Instrument } from "@/types";
 import { ActivityReactions } from "./activity-reactions";
 import { ActivityComments } from "./activity-comments";
 import { FeedBridge } from "./feed-bridge";
@@ -51,11 +53,10 @@ const COMPACT_ICONS: Record<string, LucideIcon> = {
   challenge_won: Trophy,
 };
 
-const CHALLENGE_LABELS: Record<string, string> = {
-  practice_time: "Défi temps de pratique",
-  streak: "Défi série",
-  song_mastery: "Défi maîtrise",
-};
+const CHALLENGE_TYPES = ["practice_time", "streak", "song_mastery"] as const;
+type ChallengeTypeKey = (typeof CHALLENGE_TYPES)[number];
+const isChallengeType = (value: unknown): value is ChallengeTypeKey =>
+  (CHALLENGE_TYPES as readonly unknown[]).includes(value);
 
 function Avatar({
   url,
@@ -164,11 +165,18 @@ const pill =
   "flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 font-display text-[13px] font-bold tracking-[0.04em] text-white";
 
 export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
+  const t = useTranslations("activity");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const tb = useTranslations("badges");
+  const intlLocale = useIntlLocale();
   const isOwn = activity.user_id === currentUserId;
   const [playing, setPlaying] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
-  const name = isOwn ? "Toi" : activity.user.display_name || activity.user.username;
+  const name = isOwn ? t("you") : activity.user.display_name || activity.user.username;
+  const message = activityMessage(activity.type, t, isOwn);
   const meta = activity.metadata ?? {};
+  const phrase = instrumentPhrase(meta.instrument, te);
 
   return (
     <article className="border-b border-border pb-4">
@@ -178,7 +186,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
             qu'on a envie de voir ce qu'un ami joue. */}
         <Link
           href={isOwn ? "/profil" : profileHref(activity.user.username)}
-          aria-label={isOwn ? "Mon profil" : `Profil de ${name}`}
+          aria-label={isOwn ? t("myProfile") : t("profileOf", { name })}
           className="shrink-0 rounded-full"
         >
           <Avatar url={activity.user.avatar_url} name={activity.user.display_name || activity.user.username} />
@@ -190,10 +198,10 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
           >
             {name}
           </Link>{" "}
-          <span className="text-muted-foreground">{ACTIVITY_MESSAGES[activity.type]}</span>
+          <span className="text-muted-foreground">{message}</span>
         </p>
         <time dateTime={activity.created_at} className="shrink-0 text-xs text-muted-foreground">
-          {formatActivityDate(activity.created_at)}
+          {formatActivityDate(activity.created_at, tc, intlLocale)}
         </time>
       </header>
 
@@ -202,20 +210,20 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
         <>
           <Poster
             src={activity.albumReview.cover_url}
-            eyebrow="Album"
+            eyebrow={t("album")}
             title={activity.albumReview.album_name}
             subtitle={activity.albumReview.artist_name}
             badge={
               <span className={pill}>
                 <Star className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
-                {String(activity.albumReview.rating / 2).replace(".", ",")} / 5
+                {t("rating", { rating: (activity.albumReview.rating / 2).toLocaleString(intlLocale) })}
               </span>
             }
           />
           {activity.albumReview.favorite_track_name && (
             <p className="flex items-center gap-1.5 px-4 pt-3 text-[13px] sm:px-0">
               <Heart className="h-3.5 w-3.5 shrink-0 fill-primary text-primary" strokeWidth={0} aria-hidden="true" />
-              <span className="text-muted-foreground">Préféré :</span>
+              <span className="text-muted-foreground">{t("favorite")}</span>
               <span className="truncate font-semibold">{activity.albumReview.favorite_track_name}</span>
             </p>
           )}
@@ -233,7 +241,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
                   onClick={() => setReviewOpen((open) => !open)}
                   className="mt-1 text-xs font-semibold text-muted-foreground hover:text-foreground"
                 >
-                  {reviewOpen ? "Réduire" : "Lire l'avis"}
+                  {reviewOpen ? t("collapse") : t("readReview")}
                 </button>
               )}
             </div>
@@ -255,19 +263,19 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
             <button
               type="button"
               onClick={() => setPlaying(true)}
-              aria-label={`Lire la cover de ${activity.cover.song.title}`}
+              aria-label={t("playCover", { title: activity.cover.song.title })}
               className="block w-full text-left"
             >
               <Poster
                 src={activity.cover.thumbnail_url ?? activity.cover.song.cover_url}
-                eyebrow="Cover"
+                eyebrow={t("cover")}
                 title={activity.cover.song.title}
                 subtitle={activity.cover.song.artist}
                 aspect="aspect-[16/10]"
                 badge={
                   <span className={pill}>
                     <Play className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
-                    Lire
+                    {t("play")}
                   </span>
                 }
               />
@@ -280,7 +288,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
       {activity.type === "song_mastered" && activity.song && (
         <Poster
           src={activity.song.cover_url}
-          eyebrow={`Maîtrisé ${instrumentPhrase(meta.instrument)}`.trim()}
+          eyebrow={t("mastered", { instrument: phrase ? ` ${phrase}` : "" })}
           title={activity.song.title}
           subtitle={activity.song.artist}
           aspect="aspect-[16/10]"
@@ -293,8 +301,8 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
           src={activity.song.cover_url}
           type={activity.type}
           label={
-            activity.type === "song_learning" && instrumentPhrase(meta.instrument)
-              ? `${activity.song.artist} · ${instrumentPhrase(meta.instrument)}`
+            activity.type === "song_learning" && phrase
+              ? `${activity.song.artist} · ${phrase}`
               : activity.song.artist
           }
           title={activity.song.title}
@@ -338,16 +346,16 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
       {activity.type === "setlist_created" && activity.metadata && (
         <Compact
           type={activity.type}
-          label={meta.is_band ? "Setlist de groupe" : "Setlist personnelle"}
-          title={String(meta.name ?? "Setlist")}
+          label={meta.is_band ? t("bandSetlist") : t("personalSetlist")}
+          title={String(meta.name ?? t("setlist"))}
         />
       )}
 
       {(activity.type === "band_created" || activity.type === "band_joined") && activity.metadata && (
         <Compact
           type={activity.type}
-          label={activity.type === "band_created" ? "Nouveau groupe" : "A rejoint le groupe"}
-          title={String(meta.band_name ?? "Groupe")}
+          label={activity.type === "band_created" ? t("newBand") : t("joinedBand")}
+          title={String(meta.band_name ?? t("band"))}
         />
       )}
 
@@ -355,7 +363,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
         <Compact
           src={meta.image_url ? String(meta.image_url) : null}
           type={activity.type}
-          label={meta.type ? String(meta.type) : "Matériel"}
+          label={meta.type ? te(`gearType.${String(meta.type) as GearType}`) : t("gear")}
           title={`${String(meta.brand ?? "")} ${String(meta.model ?? "")}`.trim()}
         />
       )}
@@ -363,8 +371,8 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
       {activity.type.startsWith("challenge_") && activity.metadata && (
         <Compact
           type={activity.type}
-          label={meta.opponent_name ? `Contre ${String(meta.opponent_name)}` : "Défi"}
-          title={CHALLENGE_LABELS[String(meta.challenge_type)] ?? "Défi"}
+          label={meta.opponent_name ? t("against", { name: String(meta.opponent_name) }) : t("challengeFallback")}
+          title={isChallengeType(meta.challenge_type) ? t(`challenge.${meta.challenge_type}`) : t("challengeFallback")}
         />
       )}
 
@@ -373,10 +381,10 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
           <BadgeMedal badgeId={meta.badge_id} level={Number(meta.level) || 1} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs text-muted-foreground">
-              {badgeGoal(meta.badge_id, Number(meta.level) || 1)}
+              {badgeGoal(meta.badge_id, Number(meta.level) || 1, tb)}
             </p>
             <p className="truncate font-display text-xl font-extrabold uppercase leading-tight">
-              {badgeLabel(meta.badge_id, Number(meta.level) || 1, meta.instrument as Instrument | undefined)}
+              {badgeLabel(meta.badge_id, Number(meta.level) || 1, meta.instrument as Instrument | undefined, tb)}
             </p>
           </div>
         </div>

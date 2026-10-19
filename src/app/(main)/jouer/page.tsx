@@ -13,11 +13,12 @@ import { getWeeklyPlan } from "@/lib/actions/weekly-plan";
 import { getSetlists } from "@/lib/actions/setlists";
 import { getRoutines } from "@/lib/actions/routines";
 import { PlayView } from "@/components/play/play-view";
+import { getTranslations } from "next-intl/server";
 
-export const metadata = {
-  title: "Jouer | Ostinara",
-  description: "Métronome, exercices et accordeur",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("meta.play");
+  return { title: t("title"), description: t("description") };
+}
 
 export default async function JouerPage({
   searchParams,

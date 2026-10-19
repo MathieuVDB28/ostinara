@@ -2,6 +2,8 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { toggleWeeklyGoal, regenerateWeeklyPlan } from "@/lib/actions/weekly-plan";
 import {
   CalendarDays,
@@ -50,16 +52,24 @@ const KIND_ICONS: Record<WeeklyGoalWithProgress["kind"], LucideIcon> = {
   song_start: CirclePlay,
 };
 
-function formatWeekRange(weekStart: string, weekEnd: string): string {
+/** « 13–19 oct. » / « Oct 13 – 19 » : Intl sait ne pas repeter le mois. */
+function formatWeekRange(weekStart: string, weekEnd: string, intlLocale: string): string {
   const start = new Date(`${weekStart}T12:00:00`);
   const end = new Date(`${weekEnd}T12:00:00`);
-  const day = (date: Date) => date.getDate();
-  const month = (date: Date) =>
-    date.toLocaleDateString("fr-FR", { month: "short" });
+  return new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short" }).formatRange(start, end);
+}
 
-  return start.getMonth() === end.getMonth()
-    ? `${day(start)} – ${day(end)} ${month(end)}`
-    : `${day(start)} ${month(start)} – ${day(end)} ${month(end)}`;
+/**
+ * L'unite d'un objectif. Les plans generes avant l'anglais ont stocke
+ * « séances » et « jours » en toutes lettres : on les ramene a leur cle.
+ */
+const LEGACY_UNITS: Record<string, string> = { "séances": "sessions", jours: "days" };
+const UNIT_KEYS = ["sessions", "days", "min", "BPM"] as const;
+type UnitKey = (typeof UNIT_KEYS)[number];
+
+function unitKey(unit: string): UnitKey | null {
+  const key = LEGACY_UNITS[unit] ?? unit;
+  return (UNIT_KEYS as readonly string[]).includes(key) ? (key as UnitKey) : null;
 }
 
 /** Combien de jours il reste, dimanche soir compris. */
@@ -74,6 +84,8 @@ export function WeeklyPlanCard({
   onWorkOnSong,
   className = "",
 }: WeeklyPlanCardProps) {
+  const t = useTranslations("weeklyPlan.card");
+  const intlLocale = useIntlLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [regenerating, setRegenerating] = useState(false);
@@ -122,7 +134,7 @@ export function WeeklyPlanCard({
             id="weekly-plan-title"
             className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
           >
-            Ta semaine · {formatWeekRange(plan.weekStart, plan.weekEnd)}
+            {t("title", { range: formatWeekRange(plan.weekStart, plan.weekEnd, intlLocale) })}
           </h2>
           <p className="tabular mt-1 font-display text-3xl font-bold leading-none">
             {completed}
@@ -132,15 +144,13 @@ export function WeeklyPlanCard({
 
         <div className="flex items-center gap-1">
           <p className="tabular font-mono text-[10.5px] text-muted-foreground">
-            {remaining === 0
-              ? "dernier jour"
-              : `${remaining} jour${remaining > 1 ? "s" : ""}`}
+            {remaining === 0 ? t("lastDay") : t("daysLeft", { count: remaining })}
           </p>
           <button
             type="button"
             onClick={handleRegenerate}
             disabled={regenerating}
-            aria-label="Régénérer le plan de la semaine"
+            aria-label={t("regenerate")}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <RefreshCw
@@ -167,7 +177,7 @@ export function WeeklyPlanCard({
       {completed === goals.length && (
         <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-success">
           <Trophy className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-          Semaine bouclée. Le prochain plan arrive lundi.
+          {t("done")}
         </p>
       )}
     </section>
@@ -187,7 +197,9 @@ function WeeklyGoalRow({
   onToggle,
   onWorkOnSong,
 }: WeeklyGoalRowProps) {
+  const t = useTranslations("weeklyPlan");
   const target = goal.target_value ?? 1;
+  const unit = goal.unit ? unitKey(goal.unit) : null;
 
   /*
    * La lecture chiffree : « 88 / 96 BPM ». Les objectifs binaires
@@ -196,7 +208,7 @@ function WeeklyGoalRow({
    */
   const reading =
     goal.unit && target > 1
-      ? `${goal.current} / ${target} ${goal.unit}`
+      ? `${goal.current} / ${target} ${unit ? t(`unit.${unit}`) : goal.unit}`
       : null;
 
   const Icon = KIND_ICONS[goal.kind];
@@ -246,7 +258,7 @@ function WeeklyGoalRow({
           {target > 1 && (
             <Frets
               value={goal.percent}
-              label={`Progression : ${goal.percent} %`}
+              label={t("card.progress", { percent: goal.percent })}
               className="ml-6 mt-2"
             />
           )}
@@ -258,7 +270,8 @@ function WeeklyGoalRow({
               className="ml-6 mt-2 inline-flex min-h-[32px] items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Play className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
-              Travailler
+              {t("card.work")}
+
             </button>
           )}
         </div>

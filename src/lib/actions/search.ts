@@ -1,8 +1,12 @@
 "use server";
 
+import { getLocale, getTranslations } from "next-intl/server";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { profileHref } from "@/lib/navigation";
 import type {
+  Exercise,
+  ExerciseCategory,
+  GearType,
   Profile,
   SearchResult,
   SearchResultGroup,
@@ -27,15 +31,6 @@ const MIN_QUERY_LENGTH = 2;
 
 /** Assez pour reconnaitre le bon resultat, trop peu pour avoir a defiler. */
 const PER_KIND_LIMIT = 5;
-
-const GROUP_LABELS: Record<SearchResultKind, string> = {
-  song: "Morceaux",
-  album: "Albums",
-  cover: "Covers",
-  exercise: "Exercices",
-  gear: "Matos",
-  friend: "Amis",
-};
 
 /**
  * L'ordre des groupes suit la frequence d'usage, pas l'alphabet : on
@@ -117,8 +112,9 @@ export async function searchEverything(
 
       supabase
         .from("exercises")
-        .select("id, name, category, difficulty")
-        .or(ilike(["name", "description"], query))
+        .select("id, name, category, difficulty, translations")
+        // Les exercices systeme se cherchent aussi par leur nom traduit.
+        .or(ilike(["name", "description", "translations->en->>name"], query))
         .limit(PER_KIND_LIMIT),
 
       supabase
@@ -144,6 +140,10 @@ export async function searchEverything(
     friend: [],
   };
 
+  const t = await getTranslations("search");
+  const locale = await getLocale();
+  const te = await getTranslations("enums");
+
   for (const song of songs.data ?? []) {
     byKind.song.push({
       kind: "song",
@@ -162,7 +162,7 @@ export async function searchEverything(
       kind: "album",
       id: review.id,
       title: review.album_name,
-      subtitle: `${review.artist_name} · noté ${review.rating / 2}/5`,
+      subtitle: t("albumRated", { artist: review.artist_name, rating: review.rating / 2 }),
       imageUrl: review.cover_url ?? undefined,
       icon: "album",
       // Les albums n'ont pas de fiche propre : on arrive sur le segment,
@@ -178,7 +178,7 @@ export async function searchEverything(
       kind: "album",
       id: item.id,
       title: item.album_name,
-      subtitle: `${item.artist_name} · à écouter`,
+      subtitle: t("albumToListen", { artist: item.artist_name }),
       imageUrl: item.cover_url ?? undefined,
       icon: "album",
       href: `/biblio/albums?q=${encodeURIComponent(item.album_name)}`,
@@ -207,10 +207,10 @@ export async function searchEverything(
     byKind.cover.push({
       kind: "cover",
       id: cover.id,
-      title: song?.title ?? "Cover",
+      title: song?.title ?? t("cover"),
       subtitle:
         cover.description ||
-        (song?.artist ? `Cover de ${song.artist}` : "Cover"),
+        (song?.artist ? t("coverOf", { artist: song.artist }) : t("cover")),
       imageUrl: cover.thumbnail_url ?? undefined,
       icon: "videocam",
       href: `/biblio/covers?cover=${cover.id}`,
@@ -221,8 +221,8 @@ export async function searchEverything(
     byKind.exercise.push({
       kind: "exercise",
       id: exercise.id,
-      title: exercise.name,
-      subtitle: exercise.category ?? undefined,
+      title: (locale === "en" && (exercise.translations as Exercise["translations"])?.en?.name) || exercise.name,
+      subtitle: exercise.category ? te(`exerciseCategory.${exercise.category as ExerciseCategory}`) : undefined,
       icon: "exercise",
       href: `/jouer?exercise=${exercise.id}`,
     });
@@ -233,7 +233,7 @@ export async function searchEverything(
       kind: "gear",
       id: item.id,
       title: `${item.brand} ${item.model}`.trim(),
-      subtitle: item.type ?? undefined,
+      subtitle: item.type ? te(`gearType.${item.type as GearType}`) : undefined,
       imageUrl: item.image_url ?? undefined,
       icon: "tune",
       href: `/profil/matos?gear=${item.id}`,
@@ -266,7 +266,7 @@ export async function searchEverything(
 
   return GROUP_ORDER.filter((kind) => byKind[kind].length > 0).map((kind) => ({
     kind,
-    label: GROUP_LABELS[kind],
+    label: t(`groups.${kind}`),
     results: byKind[kind],
   }));
 }

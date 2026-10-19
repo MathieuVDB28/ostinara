@@ -1,3 +1,5 @@
+import { getLocale } from "next-intl/server";
+import { tErr } from "@/i18n/server";
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
@@ -12,19 +14,19 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+      return NextResponse.json({ error: await tErr("notAuthenticated") }, { status: 401 });
     }
 
     const { plan, interval } = await req.json() as { plan: UserPlan; interval: BillingInterval };
 
     if (!plan || !interval) {
-      return NextResponse.json({ error: 'Plan et intervalle requis' }, { status: 400 });
+      return NextResponse.json({ error: await tErr("planIntervalRequired") }, { status: 400 });
     }
 
     const priceId = getPriceIdFromEnv(plan, interval);
 
     if (!priceId) {
-      return NextResponse.json({ error: 'Configuration de prix manquante' }, { status: 400 });
+      return NextResponse.json({ error: await tErr("priceMissing") }, { status: 400 });
     }
 
     // Récupérer ou créer le customer Stripe
@@ -81,7 +83,7 @@ export async function POST(req: NextRequest) {
 
           return NextResponse.json({
             success: true,
-            message: 'Abonnement mis à jour',
+            message: await tErr("subscriptionUpdated"),
             action: 'updated'
           });
         }
@@ -100,6 +102,8 @@ export async function POST(req: NextRequest) {
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/account/subscription?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
       allow_promotion_codes: true,
+      // La page de paiement Stripe dans la langue de l'app.
+      locale: await getLocale(),
       billing_address_collection: 'auto',
       metadata: {
         supabase_user_id: user.id,
@@ -115,7 +119,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Error creating checkout session:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la création de la session de paiement' },
+      { error: await tErr("checkoutFailed") },
       { status: 500 }
     );
   }

@@ -1,5 +1,8 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
+import { tErr } from "@/i18n/server";
+import type { Translator } from "@/i18n/types";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { songTargetBpm, nextTempoStep } from "@/lib/song-progress";
@@ -32,15 +35,8 @@ const GOALS_PER_WEEK = 3;
 /** La marche de tempo proposee quand on vise un morceau. */
 const TEMPO_STEP = 8;
 
-const SECTION_LABELS: Record<SongSection, string> = {
-  intro: "l'intro",
-  verse: "le couplet",
-  chorus: "le refrain",
-  bridge: "le pont",
-  solo: "le solo",
-  outro: "l'outro",
-  full_song: "le morceau en entier",
-};
+/** Les objectifs sont ecrits en base dans la langue de l'utilisateur au moment de la generation. */
+type PlanT = Translator<"weeklyPlan">;
 
 // ---------------------------------------------------------------------------
 // Dates
@@ -108,7 +104,7 @@ interface GenerationInput {
  * rien de la guitare. On part de ce qu'on travaille — un morceau, un
  * tempo — et on ne tombe sur les objectifs de volume que faute de mieux.
  */
-function buildGoals(input: GenerationInput): GoalDraft[] {
+function buildGoals(input: GenerationInput, t: PlanT): GoalDraft[] {
   const {
     songs,
     bestBpm,
@@ -151,11 +147,11 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
     );
     drafts.push({
       kind: "tempo",
-      title: `Passer « ${tempo.song.title} » à ${step} BPM`,
+      title: t("goal.tempoTitle", { title: tempo.song.title, step }),
       detail:
         tempo.best > 0
-          ? `Meilleur tempo tenu : ${tempo.best} BPM · cible ${tempo.target}`
-          : `Aucun tempo enregistré · cible ${tempo.target} BPM`,
+          ? t("goal.tempoBest", { best: tempo.best, target: tempo.target })
+          : t("goal.tempoNone", { target: tempo.target }),
       song_id: tempo.song.id,
       target_value: step,
       baseline_value: tempo.best,
@@ -174,12 +170,12 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
     if (!section) continue;
     drafts.push({
       kind: "section",
-      title: `Reprendre ${SECTION_LABELS[section]} de « ${song.title} »`,
-      detail: "Ce passage est resté en travers la dernière fois",
+      title: t("goal.sectionTitle", { section: t(`section.${section}`), title: song.title }),
+      detail: t("goal.sectionDetail"),
       song_id: song.id,
       target_value: 2,
       baseline_value: 0,
-      unit: "séances",
+      unit: "sessions",
       position: drafts.length,
     });
     usedSongIds.add(song.id);
@@ -198,8 +194,8 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
     if (ready) {
       drafts.push({
         kind: "mastery",
-        title: `Boucler « ${ready.title} »`,
-        detail: "Le tempo cible est tenu — passe-le en « maîtrisé »",
+        title: t("goal.masteryTitle", { title: ready.title }),
+        detail: t("goal.masteryDetail"),
         song_id: ready.id,
         target_value: 1,
         baseline_value: 0,
@@ -223,8 +219,8 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
     if (queued) {
       drafts.push({
         kind: "song_start",
-        title: `Attaquer « ${queued.title} »`,
-        detail: songStartDetail(queued),
+        title: t("goal.startTitle", { title: queued.title }),
+        detail: songStartDetail(queued, t),
         song_id: queued.id,
         target_value: 1,
         baseline_value: 0,
@@ -242,15 +238,15 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
     const days = Math.min(5, Math.max(3, lastWeekDays + 1));
     drafts.push({
       kind: "days",
-      title: `Jouer ${days} jours cette semaine`,
+      title: t("goal.daysTitle", { days }),
       detail:
         lastWeekDays > 0
-          ? `La semaine dernière : ${lastWeekDays} jour${lastWeekDays > 1 ? "s" : ""}`
-          : "Aucune session la semaine dernière — on repart doucement",
+          ? t("goal.daysLast", { count: lastWeekDays })
+          : t("goal.daysNone"),
       song_id: null,
       target_value: days,
       baseline_value: 0,
-      unit: "jours",
+      unit: "days",
       position: drafts.length,
     });
   }
@@ -260,8 +256,8 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
   if (drafts.length < GOALS_PER_WEEK && coversCount === 0) {
     drafts.push({
       kind: "cover",
-      title: "Enregistrer ta première cover",
-      detail: "Même approximative — c'est un repère, pas une performance",
+      title: t("goal.coverTitle"),
+      detail: t("goal.coverDetail"),
       song_id: null,
       target_value: 1,
       baseline_value: 0,
@@ -276,11 +272,11 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
     const minutes = Math.max(60, Math.round((lastWeekMinutes * 1.1) / 15) * 15);
     drafts.push({
       kind: "minutes",
-      title: `${minutes} minutes de pratique`,
+      title: t("goal.minutesTitle", { minutes }),
       detail:
         lastWeekMinutes > 0
-          ? `La semaine dernière : ${lastWeekMinutes} min`
-          : "Un premier repère pour la semaine",
+          ? t("goal.minutesLast", { minutes: lastWeekMinutes })
+          : t("goal.minutesNone"),
       song_id: null,
       target_value: minutes,
       baseline_value: 0,
@@ -293,16 +289,16 @@ function buildGoals(input: GenerationInput): GoalDraft[] {
 }
 
 /** Pourquoi ce morceau-la : son origine, quand un pont l'a ajoute. */
-function songStartDetail(song: Song): string {
+function songStartDetail(song: Song, t: PlanT): string {
   switch (song.added_from) {
     case "album":
       return song.added_from_label
-        ? `Repéré sur « ${song.added_from_label} »`
-        : `Repéré en écoutant ${song.artist}`;
+        ? t("goal.fromAlbum", { label: song.added_from_label })
+        : t("goal.fromArtist", { artist: song.artist ?? "" });
     case "friend":
-      return song.added_from_label ? `Vu chez ${song.added_from_label}` : "Vu chez un ami";
+      return song.added_from_label ? t("goal.fromFriend", { label: song.added_from_label }) : t("goal.fromSomeFriend");
     default:
-      return `${song.artist} attend dans « À apprendre »`;
+      return t("goal.waiting", { artist: song.artist ?? "" });
   }
 }
 
@@ -533,7 +529,7 @@ async function generateGoalsFor(
     lastWeekDays: lastWeekDays.size,
     learningCount: songs.filter((song) => song.status === "learning").length,
     coversCount: coversResult.count ?? 0,
-  });
+  }, await getTranslations("weeklyPlan"));
 
   const { data, error } = await supabase
     .from("weekly_goals")
@@ -577,7 +573,7 @@ export async function toggleWeeklyGoal(
 ): Promise<{ success: boolean; completed?: boolean; error?: string }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Non authentifié" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   const { data: goal } = await supabase
     .from("weekly_goals")
@@ -586,7 +582,7 @@ export async function toggleWeeklyGoal(
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!goal) return { success: false, error: "Objectif introuvable" };
+  if (!goal) return { success: false, error: await tErr("goalNotFound") };
 
   const completed = goal.completed_at === null;
 
@@ -598,7 +594,7 @@ export async function toggleWeeklyGoal(
 
   if (error) {
     console.error("Error toggling weekly goal:", error);
-    return { success: false, error: "Erreur lors de la mise à jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   revalidatePath("/jouer");
@@ -620,7 +616,7 @@ export async function regenerateWeeklyPlan(): Promise<{
 }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Non authentifié" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   const weekStartDate = startOfWeek();
   const weekStart = formatDateLocal(weekStartDate);
@@ -633,7 +629,7 @@ export async function regenerateWeeklyPlan(): Promise<{
 
   if (error) {
     console.error("Error clearing weekly goals:", error);
-    return { success: false, error: "Erreur lors de la régénération" };
+    return { success: false, error: await tErr("regenerateFailed") };
   }
 
   await generateGoalsFor(user.id, weekStart, weekStartDate);
@@ -682,12 +678,13 @@ export async function suggestSongThisWeek(song: Song): Promise<void> {
   }
 
   const position = Math.max(...goals.map((goal) => goal.position)) + 1;
+  const tp = await getTranslations("weeklyPlan");
   const { error } = await supabase.from("weekly_goals").insert({
     user_id: user.id,
     week_start: weekStart,
     kind: "song_start",
-    title: `Attaquer « ${song.title} »`,
-    detail: songStartDetail(song),
+    title: tp("goal.startTitle", { title: song.title }),
+    detail: songStartDetail(song, tp),
     song_id: song.id,
     target_value: 1,
     baseline_value: 0,

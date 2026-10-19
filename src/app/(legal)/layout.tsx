@@ -1,11 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getLocale, getTranslations } from "next-intl/server";
+import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 
-export default function LegalLayout({
+export default async function LegalLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const t = await getTranslations("legal");
+  const locale = await getLocale();
+  const year = new Date().getFullYear();
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Navbar */}
@@ -18,24 +24,33 @@ export default function LegalLayout({
             </span>
           </Link>
           <div className="flex items-center gap-3">
+            <LocaleSwitcher className="hidden sm:flex" />
             <Link
               href="/login"
               className="rounded-full px-3.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
             >
-              Connexion
+              {t("layout.login")}
             </Link>
             <Link
               href="/register"
               className="rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
             >
-              Commencer
+              {t("layout.start")}
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Content */}
-      <main className="flex-1 pt-16">{children}</main>
+      <main className="flex-1 pt-16">
+        {/* Les textes anglais sont des traductions : le francais reste le texte de reference. */}
+        {locale !== "fr" && (
+          <p className="border-b border-border bg-secondary px-6 py-3 text-center text-sm text-muted-foreground">
+            {t("binding")}
+          </p>
+        )}
+        {children}
+      </main>
 
       {/* Footer */}
       <footer className="border-t border-border py-12">
@@ -63,29 +78,29 @@ export default function LegalLayout({
                 href="/mentions-legales"
                 className="transition-colors hover:text-foreground"
               >
-                Mentions légales
+                {t("layout.notice")}
               </Link>
               <Link
                 href="/cgu"
                 className="transition-colors hover:text-foreground"
               >
-                CGU
+                {t("layout.terms")}
               </Link>
               <Link
                 href="/politique-confidentialite"
                 className="transition-colors hover:text-foreground"
               >
-                Confidentialité
+                {t("layout.privacy")}
               </Link>
               <Link
                 href="mailto:contact@ostinara.app"
                 className="transition-colors hover:text-foreground"
               >
-                Contact
+                {t("layout.contact")}
               </Link>
             </div>
             <div className="text-sm text-muted-foreground">
-              © 2025 Ostinara. Tous droits réservés.
+              {t("layout.rights", { year })}
             </div>
           </div>
         </div>

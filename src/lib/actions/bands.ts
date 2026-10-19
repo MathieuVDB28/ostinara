@@ -1,5 +1,7 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
@@ -110,7 +112,7 @@ export async function createBand(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Check Band plan
@@ -118,7 +120,7 @@ export async function createBand(
   if (!hasPlan) {
     return {
       success: false,
-      error: "Tu dois avoir le plan Band pour creer un groupe",
+      error: await tErr("bandPlanForBand"),
     };
   }
 
@@ -134,7 +136,7 @@ export async function createBand(
 
   if (bandError) {
     console.error("Error creating band:", bandError);
-    return { success: false, error: "Erreur lors de la creation du groupe" };
+    return { success: false, error: await tErr("bandCreateFailed") };
   }
 
   // Add owner as member with owner role
@@ -148,7 +150,7 @@ export async function createBand(
     console.error("Error adding owner as member:", memberError);
     // Rollback band creation
     await supabase.from("bands").delete().eq("id", band.id);
-    return { success: false, error: "Erreur lors de la creation du groupe" };
+    return { success: false, error: await tErr("bandCreateFailed") };
   }
 
   // Create activity
@@ -171,7 +173,7 @@ export async function updateBand(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -182,7 +184,7 @@ export async function updateBand(
 
   if (error) {
     console.error("Error updating band:", error);
-    return { success: false, error: "Erreur lors de la mise a jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   revalidatePath("/setlists");
@@ -197,7 +199,7 @@ export async function deleteBand(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -208,7 +210,7 @@ export async function deleteBand(
 
   if (error) {
     console.error("Error deleting band:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/setlists");
@@ -224,7 +226,7 @@ export async function inviteToBand(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Check if user is member of the band
@@ -236,7 +238,7 @@ export async function inviteToBand(
     .single();
 
   if (!membership) {
-    return { success: false, error: "Tu n'es pas membre de ce groupe" };
+    return { success: false, error: await tErr("notBandMember") };
   }
 
   // Check if invitee is already a member
@@ -248,7 +250,7 @@ export async function inviteToBand(
     .single();
 
   if (existingMember) {
-    return { success: false, error: "Cette personne est deja membre du groupe" };
+    return { success: false, error: await tErr("alreadyMember") };
   }
 
   // Check if invitation already exists
@@ -261,7 +263,7 @@ export async function inviteToBand(
     .single();
 
   if (existingInvitation) {
-    return { success: false, error: "Une invitation est deja en attente" };
+    return { success: false, error: await tErr("invitationPending") };
   }
 
   // Get band and inviter info for notification
@@ -284,19 +286,19 @@ export async function inviteToBand(
 
   if (error) {
     console.error("Error creating invitation:", error);
-    return { success: false, error: "Erreur lors de l'envoi de l'invitation" };
+    return { success: false, error: await tErr("invitationSendFailed") };
   }
 
   // Send push notification
   const inviterName =
-    inviterProfile?.display_name || inviterProfile?.username || "Quelqu'un";
+    inviterProfile?.display_name || inviterProfile?.username || null;
   await sendPushNotification(
     inviteeId,
-    {
-      title: "Invitation a un groupe",
-      body: `${inviterName} t'invite a rejoindre ${band?.name}`,
+    (t) => ({
+      title: t("bandInvitation.title"),
+      body: t("bandInvitation.body", { name: inviterName ?? t("someone"), band: band?.name ?? "" }),
       data: { url: "/setlists" },
-    },
+    }),
     "band_invitation"
   );
 
@@ -312,7 +314,7 @@ export async function acceptBandInvitation(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Get invitation
@@ -325,7 +327,7 @@ export async function acceptBandInvitation(
     .single();
 
   if (!invitation) {
-    return { success: false, error: "Invitation non trouvee" };
+    return { success: false, error: await tErr("invitationNotFound") };
   }
 
   // Update invitation status
@@ -343,7 +345,7 @@ export async function acceptBandInvitation(
 
   if (memberError) {
     console.error("Error adding member:", memberError);
-    return { success: false, error: "Erreur lors de l'ajout au groupe" };
+    return { success: false, error: await tErr("bandAddFailed") };
   }
 
   // Create activity
@@ -351,7 +353,7 @@ export async function acceptBandInvitation(
     type: "band_joined",
     reference_id: invitation.band_id,
     metadata: {
-      band_name: (invitation.band as { name: string })?.name || "Groupe",
+      band_name: (invitation.band as { name: string })?.name || (await getTranslations("common"))("band"),
     },
   });
 
@@ -367,7 +369,7 @@ export async function declineBandInvitation(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -378,7 +380,7 @@ export async function declineBandInvitation(
 
   if (error) {
     console.error("Error declining invitation:", error);
-    return { success: false, error: "Erreur lors du refus" };
+    return { success: false, error: await tErr("declineFailed") };
   }
 
   revalidatePath("/setlists");
@@ -428,7 +430,7 @@ export async function leaveBand(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Check if user is owner
@@ -441,8 +443,7 @@ export async function leaveBand(
   if (band?.owner_id === user.id) {
     return {
       success: false,
-      error:
-        "Le proprietaire ne peut pas quitter le groupe. Transfere la propriete ou supprime le groupe.",
+      error: await tErr("ownerCannotLeave"),
     };
   }
 
@@ -454,7 +455,7 @@ export async function leaveBand(
 
   if (error) {
     console.error("Error leaving band:", error);
-    return { success: false, error: "Erreur lors du depart" };
+    return { success: false, error: await tErr("leaveFailed") };
   }
 
   revalidatePath("/setlists");
@@ -470,7 +471,7 @@ export async function removeBandMember(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Check if user is owner
@@ -483,12 +484,12 @@ export async function removeBandMember(
   if (band?.owner_id !== user.id) {
     return {
       success: false,
-      error: "Seul le proprietaire peut retirer des membres",
+      error: await tErr("ownerOnlyRemoveMembers"),
     };
   }
 
   if (memberId === user.id) {
-    return { success: false, error: "Tu ne peux pas te retirer toi-meme" };
+    return { success: false, error: await tErr("cannotRemoveSelf") };
   }
 
   const { error } = await supabase
@@ -499,7 +500,7 @@ export async function removeBandMember(
 
   if (error) {
     console.error("Error removing member:", error);
-    return { success: false, error: "Erreur lors du retrait" };
+    return { success: false, error: await tErr("removeFailed") };
   }
 
   revalidatePath("/setlists");
@@ -601,7 +602,7 @@ export async function setBandMemberInstrument(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase.rpc("set_band_member_instrument", {
@@ -615,7 +616,7 @@ export async function setBandMemberInstrument(
     console.error("Error setting band member instrument:", error);
     return {
       success: false,
-      error: error.message.includes("Droits") ? "Seul un admin peut changer le poste d'un autre membre." : "Erreur lors de la mise a jour du poste",
+      error: error.message.includes("Droits") ? await tErr("adminOnlyPoste") : await tErr("posteUpdateFailed"),
     };
   }
 

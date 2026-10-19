@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   createContext,
   useCallback,
@@ -543,6 +544,7 @@ function formatElapsed(seconds: number): string {
  * avec elle le seul moyen d'arreter le chrono.
  */
 function SessionBar() {
+  const t = useTranslations("practice.sessionBar");
   const { status, elapsedSeconds, bpm, song, pause, resume, stop, cancel, openFocus } =
     usePracticeSession();
 
@@ -553,7 +555,7 @@ function SessionBar() {
         <button
           type="button"
           onClick={openFocus}
-          aria-label="Afficher la session en plein écran"
+          aria-label={t("expand")}
           className="flex min-w-0 flex-1 items-center gap-3 text-left"
         >
           <span
@@ -566,10 +568,10 @@ function SessionBar() {
             {formatElapsed(elapsedSeconds)}
           </span>
           <span className="sr-only">
-            Session de pratique {status === "paused" ? "en pause" : "en cours"}
+            {status === "paused" ? t("srPaused") : t("srRunning")}
           </span>
           <span className="min-w-0 truncate text-sm text-muted-foreground">
-            {status === "paused" ? "En pause" : song?.title ?? "Session"}
+            {status === "paused" ? t("paused") : song?.title ?? t("session")}
             {bpm !== null && (
               <span className="tabular font-semibold text-primary"> · {bpm} BPM</span>
             )}
@@ -580,7 +582,7 @@ function SessionBar() {
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             onClick={status === "running" ? pause : resume}
-            aria-label={status === "running" ? "Mettre en pause" : "Reprendre"}
+            aria-label={status === "running" ? t("pause") : t("resume")}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-border transition-colors hover:bg-accent"
           >
             {status === "running" ? (
@@ -593,13 +595,13 @@ function SessionBar() {
             onClick={cancel}
             className="hidden min-h-[40px] rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent sm:block"
           >
-            Annuler
+            {t("cancel")}
           </button>
           <button
             onClick={stop}
             className="min-h-[40px] rounded-xl bg-foreground px-4 text-sm font-semibold text-background transition-opacity hover:opacity-90"
           >
-            Terminer
+            {t("finish")}
           </button>
         </div>
       </div>
@@ -615,6 +617,7 @@ function SessionBar() {
  * (le metronome est dessous) sans arreter quoi que ce soit.
  */
 function SessionFocus() {
+  const t = useTranslations("practice.sessionBar");
   const { status, elapsedSeconds, bpm, song, pause, resume, stop, cancel, closeFocus } =
     usePracticeSession();
 
@@ -630,7 +633,7 @@ function SessionFocus() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Session de pratique"
+      aria-label={t("dialog")}
       className="fixed inset-0 z-[60] flex flex-col bg-background px-5 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-[calc(env(safe-area-inset-top)+16px)]"
     >
       <div className="flex items-center justify-between">
@@ -639,7 +642,7 @@ function SessionFocus() {
             aria-hidden="true"
             className={`h-2 w-2 rounded-full bg-current ${status === "running" ? "animate-pulse" : "opacity-50"}`}
           />
-          {status === "paused" ? "En pause" : "Session"}
+          {status === "paused" ? t("paused") : t("session")}
         </span>
         <button
           type="button"
@@ -647,7 +650,7 @@ function SessionFocus() {
           className="flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <Minimize2 className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-          Réduire
+          {t("minimize")}
         </button>
       </div>
 
@@ -675,7 +678,7 @@ function SessionFocus() {
       <div className="mx-auto grid w-full max-w-md grid-cols-[auto_1fr] gap-2">
         <button
           onClick={status === "running" ? pause : resume}
-          aria-label={status === "running" ? "Mettre en pause" : "Reprendre"}
+          aria-label={status === "running" ? t("pause") : t("resume")}
           className="flex h-14 w-14 items-center justify-center rounded-xl border border-border transition-colors hover:bg-accent"
         >
           {status === "running" ? (
@@ -688,13 +691,13 @@ function SessionFocus() {
           onClick={stop}
           className="h-14 rounded-xl bg-primary text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
         >
-          Terminer la session
+          {t("finishSession")}
         </button>
         <button
           onClick={cancel}
           className="col-span-2 min-h-[40px] text-sm font-medium text-muted-foreground hover:text-foreground"
         >
-          Annuler sans enregistrer
+          {t("discard")}
         </button>
       </div>
     </div>

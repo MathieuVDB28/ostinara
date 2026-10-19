@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getMyProfile } from "@/lib/actions/profile";
 import { SegmentedNav } from "@/components/layout/segmented-nav";
 import { ProfileIdentity } from "@/components/profile/profile-identity";
@@ -15,6 +16,7 @@ export default async function ProfilLayout({
   children: React.ReactNode;
 }) {
   const profile = await getMyProfile();
+  const t = await getTranslations("profile.header");
 
   if (!profile) {
     redirect("/login");
@@ -27,19 +29,19 @@ export default async function ProfilLayout({
         favoriteSongs={profile.favorite_songs}
         favoriteAlbums={profile.favorite_albums}
         stats={[
-          { label: "Morceaux", value: profile.stats.totalSongs, href: "/biblio" },
-          { label: "Maîtrisés", value: profile.stats.masteredSongs },
-          { label: "Covers", value: profile.stats.totalCovers, href: "/biblio/covers" },
-          { label: "Amis", value: profile.stats.friendsCount, href: "/commu/amis" },
+          { label: t("songs"), value: profile.stats.totalSongs, href: "/biblio" },
+          { label: t("mastered"), value: profile.stats.masteredSongs },
+          { label: t("covers"), value: profile.stats.totalCovers, href: "/biblio/covers" },
+          { label: t("friends"), value: profile.stats.friendsCount, href: "/commu/amis" },
         ]}
         action={
           <Link
             href="/profil/reglages"
-            aria-label="Éditer mon profil"
+            aria-label={t("editAria")}
             className="flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Icon name="edit" className="h-4 w-4" />
-            Éditer
+            {t("edit")}
           </Link>
         }
       />

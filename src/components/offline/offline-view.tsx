@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { INTL_LOCALE, isLocale } from "@/i18n/config";
 import { MAX_SYNC_ATTEMPTS, readQueue, readSnapshot } from "@/lib/offline/db";
 import { songTempoProgress } from "@/lib/song-progress";
 import type { OfflineSnapshot, QueuedPracticeSession } from "@/types";
@@ -20,15 +22,15 @@ import { Icon } from "@/components/ui/icon";
 
 type OfflineTab = "library" | "journal";
 
-function formatMinutes(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
+function formatMinutes(minutes: number, tc: (key: "duration.minutes" | "duration.hours" | "duration.hoursMinutes", values: Record<string, number>) => string): string {
+  if (minutes < 60) return tc("duration.minutes", { m: minutes });
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  return rest > 0 ? `${hours} h ${rest}` : `${hours} h`;
+  return rest > 0 ? tc("duration.hoursMinutes", { h: hours, m: rest }) : tc("duration.hours", { h: hours });
 }
 
-function formatDay(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", {
+function formatDay(iso: string, intlLocale: string): string {
+  return new Date(iso).toLocaleDateString(intlLocale, {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -36,6 +38,11 @@ function formatDay(iso: string): string {
 }
 
 export function OfflineView() {
+  const t = useTranslations("offline.view");
+  const tc = useTranslations("common");
+  // La page est pre-rendue : la langue vient du fournisseur client (OfflineIntl).
+  const locale = useLocale();
+  const intlLocale = INTL_LOCALE[isLocale(locale) ? locale : "fr"];
   const [snapshot, setSnapshot] = useState<OfflineSnapshot | null>(null);
   const [queue, setQueue] = useState<QueuedPracticeSession[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -81,18 +88,20 @@ export function OfflineView() {
       <header className="mb-6">
         <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <Icon name="cloud_off" className="h-[20px] w-[20px]" />
-          Hors ligne
+          {t("offline")}
         </p>
         <h1 className="mt-1 font-display text-5xl font-extrabold uppercase leading-none">Ostinara</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {snapshot
-            ? `Copie du ${new Date(snapshot.generatedAt).toLocaleString("fr-FR", {
-                day: "numeric",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}`
-            : "Aucune copie locale pour l'instant"}
+            ? t("copyOf", {
+                date: new Date(snapshot.generatedAt).toLocaleString(intlLocale, {
+                  day: "numeric",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              })
+            : t("noCopy")}
         </p>
       </header>
 
@@ -100,8 +109,7 @@ export function OfflineView() {
         <p className="mb-5 flex items-center gap-2 border-y border-border py-2.5 text-sm">
           <Icon name="cloud_upload" className="h-[18px] w-[18px] text-muted-foreground" />
           <span className="tabular">
-            {pending.length} session{pending.length > 1 ? "s" : ""} en attente —
-            elles partiront au retour du réseau.
+            {t("pending", { count: pending.length })}
           </span>
         </p>
       )}
@@ -110,10 +118,9 @@ export function OfflineView() {
         <div className="h-40 animate-pulse rounded-2xl bg-muted" />
       ) : !snapshot ? (
         <div className="p-6 text-center">
-          <p className="font-semibold">Rien en cache</p>
+          <p className="font-semibold">{t("nothing")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Ouvre l&apos;app une fois connecté : ta bibliothèque et ton journal
-            seront alors lisibles ici, sans réseau.
+            {t("nothingHint")}
           </p>
         </div>
       ) : (
@@ -121,19 +128,19 @@ export function OfflineView() {
           {/* Le resume : ce que le journal dit, meme sans serveur. */}
           <dl className="mb-6 grid grid-cols-3 gap-3 border-y border-border py-3">
             <div className="flex flex-col-reverse gap-1">
-              <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Série</dt>
+              <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{t("streak")}</dt>
               <dd className="tabular font-display text-[28px] font-bold leading-none">
-                {snapshot.stats.currentStreak} j
+                {tc("duration.days", { d: snapshot.stats.currentStreak })}
               </dd>
             </div>
             <div className="flex flex-col-reverse gap-1">
-              <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Cette semaine</dt>
+              <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{t("thisWeek")}</dt>
               <dd className="tabular font-display text-[28px] font-bold leading-none">
-                {formatMinutes(snapshot.stats.minutesThisWeek)}
+                {formatMinutes(snapshot.stats.minutesThisWeek, tc)}
               </dd>
             </div>
             <div className="flex flex-col-reverse gap-1">
-              <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Morceaux</dt>
+              <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{t("songs")}</dt>
               <dd className="tabular font-display text-[28px] font-bold leading-none">
                 {snapshot.songs.length}
               </dd>
@@ -143,8 +150,8 @@ export function OfflineView() {
           <div className="mb-4 flex gap-1 rounded-xl bg-accent/50 p-1">
             {(
               [
-                { value: "library", label: "Bibliothèque" },
-                { value: "journal", label: "Journal" },
+                { value: "library", label: t("library") },
+                { value: "journal", label: t("journal") },
               ] as const
             ).map((option) => (
               <button
@@ -166,12 +173,12 @@ export function OfflineView() {
           {tab === "library" ? (
             <div className="space-y-5">
               <OfflineSongList
-                title="En cours"
+                title={t("learning")}
                 songs={learning}
                 bestBpm={bestBpm}
               />
               <OfflineSongList
-                title="Le reste"
+                title={t("rest")}
                 songs={others}
                 bestBpm={bestBpm}
               />
@@ -185,14 +192,14 @@ export function OfflineView() {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">
-                      {session.song?.title ?? "Session libre"}
+                      {session.song?.title ?? t("freeSession")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDay(session.practiced_at)}
+                      {formatDay(session.practiced_at, intlLocale)}
                     </p>
                   </div>
                   <p className="tabular shrink-0 text-sm text-muted-foreground">
-                    {formatMinutes(session.duration_minutes)}
+                    {formatMinutes(session.duration_minutes, tc)}
                     {session.bpm_achieved ? (
                       <span className="ml-2 font-semibold text-primary">
                         {session.bpm_achieved} BPM
@@ -212,7 +219,7 @@ export function OfflineView() {
         className="mt-8 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-input px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Icon name="refresh" className="h-[20px] w-[20px]" />
-        Réessayer la connexion
+        {t("retry")}
       </button>
     </main>
   );

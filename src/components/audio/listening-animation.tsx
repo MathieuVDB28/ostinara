@@ -1,11 +1,14 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 interface ListeningAnimationProps {
   duration: number;
   maxDuration: number;
 }
 
 export function ListeningAnimation({ duration, maxDuration }: ListeningAnimationProps) {
+  const t = useTranslations("audio.identifier");
   return (
     <div className="flex flex-col items-center gap-6">
       {/* Pulsing circles */}
@@ -52,7 +55,7 @@ export function ListeningAnimation({ duration, maxDuration }: ListeningAnimation
 
       {/* Progress info */}
       <div className="text-center">
-        <p className="text-lg font-medium text-foreground">Écoute en cours...</p>
+        <p className="text-lg font-medium text-foreground">{t("listening")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
           {duration}s / {maxDuration}s
         </p>

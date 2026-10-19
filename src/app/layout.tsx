@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans, JetBrains_Mono, Barlow_Condensed, Bitter } from "nex
 import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/pwa";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -50,20 +52,23 @@ const bitter = Bitter({
   preload: false,
 });
 
-export const metadata: Metadata = {
-  title: "Ostinara - Track your music journey",
-  description: "Track your progress, manage your repertoire, and share your covers with friends. The ultimate app for musicians and bands.",
-  keywords: ["music", "guitar", "bass", "drums", "piano", "band", "practice", "covers", "learning", "progress tracker"],
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Ostinara",
-  },
-  formatDetection: {
-    telephone: false,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta");
+  return {
+    title: t("title"),
+    description: t("description"),
+    keywords: t("keywords").split(","),
+    manifest: "/manifest.json",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "Ostinara",
+    },
+    formatDetection: {
+      telephone: false,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   // Ces deux valeurs sont --background clair et sombre, a la lettre :
@@ -77,13 +82,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="fr" className="overflow-x-hidden" suppressHydrationWarning>
+    <html lang={locale} className="overflow-x-hidden" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icons/ios/180.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -97,10 +104,13 @@ export default function RootLayout({
       <body
         className={`${plusJakarta.variable} ${jetbrainsMono.variable} ${barlowCondensed.variable} ${bitter.variable} font-sans antialiased bg-background text-foreground overflow-x-hidden`}
       >
-        <ThemeProvider>
-          <ServiceWorkerRegistration />
-          {children}
-        </ThemeProvider>
+        {/* Sans props : la langue et les messages viennent de src/i18n/request.ts. */}
+        <NextIntlClientProvider>
+          <ThemeProvider>
+            <ServiceWorkerRegistration />
+            {children}
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

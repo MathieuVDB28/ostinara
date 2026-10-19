@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { getJamTrackHint } from "@/lib/actions/jam-sessions";
 import { instrumentPhrase } from "@/lib/instruments";
 import type { Instrument, SetlistItemWithSongOwner, PlayedSection } from "@/types";
@@ -22,6 +23,7 @@ export function JamTabsViewer({
   isPlaying,
   instrument,
 }: JamTabsViewerProps) {
+  const t = useTranslations("jam.tabs");
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [sectionProgress, setSectionProgress] = useState(0);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
@@ -194,7 +196,7 @@ export function JamTabsViewer({
                   {currentSection.name}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Mesures {currentSection.startMeasure}-{currentSection.endMeasure}
+                  {t("measures", { start: currentSection.startMeasure, end: currentSection.endMeasure })}
                   {" "}&middot;{" "}
                   {songBpm} BPM
                   {" "}&middot;{" "}
@@ -231,7 +233,7 @@ export function JamTabsViewer({
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  {tabWindowOpen ? "Tab ouverte" : "Voir la tab"}
+                  {tabWindowOpen ? t("open") : t("see")}
                 </button>
               )}
             </div>
@@ -333,7 +335,7 @@ export function JamTabsViewer({
                 : "bg-chart-2/20 text-chart-2 hover:bg-chart-2/30"
             }`}
           >
-            {tabWindowOpen ? "Tab ouverte" : "Voir la tab"}
+            {tabWindowOpen ? t("open") : t("see")}
           </button>
         </div>
       )}
@@ -349,6 +351,8 @@ export function JamTabsViewer({
  * en donne le nom.
  */
 function TrackHint({ tabsUrl, instrument }: { tabsUrl: string; instrument: Instrument }) {
+  const t = useTranslations("jam.tabs");
+  const te = useTranslations("enums");
   const [hint, setHint] = useState<{ url: string; name: string } | null>(null);
 
   useEffect(() => {
@@ -368,8 +372,11 @@ function TrackHint({ tabsUrl, instrument }: { tabsUrl: string; instrument: Instr
 
   return (
     <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-      Ta piste {instrumentPhrase(instrument)} dans Songsterr :{" "}
-      <span className="font-semibold text-foreground">« {hint.name} »</span>
+      {t.rich("track", {
+        instrument: instrumentPhrase(instrument, te),
+        name: hint.name,
+        strong: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
+      })}
     </p>
   );
 }

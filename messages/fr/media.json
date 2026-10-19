@@ -1,0 +1,15 @@
+{
+  "micDenied": "Accès au microphone refusé. Autorise l'accès dans les paramètres de ton navigateur.",
+  "micNotFound": "Aucun microphone détecté.",
+  "micUnavailable": "Impossible d'accéder au microphone.",
+  "pushIosInstall": "Sur iPhone, installe d'abord l'app sur l'écran d'accueil (Partager › Sur l'écran d'accueil), puis relance-la depuis l'icône.",
+  "pushNotConfigured": "Les notifications ne sont pas configurées sur ce serveur.",
+  "pushSwTimeout": "Le service worker ne répond pas. Recharge la page et réessaie.",
+  "pushFailed": "L'activation a échoué. Réessaie dans un instant.",
+  "pushPermissionFailed": "La demande d'autorisation a échoué.",
+  "pushDisableFailed": "La désactivation a échoué. Réessaie dans un instant.",
+  "compressionLoading": "Chargement du moteur de compression...",
+  "videoUnreadable": "Impossible de lire la vidéo",
+  "listenOnDeezer": "Écouter sur Deezer",
+  "listenTitleOnDeezer": "Écouter {title} sur Deezer"
+}

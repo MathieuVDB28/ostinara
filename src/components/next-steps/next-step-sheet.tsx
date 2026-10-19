@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { Check, ChevronRight, ListMusic, Play, Trophy, Users, Video, X, type LucideIcon } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { addSongsToLibrary } from "@/lib/actions/songs";
@@ -30,6 +32,8 @@ interface NextStepSheetProps {
  * Elle propose, elle n'impose rien : « Plus tard » est toujours la.
  */
 export function NextStepSheet({ step, onDone }: NextStepSheetProps) {
+  const t = useTranslations("nextSteps");
+  const tc = useTranslations("common");
   // La modale de cover remplace la feuille le temps de l'upload.
   const [coverFor, setCoverFor] = useState<Song | null>(null);
 
@@ -70,7 +74,7 @@ export function NextStepSheet({ step, onDone }: NextStepSheetProps) {
       >
         <button
           type="button"
-          aria-label="Fermer"
+          aria-label={tc("close")}
           onClick={onDone}
           className="absolute right-3 top-3 rounded-lg p-2 text-muted-foreground hover:bg-accent"
         >
@@ -96,7 +100,7 @@ export function NextStepSheet({ step, onDone }: NextStepSheetProps) {
           onClick={onDone}
           className="mt-4 min-h-[44px] w-full rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground"
         >
-          Plus tard
+          {t("later")}
         </button>
       </div>
     </div>
@@ -157,22 +161,23 @@ function ActionRow({ icon: Icon, label, hint, onClick, disabled, primary }: {
 // === Morceau maitrise : cover, setlist ===
 
 function SongMastered({ song, onCover, onDone }: { song: Song; onCover: () => void; onDone: () => void }) {
+  const t = useTranslations("nextSteps.mastered");
   const [picking, setPicking] = useState(false);
   const hasCover = (song.covers_count ?? 0) > 0;
 
   return (
     <>
-      <Heading eyebrow="Maîtrisé" title={song.title} subtitle={song.artist} coverUrl={song.cover_url} />
+      <Heading eyebrow={t("eyebrow")} title={song.title} subtitle={song.artist} coverUrl={song.cover_url} />
       <p className="mb-4 font-serif text-[15px] italic leading-relaxed">
-        Il est à toi. Et si tu le faisais entendre ?
+        {t("lead")}
       </p>
 
       <div className="space-y-2">
         <ActionRow
           icon={Video}
           primary
-          label={hasCover ? "Enregistrer une nouvelle cover" : "Enregistrer ta cover"}
-          hint="Pour tes amis, ou juste pour garder une trace"
+          label={hasCover ? t("newCover") : t("cover")}
+          hint={t("coverHint")}
           onClick={onCover}
         />
         {picking ? (
@@ -180,8 +185,8 @@ function SongMastered({ song, onCover, onDone }: { song: Song; onCover: () => vo
         ) : (
           <ActionRow
             icon={ListMusic}
-            label="L'ajouter à une setlist"
-            hint="Prêt pour la scène ou la prochaine répète"
+            label={t("setlist")}
+            hint={t("setlistHint")}
             onClick={() => setPicking(true)}
           />
         )}
@@ -202,6 +207,7 @@ function SongMastered({ song, onCover, onDone }: { song: Song; onCover: () => vo
 const PLAYABLE_GEAR = new Set(["guitar", "bass", "amp", "effect"]);
 
 function GearPicker({ songId }: { songId: string }) {
+  const t = useTranslations("nextSteps.gear");
   const [gear, setGear] = useState<GearItem[] | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
@@ -237,7 +243,7 @@ function GearPicker({ songId }: { songId: string }) {
 
   return (
     <div className="mt-5 border-t border-border pt-4">
-      <p className="mb-2 text-xs font-semibold text-muted-foreground">Joué avec</p>
+      <p className="mb-2 text-xs font-semibold text-muted-foreground">{t("playedWith")}</p>
       <div className="flex flex-wrap gap-2">
         {gear.map((item) => {
           const on = selected.has(item.id);
@@ -258,7 +264,7 @@ function GearPicker({ songId }: { songId: string }) {
           );
         })}
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">Avec Pro ou Band, affiché sur tes prochaines covers de ce morceau.</p>
+      <p className="mt-2 text-xs text-muted-foreground">{t("hint")}</p>
     </div>
   );
 }
@@ -266,6 +272,8 @@ function GearPicker({ songId }: { songId: string }) {
 // === Cover postee : la repete ===
 
 function CoverPosted({ song, rehearsals }: { song: Song; rehearsals: RehearsalTarget[] }) {
+  const t = useTranslations("nextSteps");
+  const intlLocale = useIntlLocale();
   const [done, setDone] = useState<Record<string, "added" | "already">>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -277,22 +285,22 @@ function CoverPosted({ song, rehearsals }: { song: Song; rehearsals: RehearsalTa
       if (result.success) {
         setDone((previous) => ({ ...previous, [target.setlistId]: result.alreadyThere ? "already" : "added" }));
       } else {
-        setError(result.error || "L'ajout a échoué. Réessaie.");
+        setError(result.error || t("addFailed"));
       }
     });
   };
 
   return (
     <>
-      <Heading eyebrow="Cover postée" title={song.title} subtitle={song.artist} coverUrl={song.cover_url} />
+      <Heading eyebrow={t("cover.eyebrow")} title={song.title} subtitle={song.artist} coverUrl={song.cover_url} />
       <p className="mb-4 font-serif text-[15px] italic leading-relaxed">
-        Tu l&apos;as enregistré, ton groupe peut le jouer. On le met à la prochaine répète ?
+        {t("cover.lead")}
       </p>
 
       <div className="space-y-2">
         {rehearsals.map((target) => {
           const state = done[target.setlistId];
-          const when = new Date(target.date).toLocaleDateString("fr-FR", {
+          const when = new Date(target.date).toLocaleDateString(intlLocale, {
             weekday: "long",
             day: "numeric",
             month: "long",
@@ -304,19 +312,19 @@ function CoverPosted({ song, rehearsals }: { song: Song; rehearsals: RehearsalTa
               className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-border px-3.5 py-3 text-sm"
             >
               <Check className="h-4 w-4 text-success" strokeWidth={2.25} aria-hidden="true" />
-              {state === "added" ? "Ajouté à" : "Déjà dans"} « {target.setlistName} »
+              {state === "added" ? t("cover.added", { name: target.setlistName }) : t("cover.already", { name: target.setlistName })}
               <Link
                 href={`/setlists/rehearsals/${target.rehearsalId}`}
                 className="font-semibold underline-offset-2 hover:underline"
               >
-                Voir la répète
+                {t("cover.seeRehearsal")}
               </Link>
             </p>
           ) : (
             <ActionRow
               key={target.setlistId}
               icon={Users}
-              label={`Ajouter à « ${target.setlistName} »`}
+              label={t("cover.addTo", { name: target.setlistName })}
               hint={`${target.bandName} · ${when}`}
               onClick={() => handleAdd(target)}
               disabled={pending}
@@ -330,6 +338,7 @@ function CoverPosted({ song, rehearsals }: { song: Song; rehearsals: RehearsalTa
 }
 
 function SetlistPicker({ songId, onDone }: { songId: string; onDone: () => void }) {
+  const t = useTranslations("nextSteps");
   const [setlists, setSetlists] = useState<SetlistWithDetails[] | null>(null);
   const [added, setAdded] = useState<{ name: string; already: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -344,7 +353,7 @@ function SetlistPicker({ songId, onDone }: { songId: string; onDone: () => void 
     startTransition(async () => {
       const result = await addSongToSetlist(setlist.id, songId);
       if (result.success) setAdded({ name: setlist.name, already: !!result.alreadyThere });
-      else setError(result.error || "L'ajout a échoué. Réessaie.");
+      else setError(result.error || t("addFailed"));
     });
   };
 
@@ -353,10 +362,10 @@ function SetlistPicker({ songId, onDone }: { songId: string; onDone: () => void 
       <p role="status" className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-border px-3.5 py-3 text-sm">
         <Check className="h-4 w-4 text-success" strokeWidth={2.25} aria-hidden="true" />
         <span>
-          {added.already ? "Déjà dans" : "Ajouté à"} « {added.name} »
+          {added.already ? t("cover.already", { name: added.name }) : t("cover.added", { name: added.name })}
         </span>
         <Link href="/setlists" onClick={onDone} className="font-semibold underline-offset-2 hover:underline">
-          Voir
+          {t("setlists.see")}
         </Link>
       </p>
     );
@@ -364,14 +373,14 @@ function SetlistPicker({ songId, onDone }: { songId: string; onDone: () => void 
 
   return (
     <div className="rounded-xl border border-border p-2">
-      <p className="px-1.5 pb-1.5 pt-1 text-xs font-semibold text-muted-foreground">Dans quelle setlist ?</p>
+      <p className="px-1.5 pb-1.5 pt-1 text-xs font-semibold text-muted-foreground">{t("setlists.which")}</p>
       {setlists === null ? (
-        <p className="px-1.5 py-3 text-sm text-muted-foreground">Chargement…</p>
+        <p className="px-1.5 py-3 text-sm text-muted-foreground">{t("setlists.loading")}</p>
       ) : setlists.length === 0 ? (
         <p className="px-1.5 py-2 text-sm">
-          Pas encore de setlist.{" "}
+          {t("setlists.none")}{" "}
           <Link href="/setlists" onClick={onDone} className="font-semibold text-primary underline-offset-2 hover:underline">
-            En créer une
+            {t("setlists.create")}
           </Link>
         </p>
       ) : (
@@ -387,7 +396,7 @@ function SetlistPicker({ songId, onDone }: { songId: string; onDone: () => void 
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{setlist.name}</span>
                   <span className="block text-xs text-muted-foreground">
-                    {setlist.band?.name ?? "Perso"} · {setlist.song_count} morceau{setlist.song_count > 1 ? "x" : ""}
+                    {setlist.band?.name ?? t("setlists.personal")} · {t("setlists.songs", { count: setlist.song_count })}
                   </span>
                 </span>
               </button>
@@ -407,6 +416,7 @@ function SongAdded({ song, from, onDone }: {
   from?: { id: string; name: string };
   onDone: () => void;
 }) {
+  const t = useTranslations("nextSteps.added");
   const router = useRouter();
   const [challenge, setChallenge] = useState<"idle" | "sent">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -428,33 +438,33 @@ function SongAdded({ song, from, onDone }: {
         song_id: song.id,
       });
       if (result.success) setChallenge("sent");
-      else setError(result.error || "Le défi n'a pas pu être lancé.");
+      else setError(result.error || t("challengeFailed"));
     });
   };
 
   return (
     <>
-      <Heading eyebrow="Dans ta biblio" title={song.title} subtitle={song.artist} coverUrl={song.cover_url} />
+      <Heading eyebrow={t("eyebrow")} title={song.title} subtitle={song.artist} coverUrl={song.cover_url} />
 
       <div className="space-y-2">
         <ActionRow
           icon={Play}
           primary
-          label="Le travailler maintenant"
-          hint="Ouvre le métronome sur ce morceau"
+          label={t("work")}
+          hint={t("workHint")}
           onClick={handlePlay}
         />
         {from &&
           (challenge === "sent" ? (
             <p role="status" className="flex items-center gap-2 rounded-xl border border-border px-3.5 py-3 text-sm">
               <Check className="h-4 w-4 text-success" strokeWidth={2.25} aria-hidden="true" />
-              Défi envoyé à {from.name} : le premier qui le maîtrise gagne.
+              {t("challengeSent", { name: from.name })}
             </p>
           ) : (
             <ActionRow
               icon={Trophy}
-              label={`Défier ${from.name}`}
-              hint="Le premier à le maîtriser en 2 semaines gagne"
+              label={t("challenge", { name: from.name })}
+              hint={t("challengeHint")}
               onClick={handleChallenge}
               disabled={pending}
             />
@@ -473,6 +483,7 @@ function AlbumTracks({ album, initialTracks, preselected, onDone }: {
   preselected?: string[];
   onDone: () => void;
 }) {
+  const t = useTranslations("nextSteps.album");
   const [tracks, setTracks] = useState<CatalogAlbumTrack[] | null>(initialTracks ?? null);
   const [selected, setSelected] = useState<Set<string>>(() => new Set(preselected));
   const [result, setResult] = useState<{ added: number; alreadyThere: number; error?: string } | null>(null);
@@ -520,37 +531,35 @@ function AlbumTracks({ album, initialTracks, preselected, onDone }: {
 
   return (
     <>
-      <Heading eyebrow="Après l'écoute" title={album.name} subtitle={album.artist} coverUrl={album.coverUrl} />
+      <Heading eyebrow={t("eyebrow")} title={album.name} subtitle={album.artist} coverUrl={album.coverUrl} />
 
       {result && !result.error ? (
         <div role="status" className="rounded-xl border border-border px-3.5 py-3 text-sm">
           <p className="flex items-center gap-2 font-semibold">
             <Check className="h-4 w-4 text-success" strokeWidth={2.25} aria-hidden="true" />
-            {result.added > 0
-              ? `${result.added} titre${result.added > 1 ? "s" : ""} dans « À apprendre »`
-              : "Tout était déjà dans ta biblio"}
+            {result.added > 0 ? t("added", { count: result.added }) : t("allThere")}
           </p>
           {result.added > 0 && result.alreadyThere > 0 && (
             <p className="mt-1 text-xs text-muted-foreground">
-              {result.alreadyThere} déjà présent{result.alreadyThere > 1 ? "s" : ""}, pas de doublon.
+              {t("alreadyThere", { count: result.alreadyThere })}
             </p>
           )}
           <Link href="/biblio" onClick={onDone} className="mt-2 inline-block font-semibold underline-offset-2 hover:underline">
-            Voir ma biblio
+            {t("seeLibrary")}
           </Link>
         </div>
       ) : (
         <>
           <p className="mb-3 font-serif text-[15px] italic leading-relaxed">
-            Un titre t&apos;a donné envie de prendre la guitare ?
+            {t("lead")}
           </p>
 
           {tracks === null ? (
-            <p className="py-3 text-sm text-muted-foreground">Chargement des titres…</p>
+            <p className="py-3 text-sm text-muted-foreground">{t("loading")}</p>
           ) : tracks.length === 0 ? (
-            <p className="py-3 text-sm text-muted-foreground">Tracklist indisponible pour cet album.</p>
+            <p className="py-3 text-sm text-muted-foreground">{t("unavailable")}</p>
           ) : (
-            <ol aria-label="Titres de l'album" className="max-h-72 divide-y divide-border overflow-y-auto border-y border-border">
+            <ol aria-label={t("tracks")} className="max-h-72 divide-y divide-border overflow-y-auto border-y border-border">
               {tracks.map((track) => {
                 const checked = selected.has(track.id);
                 return (
@@ -581,7 +590,7 @@ function AlbumTracks({ album, initialTracks, preselected, onDone }: {
 
           {result?.error && (
             <p role="status" className="mt-3 text-xs text-destructive">
-              {result.added > 0 && `${result.added} ajouté${result.added > 1 ? "s" : ""}, puis : `}
+              {result.added > 0 && t("partial", { count: result.added })}
               {result.error}
             </p>
           )}
@@ -592,11 +601,7 @@ function AlbumTracks({ album, initialTracks, preselected, onDone }: {
             disabled={count === 0 || pending}
             className="mt-4 min-h-[48px] w-full rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {pending
-              ? "Ajout…"
-              : count === 0
-                ? "Choisis un ou plusieurs titres"
-                : `Ajouter ${count} titre${count > 1 ? "s" : ""} à ma biblio`}
+            {pending ? t("adding") : count === 0 ? t("pick") : t("add", { count })}
           </button>
         </>
       )}

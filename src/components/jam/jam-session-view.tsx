@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useJamSession } from "@/lib/hooks/use-jam-session";
 import { JamMetronome } from "./jam-metronome";
 import { JamChat } from "./jam-chat";
@@ -10,7 +11,6 @@ import { JamTabsViewer } from "./jam-tabs-viewer";
 import { leaveJamSession, endJamSession } from "@/lib/actions/jam-sessions";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { bandPosteLabel } from "@/lib/instruments";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
 import type { JamSessionWithDetails, JamSessionMessageWithProfile, Profile } from "@/types";
 
 interface JamSessionViewProps {
@@ -24,6 +24,9 @@ export function JamSessionView({
   initialMessages,
   currentUser,
 }: JamSessionViewProps) {
+  const t = useTranslations("jam.session");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const router = useRouter();
   const isHost = initialSession.host_id === currentUser.id;
 
@@ -34,7 +37,7 @@ export function JamSessionView({
   const myInstrument =
     bandMembers.find((member) => member.user_id === currentUser.id)?.instrument ?? myInstruments.primary;
   const postes = Object.fromEntries(
-    bandMembers.map((member) => [member.user_id, bandPosteLabel(member)])
+    bandMembers.map((member) => [member.user_id, bandPosteLabel(member, te)])
   ) as Record<string, string | null>;
   const isPersonalJam = !initialSession.band_id;
 
@@ -67,7 +70,7 @@ export function JamSessionView({
   };
 
   const handleEnd = async () => {
-    if (!isPersonalJam && !confirm("Terminer la Jam Session pour tout le monde ?")) return;
+    if (!isPersonalJam && !confirm(t("confirmEnd"))) return;
     await endJamSession(initialSession.id);
     router.push("/commu/groupes");
   };
@@ -98,17 +101,17 @@ export function JamSessionView({
             />
           </svg>
         </div>
-        <h2 className="mb-2 font-display text-5xl font-extrabold uppercase leading-none">Session terminée</h2>
+        <h2 className="mb-2 font-display text-5xl font-extrabold uppercase leading-none">{t("ended")}</h2>
         <p className="text-muted-foreground mb-6">
           {isPersonalJam
-            ? "Ta session de pratique est terminée."
-            : "La jam a été terminée par l'hôte."}
+            ? t("endedPersonal")
+            : t("endedByHost")}
         </p>
         <button
           onClick={() => router.push("/commu/groupes")}
           className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90"
         >
-          Retour aux setlists
+          {t("back")}
         </button>
       </div>
     );
@@ -122,7 +125,7 @@ export function JamSessionView({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="font-display text-3xl font-extrabold uppercase leading-none">
-                {isPersonalJam ? "Jam Solo" : "Jam Session"}
+                {isPersonalJam ? t("solo") : t("band")}
               </h1>
               {session.band && (
                 <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
@@ -132,19 +135,18 @@ export function JamSessionView({
               {isConnected ? (
                 <span className="flex items-center gap-1.5 text-sm text-success">
                   <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                  Connecte
+                  {t("connected")}
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5 text-sm text-primary">
                   <span className="h-2 w-2 rounded-full bg-primary" />
-                  Connexion...
+                  {t("connecting")}
                 </span>
               )}
             </div>
             {session.current_song_title && (
               <p className="mt-1 text-sm text-muted-foreground">
-                En cours : {session.current_song_title} -{" "}
-                {session.current_song_artist}
+                {t("nowPlaying", { title: session.current_song_title, artist: session.current_song_artist ?? "" })}
               </p>
             )}
           </div>
@@ -161,10 +163,10 @@ export function JamSessionView({
               }`}
             >
               {session.status === "active"
-                ? "En cours"
+                ? t("active")
                 : session.status === "paused"
-                ? "En pause"
-                : "En attente"}
+                ? t("paused")
+                : t("waiting")}
             </span>
 
             {isHost ? (
@@ -174,7 +176,7 @@ export function JamSessionView({
                     onClick={handleStartSession}
                     className="rounded-lg bg-success px-4 py-2 text-sm font-medium text-success-foreground transition-all hover:opacity-90"
                   >
-                    Lancer
+                    {t("start")}
                   </button>
                 )}
                 {session.status === "active" && (
@@ -182,7 +184,7 @@ export function JamSessionView({
                     onClick={handlePauseSession}
                     className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
                   >
-                    Pause
+                    {t("pause")}
                   </button>
                 )}
                 {session.status === "paused" && (
@@ -190,14 +192,14 @@ export function JamSessionView({
                     onClick={handleStartSession}
                     className="rounded-lg bg-success px-4 py-2 text-sm font-medium text-success-foreground transition-all hover:opacity-90"
                   >
-                    Reprendre
+                    {t("resume")}
                   </button>
                 )}
                 <button
                   onClick={handleEnd}
                   className="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-all hover:opacity-90"
                 >
-                  Terminer
+                  {t("end")}
                 </button>
               </>
             ) : (
@@ -205,7 +207,7 @@ export function JamSessionView({
                 onClick={handleLeave}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
               >
-                Quitter
+                {t("leave")}
               </button>
             )}
           </div>
@@ -257,12 +259,12 @@ export function JamSessionView({
                   index,
                   item.song_id || null,
                   isExercise
-                    ? item.exercise_name || "Exercice"
+                    ? item.exercise_name || tc("exercise")
                     : item.song_title || null,
                   isExercise
                     ? item.exercise_category
-                      ? EXERCISE_CATEGORY_LABELS[item.exercise_category]
-                      : "Exercice"
+                      ? te(`exerciseCategory.${item.exercise_category}`)
+                      : tc("exercise")
                     : item.song_artist || null
                 );
               }}

@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { createAlbumReview, getCatalogAlbum } from "@/lib/actions/albums";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { FavoriteTrackPicker } from "./favorite-track-picker";
@@ -17,6 +19,11 @@ interface AddAlbumModalProps {
 }
 
 export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlbumModalProps) {
+  const t = useTranslations("albums.add");
+  const tr = useTranslations("albums.review");
+  const tw = useTranslations("albums.wishlistModal");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const [step, setStep] = useState<"search" | "review">("search");
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<CatalogAlbum[]>([]);
@@ -148,7 +155,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
         });
       }
     } else {
-      setError(result.error || "Une erreur est survenue");
+      setError(result.error || tc("genericError"));
     }
 
     setSubmitting(false);
@@ -170,16 +177,17 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
             {step === "review" && (
               <button
                 onClick={() => setStep("search")}
+                aria-label={t("back")}
                 className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent"
               >
                 <Icon name="arrow_back" className="h-[20px] w-[20px]" />
               </button>
             )}
             <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
-              {step === "search" ? "Chercher un album" : "Ton avis"}
+              {step === "search" ? t("search") : t("yourReview")}
             </h2>
           </div>
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -196,7 +204,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                 <Icon name="search" className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Rechercher un album..."
+                  placeholder={tw("search")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full rounded-xl border border-border bg-background py-3 pl-10 pr-4 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -237,7 +245,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {album.release_date?.split("-")[0]}
-                        {album.total_tracks ? ` - ${album.total_tracks} titres` : ""}
+                        {album.total_tracks ? ` - ${tw("tracks", { count: album.total_tracks })}` : ""}
                       </div>
                     </div>
                   </button>
@@ -246,7 +254,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
 
               {searchQuery.length >= 2 && !searching && results.length === 0 && (
                 <p className="py-8 text-center text-sm text-muted-foreground">
-                  Aucun album trouve
+                  {tw("none")}
                 </p>
               )}
             </div>
@@ -280,9 +288,9 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
               {/* Rating */}
               <div className="mb-6">
                 <div className="mb-3 flex items-center justify-between">
-                  <label className="text-sm font-medium">Ta note</label>
+                  <label className="text-sm font-medium">{tr("yourRating")}</label>
                   <span className="text-sm font-semibold text-primary">
-                    {rating > 0 ? `${rating} / 5` : "—"}
+                    {rating > 0 ? tr("ratingValue", { rating: rating.toLocaleString(intlLocale) }) : "—"}
                   </span>
                 </div>
                 <StarRating value={rating} onChange={setRating} size="lg" />
@@ -293,16 +301,16 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
               <div className="mb-6">
                 <div className="mb-2 flex items-baseline justify-between gap-3">
                   <label className="text-sm font-medium">
-                    Ton morceau préféré <span className="text-muted-foreground">(optionnel)</span>
+                    {t("favorite")} <span className="text-muted-foreground">{tr("optional")}</span>
                   </label>
                   {favorite && (
                     <span className="truncate text-xs font-semibold text-primary">{favorite.name}</span>
                   )}
                 </div>
                 {tracks === null ? (
-                  <p className="py-3 text-sm text-muted-foreground">Chargement des titres…</p>
+                  <p className="py-3 text-sm text-muted-foreground">{t("loadingTracks")}</p>
                 ) : tracks.length === 0 ? (
-                  <p className="py-3 text-sm text-muted-foreground">Tracklist indisponible pour cet album.</p>
+                  <p className="py-3 text-sm text-muted-foreground">{t("noTracklist")}</p>
                 ) : (
                   <FavoriteTrackPicker
                     tracks={tracks}
@@ -317,12 +325,12 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
               {/* Review text */}
               <div className="mb-6">
                 <label className="mb-2 block text-sm font-medium">
-                  Ton impression <span className="text-muted-foreground">(optionnel)</span>
+                  {tr("impression")} <span className="text-muted-foreground">{tr("optional")}</span>
                 </label>
                 <textarea
                   value={review}
                   onChange={(e) => setReview(e.target.value)}
-                  placeholder="Qu'est-ce que tu en as pense ?"
+                  placeholder={tr("placeholder")}
                   rows={4}
                   maxLength={2000}
                   className="w-full resize-none rounded-xl border border-border bg-background p-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -347,7 +355,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
               disabled={submitting}
               className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
             >
-              {submitting ? "Publication..." : "Publier"}
+              {submitting ? t("publishing") : t("publish")}
             </button>
           </div>
         )}

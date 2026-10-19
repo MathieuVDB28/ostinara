@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { SetlistCard } from "./setlist-card";
 import { CreateSetlistModal } from "./create-setlist-modal";
 import { CreateBandModal } from "./create-band-modal";
@@ -26,8 +28,8 @@ interface GroupsViewProps {
   userPlan: UserPlan;
 }
 
-function formatRehearsalDate(date: string): string {
-  return new Date(date).toLocaleDateString("fr-FR", {
+function formatRehearsalDate(date: string, intlLocale: string): string {
+  return new Date(date).toLocaleDateString(intlLocale, {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -48,6 +50,8 @@ export function GroupsView({
   upcomingRehearsals,
   userPlan,
 }: GroupsViewProps) {
+  const t = useTranslations("setlists.groups");
+  const intlLocale = useIntlLocale();
   const router = useRouter();
   const [showCreateSetlist, setShowCreateSetlist] = useState(false);
   const [showCreateBand, setShowCreateBand] = useState(false);
@@ -70,7 +74,7 @@ export function GroupsView({
       {invitations.length > 0 && (
         <section className="space-y-3">
           <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
-            Invitations en attente
+            {t("invitations")}
           </h2>
           {invitations.map((invitation) => (
             <BandInvitationCard
@@ -86,7 +90,7 @@ export function GroupsView({
       <section className="space-y-0">
         <div className="flex items-baseline justify-between gap-3 border-b border-border pb-2">
           <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
-            Mes groupes{bands.length > 0 && <span className="tabular"> · {bands.length}</span>}
+            {t("myBands")}{bands.length > 0 && <span className="tabular"> · {bands.length}</span>}
           </h2>
           {hasBandPlan && (
             <button
@@ -94,7 +98,7 @@ export function GroupsView({
               className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
             >
               <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-              Groupe
+              {t("band")}
             </button>
           )}
         </div>
@@ -130,14 +134,11 @@ export function GroupsView({
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate font-display text-2xl font-extrabold uppercase leading-none">{band.name}</h3>
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {band.members.length} membre
-                      {band.members.length > 1 ? "s" : ""}
-                      {bandSetlists.length > 0 &&
-                        ` • ${bandSetlists.length} setlist${bandSetlists.length > 1 ? "s" : ""}`}
+                      {t("meta", { members: band.members.length, setlists: bandSetlists.length })}
                     </p>
                     {nextRehearsal && (
                       <p className="mt-0.5 truncate text-xs font-semibold">
-                        Répét. {formatRehearsalDate(nextRehearsal.date)}
+                        {t("rehearsal", { date: formatRehearsalDate(nextRehearsal.date, intlLocale) })}
                       </p>
                     )}
                   </div>
@@ -151,31 +152,31 @@ export function GroupsView({
           <EmptyState
             compact
             icon="groups"
-            title="Aucun groupe"
+            title={t("noBand")}
             description={
               hasBandPlan
-                ? "Un groupe met en commun les setlists, le calendrier des répètes et la fiche technique. Chaque membre voit les mêmes, et les modifie."
-                : "Un groupe met en commun setlists, répètes et fiche technique. Les espaces groupe font partie du plan Band."
+                ? t("noBandBand")
+                : t("noBandFree")
             }
             actions={
               hasBandPlan
                 ? [
                     {
-                      label: "Créer un groupe",
+                      label: t("createBand"),
                       icon: "add",
                       primary: true,
                       onClick: () => setShowCreateBand(true),
                     },
                   ]
                 : [
-                    { label: "Voir le plan Band", primary: true, href: "/pricing" },
-                    { label: "Créer une setlist", icon: "add", onClick: () => setShowCreateSetlist(true) },
+                    { label: t("seeBandPlan"), primary: true, href: "/pricing" },
+                    { label: t("createSetlist"), icon: "add", onClick: () => setShowCreateSetlist(true) },
                   ]
             }
             hint={
               hasBandPlan
-                ? "Tu invites les membres par leur pseudo une fois le groupe créé."
-                : "Sans le plan Band, tes setlists perso restent disponibles juste en dessous."
+                ? t("hintBand")
+                : t("hintFree")
             }
           />
         )}
@@ -185,14 +186,14 @@ export function GroupsView({
       <section>
         <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
           <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
-            Mes setlists{personalSetlists.length > 0 && <span className="tabular"> · {personalSetlists.length}</span>}
+            {t("mySetlists")}{personalSetlists.length > 0 && <span className="tabular"> · {personalSetlists.length}</span>}
           </h2>
           <button
             onClick={() => setShowCreateSetlist(true)}
             className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-            Setlist
+            {t("setlist")}
           </button>
         </div>
 
@@ -210,18 +211,18 @@ export function GroupsView({
           <EmptyState
             compact
             icon="queue_music"
-            title="Aucune setlist perso"
-            description="Une setlist ordonne des morceaux de ta bibliothèque pour un set : tu la joues dans l'ordre, seul ou avant une répète."
+            title={t("noPersonal")}
+            description={t("noPersonalDescription")}
             actions={[
               {
-                label: "Créer une setlist",
+                label: t("createSetlist"),
                 icon: "add",
                 primary: true,
                 onClick: () => setShowCreateSetlist(true),
               },
-              { label: "Voir ma bibliothèque", icon: "music_note", href: "/biblio" },
+              { label: t("seeLibrary"), icon: "music_note", href: "/biblio" },
             ]}
-            hint="Les morceaux viennent de ta bibliothèque : ajoute-les là-bas d'abord."
+            hint={t("libraryHint")}
           />
         )}
       </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useAudioRecorder } from "@/lib/hooks/use-audio-recorder";
 import { ListeningAnimation } from "./listening-animation";
 import { IdentificationResult } from "./identification-result";
@@ -11,6 +12,8 @@ const RECORDING_DURATION = 8;
 type IdentifierState = "idle" | "recording" | "identifying" | "result" | "no-match" | "error";
 
 export function SongIdentifier() {
+  const t = useTranslations("audio.identifier");
+  const tc = useTranslations("common");
   const [state, setState] = useState<IdentifierState>("idle");
   const [result, setResult] = useState<AudioIdentificationResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -35,7 +38,7 @@ export function SongIdentifier() {
     const blob = await recorder.stopRecording();
     if (!blob) {
       setState("error");
-      setErrorMessage("Enregistrement échoué. Réessaie.");
+      setErrorMessage(t("recordFailed"));
       return;
     }
 
@@ -52,7 +55,7 @@ export function SongIdentifier() {
 
       if (!response.ok) {
         setState("error");
-        setErrorMessage(data.error || "Erreur lors de l'identification");
+        setErrorMessage(data.error || t("identifyFailed"));
         return;
       }
 
@@ -64,7 +67,7 @@ export function SongIdentifier() {
       }
     } catch {
       setState("error");
-      setErrorMessage("Erreur de connexion. Vérifie ta connexion internet.");
+      setErrorMessage(t("network"));
     }
   }, [recorder]);
 
@@ -110,9 +113,9 @@ export function SongIdentifier() {
           </div>
 
           <div className="text-center">
-            <h2 className="text-xl font-semibold">Identifier un morceau</h2>
+            <h2 className="text-xl font-semibold">{t("title")}</h2>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Joue un morceau à proximité ou chante la mélodie. L'app l'identifiera en quelques secondes.
+              {t("hint")}
             </p>
           </div>
 
@@ -120,7 +123,7 @@ export function SongIdentifier() {
             onClick={handleListen}
             className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
           >
-            Écouter
+            {t("listen")}
           </button>
 
           {recorder.error && (
@@ -137,7 +140,7 @@ export function SongIdentifier() {
             onClick={handleStopAndIdentify}
             className="rounded-full border border-border px-6 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            Identifier maintenant
+            {t("identifyNow")}
           </button>
         </div>
       )}
@@ -146,7 +149,7 @@ export function SongIdentifier() {
       {state === "identifying" && (
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" />
-          <p className="text-sm text-muted-foreground">Identification en cours...</p>
+          <p className="text-sm text-muted-foreground">{t("identifying")}</p>
         </div>
       )}
 
@@ -166,16 +169,16 @@ export function SongIdentifier() {
             </svg>
           </div>
           <div className="text-center">
-            <h3 className="font-semibold">Morceau non reconnu</h3>
+            <h3 className="font-semibold">{t("noMatch")}</h3>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              Essaie de te rapprocher de la source audio ou dans un environnement plus calme.
+              {t("noMatchHint")}
             </p>
           </div>
           <button
             onClick={handleRetry}
             className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
           >
-            Réessayer
+            {t("retry")}
           </button>
         </div>
       )}
@@ -190,16 +193,16 @@ export function SongIdentifier() {
             </svg>
           </div>
           <div className="text-center">
-            <h3 className="font-semibold">Erreur</h3>
+            <h3 className="font-semibold">{t("error")}</h3>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              {errorMessage || "Une erreur est survenue."}
+              {errorMessage || tc("genericError")}
             </p>
           </div>
           <button
             onClick={handleRetry}
             className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
           >
-            Réessayer
+            {t("retry")}
           </button>
         </div>
       )}

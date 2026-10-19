@@ -1,0 +1,29 @@
+{
+  "view": {
+    "offline": "Offline",
+    "copyOf": "Copy from {date}",
+    "noCopy": "No local copy yet",
+    "pending": "{count, plural, one {# session waiting — it will be sent} other {# sessions waiting — they will be sent}} when you're back online.",
+    "nothing": "Nothing cached",
+    "nothingHint": "Open the app once while online: your library and log will then be readable here, without a connection.",
+    "streak": "Streak",
+    "thisWeek": "This week",
+    "songs": "Songs",
+    "library": "Library",
+    "journal": "Log",
+    "learning": "Learning",
+    "rest": "Everything else",
+    "freeSession": "Free session",
+    "retry": "Retry connection"
+  },
+  "banner": {
+    "failed": "Failed",
+    "network": "Network unavailable",
+    "offlinePending": "Offline · {count, plural, one {# session waiting} other {# sessions waiting}}",
+    "offlineCached": "Offline · library and log cached",
+    "stuck": "{count, plural, one {# session couldn't be sent} other {# sessions couldn't be sent}}",
+    "syncing": "Sending sessions saved offline…",
+    "toSend": "{count, plural, one {# session to send} other {# sessions to send}}",
+    "retry": "Retry"
+  }
+}

@@ -1,11 +1,14 @@
 "use server";
 
+import { getLocale, getTranslations } from "next-intl/server";
+import { tErr } from "@/i18n/server";
 import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isEmailConfigured, sendEmail } from "@/lib/email/resend";
 import { waitlistConfirmationEmail } from "@/lib/email/waitlist-confirmation";
 import { INSTRUMENT_VALUES } from "@/lib/instruments";
 import type { Instrument, UserPlan } from "@/types";
+import type { Locale } from "@/i18n/config";
 
 export interface JoinWaitlistInput {
   email: string;
@@ -41,26 +44,30 @@ export async function joinWaitlist(input: JoinWaitlistInput): Promise<JoinWaitli
 
   const email = input.email.trim().toLowerCase();
   if (!EMAIL_PATTERN.test(email) || email.length > 254) {
-    return { success: false, error: "Cette adresse email n'a pas l'air valide." };
+    return { success: false, error: await tErr("invalidEmail") };
   }
   if (!PLANS.includes(input.plan)) {
-    return { success: false, error: "Choisis un plan." };
+    return { success: false, error: await tErr("planRequired") };
   }
   const instruments = [...new Set(input.instruments ?? [])];
   if (instruments.length === 0 || instruments.some((i) => !INSTRUMENT_VALUES.includes(i))) {
-    return { success: false, error: "Dis-nous de quoi tu joues." };
+    return { success: false, error: await tErr("instrumentsRequired") };
   }
 
   const source = input.source?.trim().toLowerCase().slice(0, 64) || null;
 
+  // La langue de la page : celle de l'email de confirmation, et plus tard
+  // de l'invitation.
+  const locale = (await getLocale()) as Locale;
+
   const supabase = await createClient();
   const { data, error } = await supabase
-    .rpc("join_waitlist", { p_email: email, p_plan: input.plan, p_source: source, p_instruments: instruments })
+    .rpc("join_waitlist", { p_email: email, p_plan: input.plan, p_source: source, p_instruments: instruments, p_locale: locale })
     .maybeSingle<{ signup_rank: number; unsubscribe_token: string }>();
 
   if (error) {
     console.error("Error joining waitlist:", error);
-    return { success: false, error: "Oups, ça n'est pas passé. Réessaie dans un instant." };
+    return { success: false, error: await tErr("oops") };
   }
 
   // Deja inscrit : meme succes, sans rang ni nouvel email, pour ne rien
@@ -71,10 +78,12 @@ export async function joinWaitlist(input: JoinWaitlistInput): Promise<JoinWaitli
 
   if (!isEmailConfigured()) return { success: true, rank, confirmationSent: false };
 
-  // L'email part apres la reponse : le formulaire n'attend pas Resend.
+  // Le traducteur est pris pendant la requete ; l'email part apres la
+  // reponse : le formulaire n'attend pas Resend.
+  const t = await getTranslations({ locale, namespace: "email" });
   after(async () => {
     const unsubscribeUrl = `${appUrl()}/acces-anticipe/desinscription?token=${token}`;
-    const message = waitlistConfirmationEmail({ plan: input.plan, rank, unsubscribeUrl, appUrl: appUrl() });
+    const message = waitlistConfirmationEmail({ plan: input.plan, rank, unsubscribeUrl, appUrl: appUrl(), locale, t });
     await sendEmail({
       to: email,
       ...message,

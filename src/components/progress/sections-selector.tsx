@@ -1,21 +1,10 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import type { EnumsT } from "@/i18n/types";
 import type { SongSection } from "@/types";
 
-interface SectionOption {
-  value: SongSection;
-  label: string;
-}
-
-const sections: SectionOption[] = [
-  { value: "intro", label: "Intro" },
-  { value: "verse", label: "Couplet" },
-  { value: "chorus", label: "Refrain" },
-  { value: "bridge", label: "Pont" },
-  { value: "solo", label: "Solo" },
-  { value: "outro", label: "Outro" },
-  { value: "full_song", label: "Complet" },
-];
+const SECTIONS: SongSection[] = ["intro", "verse", "chorus", "bridge", "solo", "outro", "full_song"];
 
 interface SectionsSelectorProps {
   value: SongSection[];
@@ -23,6 +12,8 @@ interface SectionsSelectorProps {
 }
 
 export function SectionsSelector({ value, onChange }: SectionsSelectorProps) {
+  const t = useTranslations("enums");
+  const sections = SECTIONS.map((section) => ({ value: section, label: t(`section.${section}`) }));
   const handleToggle = (section: SongSection) => {
     if (section === "full_song") {
       // Si on clique sur "Complet", on désélectionne tout le reste
@@ -73,12 +64,12 @@ export function SectionsSelector({ value, onChange }: SectionsSelectorProps) {
   );
 }
 
-export function getSectionLabel(section: SongSection): string {
-  return sections.find(s => s.value === section)?.label || section;
+export function getSectionLabel(section: SongSection, t: EnumsT): string {
+  return SECTIONS.includes(section) ? t(`section.${section}`) : section;
 }
 
-export function getSectionsLabels(sectionValues: SongSection[]): string {
+export function getSectionsLabels(sectionValues: SongSection[], t: EnumsT): string {
   if (sectionValues.length === 0) return "";
-  if (sectionValues.includes("full_song")) return "Morceau complet";
-  return sectionValues.map(s => getSectionLabel(s)).join(", ");
+  if (sectionValues.includes("full_song")) return t("fullSong");
+  return sectionValues.map(s => getSectionLabel(s, t)).join(", ");
 }

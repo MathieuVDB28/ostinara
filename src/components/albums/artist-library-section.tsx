@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Bookmark, Check, Play } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
 import type { ArtistLibraryContext } from "@/lib/actions/albums";
-import type { AlbumCommunityStats, SongStatus, CatalogAlbum } from "@/types";
+import type { AlbumCommunityStats, CatalogAlbum } from "@/types";
 
 interface Props {
   artistName: string;
@@ -15,11 +16,6 @@ interface Props {
   library: ArtistLibraryContext;
 }
 
-const STATUS_LABELS: Record<SongStatus, string> = {
-  want_to_learn: "À apprendre",
-  learning: "En cours",
-  mastered: "Maîtrisé",
-};
 
 /** Le nom d'un album, sans « (Remastered) » ni « - Deluxe » : pour comparer. */
 export function albumKey(name?: string | null): string {
@@ -40,6 +36,8 @@ export function albumKey(name?: string | null): string {
  * la discographie. Jamais un album deja ecoute ou deja mis de cote.
  */
 export function ArtistLibrarySection({ artistName, albums, communityStats, library }: Props) {
+  const t = useTranslations("albums.you");
+  const te = useTranslations("enums");
   const { songs, reviewed, wishlisted } = library;
   const listenedCount = Object.keys(reviewed).length;
 
@@ -56,15 +54,15 @@ export function ArtistLibrarySection({ artistName, albums, communityStats, libra
 
   const mastered = songs.filter((song) => song.status === "mastered").length;
   const summary = [
-    songs.length > 0 && `${songs.length} morceau${songs.length > 1 ? "x" : ""} dans ta biblio`,
-    mastered > 0 && `${mastered} maîtrisé${mastered > 1 ? "s" : ""}`,
-    listenedCount > 0 && `${listenedCount} album${listenedCount > 1 ? "s" : ""} écouté${listenedCount > 1 ? "s" : ""}`,
+    songs.length > 0 && t("songs", { count: songs.length }),
+    mastered > 0 && t("mastered", { count: mastered }),
+    listenedCount > 0 && t("listened", { count: listenedCount }),
   ].filter(Boolean);
 
   return (
     <section className="mb-8">
       <h2 className="mb-1 border-b border-border pb-2 text-lg font-extrabold tracking-[-0.01em]">
-        Toi et {artistName}
+        {t("title", { artist: artistName })}
       </h2>
       {summary.length > 0 && <p className="py-2 text-sm text-muted-foreground">{summary.join(" · ")}</p>}
 
@@ -76,16 +74,16 @@ export function ArtistLibrarySection({ artistName, albums, communityStats, libra
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{song.title}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {STATUS_LABELS[song.status]}
+                  {te(`songStatus.${song.status}`)}
                   {song.album && <> · {song.album}</>}
                 </p>
               </div>
               {song.status === "mastered" ? (
-                <Check className="h-4 w-4 shrink-0 text-success" strokeWidth={2.25} aria-label="Maîtrisé" />
+                <Check className="h-4 w-4 shrink-0 text-success" strokeWidth={2.25} aria-label={t("masteredAria")} />
               ) : (
                 <Link
                   href={`/jouer?song=${song.id}`}
-                  aria-label={`Jouer ${song.title}`}
+                  aria-label={t("play", { title: song.title })}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border hover:bg-accent"
                 >
                   <Play className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
@@ -97,7 +95,7 @@ export function ArtistLibrarySection({ artistName, albums, communityStats, libra
       )}
       {songs.length > 6 && (
         <Link href="/biblio" className="mt-1 inline-block text-xs font-semibold text-muted-foreground hover:text-foreground">
-          Voir les {songs.length} dans ta biblio
+          {t("seeAll", { count: songs.length })}
         </Link>
       )}
 
@@ -106,10 +104,10 @@ export function ArtistLibrarySection({ artistName, albums, communityStats, libra
           album={suggestion}
           reason={
             songAlbums.has(albumKey(suggestion.name))
-              ? "Tu en joues déjà un titre : écoute tout l'album"
+              ? t("reasonTrack")
               : songs.length > 0
-                ? `Tu joues ${artistName}, mais as-tu écouté celui-là ?`
-                : "Par où commencer"
+                ? t("reasonArtist", { artist: artistName })
+                : t("reasonStart")
           }
         />
       )}
@@ -118,6 +116,8 @@ export function ArtistLibrarySection({ artistName, albums, communityStats, libra
 }
 
 function AlbumSuggestion({ album, reason }: { album: CatalogAlbum; reason: string }) {
+  const t = useTranslations("albums.you");
+  const tc = useTranslations("common");
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -149,7 +149,7 @@ function AlbumSuggestion({ album, reason }: { album: CatalogAlbum; reason: strin
         {saved ? (
           <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
             <Check className="h-3.5 w-3.5 text-success" strokeWidth={2.25} aria-hidden="true" />
-            Dans ta liste « À écouter »
+            {t("inList")}
           </p>
         ) : (
           <button
@@ -159,7 +159,7 @@ function AlbumSuggestion({ album, reason }: { album: CatalogAlbum; reason: strin
             className="mt-1.5 inline-flex min-h-[32px] items-center gap-1.5 rounded-full border border-border px-3 text-xs font-bold hover:bg-accent disabled:opacity-50"
           >
             <Bookmark className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-            {pending ? "Ajout…" : "À écouter"}
+            {pending ? tc("adding") : t("toListen")}
           </button>
         )}
       </div>

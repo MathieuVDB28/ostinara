@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "notice": {
+      "title": "Mentions légales - Ostinara",
+      "description": "Mentions légales du site Ostinara. Informations sur l'éditeur, l'hébergeur et les conditions d'utilisation."
+    },
+    "terms": {
+      "title": "Conditions Générales d'Utilisation - Ostinara",
+      "description": "Conditions Générales d'Utilisation du service Ostinara. Règles d'utilisation, droits et obligations des utilisateurs."
+    },
+    "privacy": {
+      "title": "Politique de confidentialité - Ostinara",
+      "description": "Politique de confidentialité d'Ostinara. Informations sur la collecte, le traitement et la protection de vos données personnelles."
+    }
+  },
+  "layout": {
+    "login": "Connexion",
+    "start": "Commencer",
+    "notice": "Mentions légales",
+    "terms": "CGU",
+    "privacy": "Confidentialité",
+    "contact": "Contact",
+    "rights": "© {year} Ostinara. Tous droits réservés."
+  },
+  "binding": "Cette traduction est fournie pour ta commodité. Seule la version française fait foi."
+}

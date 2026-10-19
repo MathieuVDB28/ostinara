@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
 import type { CatalogAlbum, CreateAlbumWishlistInput } from "@/types";
 import { Icon } from "@/components/ui/icon";
@@ -13,6 +14,8 @@ interface AddToAlbumWishlistModalProps {
 }
 
 export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlbumWishlistModalProps) {
+  const t = useTranslations("albums.wishlistModal");
+  const tc = useTranslations("common");
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<CatalogAlbum[]>([]);
   const [searching, setSearching] = useState(false);
@@ -91,7 +94,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
       onSuccess(result.album);
       onClose();
     } else {
-      setError(result.error || "Erreur lors de l'ajout");
+      setError(result.error || tc("genericError"));
     }
 
     setSaving(false);
@@ -109,8 +112,8 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
       <div className="relative z-10 flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-border p-5">
-          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Ajouter à la wishlist</h2>
-          <button aria-label="Fermer"
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -125,7 +128,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
             <Icon name="search" className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Rechercher un album..."
+              placeholder={t("search")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-xl border border-border bg-background py-3 pl-10 pr-4 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -174,7 +177,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {album.release_date?.split("-")[0]}
-                    {album.total_tracks ? ` - ${album.total_tracks} titres` : ""}
+                    {album.total_tracks ? ` - ${t("tracks", { count: album.total_tracks })}` : ""}
                   </div>
                 </div>
                 <Icon name="add" className="h-[20px] w-[20px] text-muted-foreground" />
@@ -184,13 +187,13 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
 
           {searchQuery.length >= 2 && !searching && results.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Aucun album trouvé
+              {t("none")}
             </p>
           )}
 
           {searchQuery.length < 2 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Recherche un album à ajouter à ta wishlist
+              {t("hint")}
             </p>
           )}
         </div>
@@ -199,7 +202,7 @@ export function AddToAlbumWishlistModal({ isOpen, onClose, onSuccess }: AddToAlb
           <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-background/80">
             <div className="flex items-center gap-2">
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              <span>Ajout en cours...</span>
+              <span>{t("adding")}</span>
             </div>
           </div>
         )}

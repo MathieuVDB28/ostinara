@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
+import { useTranslations } from "next-intl";
 import type { SetlistWithDetails, SetlistItem } from "@/types";
 
 interface JamSongQueueProps {
@@ -17,6 +17,9 @@ export function JamSongQueue({
   isHost,
   onSongSelect,
 }: JamSongQueueProps) {
+  const t = useTranslations("jam.queue");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   // Elements jouables de la setlist : morceaux + exercices (pas les sections)
   const items = setlist.items.filter(
     (item) => item.item_type === "song" || item.item_type === "exercise"
@@ -30,9 +33,9 @@ export function JamSongQueue({
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="border-b border-border p-3">
         <h3 className="font-semibold">
-          Setlist : {setlist.name}{" "}
+          {t("setlist", { name: setlist.name })}{" "}
           <span className="text-muted-foreground font-normal">
-            ({items.length} éléments)
+            {t("items", { count: items.length })}
           </span>
         </h3>
       </div>
@@ -133,13 +136,13 @@ export function JamSongQueue({
                   <p className="truncate text-sm text-muted-foreground">
                     {isExercise
                       ? item.exercise_category
-                        ? EXERCISE_CATEGORY_LABELS[item.exercise_category]
-                        : "Exercice"
+                        ? te(`exerciseCategory.${item.exercise_category}`)
+                        : tc("exercise")
                       : item.song_artist}
                   </p>
                   {!isExercise && item.tabs_url && (
                     <span className="shrink-0 rounded-full bg-chart-2/20 px-1.5 py-0.5 text-[11px] font-medium text-chart-2">
-                      Tab
+                      {t("tab")}
                     </span>
                   )}
                   {!isExercise &&
@@ -162,7 +165,7 @@ export function JamSongQueue({
               {/* Current indicator */}
               {isCurrent && (
                 <span className="shrink-0 text-xs font-medium text-primary">
-                  En cours
+                  {t("current")}
                 </span>
               )}
             </button>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Bell, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { isIOSBrowserTab, usePushNotifications } from '@/lib/hooks/use-push-notifications';
 
 const SEEN_KEY = 'ostinara_push_prompt_seen';
@@ -19,6 +20,8 @@ const SEEN_KEY = 'ostinara_push_prompt_seen';
  * existent qu'une fois l'app installee sur l'ecran d'accueil.
  */
 export function NotificationPrompt() {
+  const t = useTranslations("profile.notifPrompt");
+  const tc = useTranslations("common");
   const { supported, permission, isSubscribed, loading, message, enable } = usePushNotifications();
   // Lu au premier rendu client. Cote serveur, rien ne s'affiche de toute
   // facon : `supported` reste faux tant que le composant n'est pas monte.
@@ -55,10 +58,10 @@ export function NotificationPrompt() {
       <Bell className="mt-0.5 h-5 w-5 shrink-0 text-primary" strokeWidth={1.75} aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <h2 id="notif-prompt-title" className="text-sm font-semibold">
-          Activer les rappels ?
+          {t("title")}
         </h2>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Un rappel quand un morceau prend la poussière, et les nouvelles de tes amis. Un par jour au plus.
+          {t("body")}
         </p>
         {message && (
           <p role="status" className="mt-2 text-xs text-destructive">
@@ -72,21 +75,21 @@ export function NotificationPrompt() {
             disabled={loading}
             className="inline-flex min-h-[36px] items-center rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {loading ? 'Activation…' : 'Activer'}
+            {loading ? t("enabling") : t("enable")}
           </button>
           <button
             type="button"
             onClick={dismiss}
             className="inline-flex min-h-[36px] items-center rounded-full border border-border px-4 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
           >
-            Plus tard
+            {t("later")}
           </button>
         </div>
       </div>
       <button
         type="button"
         onClick={dismiss}
-        aria-label="Fermer"
+        aria-label={tc("close")}
         className="-m-1 rounded-full p-1 text-muted-foreground transition-colors hover:text-foreground"
       >
         <X className="h-4 w-4" aria-hidden="true" />

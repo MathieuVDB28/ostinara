@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { ExerciseWithProgress } from "@/types";
 
 interface ExerciseProgressProps {
@@ -13,6 +14,7 @@ export function ExerciseProgress({
   currentBpm,
   className = "",
 }: ExerciseProgressProps) {
+  const t = useTranslations("exercises.progress");
   const progress = exercise.user_progress;
   const progressPercent = Math.min(
     100,
@@ -44,7 +46,7 @@ export function ExerciseProgress({
                 d="M5 13l4 4L19 7"
               />
             </svg>
-            Objectif atteint!
+            {t("reached")}
           </span>
         )}
       </div>
@@ -53,7 +55,7 @@ export function ExerciseProgress({
       <div className="mb-4 flex items-center justify-center gap-4">
         <div className="text-center">
           <div className="text-3xl font-bold text-primary">{currentBpm}</div>
-          <div className="text-xs text-muted-foreground">BPM actuel</div>
+          <div className="text-xs text-muted-foreground">{t("current")}</div>
         </div>
 
         {/* Arrow */}
@@ -75,7 +77,7 @@ export function ExerciseProgress({
           <div className="text-3xl font-bold text-muted-foreground">
             {exercise.target_bpm}
           </div>
-          <div className="text-xs text-muted-foreground">BPM cible</div>
+          <div className="text-xs text-muted-foreground">{t("target")}</div>
         </div>
       </div>
 
@@ -117,8 +119,7 @@ export function ExerciseProgress({
             />
           </svg>
           <span>
-            {improvement > 0 ? "+" : ""}
-            {improvement} BPM depuis la dernière session
+            {t("sinceLast", { delta: `${improvement > 0 ? "+" : ""}${improvement}` })}
           </span>
         </div>
       )}
@@ -128,15 +129,15 @@ export function ExerciseProgress({
         <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-4">
           <div className="text-center">
             <div className="text-lg font-semibold">{progress.best_bpm}</div>
-            <div className="text-xs text-muted-foreground">Record</div>
+            <div className="text-xs text-muted-foreground">{t("record")}</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold">{progress.sessions_count}</div>
-            <div className="text-xs text-muted-foreground">Sessions</div>
+            <div className="text-xs text-muted-foreground">{t("sessions")}</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold">{progress.total_practice_minutes}</div>
-            <div className="text-xs text-muted-foreground">Minutes</div>
+            <div className="text-xs text-muted-foreground">{t("minutes")}</div>
           </div>
         </div>
       )}
@@ -144,7 +145,7 @@ export function ExerciseProgress({
       {/* Next milestone */}
       {!isAtTarget && (
         <div className="mt-4 rounded-lg bg-accent/50 p-2 text-center text-sm text-muted-foreground">
-          Prochain objectif: {Math.min(currentBpm + exercise.bpm_increment, exercise.target_bpm)} BPM
+          {t("next", { bpm: Math.min(currentBpm + exercise.bpm_increment, exercise.target_bpm) })}
         </div>
       )}
     </div>

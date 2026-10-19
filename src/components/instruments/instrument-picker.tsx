@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { setMyInstruments } from "@/lib/actions/instruments";
-import { INSTRUMENTS, SKILL_LEVELS, sortInstruments } from "@/lib/instruments";
+import { INSTRUMENTS, SKILL_LEVEL_VALUES, sortInstruments } from "@/lib/instruments";
 import { Icon } from "@/components/ui/icon";
 import type { Instrument, ProfileInstrument, SkillLevel } from "@/types";
 
@@ -33,6 +34,9 @@ interface Draft {
  * grisent et un lien mene aux plans. Qui en a deja plus les garde.
  */
 export function InstrumentPicker({ initial, submitLabel, limit, onSaved }: Props) {
+  const t = useTranslations("instruments.picker");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const [drafts, setDrafts] = useState<Partial<Record<Instrument, Draft>>>(() =>
     Object.fromEntries(
       initial.map((i) => [i.instrument, { level: i.level, customLabel: i.custom_label ?? "" }]),
@@ -69,8 +73,8 @@ export function InstrumentPicker({ initial, submitLabel, limit, onSaved }: Props
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (selected.length === 0) return setError("Choisis au moins un instrument.");
-    if (selected.some((v) => !drafts[v]?.level)) return setError("Indique ton niveau pour chaque instrument.");
+    if (selected.length === 0) return setError(t("chooseOne"));
+    if (selected.some((v) => !drafts[v]?.level)) return setError(t("levelEach"));
 
     const payload: ProfileInstrument[] = sortInstruments(
       selected.map((value) => ({
@@ -84,7 +88,7 @@ export function InstrumentPicker({ initial, submitLabel, limit, onSaved }: Props
     startTransition(async () => {
       const result = await setMyInstruments(payload);
       if (result.success) onSaved();
-      else setError(result.error ?? "Oups, ça n'est pas passé.");
+      else setError(result.error ?? tc("genericError"));
     });
   };
 
@@ -115,7 +119,7 @@ export function InstrumentPicker({ initial, submitLabel, limit, onSaved }: Props
                   <Icon name={instrument.icon} className="h-5 w-5" />
                 </span>
                 <span className="flex-1 font-display text-2xl font-extrabold uppercase leading-none">
-                  {instrument.label}
+                  {te(`instrument.${instrument.value}`)}
                 </span>
                 <span
                   aria-hidden="true"
@@ -135,16 +139,16 @@ export function InstrumentPicker({ initial, submitLabel, limit, onSaved }: Props
                       value={draft.customLabel}
                       onChange={(event) => update(instrument.value, { customLabel: event.target.value })}
                       maxLength={40}
-                      placeholder="Lequel ? (ukulélé, violon…)"
-                      aria-label="Quel instrument ?"
+                      placeholder={t("otherPlaceholder")}
+                      aria-label={t("otherLabel")}
                       className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   )}
 
                   <fieldset>
-                    <legend className="sr-only">Ton niveau à la {instrument.label.toLowerCase()}</legend>
+                    <legend className="sr-only">{t("levelLegend", { instrument: te(`instrument.${instrument.value}`).toLowerCase() })}</legend>
                     <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-input bg-input sm:grid-cols-4">
-                      {SKILL_LEVELS.map((level) => {
+                      {SKILL_LEVEL_VALUES.map((value) => ({ value, label: te(`skillLevel.${value}`) })).map((level) => {
                         const active = draft.level === level.value;
                         return (
                           <label
@@ -180,7 +184,7 @@ export function InstrumentPicker({ initial, submitLabel, limit, onSaved }: Props
                       }`}
                     >
                       <Icon name="star" className={`h-3.5 w-3.5 ${isPrimary ? "fill-primary text-primary" : ""}`} />
-                      {isPrimary ? "Instrument principal" : "En faire mon principal"}
+                      {isPrimary ? t("isPrimary") : t("makePrimary")}
                     </button>
                   )}
                 </div>
@@ -193,9 +197,9 @@ export function InstrumentPicker({ initial, submitLabel, limit, onSaved }: Props
       {limit !== null && atCap && (
         <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
           <Icon name="lock" className="h-4 w-4" />
-          Plan Free : {limit} instruments max.
+          {t("freeCap", { limit })}
           <Link href="/pricing" className="font-semibold text-foreground underline underline-offset-2">
-            Passe Pro pour en jouer plus
+            {t("upgrade")}
           </Link>
         </p>
       )}
@@ -211,7 +215,7 @@ export function InstrumentPicker({ initial, submitLabel, limit, onSaved }: Props
         disabled={isPending}
         className="mt-5 min-h-[48px] w-full rounded-xl bg-primary py-3 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
       >
-        {isPending ? "Enregistrement…" : submitLabel}
+        {isPending ? t("saving") : submitLabel}
       </button>
     </form>
   );

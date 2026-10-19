@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { Friend, Song, ChallengeType } from "@/types";
 import { createChallenge } from "@/lib/actions/challenges";
 
@@ -12,11 +13,9 @@ interface CreateChallengeModalProps {
   songs: Song[];
 }
 
-const CHALLENGE_TYPES: { value: ChallengeType; label: string; description: string; icon: React.ReactNode }[] = [
+const CHALLENGE_TYPES: { value: ChallengeType; icon: React.ReactNode }[] = [
   {
     value: "practice_time",
-    label: "Temps de pratique",
-    description: "Celui qui pratique le plus de minutes gagne",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -25,8 +24,6 @@ const CHALLENGE_TYPES: { value: ChallengeType; label: string; description: strin
   },
   {
     value: "streak",
-    label: "Streak",
-    description: "Celui qui maintient le plus long streak gagne",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
@@ -35,8 +32,6 @@ const CHALLENGE_TYPES: { value: ChallengeType; label: string; description: strin
   },
   {
     value: "song_mastery",
-    label: "Maîtrise de morceau",
-    description: "Le premier à maîtriser le morceau gagne",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -45,13 +40,7 @@ const CHALLENGE_TYPES: { value: ChallengeType; label: string; description: strin
   },
 ];
 
-const DURATION_PRESETS = [
-  { value: 1, label: "1 jour" },
-  { value: 3, label: "3 jours" },
-  { value: 7, label: "1 semaine" },
-  { value: 14, label: "2 semaines" },
-  { value: 30, label: "1 mois" },
-];
+const DURATION_PRESETS = [1, 3, 7, 14, 30] as const;
 
 export function CreateChallengeModal({
   isOpen,
@@ -59,6 +48,8 @@ export function CreateChallengeModal({
   friends,
   songs,
 }: CreateChallengeModalProps) {
+  const t = useTranslations("challenges");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [selectedFriend, setSelectedFriend] = useState<string>("");
   const [challengeType, setChallengeType] = useState<ChallengeType>("practice_time");
@@ -86,12 +77,12 @@ export function CreateChallengeModal({
     setError(null);
 
     if (!selectedFriend) {
-      setError("Sélectionne un ami");
+      setError(t("create.selectFriend"));
       return;
     }
 
     if (challengeType === "song_mastery" && !selectedSong) {
-      setError("Sélectionne un morceau");
+      setError(t("create.selectSong"));
       return;
     }
 
@@ -105,7 +96,7 @@ export function CreateChallengeModal({
     });
 
     if (!result.success) {
-      setError(result.error || "Erreur lors de la création");
+      setError(result.error || tc("genericError"));
       setIsLoading(false);
       return;
     }
@@ -120,7 +111,7 @@ export function CreateChallengeModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative max-h-[90vh] w-full max-w-md overflow-auto rounded-xl border border-border bg-card p-6">
-        <button aria-label="Fermer"
+        <button aria-label={tc("close")}
           onClick={onClose}
           className="absolute right-4 top-4 rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
@@ -129,20 +120,20 @@ export function CreateChallengeModal({
           </svg>
         </button>
 
-        <h2 className="mb-6 font-display text-3xl font-extrabold uppercase leading-none">Nouveau défi</h2>
+        <h2 className="mb-6 font-display text-3xl font-extrabold uppercase leading-none">{t("create.title")}</h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Sélection de l'ami */}
           <div>
             <label className="mb-2 block text-sm font-medium">
-              Défier un ami
+              {t("create.friend")}
             </label>
             <select
               value={selectedFriend}
               onChange={(e) => setSelectedFriend(e.target.value)}
               className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             >
-              <option value="">Choisir un ami...</option>
+              <option value="">{t("create.chooseFriend")}</option>
               {friends.map((friend) => (
                 <option key={friend.id} value={friend.profile.id}>
                   {friend.profile.display_name || friend.profile.username}
@@ -154,7 +145,7 @@ export function CreateChallengeModal({
           {/* Type de challenge */}
           <div>
             <label className="mb-2 block text-sm font-medium">
-              Type de défi
+              {t("create.type")}
             </label>
             <div className="space-y-2">
               {CHALLENGE_TYPES.map((type) => (
@@ -178,9 +169,9 @@ export function CreateChallengeModal({
                     {type.icon}
                   </span>
                   <div>
-                    <p className="font-medium">{type.label}</p>
+                    <p className="font-medium">{t(`typeLong.${type.value}`)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {type.description}
+                      {t(`typeDescription.${type.value}`)}
                     </p>
                   </div>
                 </button>
@@ -192,11 +183,11 @@ export function CreateChallengeModal({
           {challengeType === "song_mastery" && (
             <div>
               <label className="mb-2 block text-sm font-medium">
-                Morceau à maîtriser
+                {t("create.songToMaster")}
               </label>
               {availableSongs.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Tu n'as pas de morceau non maîtrisé. Ajoute-en un dans ta bibliothèque !
+                  {t("create.noSong")}
                 </p>
               ) : (
                 <select
@@ -204,7 +195,7 @@ export function CreateChallengeModal({
                   onChange={(e) => setSelectedSong(e.target.value)}
                   className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option value="">Choisir un morceau...</option>
+                  <option value="">{t("create.chooseSong")}</option>
                   {availableSongs.map((song) => (
                     <option key={song.id} value={song.id}>
                       {song.title} - {song.artist}
@@ -218,21 +209,21 @@ export function CreateChallengeModal({
           {/* Durée */}
           <div>
             <label className="mb-2 block text-sm font-medium">
-              Durée du défi
+              {t("create.durationLabel")}
             </label>
             <div className="flex flex-wrap gap-2">
               {DURATION_PRESETS.map((preset) => (
                 <button
-                  key={preset.value}
+                  key={preset}
                   type="button"
-                  onClick={() => setDuration(preset.value)}
+                  onClick={() => setDuration(preset)}
                   className={`rounded-lg px-3 py-2 text-sm transition-colors ${
-                    duration === preset.value
+                    duration === preset
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }`}
                 >
-                  {preset.label}
+                  {t(`create.duration.${preset}`)}
                 </button>
               ))}
             </div>
@@ -249,7 +240,7 @@ export function CreateChallengeModal({
             disabled={isLoading || !selectedFriend || (challengeType === "song_mastery" && !selectedSong)}
             className="w-full rounded-lg bg-primary px-4 py-3 font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
           >
-            {isLoading ? "Envoi en cours..." : "Envoyer le défi"}
+            {isLoading ? t("create.sending") : t("create.submit")}
           </button>
         </form>
       </div>

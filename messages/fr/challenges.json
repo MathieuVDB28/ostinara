@@ -1,0 +1,91 @@
+{
+  "view": {
+    "mine": "Mes défis",
+    "invitations": "Invitations",
+    "leaderboard": "Classement",
+    "new": "Défi",
+    "poster": "Lance<br></br>un <accent>défi</accent><br></br>à tes amis",
+    "posterHint": "Un objectif de pratique sur une période. Celui qui va le plus loin gagne.",
+    "kindMinutes": "Minutes jouées",
+    "kindMastered": "Morceaux maîtrisés",
+    "kindStreak": "Série",
+    "create": "Créer un défi",
+    "autoHint": "Tes sessions de pratique alimentent tes défis toutes seules : rien à cocher en plus.",
+    "seeLeaderboard": "Voir le classement",
+    "noneTitle": "Aucun défi en cours",
+    "noneWithFriends": "Un défi, c'est un objectif de pratique sur une période : minutes jouées, morceaux maîtrisés, tempo atteint. Celui qui va le plus loin gagne.",
+    "noneNoFriends": "Un défi se joue à deux. Ajoute un ami, et vous pourrez vous fixer un objectif de pratique commun.",
+    "addFriend": "Ajouter un ami",
+    "needFriend": "Il faut au moins un ami",
+    "sentPending": "Défis envoyés en attente",
+    "noInvitation": "Aucune invitation",
+    "noInvitationHint": "Personne ne t'a défié pour l'instant. Rien n'empêche de commencer.",
+    "launch": "Lancer un défi",
+    "seeMine": "Voir mes défis"
+  },
+  "type": {
+    "practice_time": "Temps de pratique",
+    "streak": "Série",
+    "song_mastery": "Maîtrise"
+  },
+  "typeLong": {
+    "practice_time": "Temps de pratique",
+    "streak": "Série de jours",
+    "song_mastery": "Maîtrise de morceau"
+  },
+  "typeDescription": {
+    "practice_time": "Celui qui pratique le plus de minutes gagne",
+    "streak": "Celui qui maintient la plus longue série de jours gagne",
+    "song_mastery": "Le premier à maîtriser le morceau gagne"
+  },
+  "card": {
+    "over": "Terminé",
+    "remainingDays": "{d} j {h} h",
+    "remainingHours": "{h} h {m} min",
+    "pending": "En attente",
+    "won": "Gagné !",
+    "lost": "Perdu",
+    "tie": "Égalité",
+    "vs": "VS",
+    "hoursMinutes": "{h} h {m}",
+    "minutes": "{m} min",
+    "days": "{d} j",
+    "mastered": "Maîtrisé !",
+    "inProgress": "En cours"
+  },
+  "invitation": {
+    "invites": "t'invite à un défi",
+    "type": "Type",
+    "duration": "Durée",
+    "days": "{count, plural, one {# jour} other {# jours}}",
+    "song": "Morceau"
+  },
+  "leaderboard": {
+    "week": "Cette semaine",
+    "month": "Ce mois",
+    "empty": "Pas encore de classement",
+    "emptyHint": "Ajoute des amis et pratique pour apparaître dans le classement !",
+    "sessions": "{count, plural, one {# session} other {# sessions}}"
+  },
+  "create": {
+    "duration": {
+      "1": "1 jour",
+      "3": "3 jours",
+      "7": "1 semaine",
+      "14": "2 semaines",
+      "30": "1 mois"
+    },
+    "selectFriend": "Sélectionne un ami",
+    "selectSong": "Sélectionne un morceau",
+    "title": "Nouveau défi",
+    "friend": "Défier un ami",
+    "chooseFriend": "Choisir un ami...",
+    "type": "Type de défi",
+    "songToMaster": "Morceau à maîtriser",
+    "noSong": "Tu n'as pas de morceau non maîtrisé. Ajoute-en un dans ta bibliothèque !",
+    "chooseSong": "Choisir un morceau...",
+    "durationLabel": "Durée du défi",
+    "sending": "Envoi en cours...",
+    "submit": "Envoyer le défi"
+  }
+}

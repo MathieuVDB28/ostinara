@@ -1,6 +1,9 @@
 "use client";
 
 import { ListMusic } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import type { CommonT } from "@/i18n/types";
 import type { SetlistWithDetails } from "@/types";
 
 interface SetlistCardProps {
@@ -8,19 +11,19 @@ interface SetlistCardProps {
   onClick: () => void;
 }
 
-function formatDuration(seconds: number): string {
+export function formatSetDuration(seconds: number, t: CommonT): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
 
   if (hours > 0) {
-    return `${hours}h ${minutes.toString().padStart(2, "0")}min`;
+    return t("duration.hoursMinutesPadded", { h: hours, m: minutes.toString().padStart(2, "0") });
   }
-  return `${minutes}min`;
+  return t("duration.minutes", { m: minutes });
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, intlLocale: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString("fr-FR", {
+  return date.toLocaleDateString(intlLocale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -28,12 +31,15 @@ function formatDate(dateString: string): string {
 }
 
 export function SetlistCard({ setlist, onClick }: SetlistCardProps) {
+  const t = useTranslations("setlists.card");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const isUpcoming =
     setlist.concert_date && new Date(setlist.concert_date) > new Date();
 
   const meta = [
-    `${setlist.song_count} morceau${setlist.song_count > 1 ? "x" : ""}`,
-    formatDuration(setlist.total_duration_seconds),
+    t("songs", { count: setlist.song_count }),
+    formatSetDuration(setlist.total_duration_seconds, tc),
     setlist.band?.name,
     setlist.venue,
   ].filter(Boolean);
@@ -66,9 +72,9 @@ export function SetlistCard({ setlist, onClick }: SetlistCardProps) {
           }`}
         >
           {isUpcoming && (
-            <span className="block font-mono text-[9.5px] font-semibold tracking-[0.06em] text-success">À venir</span>
+            <span className="block font-mono text-[9.5px] font-semibold tracking-[0.06em] text-success">{t("upcoming")}</span>
           )}
-          {formatDate(setlist.concert_date)}
+          {formatDate(setlist.concert_date, intlLocale)}
         </span>
       )}
     </button>

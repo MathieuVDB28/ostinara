@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createJamSession, getBandSetlistsForJam } from "@/lib/actions/jam-sessions";
 import type { BandWithMembers, SetlistWithDetails } from "@/types";
 
@@ -12,6 +13,8 @@ interface StartJamModalProps {
 }
 
 export function StartJamModal({ isOpen, onClose, band }: StartJamModalProps) {
+  const t = useTranslations("jam.start");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [selectedSetlistId, setSelectedSetlistId] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -43,7 +46,7 @@ export function StartJamModal({ isOpen, onClose, band }: StartJamModalProps) {
     if (result.success && result.session) {
       router.push(`/jam/${result.session.id}`);
     } else {
-      setError(result.error || "Erreur inconnue");
+      setError(result.error || tc("genericError"));
       setLoading(false);
     }
   };
@@ -54,10 +57,12 @@ export function StartJamModal({ isOpen, onClose, band }: StartJamModalProps) {
         className="w-full max-w-md rounded-2xl bg-card p-6 shadow-md"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="mb-2 font-display text-3xl font-extrabold uppercase leading-none">Démarrer une jam</h2>
+        <h2 className="mb-2 font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
         <p className="text-sm text-muted-foreground mb-6">
-          Lance une session collaborative avec les membres de{" "}
-          <span className="font-medium text-foreground">{band.name}</span>
+          {t.rich("intro", {
+            band: band.name,
+            strong: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+          })}
         </p>
 
         {error && (
@@ -69,11 +74,11 @@ export function StartJamModal({ isOpen, onClose, band }: StartJamModalProps) {
         {/* Setlist selection */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">
-            Setlist (optionnel)
+            {t("setlist")}
           </label>
           {loadingSetlists ? (
             <div className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
-              Chargement des setlists...
+              {t("loading")}
             </div>
           ) : (
             <select
@@ -81,23 +86,23 @@ export function StartJamModal({ isOpen, onClose, band }: StartJamModalProps) {
               onChange={(e) => setSelectedSetlistId(e.target.value)}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             >
-              <option value="">Session libre (sans setlist)</option>
+              <option value="">{t("free")}</option>
               {bandSetlists.map((setlist) => (
                 <option key={setlist.id} value={setlist.id}>
-                  {setlist.name} ({setlist.song_count} morceaux)
+                  {t("option", { name: setlist.name, count: setlist.song_count })}
                 </option>
               ))}
             </select>
           )}
           <p className="mt-1 text-xs text-muted-foreground">
-            Choisir une setlist permet de naviguer les morceaux ensemble
+            {t("hint")}
           </p>
         </div>
 
         {/* Members preview */}
         <div className="mb-6">
           <p className="text-sm text-muted-foreground mb-2">
-            Les membres suivants seront notifies :
+            {t("notified")}
           </p>
           <div className="flex -space-x-2">
             {band.members
@@ -141,14 +146,14 @@ export function StartJamModal({ isOpen, onClose, band }: StartJamModalProps) {
             disabled={loading}
             className="flex-1 rounded-lg border border-border py-2.5 font-medium transition-colors hover:bg-accent disabled:opacity-50"
           >
-            Annuler
+            {tc("cancel")}
           </button>
           <button
             onClick={handleStart}
             disabled={loading || loadingSetlists}
             className="flex-1 rounded-lg bg-primary py-2.5 font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
           >
-            {loading ? "Démarrage…" : "Démarrer"}
+            {loading ? t("starting") : t("submit")}
           </button>
         </div>
       </div>

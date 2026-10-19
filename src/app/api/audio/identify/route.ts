@@ -1,3 +1,4 @@
+import { tErr } from "@/i18n/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { AudioIdentificationResult } from "@/types";
@@ -7,7 +8,7 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    return NextResponse.json({ error: await tErr("notAuthenticated") }, { status: 401 });
   }
 
   // Check plan
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
 
   if (!profile || profile.plan === "free") {
     return NextResponse.json(
-      { error: "Fonctionnalité réservée aux plans Pro et Band" },
+      { error: await tErr("proOnly") },
       { status: 403 }
     );
   }
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
   if (!apiToken) {
     console.error("[Audio Identify] AUDD_API_TOKEN not configured");
     return NextResponse.json(
-      { error: "Service de reconnaissance non configuré" },
+      { error: await tErr("recognitionNotConfigured") },
       { status: 500 }
     );
   }
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
     const audioFile = formData.get("audio") as Blob | null;
 
     if (!audioFile) {
-      return NextResponse.json({ error: "Aucun fichier audio fourni" }, { status: 400 });
+      return NextResponse.json({ error: await tErr("noAudioFile") }, { status: 400 });
     }
 
     // Forward to AudD.io
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     if (!auddResponse.ok) {
       console.error("[Audio Identify] AudD API error:", auddResponse.status);
       return NextResponse.json(
-        { error: "Erreur du service de reconnaissance" },
+        { error: await tErr("recognitionServiceError") },
         { status: 502 }
       );
     }
@@ -65,14 +66,14 @@ export async function POST(request: NextRequest) {
     if (auddData.status === "error") {
       console.error("[Audio Identify] AudD error:", auddData.error);
       return NextResponse.json(
-        { error: "Erreur du service de reconnaissance" },
+        { error: await tErr("recognitionServiceError") },
         { status: 502 }
       );
     }
 
     // No match found
     if (!auddData.result) {
-      return NextResponse.json({ result: null, message: "Morceau non reconnu" });
+      return NextResponse.json({ result: null, message: await tErr("songNotRecognized") });
     }
 
     const r = auddData.result;
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("[Audio Identify] Unexpected error:", err);
     return NextResponse.json(
-      { error: "Une erreur inattendue est survenue" },
+      { error: await tErr("unexpected") },
       { status: 500 }
     );
   }

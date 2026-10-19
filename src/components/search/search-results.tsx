@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { Disc3, Dumbbell, Guitar, Music, User, Video, type LucideIcon } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -90,6 +91,7 @@ export function SearchResults({
   onSelect,
   placeholder,
 }: SearchResultsProps) {
+  const t = useTranslations("search.ui");
   const trimmed = query.trim();
 
   if (trimmed.length < MIN_QUERY_LENGTH) {
@@ -102,7 +104,7 @@ export function SearchResults({
         role="status"
         className="px-3 py-8 text-center text-sm text-muted-foreground"
       >
-        Recherche…
+        {t("searching")}
       </p>
     );
   }
@@ -112,11 +114,11 @@ export function SearchResults({
       <EmptyState
         compact
         icon="search_off"
-        title={`Rien pour « ${trimmed} »`}
-        description="La recherche couvre tes morceaux, albums, covers, exercices, matos et amis. Vérifie l'orthographe, ou ajoute-le."
+        title={t("nothing", { query: trimmed })}
+        description={t("nothingHint")}
         actions={[
-          { label: "Ajouter un morceau", icon: "add", href: "/biblio", primary: true },
-          { label: "Trouver un ami", icon: "person", href: "/commu/amis" },
+          { label: t("addSong"), icon: "add", href: "/biblio", primary: true },
+          { label: t("findFriend"), icon: "person", href: "/commu/amis" },
         ]}
       />
     );

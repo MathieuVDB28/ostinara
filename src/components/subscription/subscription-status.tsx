@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { UserPlan, SubscriptionStatus } from "@/types";
 import { PLANS } from "@/lib/stripe/config";
 
@@ -16,6 +18,8 @@ export function SubscriptionStatusBadge({
   periodEnd,
   compact = false,
 }: SubscriptionStatusProps) {
+  const t = useTranslations("plans.status");
+  const intlLocale = useIntlLocale();
   const config = PLANS[plan];
 
   // Couleurs selon le plan
@@ -26,24 +30,25 @@ export function SubscriptionStatusBadge({
   };
 
   // Couleurs selon le statut
-  const statusColors: Record<SubscriptionStatus, { bg: string; text: string; label: string }> = {
-    none: { bg: "bg-muted", text: "text-muted-foreground", label: "" },
-    active: { bg: "bg-success/20", text: "text-success", label: "Actif" },
-    trialing: { bg: "bg-chart-2/20", text: "text-chart-2", label: "Essai" },
-    past_due: { bg: "bg-destructive/20", text: "text-destructive", label: "Paiement en retard" },
-    canceled: { bg: "bg-primary/20", text: "text-primary", label: "Annulé" },
-    incomplete: { bg: "bg-primary/20", text: "text-primary", label: "Incomplet" },
-    incomplete_expired: { bg: "bg-destructive/20", text: "text-destructive", label: "Expiré" },
-    unpaid: { bg: "bg-destructive/20", text: "text-destructive", label: "Impayé" },
-    paused: { bg: "bg-muted/20", text: "text-muted-foreground", label: "En pause" },
-  };
+  const statusColors = {
+    none: { bg: "bg-muted", text: "text-muted-foreground", label: "" as const },
+    active: { bg: "bg-success/20", text: "text-success", label: "active" as const },
+    trialing: { bg: "bg-chart-2/20", text: "text-chart-2", label: "trialing" as const },
+    past_due: { bg: "bg-destructive/20", text: "text-destructive", label: "past_due" as const },
+    canceled: { bg: "bg-primary/20", text: "text-primary", label: "canceled" as const },
+    incomplete: { bg: "bg-primary/20", text: "text-primary", label: "incomplete" as const },
+    incomplete_expired: { bg: "bg-destructive/20", text: "text-destructive", label: "incomplete_expired" as const },
+    unpaid: { bg: "bg-destructive/20", text: "text-destructive", label: "unpaid" as const },
+    paused: { bg: "bg-muted/20", text: "text-muted-foreground", label: "paused" as const },
+  } satisfies Record<SubscriptionStatus, { bg: string; text: string; label: string }>;
 
   const statusInfo = status ? statusColors[status] : null;
+  // La cle du libelle ; vide pour « none », qui ne s'affiche pas.
 
   // Formater la date de fin de période
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("fr-FR", {
+    return date.toLocaleDateString(intlLocale, {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -72,26 +77,26 @@ export function SubscriptionStatusBadge({
           <span
             className={`inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10.5px] font-semibold uppercase ${statusInfo.bg} ${statusInfo.text}`}
           >
-            {statusInfo.label}
+            {t(statusInfo.label)}
           </span>
         )}
       </div>
 
       {periodEnd && status === "active" && plan !== "free" && (
         <p className="text-sm text-muted-foreground">
-          Renouvellement le {formatDate(periodEnd)}
+          {t("renewsOn", { date: formatDate(periodEnd) })}
         </p>
       )}
 
       {periodEnd && status === "canceled" && plan !== "free" && (
         <p className="text-sm text-primary">
-          Accès jusqu&apos;au {formatDate(periodEnd)}
+          {t("accessUntil", { date: formatDate(periodEnd) })}
         </p>
       )}
 
       {status === "past_due" && (
         <p className="text-sm text-destructive">
-          Mets à jour ton moyen de paiement
+          {t("updatePayment")}
         </p>
       )}
     </div>
@@ -109,6 +114,7 @@ export function SubscriptionSummary({
   onManage?: () => void;
   onUpgrade?: () => void;
 }) {
+  const t = useTranslations("plans");
   const config = PLANS[plan];
   const isFree = plan === "free";
 
@@ -116,7 +122,7 @@ export function SubscriptionSummary({
     <div className="border-y border-border py-5">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Mon abonnement</h3>
+          <h3 className="text-lg font-semibold">{t("status.mySubscription")}</h3>
           <div className="mt-2">
             <SubscriptionStatusBadge
               plan={plan}
@@ -132,7 +138,7 @@ export function SubscriptionSummary({
               onClick={onManage}
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
             >
-              Gérer
+              {t("status.manage")}
             </button>
           )}
           {isFree && onUpgrade && (
@@ -140,7 +146,7 @@ export function SubscriptionSummary({
               onClick={onUpgrade}
               className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Passer Pro
+              {t("status.goPro")}
             </button>
           )}
         </div>
@@ -149,7 +155,7 @@ export function SubscriptionSummary({
       {/* Features résumé */}
       <div className="mt-4 border-t border-border pt-4">
         <p className="mb-2 text-sm text-muted-foreground">
-          {config.description}
+          {t(`description.${plan}`)}
         </p>
         <ul className="flex flex-wrap gap-2">
           {config.features.slice(0, 3).map((feature, index) => (
@@ -157,12 +163,12 @@ export function SubscriptionSummary({
               key={index}
               className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground"
             >
-              {feature}
+              {t(`features.${feature}`)}
             </li>
           ))}
           {config.features.length > 3 && (
             <li className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
-              +{config.features.length - 3} autres
+              {t("status.more", { count: config.features.length - 3 })}
             </li>
           )}
         </ul>

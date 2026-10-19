@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
@@ -78,7 +79,7 @@ export async function createGearItem(input: CreateGearItemInput): Promise<{
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Verifier la limite pour les utilisateurs free (5 gear items max)
@@ -97,7 +98,7 @@ export async function createGearItem(input: CreateGearItemInput): Promise<{
     if (count && count >= FREE_PLAN_GEAR_LIMIT) {
       return {
         success: false,
-        error: `Tu as atteint la limite de ${FREE_PLAN_GEAR_LIMIT} equipements. Passe en Pro pour en ajouter plus !`,
+        error: await tErr("gearLimit", { limit: FREE_PLAN_GEAR_LIMIT }),
       };
     }
   }
@@ -113,7 +114,7 @@ export async function createGearItem(input: CreateGearItemInput): Promise<{
 
   if (error) {
     console.error("Error creating gear item:", error);
-    return { success: false, error: "Erreur lors de l'ajout de l'equipement" };
+    return { success: false, error: await tErr("gearAddFailed") };
   }
 
   // Creer une activite pour le feed — sauf pour le matos prive, que les
@@ -144,7 +145,7 @@ export async function updateGearItem(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -155,7 +156,7 @@ export async function updateGearItem(
 
   if (error) {
     console.error("Error updating gear item:", error);
-    return { success: false, error: "Erreur lors de la mise a jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   revalidatePath("/gear");
@@ -167,7 +168,7 @@ export async function deleteGearItem(id: string): Promise<{ success: boolean; er
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -178,7 +179,7 @@ export async function deleteGearItem(id: string): Promise<{ success: boolean; er
 
   if (error) {
     console.error("Error deleting gear item:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/gear");
@@ -254,7 +255,7 @@ export async function createGearSetup(input: CreateGearSetupInput): Promise<{
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Verifier la limite pour les utilisateurs free (1 setup max)
@@ -273,7 +274,7 @@ export async function createGearSetup(input: CreateGearSetupInput): Promise<{
     if (count && count >= FREE_PLAN_SETUP_LIMIT) {
       return {
         success: false,
-        error: `Tu as atteint la limite de ${FREE_PLAN_SETUP_LIMIT} setup. Passe en Pro pour en creer plus !`,
+        error: await tErr("setupLimit", { limit: FREE_PLAN_SETUP_LIMIT }),
       };
     }
   }
@@ -289,7 +290,7 @@ export async function createGearSetup(input: CreateGearSetupInput): Promise<{
 
   if (error) {
     console.error("Error creating gear setup:", error);
-    return { success: false, error: "Erreur lors de la creation du setup" };
+    return { success: false, error: await tErr("setupCreateFailed") };
   }
 
   revalidatePath("/gear");
@@ -304,7 +305,7 @@ export async function updateGearSetup(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -315,7 +316,7 @@ export async function updateGearSetup(
 
   if (error) {
     console.error("Error updating gear setup:", error);
-    return { success: false, error: "Erreur lors de la mise a jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   revalidatePath("/gear");
@@ -327,7 +328,7 @@ export async function deleteGearSetup(id: string): Promise<{ success: boolean; e
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -338,7 +339,7 @@ export async function deleteGearSetup(id: string): Promise<{ success: boolean; e
 
   if (error) {
     console.error("Error deleting gear setup:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/gear");
@@ -354,7 +355,7 @@ export async function addGearToSetup(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Verifier que le setup appartient a l'utilisateur
@@ -366,7 +367,7 @@ export async function addGearToSetup(
     .single();
 
   if (!setup) {
-    return { success: false, error: "Setup non trouve" };
+    return { success: false, error: await tErr("setupNotFound") };
   }
 
   // Verifier que le gear item appartient a l'utilisateur
@@ -378,7 +379,7 @@ export async function addGearToSetup(
     .single();
 
   if (!gear) {
-    return { success: false, error: "Equipement non trouve" };
+    return { success: false, error: await tErr("gearNotFound") };
   }
 
   // Determiner la prochaine position
@@ -399,9 +400,9 @@ export async function addGearToSetup(
   if (error) {
     console.error("Error adding gear to setup:", error);
     if (error.code === "23505") {
-      return { success: false, error: "Cet equipement est deja dans ce setup" };
+      return { success: false, error: await tErr("gearAlreadyInSetup") };
     }
-    return { success: false, error: "Erreur lors de l'ajout au setup" };
+    return { success: false, error: await tErr("setupAddFailed") };
   }
 
   revalidatePath("/gear");
@@ -416,7 +417,7 @@ export async function removeGearFromSetup(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Verifier que le setup appartient a l'utilisateur
@@ -428,7 +429,7 @@ export async function removeGearFromSetup(
     .single();
 
   if (!setup) {
-    return { success: false, error: "Setup non trouve" };
+    return { success: false, error: await tErr("setupNotFound") };
   }
 
   const { error } = await supabase
@@ -439,7 +440,7 @@ export async function removeGearFromSetup(
 
   if (error) {
     console.error("Error removing gear from setup:", error);
-    return { success: false, error: "Erreur lors du retrait du setup" };
+    return { success: false, error: await tErr("setupRemoveFailed") };
   }
 
   revalidatePath("/gear");
@@ -482,7 +483,7 @@ export async function addToGearWishlist(input: CreateGearWishlistItemInput): Pro
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Verifier la limite pour les utilisateurs free (10 items max)
@@ -501,7 +502,7 @@ export async function addToGearWishlist(input: CreateGearWishlistItemInput): Pro
     if (count && count >= FREE_PLAN_GEAR_WISHLIST_LIMIT) {
       return {
         success: false,
-        error: `Tu as atteint la limite de ${FREE_PLAN_GEAR_WISHLIST_LIMIT} equipements dans ta wishlist. Passe en Pro pour en ajouter plus !`,
+        error: await tErr("gearWishlistLimit", { limit: FREE_PLAN_GEAR_WISHLIST_LIMIT }),
       };
     }
   }
@@ -517,7 +518,7 @@ export async function addToGearWishlist(input: CreateGearWishlistItemInput): Pro
 
   if (error) {
     console.error("Error adding to gear wishlist:", error);
-    return { success: false, error: "Erreur lors de l'ajout a la wishlist" };
+    return { success: false, error: await tErr("wishlistAddFailed") };
   }
 
   revalidatePath("/gear");
@@ -529,7 +530,7 @@ export async function removeFromGearWishlist(id: string): Promise<{ success: boo
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -540,7 +541,7 @@ export async function removeFromGearWishlist(id: string): Promise<{ success: boo
 
   if (error) {
     console.error("Error removing from gear wishlist:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/gear");
@@ -556,7 +557,7 @@ export async function setFavoriteGear(input: SetFavoriteGearInput): Promise<{ su
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Verifier que le gear item appartient a l'utilisateur
@@ -568,7 +569,7 @@ export async function setFavoriteGear(input: SetFavoriteGearInput): Promise<{ su
     .single();
 
   if (!gear) {
-    return { success: false, error: "Equipement non trouve" };
+    return { success: false, error: await tErr("gearNotFound") };
   }
 
   // Upsert : remplace si position existante, sinon insere
@@ -584,7 +585,7 @@ export async function setFavoriteGear(input: SetFavoriteGearInput): Promise<{ su
 
   if (error) {
     console.error("Error setting favorite gear:", error);
-    return { success: false, error: "Erreur lors de l'ajout aux favoris" };
+    return { success: false, error: await tErr("favoriteFailed") };
   }
 
   revalidatePath("/profile");
@@ -598,7 +599,7 @@ export async function removeFavoriteGear(position: number): Promise<{ success: b
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -609,7 +610,7 @@ export async function removeFavoriteGear(position: number): Promise<{ success: b
 
   if (error) {
     console.error("Error removing favorite gear:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/profile");
@@ -657,7 +658,7 @@ export async function addGearToCover(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Verifier que l'utilisateur a un plan Pro/Band
@@ -668,7 +669,7 @@ export async function addGearToCover(
     .single();
 
   if (profile?.plan === "free") {
-    return { success: false, error: "Fonctionnalite reservee aux plans Pro et Band" };
+    return { success: false, error: await tErr("proOnly") };
   }
 
   // Verifier que le cover appartient a l'utilisateur
@@ -680,7 +681,7 @@ export async function addGearToCover(
     .single();
 
   if (!cover) {
-    return { success: false, error: "Cover non trouve" };
+    return { success: false, error: await tErr("coverNotFound") };
   }
 
   // Verifier que le gear item appartient a l'utilisateur
@@ -692,7 +693,7 @@ export async function addGearToCover(
     .single();
 
   if (!gear) {
-    return { success: false, error: "Equipement non trouve" };
+    return { success: false, error: await tErr("gearNotFound") };
   }
 
   const { error } = await supabase
@@ -705,9 +706,9 @@ export async function addGearToCover(
   if (error) {
     console.error("Error adding gear to cover:", error);
     if (error.code === "23505") {
-      return { success: false, error: "Cet equipement est deja tague sur ce cover" };
+      return { success: false, error: await tErr("gearAlreadyOnCover") };
     }
-    return { success: false, error: "Erreur lors de l'ajout" };
+    return { success: false, error: await tErr("addFailed") };
   }
 
   revalidatePath("/covers");
@@ -723,7 +724,7 @@ export async function removeGearFromCover(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Verifier que le cover appartient a l'utilisateur
@@ -735,7 +736,7 @@ export async function removeGearFromCover(
     .single();
 
   if (!cover) {
-    return { success: false, error: "Cover non trouve" };
+    return { success: false, error: await tErr("coverNotFound") };
   }
 
   const { error } = await supabase
@@ -746,7 +747,7 @@ export async function removeGearFromCover(
 
   if (error) {
     console.error("Error removing gear from cover:", error);
-    return { success: false, error: "Erreur lors du retrait" };
+    return { success: false, error: await tErr("removeFailed") };
   }
 
   revalidatePath("/covers");
@@ -792,7 +793,7 @@ export async function addGearToSong(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Verifier que le morceau appartient a l'utilisateur
@@ -804,7 +805,7 @@ export async function addGearToSong(
     .single();
 
   if (!song) {
-    return { success: false, error: "Morceau non trouve" };
+    return { success: false, error: await tErr("songNotFound") };
   }
 
   // Verifier que le gear item appartient a l'utilisateur
@@ -816,7 +817,7 @@ export async function addGearToSong(
     .single();
 
   if (!gear) {
-    return { success: false, error: "Equipement non trouve" };
+    return { success: false, error: await tErr("gearNotFound") };
   }
 
   const { error } = await supabase
@@ -829,9 +830,9 @@ export async function addGearToSong(
   if (error) {
     console.error("Error adding gear to song:", error);
     if (error.code === "23505") {
-      return { success: false, error: "Cet equipement est deja associe a ce morceau" };
+      return { success: false, error: await tErr("gearAlreadyOnSong") };
     }
-    return { success: false, error: "Erreur lors de l'ajout" };
+    return { success: false, error: await tErr("addFailed") };
   }
 
   revalidatePath("/library");
@@ -847,7 +848,7 @@ export async function removeGearFromSong(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifie" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Verifier que le morceau appartient a l'utilisateur
@@ -859,7 +860,7 @@ export async function removeGearFromSong(
     .single();
 
   if (!song) {
-    return { success: false, error: "Morceau non trouve" };
+    return { success: false, error: await tErr("songNotFound") };
   }
 
   const { error } = await supabase
@@ -870,7 +871,7 @@ export async function removeGearFromSong(
 
   if (error) {
     console.error("Error removing gear from song:", error);
-    return { success: false, error: "Erreur lors du retrait" };
+    return { success: false, error: await tErr("removeFailed") };
   }
 
   revalidatePath("/library");

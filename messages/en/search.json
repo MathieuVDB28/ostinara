@@ -1,0 +1,31 @@
+{
+  "groups": {
+    "song": "Songs",
+    "album": "Albums",
+    "cover": "Covers",
+    "exercise": "Exercises",
+    "gear": "Gear",
+    "friend": "Friends"
+  },
+  "albumRated": "{artist} · rated {rating}/5",
+  "albumToListen": "{artist} · to listen to",
+  "coverOf": "{artist} cover",
+  "cover": "Cover",
+  "ui": {
+    "title": "Search",
+    "lead": "Songs, albums, covers, exercises, gear and friends — all in one place.",
+    "placeholder": "Search…",
+    "ariaLabel": "Search the whole app",
+    "minChars": "Type at least two characters.",
+    "palettePlaceholder": "Songs, albums, covers, exercises, gear, friends…",
+    "escape": "Esc",
+    "goTo": "Go to",
+    "hints": "↑ ↓ to browse · Enter to open · ⌘K to reopen",
+    "library": "Library",
+    "searching": "Searching…",
+    "nothing": "Nothing for “{query}”",
+    "nothingHint": "Search covers your songs, albums, covers, exercises, gear and friends. Check the spelling, or add it.",
+    "addSong": "Add a song",
+    "findFriend": "Find a friend"
+  }
+}

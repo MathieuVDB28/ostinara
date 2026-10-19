@@ -3,6 +3,7 @@
 import { ChevronLeft, ExternalLink, LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { UserPlan, SubscriptionStatus } from "@/types";
 import { BillingInterval } from "@/lib/stripe/config";
@@ -21,6 +22,8 @@ interface SubscriptionInfo {
 }
 
 export default function SubscriptionPage() {
+  const t = useTranslations("plans.account");
+  const tc = useTranslations("common");
   const searchParams = useSearchParams();
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +41,7 @@ export default function SubscriptionPage() {
 
   useEffect(() => {
     if (isSuccess) {
-      setSuccess("Votre abonnement a été mis à jour avec succès !");
+      setSuccess(t("successCheckout"));
       // Recharger les données après un paiement réussi
       loadSubscription();
     }
@@ -57,7 +60,7 @@ export default function SubscriptionPage() {
       }
     } catch (err) {
       console.error("Error loading subscription:", err);
-      setError("Erreur lors du chargement de l'abonnement");
+      setError(t("loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -88,12 +91,12 @@ export default function SubscriptionPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Erreur lors du changement de plan");
+        throw new Error(data.error || t("changeFailed"));
       }
 
       if (data.action === "updated") {
         // L'abonnement a été mis à jour directement
-        setSuccess("Votre abonnement a été mis à jour !");
+        setSuccess(t("updated"));
         await loadSubscription();
         return;
       }
@@ -103,7 +106,7 @@ export default function SubscriptionPage() {
         window.location.href = data.url;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+      setError(err instanceof Error ? err.message : tc("genericError"));
     } finally {
       setActionLoading(null);
     }
@@ -121,14 +124,14 @@ export default function SubscriptionPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Erreur lors de l'ouverture du portail");
+        throw new Error(data.error || t("portalFailed"));
       }
 
       if (data.url) {
         window.location.href = data.url;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+      setError(err instanceof Error ? err.message : tc("genericError"));
     } finally {
       setPortalLoading(false);
     }
@@ -150,11 +153,11 @@ export default function SubscriptionPage() {
         className="-ml-1 mb-2 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
-        Réglages
+        {t("back")}
       </Link>
       <div className="mb-8">
-        <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.9]">Mon abonnement</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Ton plan et ta facturation.</p>
+        <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.9]">{t("title")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("lead")}</p>
       </div>
 
       {/* Messages */}
@@ -174,7 +177,7 @@ export default function SubscriptionPage() {
         <div className="mb-10 border-y border-border py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h2 className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Plan actuel</h2>
+              <h2 className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("currentPlan")}</h2>
               <SubscriptionStatusBadge
                 plan={subscription.plan}
                 status={subscription.status}
@@ -191,11 +194,11 @@ export default function SubscriptionPage() {
                 {portalLoading ? (
                   <>
                     <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2} aria-hidden="true" />
-                    Chargement…
+                    {t("loading")}
                   </>
                 ) : (
                   <>
-                    Gérer la facturation
+                    {t("manageBilling")}
                     <ExternalLink className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                   </>
                 )}
@@ -208,7 +211,7 @@ export default function SubscriptionPage() {
       {/* Changer de plan */}
       <div className="mb-8">
         <h2 className="mb-4 font-display text-3xl font-extrabold uppercase leading-none">
-          {subscription?.plan === "free" ? "Passer à un plan payant" : "Changer de plan"}
+          {subscription?.plan === "free" ? t("upgrade") : t("change")}
         </h2>
 
         {/* Toggle */}
@@ -263,9 +266,7 @@ export default function SubscriptionPage() {
               />
             </svg>
             <span>
-              Les changements de plan sont effectifs immédiatement. Si vous upgradez,
-              vous ne payez que la différence au prorata. Si vous downgrade, le
-              crédit sera appliqué sur votre prochaine facture.
+              {t("proration")}
             </span>
           </p>
         </div>

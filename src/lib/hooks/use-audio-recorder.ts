@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 interface UseAudioRecorderOptions {
   maxDuration?: number; // seconds, default 8
@@ -17,6 +18,7 @@ interface UseAudioRecorderReturn {
 export function useAudioRecorder(
   options: UseAudioRecorderOptions = {}
 ): UseAudioRecorderReturn {
+  const t = useTranslations("media");
   const { maxDuration = 8 } = options;
 
   const [isRecording, setIsRecording] = useState(false);
@@ -124,15 +126,15 @@ export function useAudioRecorder(
       }, maxDuration * 1000);
     } catch (err) {
       if (err instanceof DOMException && err.name === "NotAllowedError") {
-        setError("Accès au microphone refusé. Autorise l'accès dans les paramètres de ton navigateur.");
+        setError(t("micDenied"));
       } else if (err instanceof DOMException && err.name === "NotFoundError") {
-        setError("Aucun microphone détecté.");
+        setError(t("micNotFound"));
       } else {
-        setError("Impossible d'accéder au microphone.");
+        setError(t("micUnavailable"));
       }
       cleanup();
     }
-  }, [maxDuration, stopRecording, cleanup]);
+  }, [maxDuration, stopRecording, cleanup, t]);
 
   // Cleanup on unmount
   useEffect(() => {

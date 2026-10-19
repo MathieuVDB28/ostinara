@@ -1,0 +1,90 @@
+{
+  "tier": {
+    "1": "Bronze",
+    "2": "Silver",
+    "3": "Gold"
+  },
+  "family": {
+    "repertoire": "Repertoire",
+    "pratique": "Practice",
+    "commu": "Community"
+  },
+  "fallback": "Badge",
+  "unlockedPush": {
+    "title": "Badge unlocked",
+    "body": "{label} — {goal}"
+  },
+  "catalog": {
+    "repertoire": {
+      "title": "Repertoire",
+      "goal": "{count, plural, one {Master your first song} other {Master # songs}}"
+    },
+    "bibliotheque": {
+      "title": "Library",
+      "goal": "{count, plural, one {Add your first song} other {Add # songs}}"
+    },
+    "tempo": {
+      "title": "In the pocket",
+      "goal": "{count, plural, one {Hit a song's target tempo} other {Hit the target tempo on # songs}}"
+    },
+    "sessions": {
+      "title": "Dedication",
+      "goal": "{count, plural, one {Log your first session} other {Log # sessions}}"
+    },
+    "serie": {
+      "title": "Consistency",
+      "goal": "Play {count} days in a row"
+    },
+    "heures": {
+      "title": "Calloused fingers",
+      "titles": {
+        "drums": "Blistered sticks",
+        "keys": "Worn ivory"
+      },
+      "goal": "Rack up {count} h of practice"
+    },
+    "mois-varie": {
+      "title": "Eclectic month",
+      "goal": "Play 5 different songs in a month"
+    },
+    "mois-assidu": {
+      "title": "Dedicated month",
+      "goal": "Log 20 sessions in a month"
+    },
+    "semaine-bouclee": {
+      "title": "Week wrapped up",
+      "goal": "Complete every goal in your weekly plan"
+    },
+    "scene": {
+      "title": "On stage",
+      "goal": "{count, plural, one {Post your first cover} other {Post # covers}}"
+    },
+    "melomane": {
+      "title": "Music lover",
+      "goal": "{count, plural, one {Rate your first album} other {Rate # albums}}"
+    },
+    "entoure": {
+      "title": "Well connected",
+      "goal": "{count, plural, one {Add your first friend} other {Have # friends}}"
+    },
+    "competiteur": {
+      "title": "Competitor",
+      "goal": "{count, plural, one {Win your first challenge} other {Win # challenges}}"
+    }
+  },
+  "toast": {
+    "unlocked": "Badge unlocked"
+  },
+  "view": {
+    "unlocked": "badges earned",
+    "levels": "levels",
+    "toUnlock": "Locked",
+    "maxed": "Max level reached",
+    "earnedTimes": "Earned {count, plural, one {once} other {# times}}",
+    "everyMonth": "Every month",
+    "everyWeek": "Every week",
+    "doneMonth": "{goal} — done this month",
+    "progress": "{value} of {target}",
+    "on": "On {date}"
+  }
+}

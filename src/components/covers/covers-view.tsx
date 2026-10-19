@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CoverCard } from "./cover-card";
 import { CoverDetailModal } from "./cover-detail-modal";
 import { ArrowUpRight } from "lucide-react";
@@ -18,12 +19,7 @@ interface CoversViewProps {
   initialCoverId?: string;
 }
 
-const filters: { value: CoverVisibility | "all"; label: string }[] = [
-  { value: "all", label: "Tous" },
-  { value: "private", label: "Privés" },
-  { value: "friends", label: "Amis" },
-  { value: "public", label: "Publics" },
-];
+const FILTERS: (CoverVisibility | "all")[] = ["all", "private", "friends", "public"];
 
 export function CoversView({
   initialCovers,
@@ -32,6 +28,8 @@ export function CoversView({
   coverCount,
   initialCoverId,
 }: CoversViewProps) {
+  const t = useTranslations("covers.view");
+  const filters = FILTERS.map((value) => ({ value, label: t(value) }));
   const router = useRouter();
   const [covers, setCovers] = useState(initialCovers);
   // Arrivee depuis la recherche globale : la cover demandee s'ouvre des le
@@ -69,7 +67,7 @@ export function CoversView({
       <div className="flex items-center gap-1.5">
         <div
           role="group"
-          aria-label="Filtrer par visibilité"
+          aria-label={t("filterAria")}
           className="-ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 pl-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:ml-0 lg:pl-0 [&::-webkit-scrollbar]:hidden"
         >
           {filters.map((filter) => {
@@ -100,7 +98,7 @@ export function CoversView({
           href="/commu/covers"
           className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Le feed
+          {t("feed")}
           <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
         </Link>
       </div>
@@ -109,7 +107,7 @@ export function CoversView({
 
       {coverLimit && coverCount !== undefined && (
         <p className="tabular mb-3 text-xs text-muted-foreground">
-          {coverCount}/{coverLimit} covers utilisées avec ton plan
+          {t("usage", { count: coverCount, limit: coverLimit })}
         </p>
       )}
 
@@ -130,11 +128,11 @@ export function CoversView({
             <EmptyState
               compact
               icon="videocam"
-              title="Aucun cover ici"
-              description={`Tes ${stats.total} cover${stats.total > 1 ? "s" : ""} sont rangés sous un autre niveau de visibilité.`}
+              title={t("noneHere")}
+              description={t("elsewhere", { count: stats.total })}
               actions={[
                 {
-                  label: "Voir tous les covers",
+                  label: t("seeAll"),
                   primary: true,
                   onClick: () => setActiveFilter("all"),
                 },
@@ -150,18 +148,18 @@ export function CoversView({
         */
         <EmptyState
           icon="videocam"
-          title="Aucun cover"
-          description="Un cover, c'est ta version d'un morceau, filmée ou enregistrée. Il part de la fiche du morceau, dans ta bibliothèque."
+          title={t("none")}
+          description={t("noneDescription")}
           actions={[
             {
-              label: "Choisir un morceau",
+              label: t("chooseSong"),
               icon: "music_note",
               primary: true,
               href: "/biblio",
             },
-            { label: "Voir le feed des covers", icon: "feed", href: "/commu/covers" },
+            { label: t("seeFeed"), icon: "feed", href: "/commu/covers" },
           ]}
-          hint="Un cover est privé par défaut. Tu choisis ensuite s'il reste pour toi, pour tes amis, ou public."
+          hint={t("noneHint")}
         />
       )}
 

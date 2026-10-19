@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { SearchResults } from "./search-results";
 import { useGlobalSearch } from "./use-global-search";
 
@@ -15,6 +16,7 @@ import { useGlobalSearch } from "./use-global-search";
  * pour taper.
  */
 export function SearchPageView() {
+  const t = useTranslations("search.ui");
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   const { groups, isSearching } = useGlobalSearch(query);
@@ -22,9 +24,9 @@ export function SearchPageView() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-extrabold tracking-[-0.01em] lg:text-3xl">Recherche</h1>
+        <h1 className="text-2xl font-extrabold tracking-[-0.01em] lg:text-3xl">{t("title")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Morceaux, albums, covers, exercices, matos et amis — au même endroit.
+          {t("lead")}
         </p>
       </div>
 
@@ -40,8 +42,8 @@ export function SearchPageView() {
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Chercher…"
-          aria-label="Rechercher dans toute l'app"
+          placeholder={t("placeholder")}
+          aria-label={t("ariaLabel")}
           className="min-h-[52px] w-full rounded-xl border border-border bg-card py-3 pl-11 pr-4 text-[15px] focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
         />
       </div>
@@ -52,7 +54,7 @@ export function SearchPageView() {
         isSearching={isSearching}
         placeholder={
           <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-            Tape au moins deux caractères.
+            {t("minChars")}
           </p>
         }
       />

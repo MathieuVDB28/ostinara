@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createRehearsal } from "@/lib/actions/rehearsals";
-import { RECURRENCE_LABELS } from "@/types";
+import { useTranslations } from "next-intl";
 import type { BandWithMembers, Setlist, RecurrenceType } from "@/types";
 
 interface CreateRehearsalModalProps {
@@ -20,6 +20,9 @@ export function CreateRehearsalModal({
   band,
   setlists,
 }: CreateRehearsalModalProps) {
+  const t = useTranslations("rehearsals.create");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
@@ -85,12 +88,12 @@ export function CreateRehearsalModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !date || !time) {
-      setError("Le titre et la date sont requis");
+      setError(t("required"));
       return;
     }
 
     if (recurrence !== "none" && !recurrenceEndDate) {
-      setError("La date de fin de recurrence est requise");
+      setError(t("recurrenceEndRequired"));
       return;
     }
 
@@ -120,7 +123,7 @@ export function CreateRehearsalModal({
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Une erreur est survenue");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -140,10 +143,10 @@ export function CreateRehearsalModal({
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Nouvelle repetition</h2>
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
             <p className="text-sm text-muted-foreground">{band.name}</p>
           </div>
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -157,12 +160,12 @@ export function CreateRehearsalModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Titre *</label>
+            <label className="mb-1 block text-sm font-medium">{t("name")}</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex : répète avant le concert"
+              placeholder={t("namePlaceholder")}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               autoFocus
             />
@@ -170,11 +173,11 @@ export function CreateRehearsalModal({
 
           {/* Description */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Description</label>
+            <label className="mb-1 block text-sm font-medium">{tc("description")}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Notes sur cette répète…"
+              placeholder={t("descriptionPlaceholder")}
               rows={2}
               className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
@@ -183,7 +186,7 @@ export function CreateRehearsalModal({
           {/* Date & Time */}
           <div className="grid gap-3 grid-cols-3">
             <div>
-              <label className="mb-1 block text-sm font-medium">Date *</label>
+              <label className="mb-1 block text-sm font-medium">{t("date")}</label>
               <input
                 type="date"
                 value={date}
@@ -192,7 +195,7 @@ export function CreateRehearsalModal({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Debut *</label>
+              <label className="mb-1 block text-sm font-medium">{t("start")}</label>
               <input
                 type="time"
                 value={time}
@@ -201,7 +204,7 @@ export function CreateRehearsalModal({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Fin</label>
+              <label className="mb-1 block text-sm font-medium">{t("end")}</label>
               <input
                 type="time"
                 value={endTime}
@@ -214,17 +217,17 @@ export function CreateRehearsalModal({
           {/* Location */}
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium">Lieu</label>
+              <label className="mb-1 block text-sm font-medium">{t("location")}</label>
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Ex : local de répète"
+                placeholder={t("locationPlaceholder")}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Lien Maps</label>
+              <label className="mb-1 block text-sm font-medium">{t("maps")}</label>
               <input
                 type="url"
                 value={locationUrl}
@@ -238,13 +241,13 @@ export function CreateRehearsalModal({
           {/* Setlist */}
           {bandSetlists.length > 0 && (
             <div>
-              <label className="mb-1 block text-sm font-medium">Setlist liee</label>
+              <label className="mb-1 block text-sm font-medium">{t("setlist")}</label>
               <select
                 value={setlistId}
                 onChange={(e) => setSetlistId(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               >
-                <option value="">Aucune setlist</option>
+                <option value="">{t("noSetlist")}</option>
                 {bandSetlists.map((s) => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
@@ -254,21 +257,21 @@ export function CreateRehearsalModal({
 
           {/* Recurrence */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Recurrence</label>
+            <label className="mb-1 block text-sm font-medium">{t("recurrence")}</label>
             <select
               value={recurrence}
               onChange={(e) => setRecurrence(e.target.value as RecurrenceType)}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             >
-              {Object.entries(RECURRENCE_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+              {(["none", "weekly", "biweekly", "monthly"] as const).map((value) => (
+                <option key={value} value={value}>{te(`recurrence.${value}`)}</option>
               ))}
             </select>
           </div>
 
           {recurrence !== "none" && (
             <div>
-              <label className="mb-1 block text-sm font-medium">Jusqu&apos;au *</label>
+              <label className="mb-1 block text-sm font-medium">{t("until")}</label>
               <input
                 type="date"
                 value={recurrenceEndDate}
@@ -277,7 +280,7 @@ export function CreateRehearsalModal({
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Les repetitions seront creees automatiquement jusqu&apos;a cette date
+                {t("untilHint")}
               </p>
             </div>
           )}
@@ -285,7 +288,7 @@ export function CreateRehearsalModal({
           {/* Members */}
           <div>
             <label className="mb-2 block text-sm font-medium">
-              Participants ({selectedMembers.length}/{band.members.length})
+              {t("participants", { selected: selectedMembers.length, total: band.members.length })}
             </label>
             <div className="space-y-1.5">
               {band.members.map((member) => (
@@ -316,7 +319,7 @@ export function CreateRehearsalModal({
                   </span>
                   {member.role === "owner" && (
                     <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[11px] text-primary">
-                      Owner
+                      {t("owner")}
                     </span>
                   )}
                 </label>
@@ -338,14 +341,14 @@ export function CreateRehearsalModal({
               onClick={onClose}
               className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
             >
-              Annuler
+              {tc("cancel")}
             </button>
             <button
               type="submit"
               disabled={saving || !title.trim() || !date}
               className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {saving ? "Creation..." : "Créer la répète"}
+              {saving ? tc("creating") : t("submit")}
             </button>
           </div>
         </form>

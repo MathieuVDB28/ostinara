@@ -1,0 +1,100 @@
+{
+  "description": {
+    "free": "Pour découvrir Ostinara",
+    "pro": "Pour les musiciens sérieux",
+    "band": "Pour les groupes"
+  },
+  "features": {
+    "songs10": "10 morceaux max",
+    "instruments2": "2 instruments max",
+    "covers3": "3 covers max",
+    "friends5": "5 amis max",
+    "wishlist20": "20 morceaux wishlist",
+    "unlimitedSongs": "Morceaux illimités",
+    "unlimitedInstruments": "Instruments illimités",
+    "unlimitedCovers": "Covers illimités",
+    "unlimitedFriends": "Amis illimités",
+    "unlimitedWishlist": "Wishlist illimitée",
+    "advancedStats": "Stats avancées",
+    "deezerTabs": "Lecteur Deezer & tablatures",
+    "audioRecognition": "Reconnaissance audio",
+    "proBadge": "Badge Pro",
+    "everythingPro": "Tout ce qui est dans Pro",
+    "bandSpaces": "Espaces groupe",
+    "sharedSetlists": "Setlists partagées",
+    "bandBadge": "Badge Band"
+  },
+  "pricePerYear": "{price} €/an",
+  "pricePerMonth": "{price} €/mois",
+  "card": {
+    "start": "Commencer",
+    "current": "Plan actuel",
+    "upgrade": "Passer à ce plan",
+    "toFree": "Passer au gratuit",
+    "change": "Changer de plan",
+    "yours": "Ton plan",
+    "popular": "Populaire",
+    "perMonth": "/mois",
+    "perYear": "/an",
+    "monthlyEquivalent": "soit {price}/mois",
+    "loading": "Chargement…"
+  },
+  "status": {
+    "active": "Actif",
+    "trialing": "Essai",
+    "past_due": "Paiement en retard",
+    "canceled": "Annulé",
+    "incomplete": "Incomplet",
+    "incomplete_expired": "Expiré",
+    "unpaid": "Impayé",
+    "paused": "En pause",
+    "renewsOn": "Renouvellement le {date}",
+    "accessUntil": "Accès jusqu'au {date}",
+    "updatePayment": "Mets à jour ton moyen de paiement",
+    "mySubscription": "Mon abonnement",
+    "manage": "Gérer",
+    "goPro": "Passer Pro",
+    "more": "+{count} autres"
+  },
+  "pricing": {
+    "checkoutFailed": "Erreur lors de la création de la session",
+    "title": "Choisis ton <accent>plan</accent>",
+    "lead": "Débloque tout Ostinara pour progresser plus vite.",
+    "faqTitle": "Questions fréquentes",
+    "faq": {
+      "change": {
+        "q": "Puis-je changer de plan à tout moment ?",
+        "a": "Oui. Tu peux monter ou descendre de plan quand tu veux. Le prorata est calculé automatiquement."
+      },
+      "refund": {
+        "q": "Comment fonctionne le remboursement si je downgrade ?",
+        "a": "Si tu passes à un plan inférieur, la différence est créditée sur ta prochaine facture. Le changement est effectif immédiatement."
+      },
+      "cancel": {
+        "q": "Que se passe-t-il si j'annule mon abonnement ?",
+        "a": "Tu gardes l'accès à toutes les fonctionnalités payantes jusqu'à la fin de ta période de facturation. Ensuite, tu repasses au plan Free."
+      },
+      "payment": {
+        "q": "Quels moyens de paiement acceptez-vous ?",
+        "a": "Toutes les cartes bancaires sont acceptées (Visa, Mastercard, American Express) via notre partenaire sécurisé Stripe."
+      }
+    },
+    "secure": "Paiement sécurisé par Stripe"
+  },
+  "account": {
+    "successCheckout": "Ton abonnement a été mis à jour avec succès !",
+    "loadFailed": "Erreur lors du chargement de l'abonnement",
+    "changeFailed": "Erreur lors du changement de plan",
+    "updated": "Ton abonnement a été mis à jour !",
+    "portalFailed": "Erreur lors de l'ouverture du portail",
+    "back": "Réglages",
+    "title": "Mon abonnement",
+    "lead": "Ton plan et ta facturation.",
+    "currentPlan": "Plan actuel",
+    "loading": "Chargement…",
+    "manageBilling": "Gérer la facturation",
+    "upgrade": "Passer à un plan payant",
+    "change": "Changer de plan",
+    "proration": "Les changements de plan sont effectifs immédiatement. Si tu passes à un plan supérieur, tu ne paies que la différence au prorata. Si tu passes à un plan inférieur, le crédit est appliqué sur ta prochaine facture."
+  }
+}

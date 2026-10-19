@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import { formatDuration as formatMinutes } from "./stats-summary";
 import type { PracticeSessionWithSong } from "@/types";
 import { GroupSessionCard, SessionCard } from "./session-card";
 import { SwipeRow } from "@/components/ui/swipe-row";
@@ -64,16 +67,12 @@ export function SessionList({
   onSessionClick,
   onSessionDeleted,
 }: SessionListProps) {
+  const t = useTranslations("progress.session");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const { start, openManualEntry } = usePracticeSession();
 
-  const formatDuration = (minutes: number): string => {
-    if (minutes < 60) {
-      return `${minutes}min`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
-  };
+  const formatDuration = (minutes: number): string => formatMinutes(minutes, tc);
 
   const getDateLabel = (dateStr: string): string => {
     const date = new Date(dateStr);
@@ -85,18 +84,18 @@ export function SessionList({
     const todayOnly = today.toDateString();
     const yesterdayOnly = yesterday.toDateString();
 
-    if (dateOnly === todayOnly) return "Aujourd'hui";
-    if (dateOnly === yesterdayOnly) return "Hier";
+    if (dateOnly === todayOnly) return tc("relative.todayCap");
+    if (dateOnly === yesterdayOnly) return tc("relative.yesterdayCap");
 
     // Cette semaine
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     if (date > weekAgo) {
-      return date.toLocaleDateString("fr-FR", { weekday: "long" });
+      return date.toLocaleDateString(intlLocale, { weekday: "long" });
     }
 
     // Plus ancien
-    return date.toLocaleDateString("fr-FR", {
+    return date.toLocaleDateString(intlLocale, {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -127,22 +126,22 @@ export function SessionList({
     return (
       <EmptyState
         icon="schedule"
-        title="Aucune session"
-        description="Une session, c'est une durée et un tempo. À partir de deux, la courbe de progression et la série quotidienne se remplissent toutes seules."
+        title={t("emptyTitle")}
+        description={t("emptyDescription")}
         actions={[
           {
-            label: "Démarrer le chrono",
+            label: t("startTimer"),
             icon: "timer",
             primary: true,
             onClick: () => start(),
           },
           {
-            label: "Saisir une session passée",
+            label: t("logPast"),
             icon: "edit",
             onClick: openManualEntry,
           },
         ]}
-        hint="Le chrono suit d'un écran à l'autre : tu peux lancer une session ici et continuer sur « Jouer »."
+        hint={t("emptyHint")}
       />
     );
   }
@@ -175,11 +174,11 @@ export function SessionList({
                   */
                   <SwipeRow
                     key={item.key}
-                    label={`session du ${new Date(item.sessions[0].practiced_at).toLocaleDateString("fr-FR")}`}
+                    label={t("sessionOf", { date: new Date(item.sessions[0].practiced_at).toLocaleDateString(intlLocale) })}
                     actions={[
                       {
                         key: "delete",
-                        label: "Supprimer",
+                        label: tc("delete"),
                         icon: "delete",
                         tone: "destructive",
                         confirm: true,
@@ -207,18 +206,18 @@ export function SessionList({
                   */}
                   <div>
                     <SwipeRow
-                      label={`session du ${new Date(item.session.practiced_at).toLocaleDateString("fr-FR")}`}
+                      label={t("sessionOf", { date: new Date(item.session.practiced_at).toLocaleDateString(intlLocale) })}
                       actions={[
                         {
                           key: "edit",
-                          label: "Modifier",
+                          label: tc("edit"),
                           icon: "edit",
                           tone: "neutral",
                           onAction: () => onSessionClick(item.session),
                         },
                         {
                           key: "delete",
-                          label: "Supprimer",
+                          label: tc("delete"),
                           icon: "delete",
                           tone: "destructive",
                           confirm: true,

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { gearTypesFor } from "@/lib/instruments";
 import { useState, useEffect, useCallback } from "react";
@@ -11,8 +14,6 @@ import type {
   UserPlan,
 } from "@/types";
 import {
-  GEAR_TYPE_LABELS,
-  GEAR_CONDITION_LABELS,
   GEAR_CONDITION_COLORS,
   GEAR_BRANDS,
 } from "@/types";
@@ -37,11 +38,7 @@ const CONDITION_OPTIONS: GearCondition[] = [
   "poor",
 ];
 
-const VISIBILITY_OPTIONS: { value: GearVisibility; label: string }[] = [
-  { value: "private", label: "Privé" },
-  { value: "friends", label: "Amis" },
-  { value: "public", label: "Public" },
-];
+const VISIBILITY_OPTIONS: GearVisibility[] = ["private", "friends", "public"];
 
 export function GearDetailModal({
   gear,
@@ -51,6 +48,12 @@ export function GearDetailModal({
   onDeleted,
   userPlan,
 }: GearDetailModalProps) {
+  const t = useTranslations("gear.form");
+  const td = useTranslations("gear.detail");
+  const tg = useTranslations("gear.card");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
   const myInstruments = useMyInstruments();
   const gearTypes = gearTypesFor(myInstruments.instruments.map((i) => i.instrument));
   const [isEditing, setIsEditing] = useState(false);
@@ -139,7 +142,7 @@ export function GearDetailModal({
   const handleSave = async () => {
     setError("");
     if (!brand.trim() && !model.trim()) {
-      setError("Renseigne au moins la marque ou le modèle.");
+      setError(t("brandOrModel"));
       return;
     }
 
@@ -165,10 +168,10 @@ export function GearDetailModal({
         setIsEditing(false);
         onUpdated();
       } else {
-        setError(result.error || "Erreur lors de la mise à jour.");
+        setError(result.error || td("updateFailed"));
       }
     } catch {
-      setError("Une erreur inattendue est survenue.");
+      setError(t("unexpected"));
     } finally {
       setLoading(false);
     }
@@ -182,10 +185,10 @@ export function GearDetailModal({
         onDeleted();
         onClose();
       } else {
-        setError(result.error || "Erreur lors de la suppression.");
+        setError(result.error || td("deleteFailed"));
       }
     } catch {
-      setError("Une erreur inattendue est survenue.");
+      setError(t("unexpected"));
     } finally {
       setLoading(false);
     }
@@ -204,7 +207,7 @@ export function GearDetailModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
           <h2 className="truncate text-lg font-semibold">
-            {isEditing ? "Modifier" : title || "Détail du matériel"}
+            {isEditing ? td("edit") : title || td("detail")}
           </h2>
           <div className="flex items-center gap-1">
             {!isEditing && (
@@ -212,7 +215,8 @@ export function GearDetailModal({
                 <button
                   onClick={() => setIsEditing(true)}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
-                  title="Modifier"
+                  title={tc("edit")}
+                  aria-label={tc("edit")}
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -222,7 +226,8 @@ export function GearDetailModal({
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                  title="Supprimer"
+                  title={tc("delete")}
+                  aria-label={tc("delete")}
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
@@ -230,7 +235,7 @@ export function GearDetailModal({
                 </button>
               </>
             )}
-            <button aria-label="Fermer"
+            <button aria-label={tc("close")}
               onClick={onClose}
               className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
             >
@@ -245,21 +250,21 @@ export function GearDetailModal({
         {showDeleteConfirm && (
           <div className="border-b border-border/50 bg-destructive/5 px-6 py-4">
             <p className="mb-3 text-sm">
-              Supprimer <strong>{title}</strong> ? Cette action est irréversible.
+              {td.rich("confirmDelete", { title, strong: (chunks) => <strong>{chunks}</strong> })}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 className="rounded-lg border border-border/50 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted"
               >
-                Annuler
+                {tc("cancel")}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={loading}
                 className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {loading ? "Suppression..." : "Supprimer"}
+                {loading ? tc("deleting") : tc("delete")}
               </button>
             </div>
           </div>
@@ -271,25 +276,25 @@ export function GearDetailModal({
             <div className="space-y-5">
               {/* Type selector */}
               <div>
-                <label className="mb-2 block text-sm font-medium">Type</label>
+                <label className="mb-2 block text-sm font-medium">{t("type")}</label>
                 <div className="grid grid-cols-5 gap-2">
-                  {gearTypes.map((t) => (
+                  {gearTypes.map((gearType) => (
                     <button
-                      key={t}
+                      key={gearType}
                       type="button"
                       onClick={() => {
-                        setType(t);
+                        setType(gearType);
                         setBrand("");
                         setBrandSuggestions([]);
                       }}
                       className={`flex flex-col items-center gap-1 rounded-lg border p-2 text-[11px] font-medium transition-all ${
-                        type === t
+                        type === gearType
                           ? "border-primary bg-primary text-primary-foreground"
                           : "border-border/50 hover:border-primary/40 hover:bg-primary/[0.02]"
                       }`}
                     >
-                      <GearTypeIcon type={t} className="h-5 w-5" />
-                      <span className="truncate">{GEAR_TYPE_LABELS[t]}</span>
+                      <GearTypeIcon type={gearType} className="h-5 w-5" />
+                      <span className="truncate">{te(`gearType.${gearType}`)}</span>
                     </button>
                   ))}
                 </div>
@@ -297,7 +302,7 @@ export function GearDetailModal({
 
               {/* Brand */}
               <div className="relative">
-                <label className="mb-1.5 block text-sm font-medium">Marque</label>
+                <label className="mb-1.5 block text-sm font-medium">{t("brand")}</label>
                 <input
                   type="text"
                   value={brand}
@@ -328,7 +333,7 @@ export function GearDetailModal({
 
               {/* Model */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Modèle</label>
+                <label className="mb-1.5 block text-sm font-medium">{t("model")}</label>
                 <input
                   type="text"
                   value={model}
@@ -340,7 +345,7 @@ export function GearDetailModal({
               {/* Year + Color */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium">Année</label>
+                  <label className="mb-1.5 block text-sm font-medium">{t("year")}</label>
                   <input
                     type="number"
                     value={year}
@@ -351,7 +356,7 @@ export function GearDetailModal({
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium">Couleur / Finition</label>
+                  <label className="mb-1.5 block text-sm font-medium">{t("color")}</label>
                   <input
                     type="text"
                     value={colorFinish}
@@ -363,7 +368,7 @@ export function GearDetailModal({
 
               {/* Condition */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium">État</label>
+                <label className="mb-1.5 block text-sm font-medium">{t("condition")}</label>
                 <select
                   value={condition}
                   onChange={(e) => setCondition(e.target.value as GearCondition)}
@@ -371,7 +376,7 @@ export function GearDetailModal({
                 >
                   {CONDITION_OPTIONS.map((c) => (
                     <option key={c} value={c}>
-                      {GEAR_CONDITION_LABELS[c]}
+                      {te(`gearCondition.${c}`)}
                     </option>
                   ))}
                 </select>
@@ -380,7 +385,7 @@ export function GearDetailModal({
               {/* Serial Number */}
               <div>
                 <label className="mb-1.5 block text-sm font-medium">
-                  Numéro de série <span className="text-muted-foreground">(privé)</span>
+                  {t("serial")} <span className="text-muted-foreground">{t("private")}</span>
                 </label>
                 <input
                   type="text"
@@ -394,7 +399,7 @@ export function GearDetailModal({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium">
-                    Prix d&apos;achat <span className="text-muted-foreground">(privé)</span>
+                    {t("price")} <span className="text-muted-foreground">{t("private")}</span>
                   </label>
                   <div className="relative">
                     <input
@@ -411,7 +416,7 @@ export function GearDetailModal({
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium">Date d&apos;achat</label>
+                  <label className="mb-1.5 block text-sm font-medium">{t("date")}</label>
                   <input
                     type="date"
                     value={purchaseDate}
@@ -423,7 +428,7 @@ export function GearDetailModal({
 
               {/* Image URL */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Image URL</label>
+                <label className="mb-1.5 block text-sm font-medium">{t("image")}</label>
                 <input
                   type="url"
                   value={imageUrl}
@@ -434,7 +439,7 @@ export function GearDetailModal({
 
               {/* Notes */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Notes</label>
+                <label className="mb-1.5 block text-sm font-medium">{t("notes")}</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -446,9 +451,9 @@ export function GearDetailModal({
               {/* Active toggle */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Utilisation active</p>
+                  <p className="text-sm font-medium">{t("active")}</p>
                   <p className="text-xs text-muted-foreground">
-                    Ce matériel fait partie de votre setup actuel
+                    {t("activeHint")}
                   </p>
                 </div>
                 <button
@@ -468,9 +473,9 @@ export function GearDetailModal({
 
               {/* Visibility */}
               <div>
-                <label className="mb-2 block text-sm font-medium">Visibilité</label>
+                <label className="mb-2 block text-sm font-medium">{t("visibility")}</label>
                 <div className="flex gap-2">
-                  {VISIBILITY_OPTIONS.map((v) => (
+                  {VISIBILITY_OPTIONS.map((value) => ({ value, label: te(`visibility.${value}`) })).map((v) => (
                     <button
                       key={v.value}
                       type="button"
@@ -500,14 +505,14 @@ export function GearDetailModal({
                   onClick={() => setIsEditing(false)}
                   className="flex-1 rounded-lg border border-border/50 px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
                 >
-                  Annuler
+                  {tc("cancel")}
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={loading}
                   className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
-                  {loading ? "Enregistrement..." : "Enregistrer"}
+                  {loading ? tc("saving") : tc("save")}
                 </button>
               </div>
             </div>
@@ -534,18 +539,18 @@ export function GearDetailModal({
                 <h3 className="text-xl font-bold">{title || "Sans nom"}</h3>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium">
-                    {GEAR_TYPE_LABELS[gear.type]}
+                    {te(`gearType.${gear.type}`)}
                   </span>
                   {gear.condition && (
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${GEAR_CONDITION_COLORS[gear.condition]}`}
                     >
-                      {GEAR_CONDITION_LABELS[gear.condition]}
+                      {te(`gearCondition.${gear.condition}`)}
                     </span>
                   )}
                   {gear.is_active && (
                     <span className="rounded-full bg-success/10 px-2.5 py-0.5 text-[11px] font-medium text-success dark:text-success">
-                      Actif
+                      {tg("active")}
                     </span>
                   )}
                 </div>
@@ -555,20 +560,20 @@ export function GearDetailModal({
               <div className="grid grid-cols-2 gap-3">
                 {gear.year && (
                   <div>
-                    <p className="text-xs text-muted-foreground">Année</p>
+                    <p className="text-xs text-muted-foreground">{t("year")}</p>
                     <p className="text-sm font-medium">{gear.year}</p>
                   </div>
                 )}
                 {gear.color && (
                   <div>
-                    <p className="text-xs text-muted-foreground">Couleur / Finition</p>
+                    <p className="text-xs text-muted-foreground">{t("color")}</p>
                     <p className="text-sm font-medium">{gear.color}</p>
                   </div>
                 )}
                 {gear.serial_number && (
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      N° de série <span className="text-[11px]">(privé)</span>
+                      {td("serialShort")} <span className="text-[11px]">{t("private")}</span>
                     </p>
                     <p className="font-mono text-sm font-medium">{gear.serial_number}</p>
                   </div>
@@ -576,10 +581,10 @@ export function GearDetailModal({
                 {gear.purchase_price != null && (
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      Prix d&apos;achat <span className="text-[11px]">(privé)</span>
+                      {t("price")} <span className="text-[11px]">{t("private")}</span>
                     </p>
                     <p className="text-sm font-medium">
-                      {gear.purchase_price.toLocaleString("fr-FR", {
+                      {gear.purchase_price.toLocaleString(intlLocale, {
                         style: "currency",
                         currency: "EUR",
                       })}
@@ -588,9 +593,9 @@ export function GearDetailModal({
                 )}
                 {gear.purchase_date && (
                   <div>
-                    <p className="text-xs text-muted-foreground">Date d&apos;achat</p>
+                    <p className="text-xs text-muted-foreground">{t("date")}</p>
                     <p className="text-sm font-medium">
-                      {new Date(gear.purchase_date).toLocaleDateString("fr-FR")}
+                      {new Date(gear.purchase_date).toLocaleDateString(intlLocale)}
                     </p>
                   </div>
                 )}
@@ -599,7 +604,7 @@ export function GearDetailModal({
               {/* Notes */}
               {gear.notes && (
                 <div>
-                  <p className="mb-1 text-xs text-muted-foreground">Notes</p>
+                  <p className="mb-1 text-xs text-muted-foreground">{t("notes")}</p>
                   <p className="whitespace-pre-wrap text-sm">{gear.notes}</p>
                 </div>
               )}

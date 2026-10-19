@@ -1,10 +1,11 @@
 import { getWeeklyAlbums } from "@/lib/actions/albums";
 import { WeeklyAlbumsView } from "@/components/albums/weekly-albums-view";
+import { getTranslations } from "next-intl/server";
 
-export const metadata = {
-  title: "Albums de la semaine | Ostinara",
-  description: "Les albums écoutés par la communauté cette semaine",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("meta.communityAlbums");
+  return { title: t("title"), description: t("description") };
+}
 
 /**
  * Les albums de la semaine, cote communaute. La meme vue est l'onglet

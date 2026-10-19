@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { useState } from "react";
 import {
   Document,
@@ -312,6 +314,13 @@ interface PDFDocumentProps {
   channels: TechRiderChannel[];
   stageElements: TechRiderStageElement[];
   generalNotes: string;
+  labels: PDFLabels;
+}
+
+/** react-pdf rend hors de l'arbre React : les traductions arrivent en props. */
+interface PDFLabels {
+  t: ReturnType<typeof useTranslations<"techRider">>;
+  intlLocale: string;
 }
 
 function getElementColor(type: string): string {
@@ -326,7 +335,11 @@ function TechRiderPDFDocument({
   channels,
   stageElements,
   generalNotes,
+  labels: { t, intlLocale },
 }: PDFDocumentProps) {
+  const generatedOn = t("pdf.generatedOn", {
+    date: new Date().toLocaleDateString(intlLocale, { day: "numeric", month: "long", year: "numeric" }),
+  });
   const micCount = channels.filter(
     (c) => c.mic_type && c.mic_type.toUpperCase() !== "DI"
   ).length;
@@ -347,7 +360,7 @@ function TechRiderPDFDocument({
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <View>
-              <Text style={styles.subtitle}>Fiche Technique</Text>
+              <Text style={styles.subtitle}>{t("view.title")}</Text>
               <Text style={styles.bandName}>{band.name}</Text>
               {band.members.length > 0 && (
                 <Text style={{ fontSize: 10, color: colors.gray }}>
@@ -357,7 +370,7 @@ function TechRiderPDFDocument({
             </View>
             {(engineerName || engineerPhone) && (
               <View style={styles.contactBox}>
-                <Text style={styles.contactLabel}>Ingénieur son</Text>
+                <Text style={styles.contactLabel}>{t("pdf.engineer")}</Text>
                 {engineerName && (
                   <Text style={styles.contactName}>{engineerName}</Text>
                 )}
@@ -374,29 +387,29 @@ function TechRiderPDFDocument({
           <View style={styles.summaryItem}>
             <Text style={styles.summaryValue}>{musicians.length}</Text>
             <Text style={styles.summaryLabel}>
-              Musicien{musicians.length > 1 ? "s" : ""}
+              {t("view.musicians", { count: musicians.length })}
             </Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryValue}>{channels.length}</Text>
-            <Text style={styles.summaryLabel}>Channels</Text>
+            <Text style={styles.summaryLabel}>{t("pdf.channels")}</Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryValue}>{micCount}</Text>
             <Text style={styles.summaryLabel}>
-              Micro{micCount > 1 ? "s" : ""}
+              {t("view.mics", { count: micCount })}
             </Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryValue}>{diCount}</Text>
             <Text style={styles.summaryLabel}>
-              Ligne{diCount > 1 ? "s" : ""} DI
+              {t("view.diLines", { count: diCount })}
             </Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryValue}>{monitorCount}</Text>
             <Text style={styles.summaryLabel}>
-              Retour{monitorCount > 1 ? "s" : ""}
+              {t("view.monitors", { count: monitorCount })}
             </Text>
           </View>
         </View>
@@ -404,23 +417,23 @@ function TechRiderPDFDocument({
         {/* Musicians */}
         {musicians.length > 0 && (
           <View>
-            <Text style={styles.sectionHeader}>Musiciens</Text>
+            <Text style={styles.sectionHeader}>{t("view.musiciansTitle")}</Text>
             <View style={styles.tableHeader}>
               <Text style={[styles.tableHeaderText, styles.colMusicianName]}>
-                Nom
+                {t("view.name")}
               </Text>
               <Text
                 style={[styles.tableHeaderText, styles.colMusicianInstrument]}
               >
-                Instrument
+                {t("view.instrument")}
               </Text>
               <Text style={[styles.tableHeaderText, styles.colMusicianNeeds]}>
-                Besoins
+                {t("pdf.needs")}
               </Text>
               <Text
                 style={[styles.tableHeaderText, styles.colMusicianMonitor]}
               >
-                Retour
+                {t("pdf.monitor")}
               </Text>
             </View>
             {musicians.map((m, i) => (
@@ -445,9 +458,9 @@ function TechRiderPDFDocument({
                 <Text style={[styles.tableCell, styles.colMusicianMonitor]}>
                   {m.monitor
                     ? m.monitor_notes
-                      ? `Oui (${m.monitor_notes})`
-                      : "Oui"
-                    : "Non"}
+                      ? t("pdf.yesWith", { notes: m.monitor_notes })
+                      : t("pdf.yes")
+                    : t("pdf.no")}
                 </Text>
               </View>
             ))}
@@ -457,28 +470,28 @@ function TechRiderPDFDocument({
         {/* Patch / Input List */}
         {channels.length > 0 && (
           <View>
-            <Text style={styles.sectionHeader}>Patch / Input List</Text>
+            <Text style={styles.sectionHeader}>{t("view.patch")}</Text>
             <View style={styles.tableHeader}>
               <Text style={[styles.tableHeaderText, styles.colPatchNum]}>
                 #
               </Text>
               <Text style={[styles.tableHeaderText, styles.colPatchSource]}>
-                Source
+                {t("view.source")}
               </Text>
               <Text style={[styles.tableHeaderText, styles.colPatchMusician]}>
-                Musicien
+                {t("view.musician")}
               </Text>
               <Text style={[styles.tableHeaderText, styles.colPatchMic]}>
-                Micro
+                {t("view.mic")}
               </Text>
               <Text style={[styles.tableHeaderText, styles.colPatchStand]}>
-                Pied
+                {t("view.stand")}
               </Text>
               <Text style={[styles.tableHeaderText, styles.colPatchPhantom]}>
                 48V
               </Text>
               <Text style={[styles.tableHeaderText, styles.colPatchNotes]}>
-                Notes
+                {t("view.notes")}
               </Text>
             </View>
             {channels.map((ch, i) => (
@@ -517,7 +530,7 @@ function TechRiderPDFDocument({
                   {ch.stand_type || "-"}
                 </Text>
                 <Text style={[styles.tableCell, styles.colPatchPhantom]}>
-                  {ch.phantom ? "Oui" : "Non"}
+                  {ch.phantom ? t("pdf.yes") : t("pdf.no")}
                 </Text>
                 <Text style={[styles.tableCellMuted, styles.colPatchNotes]}>
                   {ch.notes || ""}
@@ -530,15 +543,10 @@ function TechRiderPDFDocument({
         {/* Footer Page 1 */}
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
-            Genere le{" "}
-            {new Date().toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
+            {generatedOn}
           </Text>
           <Text style={styles.footerText}>
-            {band.name} - Fiche Technique | Ostinara
+            {t("pdf.footer", { band: band.name })}
           </Text>
         </View>
       </Page>
@@ -553,7 +561,7 @@ function TechRiderPDFDocument({
           {/* Stage Plot */}
           {(musicians.length > 0 || stageElements.length > 0) && (
             <View>
-              <Text style={styles.sectionHeader}>Plan de scène</Text>
+              <Text style={styles.sectionHeader}>{t("view.stagePlot")}</Text>
               <View style={styles.stageContainer}>
                 {/* Stage labels */}
                 <Text
@@ -567,7 +575,7 @@ function TechRiderPDFDocument({
                     },
                   ]}
                 >
-                  Fond de scène
+                  {t("stage.back")}
                 </Text>
                 <Text
                   style={[
@@ -580,7 +588,7 @@ function TechRiderPDFDocument({
                     },
                   ]}
                 >
-                  Public
+                  {t("stage.audience")}
                 </Text>
                 <Text
                   style={[
@@ -588,7 +596,7 @@ function TechRiderPDFDocument({
                     { top: stageHeight / 2 - 8, left: 4 },
                   ]}
                 >
-                  SR
+                  {t("pdf.sr")}
                 </Text>
                 <Text
                   style={[
@@ -596,7 +604,7 @@ function TechRiderPDFDocument({
                     { top: stageHeight / 2 - 8, right: 4 },
                   ]}
                 >
-                  SL
+                  {t("pdf.sl")}
                 </Text>
 
                 {/* Musicians on stage */}
@@ -677,7 +685,7 @@ function TechRiderPDFDocument({
                       { backgroundColor: colors.musician },
                     ]}
                   />
-                  <Text style={styles.legendText}>Musicien</Text>
+                  <Text style={styles.legendText}>{t("stage.musician")}</Text>
                 </View>
                 {uniqueElementTypes.map((type) => (
                   <View key={type} style={styles.legendItem}>
@@ -691,17 +699,7 @@ function TechRiderPDFDocument({
                       ]}
                     />
                     <Text style={styles.legendText}>
-                      {
-                        {
-                          monitor: "Retour",
-                          amp: "Ampli",
-                          drums: "Batterie",
-                          keyboard: "Clavier",
-                          di_box: "DI Box",
-                          mic_stand: "Micro",
-                          custom: "Autre",
-                        }[type]
-                      }
+                      {t(`stage.elements.${type}`)}
                     </Text>
                   </View>
                 ))}
@@ -712,7 +710,7 @@ function TechRiderPDFDocument({
           {/* General notes */}
           {generalNotes && (
             <View>
-              <Text style={styles.sectionHeader}>Notes</Text>
+              <Text style={styles.sectionHeader}>{t("view.notes")}</Text>
               <View style={styles.notesBox}>
                 <Text style={styles.notesText}>{generalNotes}</Text>
               </View>
@@ -722,15 +720,10 @@ function TechRiderPDFDocument({
           {/* Footer Page 2 */}
           <View style={styles.footer} fixed>
             <Text style={styles.footerText}>
-              Genere le{" "}
-              {new Date().toLocaleDateString("fr-FR", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
+              {generatedOn}
             </Text>
             <Text style={styles.footerText}>
-              {band.name} - Fiche Technique | Ostinara
+              {t("pdf.footer", { band: band.name })}
             </Text>
           </View>
         </Page>
@@ -758,6 +751,8 @@ export function TechRiderPDFExport({
   stageElements,
   generalNotes,
 }: ExportProps) {
+  const t = useTranslations("techRider");
+  const intlLocale = useIntlLocale();
   const [generating, setGenerating] = useState(false);
 
   const handleExport = async () => {
@@ -772,20 +767,21 @@ export function TechRiderPDFExport({
           channels={channels}
           stageElements={stageElements}
           generalNotes={generalNotes}
+          labels={{ t, intlLocale }}
         />
       ).toBlob();
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${band.name.replace(/[^a-z0-9]/gi, "_")}_fiche_technique.pdf`;
+      link.download = `${band.name.replace(/[^a-z0-9]/gi, "_")}_${t("pdf.fileName")}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("Erreur lors de la generation du PDF");
+      alert(t("pdf.exportFailed"));
     } finally {
       setGenerating(false);
     }
@@ -802,7 +798,7 @@ export function TechRiderPDFExport({
       onClick={handleExport}
       disabled={generating || isEmpty}
       className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
-      title={isEmpty ? "Ajoute du contenu avant de télécharger" : undefined}
+      title={isEmpty ? t("pdf.emptyHint") : undefined}
     >
       {generating ? (
         <>
@@ -825,7 +821,7 @@ export function TechRiderPDFExport({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          Génération…
+          {t("pdf.generating")}
         </>
       ) : (
         <>
@@ -842,7 +838,7 @@ export function TechRiderPDFExport({
               d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          Télécharger le PDF
+          {t("pdf.download")}
         </>
       )}
     </button>

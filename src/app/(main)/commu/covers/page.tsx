@@ -2,11 +2,12 @@ import { getCoversFeed, canUploadCover } from "@/lib/actions/covers";
 import { getSongs } from "@/lib/actions/songs";
 import { getAuthenticatedUser } from "@/lib/supabase/server";
 import { CoversFeedView } from "@/components/covers/covers-feed-view";
+import { getTranslations } from "next-intl/server";
 
-export const metadata = {
-  title: "Covers | Ostinara",
-  description: "Les covers de ton cercle",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("meta.communityCovers");
+  return { title: t("title"), description: t("description") };
+}
 
 /**
  * Le feed de covers.

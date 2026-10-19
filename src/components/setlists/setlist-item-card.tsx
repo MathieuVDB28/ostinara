@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
+import { useTranslations } from "next-intl";
 import type { SetlistItemWithSongOwner } from "@/types";
 
 interface SetlistItemCardProps {
@@ -59,7 +59,8 @@ function getSectionIcon(name?: string) {
       </svg>
     );
   }
-  if (lowerName.includes("rappel")) {
+  // Les noms de section sont saisis librement : on reconnait les deux langues.
+  if (lowerName.includes("rappel") || lowerName.includes("encore")) {
     return (
       <svg
         className="h-5 w-5"
@@ -120,10 +121,10 @@ function getSectionColor(name?: string) {
   const lowerName = name?.toLowerCase() || "";
   if (lowerName.includes("intro")) return "bg-chart-2/20 text-chart-2";
   if (lowerName.includes("pause")) return "bg-primary/20 text-primary";
-  if (lowerName.includes("rappel")) return "bg-primary/20 text-primary";
+  if (lowerName.includes("rappel") || lowerName.includes("encore")) return "bg-primary/20 text-primary";
   if (lowerName.includes("outro")) return "bg-destructive/20 text-destructive";
   if (lowerName.includes("medley")) return "bg-success/20 text-success";
-  if (lowerName.includes("acoustique"))
+  if (lowerName.includes("acoustique") || lowerName.includes("acoustic"))
     return "bg-primary/20 text-primary";
   return "bg-muted text-muted-foreground";
 }
@@ -134,6 +135,8 @@ export function SetlistItemCard({
   onEdit,
   onDelete,
 }: SetlistItemCardProps) {
+  const t = useTranslations("setlists.item");
+  const te = useTranslations("enums");
   const {
     attributes,
     listeners,
@@ -161,7 +164,7 @@ export function SetlistItemCard({
       }`}
     >
       {/* Drag handle */}
-      <button aria-label="Réordonner le morceau"
+      <button aria-label={t("reorder")}
         {...attributes}
         {...listeners}
         className="shrink-0 cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground active:cursor-grabbing"
@@ -249,8 +252,8 @@ export function SetlistItemCard({
             <p className="truncate font-medium">{item.exercise_name}</p>
             <p className="text-sm text-muted-foreground">
               {item.exercise_category
-                ? EXERCISE_CATEGORY_LABELS[item.exercise_category]
-                : "Exercice"}
+                ? te(`exerciseCategory.${item.exercise_category}`)
+                : t("exercise")}
             </p>
           </div>
         </>
@@ -268,7 +271,7 @@ export function SetlistItemCard({
           {/* Section info */}
           <div className="flex-1 min-w-0">
             <p className="truncate font-medium">{item.section_name}</p>
-            <p className="text-sm text-muted-foreground">Section</p>
+            <p className="text-sm text-muted-foreground">{t("section")}</p>
           </div>
         </>
       )}
@@ -277,9 +280,9 @@ export function SetlistItemCard({
       {isSong && item.tabs_url && (
         <div
           className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase"
-          title="Tablature liée"
+          title={t("tabLinked")}
         >
-          Tab
+          {t("tab")}
         </div>
       )}
 
@@ -291,14 +294,14 @@ export function SetlistItemCard({
             className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase"
             title={item.played_sections.map((s) => s.name).join(", ")}
           >
-            {item.played_sections.length} sect.
+            {t("sections", { count: item.played_sections.length })}
           </div>
         )}
 
       {/* BPM badge */}
       {(isSong || isExercise) && item.bpm && item.bpm > 0 && (
         <div className="tabular shrink-0 font-display text-base font-bold">
-          {item.bpm}<span className="text-xs text-muted-foreground"> bpm</span>
+          {item.bpm}<span className="text-xs text-muted-foreground"> {t("bpm")}</span>
         </div>
       )}
 
@@ -337,7 +340,7 @@ export function SetlistItemCard({
 
       {/* Actions (visible on hover) */}
       <div className="flex shrink-0 gap-1 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
-        <button aria-label="Modifier le morceau"
+        <button aria-label={t("edit")}
           onClick={onEdit}
           className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
         >
@@ -355,7 +358,7 @@ export function SetlistItemCard({
             />
           </svg>
         </button>
-        <button aria-label="Supprimer le morceau"
+        <button aria-label={t("delete")}
           onClick={onDelete}
           className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         >

@@ -3,11 +3,16 @@
 import { Lock } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { UserPlan } from "@/types";
 import { BillingInterval } from "@/lib/stripe/config";
 import { PlanToggle, PricingCard } from "@/components/subscription";
 
+const FAQ = ["change", "refund", "cancel", "payment"] as const;
+
 export default function PricingPage() {
+  const t = useTranslations("plans.pricing");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [loading, setLoading] = useState<UserPlan | null>(null);
@@ -33,7 +38,7 @@ export default function PricingPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Erreur lors de la création de la session");
+        throw new Error(data.error || t("checkoutFailed"));
       }
 
       if (data.action === "updated") {
@@ -47,7 +52,7 @@ export default function PricingPage() {
         window.location.href = data.url;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+      setError(err instanceof Error ? err.message : tc("genericError"));
     } finally {
       setLoading(null);
     }
@@ -58,10 +63,10 @@ export default function PricingPage() {
       {/* En-tete, style Fanzine : le titre en capitales condensees, a gauche */}
       <div className="mb-8">
         <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.9] sm:text-6xl">
-          Choisis ton <span className="text-primary">plan</span>
+          {t.rich("title", { accent: (chunks) => <span className="text-primary">{chunks}</span> })}
         </h1>
         <p className="mt-3 text-muted-foreground">
-          Débloque tout Ostinara pour progresser plus vite.
+          {t("lead")}
         </p>
       </div>
 
@@ -104,54 +109,23 @@ export default function PricingPage() {
 
       {/* FAQ ou infos supplémentaires */}
       <div className="mt-14 max-w-2xl">
-        <h2 className="mb-2 font-display text-3xl font-extrabold uppercase leading-none">Questions fréquentes</h2>
+        <h2 className="mb-2 font-display text-3xl font-extrabold uppercase leading-none">{t("faqTitle")}</h2>
         <div className="border-t border-border">
-          <details className="group border-b border-border py-3.5">
-            <summary className="cursor-pointer list-none font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
-              Puis-je changer de plan à tout moment ?
-            </summary>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Oui. Tu peux monter ou descendre de plan quand tu veux. Le prorata est calculé automatiquement.
-            </p>
-          </details>
-
-          <details className="group border-b border-border py-3.5">
-            <summary className="cursor-pointer list-none font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
-              Comment fonctionne le remboursement si je downgrade ?
-            </summary>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Si tu passes à un plan inférieur, la différence est créditée sur
-              ta prochaine facture. Le changement est effectif immédiatement.
-            </p>
-          </details>
-
-          <details className="group border-b border-border py-3.5">
-            <summary className="cursor-pointer list-none font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
-              Que se passe-t-il si j&apos;annule mon abonnement ?
-            </summary>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Tu gardes l&apos;accès à toutes les fonctionnalités payantes jusqu&apos;à
-              la fin de ta période de facturation. Ensuite, tu repasses au
-              plan Free.
-            </p>
-          </details>
-
-          <details className="group border-b border-border py-3.5">
-            <summary className="cursor-pointer list-none font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
-              Quels moyens de paiement acceptez-vous ?
-            </summary>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Toutes les cartes bancaires sont acceptées (Visa, Mastercard,
-              American Express) via notre partenaire sécurisé Stripe.
-            </p>
-          </details>
+          {FAQ.map((key) => (
+            <details key={key} className="group border-b border-border py-3.5">
+              <summary className="cursor-pointer list-none font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
+                {t(`faq.${key}.q`)}
+              </summary>
+              <p className="mt-2 text-sm text-muted-foreground">{t(`faq.${key}.a`)}</p>
+            </details>
+          ))}
         </div>
       </div>
 
       {/* Security badge */}
       <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
         <Lock className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-        <span>Paiement sécurisé par Stripe</span>
+        <span>{t("secure")}</span>
       </div>
     </div>
   );

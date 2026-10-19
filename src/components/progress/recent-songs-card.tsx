@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { EmptyState } from "@/components/ui/empty-state";
-import type { Song, SongStatus } from "@/types";
+import type { Song } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
 /**
@@ -18,13 +19,10 @@ interface RecentSongsCardProps {
   songs: Song[];
 }
 
-const STATUS_LABEL: Record<SongStatus, string> = {
-  want_to_learn: "À apprendre",
-  learning: "En cours",
-  mastered: "Maîtrisé",
-};
-
 export function RecentSongsCard({ songs }: RecentSongsCardProps) {
+  const t = useTranslations("progress.recentSongs");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   if (songs.length === 0) {
     return (
       <section aria-labelledby="recent-songs">
@@ -32,15 +30,15 @@ export function RecentSongsCard({ songs }: RecentSongsCardProps) {
           id="recent-songs"
           className="mb-3 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
         >
-          Derniers morceaux ajoutés
+          {t("title")}
         </h2>
         <EmptyState
           compact
           icon="music_note"
-          title="Bibliothèque vide"
-          description="Ajoute un morceau que tu veux apprendre : il ira dans « À apprendre » jusqu'à ce que tu le travailles."
+          title={t("emptyTitle")}
+          description={t("emptyDescription")}
           actions={[
-            { label: "Ajouter un morceau", icon: "add", primary: true, href: "/biblio" },
+            { label: t("add"), icon: "add", primary: true, href: "/biblio" },
           ]}
         />
       </section>
@@ -54,13 +52,13 @@ export function RecentSongsCard({ songs }: RecentSongsCardProps) {
           id="recent-songs"
           className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
         >
-          Derniers morceaux ajoutés
+          {t("title")}
         </h2>
         <Link
           href="/biblio"
           className="shrink-0 text-xs font-semibold text-foreground underline-offset-2 hover:underline"
         >
-          Tout voir
+          {tc("seeAll")}
         </Link>
       </div>
 
@@ -100,7 +98,7 @@ export function RecentSongsCard({ songs }: RecentSongsCardProps) {
                 distingue pas.
               */}
               <span className="shrink-0 text-right text-xs text-muted-foreground">
-                {STATUS_LABEL[song.status]}
+                {te(`songStatus.${song.status}`)}
               </span>
             </Link>
           </li>

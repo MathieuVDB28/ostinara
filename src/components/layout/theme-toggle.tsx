@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { Monitor, Moon, Sun } from "lucide-react";
 
 /**
@@ -10,14 +11,15 @@ import { Monitor, Moon, Sun } from "lucide-react";
  * donne l'impression que l'app est cassee (cf. HIG, Dark Mode).
  */
 const OPTIONS = [
-  { value: "system", label: "Système", Icon: Monitor },
-  { value: "light", label: "Clair", Icon: Sun },
-  { value: "dark", label: "Sombre", Icon: Moon },
+  { value: "system", label: "themeSystem", Icon: Monitor },
+  { value: "light", label: "themeLight", Icon: Sun },
+  { value: "dark", label: "themeDark", Icon: Moon },
 ] as const;
 
 const noopSubscribe = () => () => {};
 
 export function ThemeToggle() {
+  const t = useTranslations("nav");
   const { theme, setTheme } = useTheme();
 
   // Le defaut est « light » mais le choix enregistre vit dans le
@@ -33,7 +35,7 @@ export function ThemeToggle() {
   return (
     <div
       role="radiogroup"
-      aria-label="Apparence"
+      aria-label={t("appearance")}
       className="flex items-center gap-1 rounded-xl border border-border p-1"
     >
       {OPTIONS.map(({ value, label, Icon }) => {
@@ -43,7 +45,7 @@ export function ThemeToggle() {
             key={value}
             role="radio"
             aria-checked={isActive}
-            aria-label={label}
+            aria-label={t(label)}
             onClick={() => setTheme(value)}
             className={`flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg text-[11px] font-medium transition-colors ${
               isActive
@@ -52,7 +54,7 @@ export function ThemeToggle() {
             }`}
           >
             <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-            {label}
+            {t(label)}
           </button>
         );
       })}

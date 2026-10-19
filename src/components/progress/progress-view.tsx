@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type {
   PracticeSessionWithSong,
   PracticeStats,
@@ -42,6 +43,8 @@ export function ProgressView({
   chartData,
   recentAlbums,
 }: ProgressViewProps) {
+  const t = useTranslations("progress.view");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>("journal");
   const [selectedSession, setSelectedSession] =
@@ -139,7 +142,7 @@ export function ProgressView({
 
       {/* Onglets + action, sur la meme ligne */}
       <div className="mb-5 flex items-center justify-between gap-3 border-b border-border">
-        <div role="tablist" aria-label="Vue de la progression" className="flex gap-5">
+        <div role="tablist" aria-label={t("tabsAria")} className="flex gap-5">
           <button
             role="tab"
             aria-selected={activeTab === "journal"}
@@ -151,7 +154,7 @@ export function ProgressView({
             }`}
           >
             <Icon name="menu_book" className="h-[18px] w-[18px]" />
-            Journal
+            {t("journal")}
           </button>
           <button
             role="tab"
@@ -164,7 +167,7 @@ export function ProgressView({
             }`}
           >
             <Icon name="bar_chart" className="h-[18px] w-[18px]" />
-            Statistiques
+            {t("stats")}
           </button>
         </div>
 
@@ -173,8 +176,8 @@ export function ProgressView({
           className="mb-2 inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Icon name="add" className="h-[18px] w-[18px]" />
-          <span className="hidden sm:inline">Ajouter une session</span>
-          <span className="sm:hidden">Session</span>
+          <span className="hidden sm:inline">{t("addSession")}</span>
+          <span className="sm:hidden">{t("sessionShort")}</span>
         </button>
       </div>
 
@@ -192,7 +195,7 @@ export function ProgressView({
         <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-start">
           {/* Historique */}
           <div className="order-1 min-w-0">
-            <h2 className="sr-only">Historique des sessions</h2>
+            <h2 className="sr-only">{t("history")}</h2>
             <SessionList
               sessions={sessions}
               onSessionClick={(session) => setSelectedSession(session)}
@@ -213,17 +216,16 @@ export function ProgressView({
                   className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-input px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
                 >
                   {isLoadingMore ? (
-                    "Chargement…"
+                    tc("loading")
                   ) : (
                     <>
                       <Icon name="expand_more" className="h-[20px] w-[20px]" />
-                      Charger {Math.min(SESSIONS_PER_PAGE, remaining)} sessions de
-                      plus
+                      {t("loadMore", { count: Math.min(SESSIONS_PER_PAGE, remaining) })}
                     </>
                   )}
                 </button>
                 <p className="tabular text-xs text-muted-foreground">
-                  {sessions.length} sur {stats.totalSessions}
+                  {t("shownOf", { shown: sessions.length, total: stats.totalSessions })}
                 </p>
               </div>
             )}
@@ -242,7 +244,7 @@ export function ProgressView({
             {stats.mostPracticedSong && (
               <div>
                 <p className="mb-2 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                  Morceau le plus pratiqué
+                  {t("mostPracticed")}
                 </p>
                 <div className="flex items-center gap-3">
                   {stats.mostPracticedSong.song.cover_url ? (
@@ -263,8 +265,7 @@ export function ProgressView({
                       {stats.mostPracticedSong.song.title}
                     </p>
                     <p className="tabular font-display text-lg font-bold leading-none">
-                      {stats.mostPracticedSong.count} session
-                      {stats.mostPracticedSong.count > 1 ? "s" : ""}
+                      {t("sessions", { count: stats.mostPracticedSong.count })}
                     </p>
                   </div>
                 </div>

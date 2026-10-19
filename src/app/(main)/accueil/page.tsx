@@ -13,12 +13,13 @@ import { getPendingRequestsCount } from "@/lib/actions/friends";
 import { getPendingChallengesCount } from "@/lib/actions/challenges";
 import { getPendingBandInvitations } from "@/lib/actions/bands";
 import { syncBadges } from "@/lib/badges/sync";
+import { getTranslations } from "next-intl/server";
 import { HomeView } from "@/components/home/home-view";
 
-export const metadata = {
-  title: "Accueil | Ostinara",
-  description: "Ta semaine, tes derniers ajouts et ce qui se passe chez tes amis",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("home");
+  return { title: t("metaTitle"), description: t("metaDescription") };
+}
 
 /** Combien d'elements chaque bloc montre : un resume, pas une liste. */
 const RECENT_SONGS = 8;

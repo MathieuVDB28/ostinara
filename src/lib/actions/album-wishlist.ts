@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "@/lib/actions/activities";
@@ -34,7 +35,7 @@ export async function addToAlbumWishlist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Vérifier si déjà dans la wishlist (par deezer_id)
@@ -47,7 +48,7 @@ export async function addToAlbumWishlist(
       .single();
 
     if (existing) {
-      return { success: false, error: "Cet album est déjà dans ta wishlist" };
+      return { success: false, error: await tErr("albumAlreadyInWishlist") };
     }
   }
 
@@ -61,7 +62,7 @@ export async function addToAlbumWishlist(
       .single();
 
     if (existingReview) {
-      return { success: false, error: "Tu as déjà reviewé cet album" };
+      return { success: false, error: await tErr("albumAlreadyReviewed") };
     }
   }
 
@@ -81,7 +82,7 @@ export async function addToAlbumWishlist(
     if (count && count >= 20) {
       return {
         success: false,
-        error: "Tu as atteint la limite de 20 albums dans ta wishlist. Passe en Pro pour en ajouter plus !",
+        error: await tErr("wishlistAlbumLimit"),
       };
     }
   }
@@ -102,7 +103,7 @@ export async function addToAlbumWishlist(
 
   if (error) {
     console.error("Error adding to album wishlist:", error);
-    return { success: false, error: "Erreur lors de l'ajout à la wishlist" };
+    return { success: false, error: await tErr("wishlistAddFailed") };
   }
 
   // Créer une activité pour le feed. Attendue : non attendue, son
@@ -130,7 +131,7 @@ export async function removeFromAlbumWishlist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -141,7 +142,7 @@ export async function removeFromAlbumWishlist(
 
   if (error) {
     console.error("Error removing from album wishlist:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/albums");

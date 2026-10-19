@@ -1,0 +1,29 @@
+{
+  "view": {
+    "offline": "Hors ligne",
+    "copyOf": "Copie du {date}",
+    "noCopy": "Aucune copie locale pour l'instant",
+    "pending": "{count, plural, one {# session en attente — elle partira} other {# sessions en attente — elles partiront}} au retour du réseau.",
+    "nothing": "Rien en cache",
+    "nothingHint": "Ouvre l'app une fois connecté : ta bibliothèque et ton journal seront alors lisibles ici, sans réseau.",
+    "streak": "Série",
+    "thisWeek": "Cette semaine",
+    "songs": "Morceaux",
+    "library": "Bibliothèque",
+    "journal": "Journal",
+    "learning": "En cours",
+    "rest": "Le reste",
+    "freeSession": "Session libre",
+    "retry": "Réessayer la connexion"
+  },
+  "banner": {
+    "failed": "Échec",
+    "network": "Réseau indisponible",
+    "offlinePending": "Hors ligne · {count, plural, one {# session en attente} other {# sessions en attente}}",
+    "offlineCached": "Hors ligne · bibliothèque et journal en cache",
+    "stuck": "{count, plural, one {# session n'a pas pu être envoyée} other {# sessions n'ont pas pu être envoyées}}",
+    "syncing": "Envoi des sessions enregistrées hors ligne…",
+    "toSend": "{count, plural, one {# session à envoyer} other {# sessions à envoyer}}",
+    "retry": "Réessayer"
+  }
+}

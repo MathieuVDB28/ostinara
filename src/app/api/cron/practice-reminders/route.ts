@@ -225,12 +225,11 @@ export async function GET(request: NextRequest) {
 
     const result = await sendPushNotification(
       userId,
-      {
-        title: reminder.title,
-        body: reminder.body,
+      (t) => ({
+        ...reminder.text(t),
         tag: reminder.type,
         data: { url: reminder.url, ...(reminder.songId ? { songId: reminder.songId } : {}) },
-      },
+      }),
       reminder.type
     );
     if (result.success > 0) sent++;

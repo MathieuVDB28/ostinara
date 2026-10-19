@@ -2,6 +2,9 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import type { Translator } from "@/i18n/types";
 import { getWeeklyAlbums } from "@/lib/actions/albums";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
@@ -17,25 +20,25 @@ interface WeeklyAlbumsViewProps {
 type SortMode = "top" | "popular";
 
 // rating is stored as 0–10 integer (db value = stars × 2)
-function formatStars(dbRating: number) {
-  return (dbRating / 2).toLocaleString("fr-FR", {
+function formatStars(dbRating: number, intlLocale: string) {
+  return (dbRating / 2).toLocaleString(intlLocale, {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   });
 }
 
-function formatDay(isoDate: string) {
-  return new Date(`${isoDate}T00:00:00Z`).toLocaleDateString("fr-FR", {
+function formatDay(isoDate: string, intlLocale: string) {
+  return new Date(`${isoDate}T00:00:00Z`).toLocaleDateString(intlLocale, {
     day: "numeric",
     month: "short",
     timeZone: "UTC",
   });
 }
 
-function weekTitle(offset: number) {
-  if (offset === 0) return "Cette semaine";
-  if (offset === 1) return "La semaine dernière";
-  return `Il y a ${offset} semaines`;
+function weekTitle(offset: number, t: Translator<"albums.weekly">) {
+  if (offset === 0) return t("thisWeek");
+  if (offset === 1) return t("lastWeek");
+  return t("weeksAgo", { count: offset });
 }
 
 const normalize = (value: string) =>
@@ -47,6 +50,8 @@ const normalize = (value: string) =>
  * et dans l'onglet « Semaine » de « Biblio › Albums ».
  */
 export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps) {
+  const t = useTranslations("albums.weekly");
+  const intlLocale = useIntlLocale();
   const [week, setWeek] = useState(initial);
   const [sort, setSort] = useState<SortMode>("top");
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +64,7 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
       if (next) {
         setWeek(next);
       } else {
-        setError("Impossible de charger cette semaine");
+        setError(t("loadFailed"));
       }
     });
   };
@@ -86,7 +91,7 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
           type="button"
           onClick={() => goToWeek(week.week_offset + 1)}
           disabled={isPending}
-          aria-label="Semaine précédente"
+          aria-label={t("previous")}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-accent disabled:opacity-50"
         >
           <ChevronLeft className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
@@ -94,10 +99,10 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
 
         <div className={`text-center transition-opacity ${isPending ? "opacity-50" : ""}`}>
           <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[0.02em]">
-            {weekTitle(week.week_offset)}
+            {weekTitle(week.week_offset, t)}
           </p>
           <p className="text-sm text-muted-foreground">
-            du {formatDay(week.week_start)} au {formatDay(week.week_end)}
+            {t("range", { start: formatDay(week.week_start, intlLocale), end: formatDay(week.week_end, intlLocale) })}
           </p>
         </div>
 
@@ -105,7 +110,7 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
           type="button"
           onClick={() => goToWeek(week.week_offset - 1)}
           disabled={isPending || week.week_offset === 0}
-          aria-label="Semaine suivante"
+          aria-label={t("next")}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-accent disabled:opacity-30"
         >
           <ChevronRight className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
@@ -119,8 +124,8 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
         <div className="mb-4 flex flex-wrap items-center gap-2">
           {(
             [
-              ["top", "Mieux notés"],
-              ["popular", "Plus écoutés"],
+              ["top", t("top")],
+              ["popular", t("popular")],
             ] as const
           ).map(([mode, label]) => (
             <button
@@ -142,15 +147,15 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
         <EmptyState
           compact
           icon="album"
-          title="Aucune écoute cette semaine"
-          description="Chaque album noté par un membre d'Ostinara entre lundi et dimanche apparaît ici, classé par note moyenne."
+          title={t("empty")}
+          description={t("emptyDescription")}
           actions={[
-            { label: "Noter un album", icon: "add", href: "/biblio/albums", primary: true },
+            { label: t("rate"), icon: "add", href: "/biblio/albums", primary: true },
           ]}
         />
       ) : albums.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
-          Aucun album de la semaine ne correspond à ta recherche
+          {t("noMatch")}
         </p>
       ) : (
         <ol className={`transition-opacity ${isPending ? "opacity-50" : ""}`}>
@@ -174,23 +179,25 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
  * la pochette plein cadre, le titre en capitales condensees posees dessus.
  */
 function WeeklyTopAlbum({ album }: { album: WeeklyAlbum }) {
+  const t = useTranslations("albums.weekly");
+  const intlLocale = useIntlLocale();
   const poster = (
     <Cover src={album.cover_url} alt="" className="aspect-[16/10] w-full sm:rounded-md">
       <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-transparent from-35% to-black/85" />
       <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 font-display text-[13px] font-bold text-white">
         <Star className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
-        {formatStars(album.avg_rating)}
+        {formatStars(album.avg_rating, intlLocale)}
       </span>
       <span className="absolute inset-x-4 bottom-3.5 text-white">
         <span className="block font-display text-[11px] font-bold uppercase tracking-[0.08em] opacity-85">
-          N° 1 de la semaine
+          {t("number1")}
         </span>
         <span className="block text-balance font-display text-[40px] font-extrabold uppercase leading-[0.9] sm:text-5xl">
           {album.album_name}
         </span>
         <span className="block font-display text-[13px] font-bold uppercase tracking-[0.06em] opacity-85">
-          {album.artist_name} · {album.review_count} écoute{album.review_count > 1 ? "s" : ""}
-          {album.user_rating !== null && <> · ta note {formatStars(album.user_rating)}</>}
+          {t("meta", { artist: album.artist_name, count: album.review_count })}
+          {album.user_rating !== null && t("yourRating", { rating: formatStars(album.user_rating, intlLocale) })}
         </span>
       </span>
     </Cover>
@@ -210,6 +217,8 @@ function WeeklyTopAlbum({ album }: { album: WeeklyAlbum }) {
 }
 
 function WeeklyAlbumRow({ album, rank }: { album: WeeklyAlbum; rank: number }) {
+  const t = useTranslations("albums.weekly");
+  const intlLocale = useIntlLocale();
   const content = (
     <>
       <span className="tabular w-8 shrink-0 text-center font-display text-3xl font-extrabold leading-none text-muted-foreground">
@@ -221,14 +230,14 @@ function WeeklyAlbumRow({ album, rank }: { album: WeeklyAlbum; rank: number }) {
       <div className="min-w-0 flex-1">
         <p className="truncate font-display text-lg font-extrabold uppercase leading-tight">{album.album_name}</p>
         <p className="truncate text-xs text-muted-foreground">
-          {album.artist_name} · {album.review_count} écoute{album.review_count > 1 ? "s" : ""}
-          {album.user_rating !== null && <> · ta note {formatStars(album.user_rating)}</>}
+          {t("meta", { artist: album.artist_name, count: album.review_count })}
+          {album.user_rating !== null && t("yourRating", { rating: formatStars(album.user_rating, intlLocale) })}
         </p>
       </div>
 
       <span className="tabular shrink-0 font-display text-xl font-bold text-primary">
-        {formatStars(album.avg_rating)}
-        <span className="sr-only"> sur 5</span>
+        {formatStars(album.avg_rating, intlLocale)}
+        <span className="sr-only">{t("outOf5")}</span>
       </span>
     </>
   );

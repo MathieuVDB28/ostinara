@@ -1,11 +1,21 @@
 import { UserPlan } from '@/types';
+import type { Translator } from '@/i18n/types';
+
+/** Descriptions et fonctionnalites : messages/<langue>/plans.json. */
+export type PlansT = Translator<'plans'>;
+
+export type PlanFeature =
+  | 'songs10' | 'instruments2' | 'covers3' | 'friends5' | 'wishlist20'
+  | 'unlimitedSongs' | 'unlimitedInstruments' | 'unlimitedCovers' | 'unlimitedFriends' | 'unlimitedWishlist'
+  | 'advancedStats' | 'deezerTabs' | 'audioRecognition' | 'proBadge'
+  | 'everythingPro' | 'bandSpaces' | 'sharedSetlists' | 'bandBadge';
 
 export type BillingInterval = 'monthly' | 'yearly';
 
 export interface PlanConfig {
   name: string;
-  description: string;
-  features: string[];
+  /** Cles de plans.features. La description : plans.description.<plan>. */
+  features: PlanFeature[];
   limits?: {
     songs: number;
     covers: number;
@@ -25,13 +35,12 @@ export interface PlanConfig {
 export const PLANS: Record<UserPlan, PlanConfig> = {
   free: {
     name: 'Free',
-    description: 'Pour découvrir Ostinara',
     features: [
-      '10 morceaux max',
-      '2 instruments max',
-      '3 covers max',
-      '5 amis max',
-      '20 morceaux wishlist',
+      'songs10',
+      'instruments2',
+      'covers3',
+      'friends5',
+      'wishlist20',
     ],
     limits: {
       songs: 10,
@@ -44,17 +53,16 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
   },
   pro: {
     name: 'Pro',
-    description: 'Pour les musiciens sérieux',
     features: [
-      'Morceaux illimités',
-      'Instruments illimités',
-      'Covers illimités',
-      'Amis illimités',
-      'Wishlist illimitée',
-      'Stats avancées',
-      'Lecteur Deezer & tablatures',
-      'Reconnaissance audio',
-      'Badge Pro',
+      'unlimitedSongs',
+      'unlimitedInstruments',
+      'unlimitedCovers',
+      'unlimitedFriends',
+      'unlimitedWishlist',
+      'advancedStats',
+      'deezerTabs',
+      'audioRecognition',
+      'proBadge',
     ],
     monthly: {
       price: 9,
@@ -65,14 +73,13 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
   },
   band: {
     name: 'Band',
-    description: 'Pour les groupes',
     features: [
-      'Tout ce qui est dans Pro',
-      'Lecteur Deezer & tablatures',
-      'Reconnaissance audio',
-      'Espaces groupe',
-      'Setlists partagées',
-      'Badge Band',
+      'everythingPro',
+      'deezerTabs',
+      'audioRecognition',
+      'bandSpaces',
+      'sharedSetlists',
+      'bandBadge',
     ],
     monthly: {
       price: 19,
@@ -114,11 +121,8 @@ export function getPlanFromPriceId(priceId: string): UserPlan {
   return 'free';
 }
 
-export function formatPrice(price: number, interval: BillingInterval): string {
-  if (interval === 'yearly') {
-    return `${price}€/an`;
-  }
-  return `${price}€/mois`;
+export function formatPrice(price: number, interval: BillingInterval, t: PlansT): string {
+  return interval === 'yearly' ? t('pricePerYear', { price }) : t('pricePerMonth', { price });
 }
 
 export function getYearlySavings(plan: 'pro' | 'band'): number {

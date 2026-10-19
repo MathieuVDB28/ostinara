@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import type { TechRider, SaveTechRiderInput } from "@/types";
@@ -47,9 +48,9 @@ export async function saveTechRider(
   const supabase = await createClient();
   const { userId, isMember, role } = await getBandMembership(bandId);
 
-  if (!isMember) return { success: false, error: "Non membre du groupe" };
+  if (!isMember) return { success: false, error: await tErr("notBandMember") };
   if (role !== "owner" && role !== "admin")
-    return { success: false, error: "Droits insuffisants" };
+    return { success: false, error: await tErr("forbidden") };
 
   const { data: existing } = await supabase
     .from("tech_riders")
@@ -87,9 +88,9 @@ export async function deleteTechRider(
   const supabase = await createClient();
   const { isMember, role } = await getBandMembership(bandId);
 
-  if (!isMember) return { success: false, error: "Non membre du groupe" };
+  if (!isMember) return { success: false, error: await tErr("notBandMember") };
   if (role !== "owner")
-    return { success: false, error: "Seul le proprietaire peut supprimer" };
+    return { success: false, error: await tErr("ownerOnlyDelete") };
 
   const { error } = await supabase
     .from("tech_riders")

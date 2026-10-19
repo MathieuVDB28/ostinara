@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { searchUsersForBandInvite, inviteToBand } from "@/lib/actions/bands";
 import type { Profile } from "@/types";
 
@@ -19,6 +20,8 @@ export function InviteMemberModal({
   bandId,
   bandName,
 }: InviteMemberModalProps) {
+  const t = useTranslations("setlists.invite");
+  const tc = useTranslations("common");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Profile[]>([]);
   const [searching, setSearching] = useState(false);
@@ -87,13 +90,13 @@ export function InviteMemberModal({
     setInviting(null);
 
     if (result.success) {
-      setSuccessMessage(`Invitation envoyee a ${userName}`);
+      setSuccessMessage(t("sent", { name: userName }));
       // Remove from results
       setResults(results.filter((u) => u.id !== userId));
       setTimeout(() => setSuccessMessage(null), 3000);
       onSuccess();
     } else {
-      setError(result.error || "Erreur lors de l'envoi de l'invitation");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -110,10 +113,10 @@ export function InviteMemberModal({
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Inviter un membre</h2>
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{bandName}</p>
           </div>
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -152,7 +155,7 @@ export function InviteMemberModal({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher par username..."
+            placeholder={t("searchPlaceholder")}
             className="w-full rounded-lg border border-input bg-background py-3 pl-10 pr-4 text-sm focus:border-primary"
             autoFocus
           />
@@ -176,19 +179,19 @@ export function InviteMemberModal({
         <div className="max-h-64 space-y-2 overflow-y-auto">
           {searching && (
             <div className="py-8 text-center text-muted-foreground">
-              Recherche...
+              {t("searching")}
             </div>
           )}
 
           {!searching && query.length >= 2 && results.length === 0 && (
             <div className="py-8 text-center text-muted-foreground">
-              Aucun utilisateur trouve
+              {t("none")}
             </div>
           )}
 
           {!searching && query.length < 2 && (
             <div className="py-8 text-center text-muted-foreground">
-              Tape au moins 2 caracteres pour rechercher
+              {t("minChars")}
             </div>
           )}
 
@@ -228,7 +231,7 @@ export function InviteMemberModal({
                 disabled={inviting === user.id}
                 className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
               >
-                {inviting === user.id ? "..." : "Inviter"}
+                {inviting === user.id ? "..." : t("invite")}
               </button>
             </div>
           ))}
@@ -239,7 +242,7 @@ export function InviteMemberModal({
           onClick={onClose}
           className="mt-4 w-full rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
         >
-          Fermer
+          {tc("close")}
         </button>
       </div>
     </div>

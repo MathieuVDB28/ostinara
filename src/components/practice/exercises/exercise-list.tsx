@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { ChevronDown, Plus, Search } from "lucide-react";
 import { ExerciseCard } from "./exercise-card";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
+import { useTranslations } from "next-intl";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
 import { EXERCISE_CATEGORIES, exerciseFitsInstrument } from "@/lib/instruments";
@@ -15,16 +15,12 @@ interface ExerciseListProps {
   onCreateExercise: () => void;
 }
 
-const DIFFICULTY_LABELS: Record<ExerciseDifficulty, string> = {
-  beginner: "Débutant",
-  intermediate: "Intermédiaire",
-  advanced: "Avancé",
-  expert: "Expert",
-};
-
 type SourceFilter = "all" | "system" | "mine" | "friends";
 
 export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: ExerciseListProps) {
+  const t = useTranslations("exercises.list");
+  const te = useTranslations("enums");
+  const categoryLabel = (category: ExerciseCategory) => te(`exerciseCategory.${category}`);
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | "all">("all");
   const [selectedDifficulty, setSelectedDifficulty] = useState<ExerciseDifficulty | "all">("all");
   const [selectedSource, setSelectedSource] = useState<SourceFilter>("all");
@@ -112,10 +108,10 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
     }`;
 
   const sources: { value: SourceFilter; label: string; show: boolean }[] = [
-    { value: "all", label: "Tous", show: true },
-    { value: "system", label: "Officiels", show: true },
-    { value: "mine", label: "Mes exercices", show: hasCustomExercises },
-    { value: "friends", label: "De mes amis", show: hasFriendExercises },
+    { value: "all", label: t("all"), show: true },
+    { value: "system", label: t("official"), show: true },
+    { value: "mine", label: t("mine"), show: hasCustomExercises },
+    { value: "friends", label: t("friends"), show: hasFriendExercises },
   ];
 
   /*
@@ -134,16 +130,16 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
             setInstrument(next);
             setSelectedCategory("all");
           }}
-          label="Exercices pour"
+          label={t("for")}
         />
       )}
       <div className="flex items-center gap-2">
         <label className="relative min-w-0 flex-1">
-          <span className="sr-only">Rechercher un exercice</span>
+          <span className="sr-only">{t("search")}</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
           <input
             type="search"
-            placeholder="Rechercher un exercice…"
+            placeholder={t("searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="min-h-[38px] w-full rounded-xl border border-border bg-card py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
@@ -154,7 +150,7 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
           className="inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-xl border border-border px-3 text-[13px] font-semibold transition-colors hover:bg-accent"
         >
           <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-          Créer
+          {t("create")}
         </button>
       </div>
 
@@ -179,23 +175,23 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
             aria-pressed={selectedCategory === cat}
             className={chip(selectedCategory === cat)}
           >
-            {EXERCISE_CATEGORY_LABELS[cat]}
+            {categoryLabel(cat)}
           </button>
         ))}
         <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 self-center bg-border" />
         <label className={`${chip(selectedDifficulty !== "all")} relative pr-7`}>
-          <span className="sr-only">Difficulté</span>
-          {selectedDifficulty === "all" ? "Difficulté" : DIFFICULTY_LABELS[selectedDifficulty]}
+          <span className="sr-only">{t("difficulty")}</span>
+          {selectedDifficulty === "all" ? t("difficulty") : te(`difficulty.${selectedDifficulty}`)}
           <ChevronDown className="pointer-events-none absolute right-2 h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
           <select
             value={selectedDifficulty}
             onChange={(e) => setSelectedDifficulty(e.target.value as ExerciseDifficulty | "all")}
             className="absolute inset-0 cursor-pointer opacity-0"
           >
-            <option value="all">Toutes difficultés</option>
+            <option value="all">{t("allDifficulties")}</option>
             {(["beginner", "intermediate", "advanced", "expert"] as ExerciseDifficulty[]).map((diff) => (
               <option key={diff} value={diff}>
-                {DIFFICULTY_LABELS[diff]}
+                {te(`difficulty.${diff}`)}
               </option>
             ))}
           </select>
@@ -204,10 +200,10 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
 
       <div className="space-y-5">
         {Object.entries(groupedExercises).map(([category, categoryExercises]) => (
-          <section key={category} aria-label={EXERCISE_CATEGORY_LABELS[category as ExerciseCategory]}>
+          <section key={category} aria-label={categoryLabel(category as ExerciseCategory)}>
             <h3 className="flex justify-between border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              <span>{EXERCISE_CATEGORY_LABELS[category as ExerciseCategory]}</span>
-              <span aria-hidden="true">bpm</span>
+              <span>{categoryLabel(category as ExerciseCategory)}</span>
+              <span aria-hidden="true">{t("bpm")}</span>
             </h3>
             <div>
               {categoryExercises.map((exercise) => (
@@ -223,10 +219,10 @@ export function ExerciseList({ exercises, onSelectExercise, onCreateExercise }: 
 
         {filteredExercises.length === 0 && (
           <div className="py-8 text-center text-muted-foreground">
-            <p>Aucun exercice trouvé</p>
+            <p>{t("none")}</p>
             {selectedSource === "friends" && (
               <p className="mt-1 text-xs">
-                Tes amis n&apos;ont pas encore partagé d&apos;exercices
+                {t("noFriends")}
               </p>
             )}
           </div>

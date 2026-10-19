@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { AlbumReview, AlbumWishlistItem, UserPlan, WeeklyAlbums } from "@/types";
 import { AlbumReviewCard } from "./album-review-card";
 import { AddAlbumModal } from "./add-album-modal";
@@ -17,12 +18,7 @@ import { deezerUrl } from "@/lib/services/deezer";
 
 type AlbumsTab = "reviews" | "wishlist" | "week" | "recommendations";
 
-const TABS: { value: AlbumsTab; label: string }[] = [
-  { value: "reviews", label: "Mes écoutes" },
-  { value: "wishlist", label: "À écouter" },
-  { value: "week", label: "Semaine" },
-  { value: "recommendations", label: "Recos" },
-];
+const TABS: AlbumsTab[] = ["reviews", "wishlist", "week", "recommendations"];
 
 const CHIP =
   "inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -42,6 +38,7 @@ export function AlbumsView({
   initialWeeklyAlbums,
   userPlan,
 }: AlbumsViewProps) {
+  const t = useTranslations("albums.view");
   const [reviews, setReviews] = useState(initialReviews);
   const [wishlist, setWishlist] = useState(initialWishlist);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -132,10 +129,10 @@ export function AlbumsView({
       <div className="flex items-center gap-1.5">
         <div
           role="group"
-          aria-label="Vues des albums"
+          aria-label={t("tabsAria")}
           className="-ml-4 flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 pl-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:ml-0 lg:pl-0 [&::-webkit-scrollbar]:hidden"
         >
-          {TABS.map((tab) => {
+          {TABS.map((value) => ({ value, label: t(`tabs.${value}`) })).map((tab) => {
             const isActive = activeTab === tab.value;
             const count =
               tab.value === "reviews" ? reviews.length : tab.value === "wishlist" ? wishlist.length : null;
@@ -149,7 +146,7 @@ export function AlbumsView({
                 {tab.label}
                 {count !== null && <span className="tabular opacity-70">{count}</span>}
                 {tab.value === "recommendations" && !isPaid && (
-                  <span className="rounded bg-primary/15 px-1 text-[10px] font-bold text-primary">PRO</span>
+                  <span className="rounded bg-primary/15 px-1 text-[10px] font-bold text-primary">{t("pro")}</span>
                 )}
               </button>
             );
@@ -165,7 +162,7 @@ export function AlbumsView({
                     key={val}
                     onClick={() => setStarFilter(isActive ? 0 : val)}
                     aria-pressed={isActive}
-                    aria-label={`${val} étoile${val > 1 ? "s" : ""}`}
+                    aria-label={t("stars", { count: val })}
                     className={`${CHIP} ${isActive ? CHIP_ACTIVE : CHIP_IDLE}`}
                   >
                     <Star className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
@@ -180,11 +177,11 @@ export function AlbumsView({
         {(activeTab === "reviews" || activeTab === "wishlist") && (
           <button
             onClick={() => (activeTab === "wishlist" ? setIsWishlistModalOpen(true) : setIsAddModalOpen(true))}
-            aria-label={activeTab === "wishlist" ? "Ajouter un album à écouter" : "Ajouter une écoute"}
+            aria-label={activeTab === "wishlist" ? t("addToListen") : t("addListen")}
             className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-primary px-3.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-            <span className="hidden sm:inline">Ajouter</span>
+            <span className="hidden sm:inline">{t("add")}</span>
           </button>
         )}
       </div>
@@ -196,7 +193,7 @@ export function AlbumsView({
         <>
           {hasActiveFilters && (
             <p className="mb-3 text-sm text-muted-foreground">
-              {filteredReviews.length} résultat{filteredReviews.length !== 1 ? "s" : ""}
+              {t("results", { count: filteredReviews.length })}
             </p>
           )}
 
@@ -204,7 +201,7 @@ export function AlbumsView({
           {!hasActiveFilters && favorites.length > 1 && (
             <section aria-labelledby="albums-favorites" className="mb-6">
               <h2 id="albums-favorites" className="mb-2.5 text-lg font-extrabold tracking-[-0.01em]">
-                Tes 5 étoiles
+                {t("fiveStars")}
                 <span className="tabular font-bold text-muted-foreground">
                   <span aria-hidden="true"> · </span>
                   {favorites.length}
@@ -232,7 +229,7 @@ export function AlbumsView({
 
           {!hasActiveFilters && favorites.length > 1 && (
             <h2 className="mb-2.5 text-lg font-extrabold tracking-[-0.01em]">
-              Toutes tes écoutes
+              {t("allListens")}
               <span className="tabular font-bold text-muted-foreground">
                 <span aria-hidden="true"> · </span>
                 {reviews.length}
@@ -260,28 +257,28 @@ export function AlbumsView({
               )}
               <p className="text-muted-foreground">
                 {query
-                  ? `Aucun album ne correspond a "${searchQuery.trim()}"`
-                  : "Aucun album avec cette note"}
+                  ? t("noMatch", { query: searchQuery.trim() })
+                  : t("noRating")}
               </p>
               <button
                 onClick={clearFilters}
                 className="mt-3 text-sm text-primary hover:underline"
               >
-                Effacer les filtres
+                {t("clearFilters")}
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Disc3 className="mb-4 h-10 w-10 text-muted-foreground" strokeWidth={1.25} aria-hidden="true" />
-              <h3 className="mb-2 text-lg font-semibold">Aucun album</h3>
+              <h3 className="mb-2 text-lg font-semibold">{t("none")}</h3>
               <p className="mb-6 max-w-sm text-center text-muted-foreground">
-                Ajoute les albums que tu as écoutés, note-les et partage ton avis
+                {t("noneHint")}
               </p>
               <button
                 onClick={() => setIsAddModalOpen(true)}
                 className="rounded-xl bg-primary px-5 py-2.5 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                Ajouter un album
+                {t("addAlbum")}
               </button>
             </div>
           )}
@@ -307,27 +304,27 @@ export function AlbumsView({
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <SearchX className="mb-3 h-8 w-8 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
               <p className="text-muted-foreground">
-                Aucun album ne correspond a &quot;{searchQuery.trim()}&quot;
+                {t("noMatch", { query: searchQuery.trim() })}
               </p>
               <button
                 onClick={() => setSearchQuery("")}
                 className="mt-3 text-sm text-primary hover:underline"
               >
-                Effacer la recherche
+                {t("clearSearch")}
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Bookmark className="mb-4 h-10 w-10 text-muted-foreground" strokeWidth={1.25} aria-hidden="true" />
-              <h3 className="mb-2 text-lg font-semibold">Aucun album en attente</h3>
+              <h3 className="mb-2 text-lg font-semibold">{t("noWishlist")}</h3>
               <p className="mb-6 max-w-sm text-center text-muted-foreground">
-                Ajoute les albums que tu aimerais écouter pour ne pas les oublier
+                {t("noWishlistHint")}
               </p>
               <button
                 onClick={() => setIsWishlistModalOpen(true)}
                 className="rounded-xl bg-primary px-5 py-2.5 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                Ajouter un album
+                {t("addAlbum")}
               </button>
             </div>
           )}

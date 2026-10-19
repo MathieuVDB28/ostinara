@@ -1,39 +1,15 @@
 "use client";
 
 import { Frets } from "@/components/ui/frets";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
-import type { ExerciseWithProgress, ExerciseDifficulty, ExerciseCategory } from "@/types";
+import { useTranslations } from "next-intl";
+import type { ExerciseWithProgress } from "@/types";
 
 interface ExerciseCardProps {
   exercise: ExerciseWithProgress;
   onClick: () => void;
 }
 
-const DIFFICULTY_LABELS: Record<ExerciseDifficulty, string> = {
-  beginner: "Débutant",
-  intermediate: "Intermédiaire",
-  advanced: "Avancé",
-  expert: "Expert",
-};
-
-/** Deux lettres de la categorie, a la place d'une icone dans une pastille. */
-const CATEGORY_MARK: Record<ExerciseCategory, string> = {
-  scales: "GA",
-  arpeggios: "AR",
-  picking: "PI",
-  chord_changes: "AC",
-  fingerstyle: "FI",
-  technique: "TE",
-  rhythm: "RY",
-  rudiments: "RU",
-  grooves: "GR",
-  fills: "BR",
-  independence: "IN",
-  slap: "SL",
-  walking_bass: "WB",
-  voicings: "VO",
-  reading: "LE",
-};
+/* Deux lettres de la categorie, a la place d'une icone dans une pastille : enums.exerciseMark. */
 
 /**
  * Un exercice, en ligne a filet (style Atelier, docs/refonte-ui.md).
@@ -43,6 +19,8 @@ const CATEGORY_MARK: Record<ExerciseCategory, string> = {
  * l'exercice (60 → 120) se lit dans la ligne de detail.
  */
 export function ExerciseCard({ exercise, onClick }: ExerciseCardProps) {
+  const t = useTranslations("exercises.card");
+  const te = useTranslations("enums");
   const progress = exercise.user_progress;
   const span = exercise.target_bpm - exercise.starting_bpm;
   const progressPercent =
@@ -62,19 +40,19 @@ export function ExerciseCard({ exercise, onClick }: ExerciseCardProps) {
         aria-hidden="true"
         className="flex h-11 w-11 items-center justify-center rounded-[3px] bg-secondary font-display text-[15px] font-extrabold text-muted-foreground"
       >
-        {CATEGORY_MARK[exercise.category]}
+        {te(`exerciseMark.${exercise.category}`)}
       </span>
 
       <span className="min-w-0">
         <span className="block truncate text-sm font-semibold">{exercise.name}</span>
         <span className="block truncate text-xs text-muted-foreground">
-          {EXERCISE_CATEGORY_LABELS[exercise.category]} · {DIFFICULTY_LABELS[exercise.difficulty]} · ~
-          {exercise.duration_minutes} min ·{" "}
+          {te(`exerciseCategory.${exercise.category}`)} · {te(`difficulty.${exercise.difficulty}`)} ·{" "}
+          {t("duration", { m: exercise.duration_minutes })} ·{" "}
           <span className="tabular font-mono text-[10.5px]">
             {exercise.starting_bpm}→{exercise.target_bpm}
           </span>
-          {isFromFriend && exercise.creator_name && <> · de {exercise.creator_name}</>}
-          {isCustom && <> · perso</>}
+          {isFromFriend && exercise.creator_name && <> · {t("from", { name: exercise.creator_name })}</>}
+          {isCustom && <> · {t("custom")}</>}
         </span>
       </span>
 
@@ -93,8 +71,8 @@ export function ExerciseCard({ exercise, onClick }: ExerciseCardProps) {
           value={progressPercent}
           label={
             progress
-              ? `${progress.current_bpm} sur ${exercise.target_bpm} BPM`
-              : "Pas encore travaillé"
+              ? t("bpmOf", { current: progress.current_bpm, target: exercise.target_bpm })
+              : t("notYet")
           }
         />
       </span>

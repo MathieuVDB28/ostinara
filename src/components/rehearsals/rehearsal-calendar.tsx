@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import type { RehearsalWithDetails } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
@@ -10,11 +12,18 @@ interface RehearsalCalendarProps {
   onRehearsalClick: (rehearsal: RehearsalWithDetails) => void;
 }
 
-const DAYS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-const MONTHS_FR = [
-  "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre",
-];
+/** Les jours (lundi en tete) et les mois, dans la langue de l'app. */
+function calendarNames(intlLocale: string) {
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).replace(/\.$/, "");
+  // 1er janvier 2024 : un lundi.
+  const days = Array.from({ length: 7 }, (_, d) =>
+    capitalize(new Date(2024, 0, 1 + d).toLocaleDateString(intlLocale, { weekday: "short" }))
+  );
+  const months = Array.from({ length: 12 }, (_, m) =>
+    capitalize(new Date(2024, m, 1).toLocaleDateString(intlLocale, { month: "long" }))
+  );
+  return { days, months };
+}
 
 function getCalendarDays(year: number, month: number) {
   const firstDay = new Date(year, month, 1);
@@ -44,6 +53,9 @@ export function RehearsalCalendar({
   currentUserId,
   onRehearsalClick,
 }: RehearsalCalendarProps) {
+  const t = useTranslations("rehearsals.calendar");
+  const intlLocale = useIntlLocale();
+  const { days: DAYS, months: MONTHS } = useMemo(() => calendarNames(intlLocale), [intlLocale]);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
@@ -91,7 +103,7 @@ export function RehearsalCalendar({
     <div className="rounded-xl border border-border bg-card">
       {/* Navigation */}
       <div className="flex items-center justify-between border-b border-border p-4">
-        <button aria-label="Mois précédent"
+        <button aria-label={t("previous")}
           onClick={prevMonth}
           className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
@@ -99,16 +111,16 @@ export function RehearsalCalendar({
         </button>
         <div className="flex items-center gap-3">
           <h3 className="font-display text-xl font-extrabold uppercase">
-            {MONTHS_FR[currentMonth]} {currentYear}
+            {MONTHS[currentMonth]} {currentYear}
           </h3>
           <button
             onClick={goToToday}
             className="rounded-lg border border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent transition-colors"
           >
-            Aujourd&apos;hui
+            {t("today")}
           </button>
         </div>
-        <button aria-label="Mois suivant"
+        <button aria-label={t("next")}
           onClick={nextMonth}
           className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
@@ -118,7 +130,7 @@ export function RehearsalCalendar({
 
       {/* Day headers */}
       <div className="grid grid-cols-7 border-b border-border">
-        {DAYS_FR.map((day) => (
+        {DAYS.map((day) => (
           <div
             key={day}
             className="p-2 text-center text-xs font-medium text-muted-foreground"
@@ -168,7 +180,7 @@ export function RehearsalCalendar({
                         : "bg-primary/20 text-primary"
                     }`}
                   >
-                    {new Date(r.date).toLocaleTimeString("fr-FR", {
+                    {new Date(r.date).toLocaleTimeString(intlLocale, {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}{" "}

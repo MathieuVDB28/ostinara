@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createPracticeSession } from "@/lib/actions/practice";
 import {
   MAX_SYNC_ATTEMPTS,
@@ -97,6 +98,7 @@ export function useOffline(): OfflineValue {
 
 export function OfflineProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const tb = useTranslations("offline.banner");
 
   // Le rendu serveur ne connait pas l'etat du reseau : on part de
   // « en ligne » et on corrige au montage. L'inverse afficherait le
@@ -162,12 +164,12 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
           await removeFromQueue(entry.localId);
           sent += 1;
         } else {
-          await markQueueFailure(entry, result.error ?? "Échec");
+          await markQueueFailure(entry, result.error ?? tb("failed"));
         }
       } catch (error) {
         await markQueueFailure(
           entry,
-          error instanceof Error ? error.message : "Réseau indisponible"
+          error instanceof Error ? error.message : tb("network")
         );
         // Le reseau est reparti : inutile d'insister sur les suivantes.
         break;
@@ -182,7 +184,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
       await refreshSnapshot();
       router.refresh();
     }
-  }, [refreshSnapshot, router]);
+  }, [refreshSnapshot, router, tb]);
 
   const saveSession = useCallback<OfflineValue["saveSession"]>(
     async (input) => {
@@ -302,6 +304,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
  */
 function OfflineBanner() {
   const { isOnline, queue, isSyncing, sync } = useOffline();
+  const t = useTranslations("offline.banner");
 
   const pending = queue.filter((entry) => entry.attempts < MAX_SYNC_ATTEMPTS);
   const stuck = queue.filter((entry) => entry.attempts >= MAX_SYNC_ATTEMPTS);
@@ -310,13 +313,13 @@ function OfflineBanner() {
 
   const label = !isOnline
     ? pending.length > 0
-      ? `Hors ligne · ${pending.length} session${pending.length > 1 ? "s" : ""} en attente`
-      : "Hors ligne · bibliothèque et journal en cache"
+      ? t("offlinePending", { count: pending.length })
+      : t("offlineCached")
     : stuck.length > 0
-      ? `${stuck.length} session${stuck.length > 1 ? "s" : ""} n'ont pas pu être envoyées`
+      ? t("stuck", { count: stuck.length })
       : isSyncing
-        ? "Envoi des sessions enregistrées hors ligne…"
-        : `${pending.length} session${pending.length > 1 ? "s" : ""} à envoyer`;
+        ? t("syncing")
+        : t("toSend", { count: pending.length });
 
   return (
     <div
@@ -343,7 +346,7 @@ function OfflineBanner() {
             onClick={() => void sync(true)}
             className="ml-1 rounded-lg px-2 py-1 text-xs font-semibold underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Réessayer
+            {t("retry")}
           </button>
         )}
       </p>

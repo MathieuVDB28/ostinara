@@ -1,8 +1,11 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
+import { tErr } from "@/i18n/server";
+import { INTL_LOCALE, type Locale } from "@/i18n/config";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
-import { sendPushNotificationToMultipleUsers } from "@/lib/notifications";
+import { sendPushNotificationToMultipleUsers, type PushT } from "@/lib/notifications";
 import type {
   Rehearsal,
   RehearsalWithDetails,
@@ -159,7 +162,7 @@ export async function getUpcomingRehearsalSetlists(): Promise<
       rehearsalId: rehearsal.id,
       title: rehearsal.title,
       date: rehearsal.date,
-      bandName: rehearsal.band?.name ?? "Groupe",
+      bandName: rehearsal.band?.name ?? (await getTranslations("common"))("band"),
       setlistId: rehearsal.setlist.id,
       setlistName: rehearsal.setlist.name,
     });
@@ -215,8 +218,8 @@ export async function createRehearsal(
   input: CreateRehearsalInput
 ): Promise<{ success: boolean; error?: string; rehearsal?: Rehearsal }> {
   const { isMember, userId } = await isBandMember(input.band_id);
-  if (!userId) return { success: false, error: "Non authentifie" };
-  if (!isMember) return { success: false, error: "Tu n'es pas membre de ce groupe" };
+  if (!userId) return { success: false, error: await tErr("notAuthenticated") };
+  if (!isMember) return { success: false, error: await tErr("notBandMember") };
 
   const supabase = await createClient();
 
@@ -246,7 +249,7 @@ export async function createRehearsal(
 
   if (error) {
     console.error("Error creating rehearsal:", error);
-    return { success: false, error: "Erreur lors de la creation de la repetition" };
+    return { success: false, error: await tErr("rehearsalCreateFailed") };
   }
 
   // Add participants (including creator)
@@ -314,26 +317,28 @@ export async function createRehearsal(
     .eq("id", userId)
     .single();
 
-  const creatorName = creatorProfile?.display_name || creatorProfile?.username || "Quelqu'un";
+  const creatorName = creatorProfile?.display_name || creatorProfile?.username || null;
   const notifiedIds = input.participant_ids.filter((id) => id !== userId);
 
   if (notifiedIds.length > 0) {
-    const formattedDate = new Intl.DateTimeFormat("fr-FR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(dateObj);
-
     await sendPushNotificationToMultipleUsers(
       notifiedIds.map((id) => ({
         userId: id,
-        payload: {
-          title: "Nouvelle repetition",
-          body: `${creatorName} t'invite a une repet : ${input.title} - ${formattedDate}`,
+        payload: (t: PushT, locale: Locale) => ({
+          title: t("rehearsalCreated.title"),
+          body: t("rehearsalCreated.body", {
+            name: creatorName ?? t("someone"),
+            title: input.title,
+            date: new Intl.DateTimeFormat(INTL_LOCALE[locale], {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+            }).format(dateObj),
+          }),
           data: { url: `/setlists/rehearsals/${rehearsal.id}` },
-        },
+        }),
         notificationType: "rehearsal_created",
       }))
     );
@@ -350,7 +355,7 @@ export async function updateRehearsal(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Non authentifie" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   // Get current rehearsal to check band membership
   const { data: current } = await supabase
@@ -359,10 +364,10 @@ export async function updateRehearsal(
     .eq("id", rehearsalId)
     .single();
 
-  if (!current) return { success: false, error: "Repetition non trouvee" };
+  if (!current) return { success: false, error: await tErr("rehearsalNotFound") };
 
   const { isMember } = await isBandMember(current.band_id);
-  if (!isMember) return { success: false, error: "Tu n'es pas membre de ce groupe" };
+  if (!isMember) return { success: false, error: await tErr("notBandMember") };
 
   const { error } = await supabase
     .from("rehearsals")
@@ -371,7 +376,7 @@ export async function updateRehearsal(
 
   if (error) {
     console.error("Error updating rehearsal:", error);
-    return { success: false, error: "Erreur lors de la mise a jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   // Notify participants of changes (except the one who made the change)
@@ -388,16 +393,16 @@ export async function updateRehearsal(
       .eq("id", user.id)
       .single();
 
-    const updaterName = updaterProfile?.display_name || updaterProfile?.username || "Quelqu'un";
+    const updaterName = updaterProfile?.display_name || updaterProfile?.username || null;
 
     await sendPushNotificationToMultipleUsers(
       participants.map((p) => ({
         userId: p.user_id,
-        payload: {
-          title: "Repetition modifiee",
-          body: `${updaterName} a modifie la repet "${current.title}"`,
+        payload: (t: PushT) => ({
+          title: t("rehearsalUpdated.title"),
+          body: t("rehearsalUpdated.body", { name: updaterName ?? t("someone"), title: current.title }),
           data: { url: `/setlists/rehearsals/${rehearsalId}` },
-        },
+        }),
         notificationType: "rehearsal_updated",
       }))
     );
@@ -430,7 +435,7 @@ export async function deleteRehearsal(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Non authentifie" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   if (deleteAll) {
     // Delete all children first, then parent
@@ -461,7 +466,7 @@ export async function deleteRehearsal(
 
     if (error) {
       console.error("Error deleting rehearsal:", error);
-      return { success: false, error: "Erreur lors de la suppression" };
+      return { success: false, error: await tErr("deleteFailed") };
     }
   }
 
@@ -476,7 +481,7 @@ export async function respondToRehearsal(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Non authentifie" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   const { error } = await supabase
     .from("rehearsal_participants")
@@ -489,7 +494,7 @@ export async function respondToRehearsal(
 
   if (error) {
     console.error("Error responding to rehearsal:", error);
-    return { success: false, error: "Erreur lors de la reponse" };
+    return { success: false, error: await tErr("respondFailed") };
   }
 
   revalidatePath("/setlists");
@@ -504,7 +509,7 @@ export async function addRehearsalParticipant(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Non authentifie" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   const { data: rehearsal } = await supabase
     .from("rehearsals")
@@ -512,7 +517,7 @@ export async function addRehearsalParticipant(
     .eq("id", rehearsalId)
     .single();
 
-  if (!rehearsal) return { success: false, error: "Repetition non trouvee" };
+  if (!rehearsal) return { success: false, error: await tErr("rehearsalNotFound") };
 
   const { error } = await supabase
     .from("rehearsal_participants")
@@ -524,7 +529,7 @@ export async function addRehearsalParticipant(
 
   if (error) {
     console.error("Error adding participant:", error);
-    return { success: false, error: "Erreur lors de l'ajout du participant" };
+    return { success: false, error: await tErr("participantAddFailed") };
   }
 
   // Notify the added participant
@@ -534,15 +539,15 @@ export async function addRehearsalParticipant(
     .eq("id", user.id)
     .single();
 
-  const adderName = adderProfile?.display_name || adderProfile?.username || "Quelqu'un";
+  const adderName = adderProfile?.display_name || adderProfile?.username || null;
 
   await sendPushNotificationToMultipleUsers([{
     userId: participantId,
-    payload: {
-      title: "Ajout a une repetition",
-      body: `${adderName} t'a ajoute a la repet "${rehearsal.title}"`,
+    payload: (t: PushT) => ({
+      title: t("rehearsalAdded.title"),
+      body: t("rehearsalAdded.body", { name: adderName ?? t("someone"), title: rehearsal.title }),
       data: { url: `/setlists/rehearsals/${rehearsalId}` },
-    },
+    }),
     notificationType: "rehearsal_created",
   }]);
 
@@ -557,7 +562,7 @@ export async function removeRehearsalParticipant(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Non authentifie" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   const { error } = await supabase
     .from("rehearsal_participants")
@@ -567,7 +572,7 @@ export async function removeRehearsalParticipant(
 
   if (error) {
     console.error("Error removing participant:", error);
-    return { success: false, error: "Erreur lors du retrait du participant" };
+    return { success: false, error: await tErr("participantRemoveFailed") };
   }
 
   revalidatePath(`/setlists/rehearsals/${rehearsalId}`);

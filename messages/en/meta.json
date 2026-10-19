@@ -1,0 +1,34 @@
+{
+  "title": "Ostinara - Track your music journey",
+  "description": "Track your progress, manage your repertoire, and share your covers with friends. The ultimate app for musicians and bands.",
+  "keywords": "music,guitar,bass,drums,piano,band,practice,covers,learning,progress tracker",
+  "welcome": {
+    "title": "Welcome | Ostinara"
+  },
+  "settings": {
+    "title": "Settings | Ostinara"
+  },
+  "instruments": {
+    "title": "My instruments | Ostinara"
+  },
+  "badges": {
+    "title": "Badges | Ostinara",
+    "description": "Your badges and what's left to unlock the next ones"
+  },
+  "communityCovers": {
+    "title": "Covers | Ostinara",
+    "description": "Covers from your circle"
+  },
+  "communityAlbums": {
+    "title": "Albums of the week | Ostinara",
+    "description": "Albums the community listened to this week"
+  },
+  "search": {
+    "title": "Search | Ostinara",
+    "description": "Search for a song, album, cover, exercise, gear or friend"
+  },
+  "play": {
+    "title": "Play | Ostinara",
+    "description": "Metronome, exercises and tuner"
+  }
+}

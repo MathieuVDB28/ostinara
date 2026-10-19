@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   getPlaylists,
   getPlaylistsForSong,
@@ -18,6 +19,8 @@ interface AddToPlaylistModalProps {
 }
 
 export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddToPlaylistModalProps) {
+  const t = useTranslations("library");
+  const tc = useTranslations("common");
   const [playlists, setPlaylists] = useState<PlaylistWithSongs[]>([]);
   const [songPlaylistIds, setSongPlaylistIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -40,10 +43,10 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
       setPlaylists(allPlaylists);
       setSongPlaylistIds(new Set(songPlaylists.map((p) => p.id)));
     } catch {
-      setError("Erreur lors du chargement");
+      setError(t("playlist.loadError"));
     }
     setLoading(false);
-  }, [songId]);
+  }, [songId, t]);
 
   useEffect(() => {
     if (isOpen && songId) {
@@ -96,7 +99,7 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
       });
       onSuccess();
     } else {
-      setError(result.error || "Erreur");
+      setError(result.error || tc("genericError"));
     }
 
     setTogglingId(null);
@@ -119,7 +122,7 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
       await loadData();
       onSuccess();
     } else {
-      setError(result.error || "Erreur lors de la création");
+      setError(result.error || tc("genericError"));
     }
 
     setCreating(false);
@@ -136,8 +139,8 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
 
       <div className="relative z-10 max-h-[80vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-border bg-card shadow-md">
         <div className="flex items-center justify-between border-b border-border p-4">
-          <h2 className="text-base font-semibold">Ajouter à une playlist</h2>
-          <button aria-label="Fermer"
+          <h2 className="text-base font-semibold">{t("playlist.addTo")}</h2>
+          <button aria-label={tc("close")}
             onClick={handleClose}
             className="rounded-lg p-1.5 transition-colors hover:bg-accent"
           >
@@ -187,7 +190,7 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
                         <div className="flex-1 min-w-0">
                           <p className="truncate text-sm font-medium">{playlist.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {playlist.song_count} morceau{playlist.song_count > 1 ? "x" : ""}
+                            {t("songsCount", { count: playlist.song_count })}
                           </p>
                         </div>
 
@@ -204,7 +207,7 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
               ) : (
                 !showCreate && (
                   <div className="py-6 text-center">
-                    <p className="text-sm text-muted-foreground">Aucune playlist</p>
+                    <p className="text-sm text-muted-foreground">{t("playlist.none")}</p>
                   </div>
                 )
               )}
@@ -216,7 +219,7 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    placeholder="Nom de la playlist..."
+                    placeholder={t("playlist.namePlaceholderShort")}
                     autoFocus
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
@@ -226,14 +229,14 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
                       onClick={() => { setShowCreate(false); setNewName(""); }}
                       className="flex-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent"
                     >
-                      Annuler
+                      {tc("cancel")}
                     </button>
                     <button
                       type="submit"
                       disabled={creating || !newName.trim()}
                       className="flex-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
                     >
-                      {creating ? "..." : "Créer et ajouter"}
+                      {creating ? "..." : t("playlist.createAndAdd")}
                     </button>
                   </div>
                 </form>
@@ -245,7 +248,7 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  Nouvelle playlist
+                  {t("playlist.new")}
                 </button>
               )}
 

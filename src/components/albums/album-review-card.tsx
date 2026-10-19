@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { useRouter } from "next/navigation";
 import { deleteAlbumReview, updateAlbumReview } from "@/lib/actions/albums";
 import { EllipsisVertical, Heart, Pencil, Star, Trash2 } from "lucide-react";
@@ -23,12 +25,15 @@ function starsFromDb(dbRating: number) {
   return dbRating / 2;
 }
 
-/** « 4,5 » et non « 4.5 » : l'app est en francais. */
-function formatStars(dbRating: number) {
-  return String(starsFromDb(dbRating)).replace(".", ",");
+/** « 4,5 » en francais, « 4.5 » en anglais. */
+function formatStars(dbRating: number, intlLocale: string) {
+  return starsFromDb(dbRating).toLocaleString(intlLocale);
 }
 
 export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCardProps) {
+  const t = useTranslations("albums.review");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
@@ -76,7 +81,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
       });
       setIsEditing(false);
     } else {
-      setEditError(result.error || "Une erreur est survenue");
+      setEditError(result.error || tc("genericError"));
     }
     setIsUpdating(false);
   };
@@ -89,7 +94,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString(intlLocale, {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -114,8 +119,8 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
         <Cover src={review.cover_url} alt={review.album_name} className="aspect-square w-full rounded-md">
           <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 font-display text-[13px] font-bold tracking-[0.03em] text-white">
             <Star className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
-            {formatStars(review.rating)}
-            <span className="sr-only"> sur 5</span>
+            {formatStars(review.rating, intlLocale)}
+            <span className="sr-only">{t("outOf5")}</span>
           </span>
 
           {/* Menu : visible au doigt, revele au survol sur ordi */}
@@ -125,7 +130,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                 e.stopPropagation();
                 setShowMenu(!showMenu);
               }}
-              aria-label={`Options pour ${review.album_name}`}
+              aria-label={t("options", { album: review.album_name })}
               aria-expanded={showMenu}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white transition-opacity focus-visible:opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
             >
@@ -140,7 +145,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                     className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
                   >
                     <Pencil className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                    Modifier
+                    {tc("edit")}
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(); }}
@@ -148,7 +153,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                     className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent disabled:opacity-50"
                   >
                     <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                    {isDeleting ? "Suppression..." : "Supprimer"}
+                    {isDeleting ? tc("deleting") : tc("delete")}
                   </button>
                 </div>
               </>
@@ -168,7 +173,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
 
           {review.favorite_track_name && (
             <p className="mt-1 flex items-center gap-1 truncate text-[12px] text-muted-foreground">
-              <Heart className="h-3 w-3 shrink-0 fill-primary text-primary" strokeWidth={0} aria-label="Morceau préféré" />
+              <Heart className="h-3 w-3 shrink-0 fill-primary text-primary" strokeWidth={0} aria-label={t("favorite")} />
               <span className="truncate">{review.favorite_track_name}</span>
             </p>
           )}
@@ -210,6 +215,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
               {/* Close button */}
               <button
                 onClick={() => { setShowDetail(false); setIsEditing(false); }}
+                aria-label={tc("close")}
                 className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
               >
                 <Icon name="close" className="h-[20px] w-[20px]" />
@@ -235,9 +241,9 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                   {/* Edit Rating */}
                   <div className="mb-6">
                     <div className="mb-3 flex items-center justify-between">
-                      <label className="text-sm font-medium">Ta note</label>
+                      <label className="text-sm font-medium">{t("yourRating")}</label>
                       <span className="text-sm font-semibold text-primary">
-                        {editRating > 0 ? `${editRating} / 5` : "—"}
+                        {editRating > 0 ? t("ratingValue", { rating: editRating.toLocaleString(intlLocale) }) : "—"}
                       </span>
                     </div>
                     <StarRating value={editRating} onChange={setEditRating} size="lg" />
@@ -246,12 +252,12 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                   {/* Edit Review */}
                   <div className="mb-6">
                     <label className="mb-2 block text-sm font-medium">
-                      Ton impression <span className="text-muted-foreground">(optionnel)</span>
+                      {t("impression")} <span className="text-muted-foreground">{t("optional")}</span>
                     </label>
                     <textarea
                       value={editReview}
                       onChange={(e) => setEditReview(e.target.value)}
-                      placeholder="Qu'est-ce que tu en as pensé ?"
+                      placeholder={t("placeholder")}
                       rows={4}
                       maxLength={2000}
                       className="w-full resize-none rounded-xl border border-border bg-background p-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -272,14 +278,14 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                       disabled={isUpdating}
                       className="flex-1 rounded-xl border border-border py-3 font-medium transition-colors hover:bg-accent disabled:opacity-50"
                     >
-                      Annuler
+                      {tc("cancel")}
                     </button>
                     <button
                       onClick={handleUpdate}
                       disabled={isUpdating}
                       className="flex-1 rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                     >
-                      {isUpdating ? "Enregistrement..." : "Enregistrer"}
+                      {isUpdating ? tc("saving") : tc("save")}
                     </button>
                   </div>
                 </>
@@ -290,7 +296,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                     <div className="flex items-center gap-3">
                       <StarRating value={starsFromDb(review.rating)} size="md" />
                       <span className="text-sm font-semibold text-primary">
-                        {starsFromDb(review.rating)} / 5
+                        {t("ratingValue", { rating: formatStars(review.rating, intlLocale) })}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
@@ -302,7 +308,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                         className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent"
                       >
                         <Icon name="edit" className="h-[16px] w-[16px]" />
-                        Modifier
+                        {tc("edit")}
                       </button>
                     </div>
                   </div>
@@ -319,7 +325,7 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                       {review.total_tracks && (
                         <span className="flex items-center gap-1">
                           <Icon name="music_note" className="h-[16px] w-[16px]" />
-                          {review.total_tracks} titres
+                          {t("tracks", { count: review.total_tracks })}
                         </span>
                       )}
                     </div>
@@ -328,14 +334,14 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
                   {/* Review */}
                   {review.review ? (
                     <div>
-                      <h3 className="mb-2 text-sm font-medium text-muted-foreground">Impression</h3>
+                      <h3 className="mb-2 text-sm font-medium text-muted-foreground">{t("impressionTitle")}</h3>
                       <p className="whitespace-pre-wrap text-sm leading-relaxed">
                         {review.review}
                       </p>
                     </div>
                   ) : (
                     <p className="text-sm italic text-muted-foreground">
-                      Aucune impression ajoutee
+                      {t("none")}
                     </p>
                   )}
 

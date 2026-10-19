@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { activeSegment, type BadgeCounts, type NavTab } from "@/lib/navigation";
 
 /**
@@ -49,6 +50,7 @@ const ITEM: Record<SegmentedNavVariant, { base: string; active: string; idle: st
  * (barre du bas + onglets de page + filtres de statut).
  */
 export function SegmentedNav({ tab, badges = {}, variant = "segmented", className = "" }: SegmentedNavProps) {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const current = activeSegment(tab, pathname);
   const item = ITEM[variant];
@@ -56,7 +58,7 @@ export function SegmentedNav({ tab, badges = {}, variant = "segmented", classNam
   return (
     <div
       role="navigation"
-      aria-label={`Sections ${tab.label}`}
+      aria-label={t("sections", { tab: t(tab.label) })}
       className={`overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${CONTAINER[variant]} ${className}`}
     >
       {tab.segments.map((segment) => {
@@ -70,7 +72,7 @@ export function SegmentedNav({ tab, badges = {}, variant = "segmented", classNam
             aria-current={isActive ? "page" : undefined}
             className={`shrink-0 whitespace-nowrap transition-colors ${item.base} ${isActive ? item.active : item.idle}`}
           >
-            <span>{segment.label}</span>
+            <span>{t(segment.label)}</span>
             {badge > 0 && (
               <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-bold text-destructive-foreground">
                 {badge}

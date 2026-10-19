@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { saveTechRider } from "@/lib/actions/tech-riders";
 import { bandPosteLabel } from "@/lib/instruments";
 import { TechRiderStagePlot } from "./tech-rider-stage-plot";
@@ -33,6 +34,8 @@ interface Props {
 }
 
 export function TechRiderView({ band, initialData, canEdit }: Props) {
+  const t = useTranslations("techRider.view");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [engineerName, setEngineerName] = useState(
     initialData?.sound_engineer_name || ""
@@ -82,7 +85,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
       band.members.map((member, index) => ({
         id: crypto.randomUUID(),
         name: member.profile?.display_name || member.profile?.username || "",
-        instrument: bandPosteLabel(member) ?? "",
+        instrument: bandPosteLabel(member, te) ?? "",
         needs: "",
         monitor: true,
         position_x: count > 1 ? 15 + (70 * index) / (count - 1) : 50,
@@ -180,7 +183,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } else {
-      alert(result.error || "Erreur lors de la sauvegarde");
+      alert(result.error || t("saveFailed"));
     }
   };
 
@@ -203,6 +206,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push("/commu/groupes")}
+            aria-label={t("back")}
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-border transition-colors hover:bg-accent"
           >
             <svg
@@ -220,7 +224,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
             </svg>
           </button>
           <div>
-            <h1 className="font-display text-[40px] font-extrabold uppercase leading-[0.9]">Fiche technique</h1>
+            <h1 className="font-display text-[40px] font-extrabold uppercase leading-[0.9]">{t("title")}</h1>
             <p className="mt-1 font-display text-sm font-bold uppercase tracking-[0.06em] text-muted-foreground">{band.name}</p>
           </div>
         </div>
@@ -244,25 +248,25 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
               {musicians.length}
             </p>
             <p className="mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-              Musicien{musicians.length > 1 ? "s" : ""}
+              {t("musicians", { count: musicians.length })}
             </p>
           </div>
           <div className="flex flex-col">
             <p className="tabular font-display text-[30px] font-bold leading-none">{micCount}</p>
             <p className="mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-              Micro{micCount > 1 ? "s" : ""}
+              {t("mics", { count: micCount })}
             </p>
           </div>
           <div className="flex flex-col">
             <p className="tabular font-display text-[30px] font-bold leading-none">{diCount}</p>
             <p className="mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-              Ligne{diCount > 1 ? "s" : ""} DI
+              {t("diLines", { count: diCount })}
             </p>
           </div>
           <div className="flex flex-col">
             <p className="tabular font-display text-[30px] font-bold leading-none">{monitorCount}</p>
             <p className="mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-              Retour{monitorCount > 1 ? "s" : ""}
+              {t("monitors", { count: monitorCount })}
             </p>
           </div>
         </div>
@@ -284,31 +288,31 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
               d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
             />
           </svg>
-          Contact ingénieur son
+          {t("engineer")}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-              Nom
+              {t("name")}
             </label>
             <input
               type="text"
               value={engineerName}
               onChange={(e) => setEngineerName(e.target.value)}
-              placeholder="Nom de l'ingé son"
+              placeholder={t("engineerName")}
               className={inputClasses}
               disabled={!canEdit}
             />
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-              Téléphone
+              {t("phone")}
             </label>
             <input
               type="tel"
               value={engineerPhone}
               onChange={(e) => setEngineerPhone(e.target.value)}
-              placeholder="+33 6 XX XX XX XX"
+              placeholder={t("phonePlaceholder")}
               className={inputClasses}
               disabled={!canEdit}
             />
@@ -333,10 +337,10 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
               />
             </svg>
-            Musiciens
+            {t("musiciansTitle")}
           </h2>
           {canEdit && (
-            <button aria-label="Ajouter un musicien"
+            <button aria-label={t("addMusician")}
               onClick={addMusician}
               className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent"
             >
@@ -353,20 +357,20 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              Ajouter
+              {t("add")}
             </button>
           )}
         </div>
 
         {musicians.length === 0 ? (
           <div className="py-8 text-center text-sm text-muted-foreground">
-            <p>Aucun musicien ajouté.</p>
+            <p>{t("noMusician")}</p>
             {canEdit && band.members.length > 0 && (
               <button
                 onClick={prefillFromBand}
                 className="mt-3 inline-flex min-h-[40px] items-center rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                Partir des {band.members.length} membres du groupe
+                {t("prefill", { count: band.members.length })}
               </button>
             )}
           </div>
@@ -388,7 +392,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                       onChange={(e) =>
                         updateMusician(musician.id, { name: e.target.value })
                       }
-                      placeholder="Nom du musicien"
+                      placeholder={t("musicianName")}
                       className="border-none bg-transparent text-sm font-semibold focus:outline-none focus:ring-0"
                       disabled={!canEdit}
                     />
@@ -396,6 +400,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                   {canEdit && (
                     <button
                       onClick={() => removeMusician(musician.id)}
+                      aria-label={t("removeMusician")}
                       className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                     >
                       <svg
@@ -418,7 +423,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-xs text-muted-foreground">
-                      Instrument
+                      {t("instrument")}
                     </label>
                     <input
                       type="text"
@@ -428,14 +433,14 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                           instrument: e.target.value,
                         })
                       }
-                      placeholder="ex: Guitare electrique"
+                      placeholder={t("instrumentPlaceholder")}
                       className={inputClasses}
                       disabled={!canEdit}
                     />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs text-muted-foreground">
-                      Besoins (micro, DI, ampli...)
+                      {t("needs")}
                     </label>
                     <input
                       type="text"
@@ -443,7 +448,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                       onChange={(e) =>
                         updateMusician(musician.id, { needs: e.target.value })
                       }
-                      placeholder="ex: 1x SM57 sur ampli, 1x SM58 voix"
+                      placeholder={t("needsPlaceholder")}
                       className={inputClasses}
                       disabled={!canEdit}
                     />
@@ -463,7 +468,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                       className="h-4 w-4 rounded border-border accent-primary"
                       disabled={!canEdit}
                     />
-                    Retour moniteur
+                    {t("monitor")}
                   </label>
                   {musician.monitor && (
                     <input
@@ -474,7 +479,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                           monitor_notes: e.target.value,
                         })
                       }
-                      placeholder="Mix retour (ex: voix + guitare)"
+                      placeholder={t("monitorMix")}
                       className={`${inputClasses} flex-1`}
                       disabled={!canEdit}
                     />
@@ -503,10 +508,10 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                 d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"
               />
             </svg>
-            Patch / Input List
+            {t("patch")}
           </h2>
           {canEdit && (
-            <button aria-label="Ajouter un canal"
+            <button aria-label={t("addChannel")}
               onClick={addChannel}
               className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold transition-colors hover:bg-accent"
             >
@@ -523,15 +528,14 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              Ajouter
+              {t("add")}
             </button>
           )}
         </div>
 
         {channels.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            Aucun channel. Clique sur &quot;Ajouter&quot; pour construire ton
-            patch.
+            {t("noChannel")}
           </p>
         ) : (
           <>
@@ -544,22 +548,22 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                       #
                     </th>
                     <th className="p-2 text-xs font-medium text-muted-foreground">
-                      Source
+                      {t("source")}
                     </th>
                     <th className="p-2 text-xs font-medium text-muted-foreground">
-                      Musicien
+                      {t("musician")}
                     </th>
                     <th className="p-2 text-xs font-medium text-muted-foreground">
-                      Micro
+                      {t("mic")}
                     </th>
                     <th className="p-2 text-xs font-medium text-muted-foreground">
-                      Pied
+                      {t("stand")}
                     </th>
                     <th className="p-2 text-xs font-medium text-muted-foreground w-12">
                       48V
                     </th>
                     <th className="p-2 text-xs font-medium text-muted-foreground">
-                      Notes
+                      {t("notes")}
                     </th>
                     {canEdit && <th className="p-2 w-10" />}
                   </tr>
@@ -580,7 +584,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                           onChange={(e) =>
                             updateChannel(ch.id, { source: e.target.value })
                           }
-                          placeholder="Kick, Snare, Voix..."
+                          placeholder={t("sourcePlaceholder")}
                           className="w-full border-none bg-transparent text-sm focus:outline-none focus:ring-0"
                           disabled={!canEdit}
                         />
@@ -592,7 +596,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                           onChange={(e) =>
                             updateChannel(ch.id, { musician: e.target.value })
                           }
-                          placeholder="Nom"
+                          placeholder={t("name")}
                           className="w-full border-none bg-transparent text-sm focus:outline-none focus:ring-0"
                           disabled={!canEdit}
                           list={`musicians-${ch.id}`}
@@ -610,7 +614,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                           onChange={(e) =>
                             updateChannel(ch.id, { mic_type: e.target.value })
                           }
-                          placeholder="SM57, DI..."
+                          placeholder={t("micPlaceholder")}
                           className="w-full border-none bg-transparent text-sm focus:outline-none focus:ring-0"
                           disabled={!canEdit}
                           list="mic-types"
@@ -625,7 +629,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                               stand_type: e.target.value,
                             })
                           }
-                          placeholder="Perche, Petit..."
+                          placeholder={t("standPlaceholder")}
                           className="w-full border-none bg-transparent text-sm focus:outline-none focus:ring-0"
                           disabled={!canEdit}
                           list="stand-types"
@@ -651,7 +655,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                           onChange={(e) =>
                             updateChannel(ch.id, { notes: e.target.value })
                           }
-                          placeholder="Notes..."
+                          placeholder={t("notesPlaceholder")}
                           className="w-full border-none bg-transparent text-sm focus:outline-none focus:ring-0"
                           disabled={!canEdit}
                         />
@@ -660,6 +664,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                         <td className="p-2">
                           <button
                             onClick={() => removeChannel(ch.id)}
+                            aria-label={t("removeChannel")}
                             className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                           >
                             <svg
@@ -698,6 +703,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                     {canEdit && (
                       <button
                         onClick={() => removeChannel(ch.id)}
+                            aria-label={t("removeChannel")}
                         className="rounded p-1 text-muted-foreground hover:text-destructive"
                       >
                         <svg
@@ -723,7 +729,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                       onChange={(e) =>
                         updateChannel(ch.id, { source: e.target.value })
                       }
-                      placeholder="Source"
+                      placeholder={t("source")}
                       className={inputClasses}
                       disabled={!canEdit}
                     />
@@ -733,7 +739,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                       onChange={(e) =>
                         updateChannel(ch.id, { musician: e.target.value })
                       }
-                      placeholder="Musicien"
+                      placeholder={t("musician")}
                       className={inputClasses}
                       disabled={!canEdit}
                     />
@@ -743,7 +749,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                       onChange={(e) =>
                         updateChannel(ch.id, { mic_type: e.target.value })
                       }
-                      placeholder="Micro"
+                      placeholder={t("mic")}
                       className={inputClasses}
                       disabled={!canEdit}
                     />
@@ -753,7 +759,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                       onChange={(e) =>
                         updateChannel(ch.id, { stand_type: e.target.value })
                       }
-                      placeholder="Pied"
+                      placeholder={t("stand")}
                       className={inputClasses}
                       disabled={!canEdit}
                     />
@@ -777,7 +783,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                       onChange={(e) =>
                         updateChannel(ch.id, { notes: e.target.value })
                       }
-                      placeholder="Notes"
+                      placeholder={t("notes")}
                       className={`${inputClasses} flex-1`}
                       disabled={!canEdit}
                     />
@@ -805,11 +811,11 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
               <option value="AT2020" />
             </datalist>
             <datalist id="stand-types">
-              <option value="Perche" />
-              <option value="Petit pied" />
-              <option value="Pas de pied" />
-              <option value="Pince" />
-              <option value="Interne" />
+              <option value={t("stands.boom")} />
+              <option value={t("stands.short")} />
+              <option value={t("stands.none")} />
+              <option value={t("stands.clip")} />
+              <option value={t("stands.internal")} />
             </datalist>
           </>
         )}
@@ -831,7 +837,7 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
               d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
             />
           </svg>
-          Plan de scène
+          {t("stagePlot")}
         </h2>
         <TechRiderStagePlot
           musicians={musicians}
@@ -860,12 +866,12 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          Notes generales
+          {t("generalNotes")}
         </h2>
         <textarea
           value={generalNotes}
           onChange={(e) => setGeneralNotes(e.target.value)}
-          placeholder="Besoins en alimentation, contraintes techniques, informations supplementaires pour l'equipe technique..."
+          placeholder={t("generalPlaceholder")}
           rows={4}
           className={`${inputClasses} resize-y`}
           disabled={!canEdit}
@@ -905,7 +911,8 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Sauvegarde...
+                {t("saving")}
+
               </>
             ) : saved ? (
               <>
@@ -922,7 +929,8 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
-                Sauvegarde !
+                {t("saved")}
+
               </>
             ) : (
               <>
@@ -939,7 +947,8 @@ export function TechRiderView({ band, initialData, canEdit }: Props) {
                     d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
                   />
                 </svg>
-                Sauvegarder
+                {t("save")}
+
               </>
             )}
           </button>

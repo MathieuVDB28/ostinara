@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import type { CatalogArtist, CatalogAlbum, AlbumCommunityStats } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { Cover } from "@/components/ui/cover";
@@ -17,13 +19,13 @@ interface Props {
   encyclopedia?: React.ReactNode;
 }
 
-function formatFollowers(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
-  return n.toString();
+function formatFollowers(n: number, intlLocale: string): string {
+  return new Intl.NumberFormat(intlLocale, { notation: "compact", maximumFractionDigits: 1 }).format(n);
 }
 
 export function ArtistDetailView({ artist, albums, communityStats, library, encyclopedia }: Props) {
+  const t = useTranslations("albums.artist");
+  const intlLocale = useIntlLocale();
   const router = useRouter();
   const artistImage = artist.images[0]?.url;
 
@@ -55,7 +57,7 @@ export function ArtistDetailView({ artist, albums, communityStats, library, ency
         {/* Back button */}
         <button
           onClick={() => router.back()}
-          aria-label="Retour"
+          aria-label={t("back")}
           className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
         >
           <Icon name="chevron_left" className="h-5 w-5" strokeWidth={2.25} />
@@ -68,7 +70,7 @@ export function ArtistDetailView({ artist, albums, communityStats, library, ency
             {artist.fans > 0 && (
               <span className="flex items-center gap-1 text-sm text-white/80">
                 <Icon name="person" className="h-[15px] w-[15px]" />
-                {formatFollowers(artist.fans)} fans sur Deezer
+                {t("fans", { count: formatFollowers(artist.fans, intlLocale) })}
               </span>
             )}
           </div>
@@ -85,13 +87,13 @@ export function ArtistDetailView({ artist, albums, communityStats, library, ency
 
         {/* Discography */}
         <h2 className="mb-3 border-b border-border pb-2 text-lg font-extrabold tracking-[-0.01em]">
-          Discographie<span className="tabular font-bold text-muted-foreground"> · {albums.length}</span>
+          {t("discography")}<span className="tabular font-bold text-muted-foreground"> · {albums.length}</span>
         </h2>
 
         {albums.length === 0 ? (
           <div className="flex flex-col items-center py-12 text-center">
             <Icon name="library_music" className="h-9 w-9 mb-2 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">Aucun album disponible</p>
+            <p className="text-sm text-muted-foreground">{t("noAlbum")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
@@ -113,7 +115,7 @@ export function ArtistDetailView({ artist, albums, communityStats, library, ency
                     {stats && stats.review_count > 0 && (
                       <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 font-display text-[13px] font-bold text-white">
                         <Icon name="star" className="h-3 w-3" filled />
-                        {(stats.avg_rating / 2).toFixed(1).replace(".", ",")}
+                        {(stats.avg_rating / 2).toLocaleString(intlLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
                       </span>
                     )}
 
@@ -121,12 +123,12 @@ export function ArtistDetailView({ artist, albums, communityStats, library, ency
                     {myRating !== undefined ? (
                       <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-primary px-1.5 py-0.5 font-display text-[12px] font-bold text-primary-foreground">
                         <Icon name="check" className="h-3 w-3" />
-                        Écouté · {String(myRating / 2).replace(".", ",")}
+                        {t("listened", { rating: (myRating / 2).toLocaleString(intlLocale) })}
                       </span>
                     ) : saved ? (
                       <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 font-display text-[12px] font-bold text-white">
                         <Icon name="bookmark" className="h-3 w-3" />
-                        À écouter
+                        {t("toListen")}
                       </span>
                     ) : null}
                   </Cover>
@@ -135,14 +137,14 @@ export function ArtistDetailView({ artist, albums, communityStats, library, ency
                     <p className="line-clamp-2 text-sm font-semibold leading-tight">{album.name}</p>
                     {/* Pas d'annee : Deezer date les reeditions, pas les albums. */}
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {album.record_type === "ep" ? "EP" : "Album"}
+                      {album.record_type === "ep" ? t("ep") : t("album")}
                       {stats && stats.review_count > 0 && (
-                        <> · {stats.review_count} avis</>
+                        <> · {t("reviews", { count: stats.review_count })}</>
                       )}
                     </p>
                     {mySongs > 0 && (
                       <p className="mt-0.5 text-xs font-semibold text-primary">
-                        {mySongs} de tes morceaux
+                        {t("mySongs", { count: mySongs })}
                       </p>
                     )}
                   </div>

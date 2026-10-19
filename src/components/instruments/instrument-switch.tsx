@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { instrumentLabel, instrumentMeta } from "@/lib/instruments";
 import { Icon } from "@/components/ui/icon";
 import type { Instrument, ProfileInstrument } from "@/types";
@@ -21,6 +22,7 @@ interface Props {
  * montrent qu'aux musiciens qui en jouent plusieurs.
  */
 export function InstrumentSwitch({ options, value, onChange, label, allLabel, onAll, className = "" }: Props) {
+  const te = useTranslations("enums");
   const chip = (active: boolean) =>
     `inline-flex min-h-[34px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-colors ${
       active
@@ -45,7 +47,7 @@ export function InstrumentSwitch({ options, value, onChange, label, allLabel, on
           className={chip(value === option.instrument)}
         >
           <Icon name={instrumentMeta(option.instrument).icon} className="h-3.5 w-3.5" />
-          {instrumentLabel(option)}
+          {instrumentLabel(option, te)}
         </button>
       ))}
     </div>

@@ -1,0 +1,113 @@
+{
+  "stepper": {
+    "back": "← Retour",
+    "exercise": "Exercice",
+    "bpm": "bpm",
+    "nothing": "Rien à jouer pour l'instant.",
+    "previous": "Précédent",
+    "start": "Démarrer la session",
+    "next": "Suivant"
+  },
+  "resume": {
+    "lastSession": "Dernière session {when}",
+    "title": "Reprendre",
+    "bpmOf": "{achieved} sur {target} BPM",
+    "noTarget": "Pas de tempo cible : fixe-le dans la fiche du morceau pour suivre ta courbe de BPM.",
+    "inProgress": "Session en cours",
+    "resumeAt": "Reprendre à {bpm} BPM",
+    "resumeSong": "Reprendre ce morceau"
+  },
+  "calendar": {
+    "notPlayed": "pas joué",
+    "minutes": "{m} min",
+    "summary": "{active} jours joués sur les {total} derniers."
+  },
+  "savePrompt": {
+    "title": "Session terminée",
+    "songs": "{count, plural, one {# morceau} other {# morceaux}}",
+    "exercises": "{count, plural, one {# exo} other {# exos}}",
+    "keep": " — tu veux garder cet enchaînement ?",
+    "routine": "En faire une routine",
+    "routineHint": "Pour la retravailler — dispo dans ton Carnet.",
+    "setlist": "En faire une setlist",
+    "setlistHint": "Pour la scène — dispo dans Commu › Groupes.",
+    "noThanks": "Non merci",
+    "routineName": "Nom de la routine",
+    "setlistName": "Nom de la setlist",
+    "saveRoutine": "Enregistrer la routine",
+    "saveSetlist": "Enregistrer la setlist"
+  },
+  "setlistPanel": {
+    "none": "Aucune setlist à jouer",
+    "noneHint": "Construis-en une dans Commu › Groupes, ou monte une file à la volée dans l'onglet « File ».",
+    "choose": "Choisis une setlist à dérouler : le métronome se cale sur chaque élément, le chrono tourne.",
+    "items": "{count, plural, one {# élément à jouer} other {# éléments à jouer}}",
+    "empty": "Aucun morceau ni exercice",
+    "change": "← Changer de setlist"
+  },
+  "carnet": {
+    "sessions": "sessions",
+    "total": "au total",
+    "hourShort": "h",
+    "dayShort": "j",
+    "streak": "série · record {record}",
+    "thisWeek": "cette semaine",
+    "min": "min",
+    "inProgress": "En cours",
+    "sessionRunning": "Session en cours",
+    "startSession": "Démarrer une session",
+    "recentSessions": "Dernières sessions",
+    "duration": "durée",
+    "freeSession": "Session libre",
+    "bpm": "bpm",
+    "routines": "Tes routines",
+    "resumeLast": "Reprendre ta dernière session",
+    "pending": "{count, plural, one {# élément en attente} other {# éléments en attente}}",
+    "routineCounts": "{songs, plural, one {# morceau} other {# morceaux}} · {exercises, plural, one {# exo} other {# exos}}",
+    "deleteRoutine": "Supprimer la routine {name}",
+    "noRoutine": "Aucune routine. Monte une session dans l'onglet Session et enregistre-la."
+  },
+  "queue": {
+    "deletedSong": "Morceau supprimé",
+    "notInLibrary": "Plus dans ta bibliothèque",
+    "deletedExercise": "Exercice supprimé",
+    "express": "Exercice express",
+    "routineSaved": "Routine enregistrée — tu la retrouves dans le Carnet.",
+    "build": "Monte ta session",
+    "addSong": "Ajouter un morceau",
+    "searchLibrary": "Rechercher dans ta bibliothèque...",
+    "addExercise": "Ajouter un exercice",
+    "searchExercise": "Rechercher un exercice...",
+    "orExpress": "Ou un exercice express",
+    "expressPlaceholder": "Ex : Échauffement 5 min...",
+    "category": "Catégorie",
+    "bpm": "BPM",
+    "yourSession": "Ta session · {count}",
+    "saveAsRoutine": "Enregistrer comme routine",
+    "clear": "Vider",
+    "routineName": "Nom de la routine",
+    "song": "Morceau",
+    "exo": "Exo",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "remove": "Retirer",
+    "mySession": "Ma session",
+    "hint": "Ajoute des morceaux et des exercices ci-dessus pour composer ta session, puis déroule-la avec le métronome."
+  },
+  "view": {
+    "tabs": {
+      "carnet": "Carnet",
+      "file": "Session",
+      "song": "Morceaux",
+      "exercises": "Exercices",
+      "setlist": "Setlists"
+    },
+    "title": "Jouer",
+    "tune": "Accorder",
+    "recognize": "Reconnaître",
+    "fullscreen": "Afficher la session en plein écran",
+    "startSession": "Démarrer une session",
+    "sectionsAria": "Sections Jouer",
+    "selectSong": "Sélectionne un morceau pour voir ta progression"
+  }
+}

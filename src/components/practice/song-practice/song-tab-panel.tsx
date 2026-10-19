@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ExternalLink, Gauge, Search } from "lucide-react";
 import { isSongsterrUrl } from "@/lib/songsterr-url";
 import type { PlayedSection, Song, UserPlan } from "@/types";
@@ -55,6 +56,7 @@ export function SongTabPanel({
   userPlan,
   className = "",
 }: SongTabPanelProps) {
+  const t = useTranslations("practice.tab");
   const [tabWindowBlocked, setTabWindowBlocked] = useState(false);
 
   const beatsPerMeasure = song.tab_time_signature_beats ?? 4;
@@ -84,7 +86,7 @@ export function SongTabPanel({
     <div className={`border-t border-border pt-4 ${className}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-          Tablature
+          {t("title")}
         </h3>
 
         {song.tabs_url ? (
@@ -94,7 +96,7 @@ export function SongTabPanel({
             className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-            Ouvrir la tab
+            {t("open")}
           </button>
         ) : (
           <Link
@@ -102,21 +104,21 @@ export function SongTabPanel({
             className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Search className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-            Chercher une tab
+            {t("search")}
           </Link>
         )}
       </div>
 
       {tabWindowBlocked && (
         <p className="mt-2 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
-          Le navigateur a bloqué la fenêtre.{" "}
+          {t("blocked")}{" "}
           <a
             href={song.tabs_url}
             target="_blank"
             rel="noopener noreferrer"
             className="underline"
           >
-            Ouvrir la tablature directement
+            {t("openDirect")}
           </a>
           .
         </p>
@@ -130,16 +132,19 @@ export function SongTabPanel({
           className="tabular mt-3 inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Gauge className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-          Caler le métronome sur la partition · {song.tab_bpm} BPM
+          {t("lockTempo", { bpm: song.tab_bpm })}
         </button>
       )}
 
       {timeline.length > 0 ? (
         <div className="mt-3">
           <p className="tabular mb-2 text-xs text-muted-foreground">
-            {timeline.length} section{timeline.length > 1 ? "s" : ""} ·{" "}
-            {song.tab_total_measures ?? "?"} mesures · {formatSeconds(totalSeconds)}{" "}
-            à {currentBpm} BPM
+            {t("summary", {
+              count: timeline.length,
+              measures: song.tab_total_measures ?? "?",
+              duration: formatSeconds(totalSeconds),
+              bpm: currentBpm,
+            })}
           </p>
           <ol className="flex flex-wrap gap-1.5">
             {timeline.map((section) => (
@@ -159,8 +164,8 @@ export function SongTabPanel({
       ) : (
         <p className="mt-3 text-xs text-muted-foreground">
           {song.tabs_url && isSongsterrUrl(song.tabs_url)
-            ? "Analyse la tablature depuis la fiche du morceau pour récupérer le tempo et les sections."
-            : "Lie une tablature Songsterr au morceau : le tempo, la mesure et les sections viendront avec."}
+            ? t("analyzeHint")
+            : t("linkHint")}
         </p>
       )}
 

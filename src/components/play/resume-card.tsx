@@ -1,6 +1,9 @@
 "use client";
 
 import { Play } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import type { CommonT } from "@/i18n/types";
 import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
 import { songTempoProgress } from "@/lib/song-progress";
@@ -29,15 +32,15 @@ interface ResumeCardProps {
   onResume: () => void;
 }
 
-function formatWhen(practicedAt: string): string {
+function formatWhen(practicedAt: string, t: CommonT, intlLocale: string): string {
   const then = new Date(practicedAt);
   const days = Math.floor((Date.now() - then.getTime()) / 86_400_000);
 
-  if (days <= 0) return "aujourd'hui";
-  if (days === 1) return "hier";
-  if (days < 7) return `il y a ${days} jours`;
-  if (days < 14) return "la semaine derniere";
-  return `le ${then.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
+  if (days <= 0) return t("relative.today");
+  if (days === 1) return t("relative.yesterday");
+  if (days < 7) return t("relative.daysAgo", { count: days });
+  if (days < 14) return t("relative.lastWeek");
+  return t("relative.onDate", { date: then.toLocaleDateString(intlLocale, { day: "numeric", month: "long" }) });
 }
 
 export function ResumeCard({
@@ -49,12 +52,16 @@ export function ResumeCard({
   disabled = false,
   onResume,
 }: ResumeCardProps) {
-  const sections = getSectionsLabels(session.sections_worked);
+  const t = useTranslations("play.resume");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
+  const sections = getSectionsLabels(session.sections_worked, te);
 
   // Le rappel de la derniere session, dans l'ordre ou on se le raconte :
   // quand, a quel tempo, sur quoi.
   const recap = [
-    `Derniere session ${formatWhen(session.practiced_at)}`,
+    t("lastSession", { when: formatWhen(session.practiced_at, tc, intlLocale) }),
     bpm ? `${bpm} BPM` : null,
     sections || null,
   ].filter(Boolean) as string[];
@@ -67,7 +74,7 @@ export function ResumeCard({
       <div className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-x-3.5 gap-y-1">
         <Cover src={song.cover_url} className="row-span-2 h-14 w-14 rounded-[4px]" />
         <p className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-          Reprendre
+          {t("title")}
         </p>
         <span className="row-span-2 grid justify-items-end gap-1">
           <span className="tabular font-display text-xl font-bold leading-none">
@@ -83,7 +90,7 @@ export function ResumeCard({
               </>
             )}
           </span>
-          <Frets value={percent} label={tempo ? `${tempo.achieved} sur ${tempo.target} BPM` : `${percent} %`} />
+          <Frets value={percent} label={tempo ? t("bpmOf", { achieved: tempo.achieved, target: tempo.target }) : `${percent} %`} />
         </span>
         <h2 id="resume-title" className="min-w-0 truncate text-[15px] font-bold">
           {song.title}
@@ -96,7 +103,7 @@ export function ResumeCard({
       {/* Sans tempo cible, la progression n'est qu'un pourcentage saisi. */}
       {!targetBpm && (
         <p className="mt-1 text-[13px] text-muted-foreground">
-          Pas de tempo cible : fixe-le dans la fiche du morceau pour suivre ta courbe de BPM.
+          {t("noTarget")}
         </p>
       )}
 
@@ -112,10 +119,10 @@ export function ResumeCard({
       >
         <Play className="h-4 w-4 fill-current" strokeWidth={0} aria-hidden="true" />
         {disabled
-          ? "Session en cours"
+          ? t("inProgress")
           : bpm
-            ? `Reprendre à ${bpm} BPM`
-            : "Reprendre ce morceau"}
+            ? t("resumeAt", { bpm })
+            : t("resumeSong")}
       </button>
     </section>
   );

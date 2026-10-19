@@ -1,0 +1,30 @@
+{
+  "chips": {
+    "label": "Instruments",
+    "primary": "principal"
+  },
+  "picker": {
+    "chooseOne": "Choisis au moins un instrument.",
+    "levelEach": "Indique ton niveau pour chaque instrument.",
+    "otherPlaceholder": "Lequel ? (ukulélé, violon…)",
+    "otherLabel": "Quel instrument ?",
+    "levelLegend": "Ton niveau {instrument}",
+    "isPrimary": "Instrument principal",
+    "makePrimary": "En faire mon principal",
+    "freeCap": "Plan Free : {limit} instruments max.",
+    "upgrade": "Passe Pro pour en jouer plus",
+    "saving": "Enregistrement…"
+  },
+  "settings": {
+    "back": "Réglages",
+    "title": "Mes instruments",
+    "hint": "Ton instrument principal décide des exercices et des outils qu'on te propose.",
+    "save": "Enregistrer"
+  },
+  "welcome": {
+    "eyebrow": "Bienvenue sur Ostinara",
+    "title": "Tu joues de quoi ?",
+    "lead": "Coche tout ce que tu joues. Ton instrument principal décide des exercices et des outils qu'on te propose ; tu pourras changer ça dans tes réglages.",
+    "submit": "C'est parti"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "tier": {
+    "1": "Bronze",
+    "2": "Argent",
+    "3": "Or"
+  },
+  "family": {
+    "repertoire": "Répertoire",
+    "pratique": "Pratique",
+    "commu": "Commu"
+  },
+  "fallback": "Badge",
+  "unlockedPush": {
+    "title": "Badge débloqué",
+    "body": "{label} — {goal}"
+  },
+  "catalog": {
+    "repertoire": {
+      "title": "Répertoire",
+      "goal": "{count, plural, one {Maîtrise ton premier morceau} other {Maîtrise # morceaux}}"
+    },
+    "bibliotheque": {
+      "title": "Bibliothèque",
+      "goal": "{count, plural, one {Ajoute ton premier morceau} other {Ajoute # morceaux}}"
+    },
+    "tempo": {
+      "title": "Dans le tempo",
+      "goal": "{count, plural, one {Atteins le tempo cible d'un morceau} other {Atteins le tempo cible de # morceaux}}"
+    },
+    "sessions": {
+      "title": "Assiduité",
+      "goal": "{count, plural, one {Enregistre ta première session} other {Enregistre # sessions}}"
+    },
+    "serie": {
+      "title": "Régularité",
+      "goal": "Joue {count} jours d'affilée"
+    },
+    "heures": {
+      "title": "Corne aux doigts",
+      "titles": {
+        "drums": "Ampoules aux baguettes",
+        "keys": "Ivoire usé"
+      },
+      "goal": "Cumule {count} h de pratique"
+    },
+    "mois-varie": {
+      "title": "Mois éclectique",
+      "goal": "Joue 5 morceaux différents dans le mois"
+    },
+    "mois-assidu": {
+      "title": "Mois assidu",
+      "goal": "Enregistre 20 sessions dans le mois"
+    },
+    "semaine-bouclee": {
+      "title": "Semaine bouclée",
+      "goal": "Termine tous les objectifs de ton plan de la semaine"
+    },
+    "scene": {
+      "title": "Sur scène",
+      "goal": "{count, plural, one {Publie ta première cover} other {Publie # covers}}"
+    },
+    "melomane": {
+      "title": "Mélomane",
+      "goal": "{count, plural, one {Note ton premier album} other {Note # albums}}"
+    },
+    "entoure": {
+      "title": "Bien entouré",
+      "goal": "{count, plural, one {Ajoute ton premier ami} other {Compte # amis}}"
+    },
+    "competiteur": {
+      "title": "Compétiteur",
+      "goal": "{count, plural, one {Remporte ton premier défi} other {Remporte # défis}}"
+    }
+  },
+  "toast": {
+    "unlocked": "Badge débloqué"
+  },
+  "view": {
+    "unlocked": "badges obtenus",
+    "levels": "niveaux",
+    "toUnlock": "À débloquer",
+    "maxed": "Niveau maximum atteint",
+    "earnedTimes": "Obtenu {count} fois",
+    "everyMonth": "À faire chaque mois",
+    "everyWeek": "À faire chaque semaine",
+    "doneMonth": "{goal} — fait ce mois-ci",
+    "progress": "{value} sur {target}",
+    "on": "Le {date}"
+  }
+}

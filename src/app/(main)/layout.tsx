@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { getPendingRequestsCount } from "@/lib/actions/friends";
 import { getPendingChallengesCount } from "@/lib/actions/challenges";
@@ -42,7 +43,7 @@ export default async function MainLayout({
   ] = await Promise.all([
     supabase
       .from("profiles")
-      .select(`username, display_name, avatar_url, ${PROFILE_INSTRUMENTS_SELECT}`)
+      .select(`username, display_name, avatar_url, locale, ${PROFILE_INSTRUMENTS_SELECT}`)
       .eq("id", user.id)
       .single(),
     getPendingRequestsCount(),
@@ -56,6 +57,12 @@ export default async function MainLayout({
   // on le demande une fois, il decide des exercices et des outils.
   if (profile && profile.instruments?.length === 0) {
     redirect("/bienvenue");
+  }
+
+  // Comptes d'avant le choix de langue : on garde celle de la session,
+  // pour que push et rappels partent dans la langue de l'app.
+  if (profile && !profile.locale) {
+    await supabase.from("profiles").update({ locale: await getLocale() }).eq("id", user.id);
   }
 
   const badges: BadgeCounts = {

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { AlarmClock, Bell, BellOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { usePushNotifications } from "@/lib/hooks/use-push-notifications";
 import { updateProfile } from "@/lib/actions/profile";
 
@@ -46,6 +47,7 @@ function Switch({
  * (navigateur qui bloque, iPhone sans l'app installee).
  */
 export function NotificationSetting() {
+  const t = useTranslations("profile.notifications");
   const { supported, permission, isSubscribed, loading, message, enable, disable } =
     usePushNotifications();
 
@@ -53,12 +55,12 @@ export function NotificationSetting() {
   const on = isSubscribed && permission === "granted";
 
   const description = !supported
-    ? "Ce navigateur ne gère pas les notifications"
+    ? t("unsupported")
     : blocked
-      ? "Bloquées dans les réglages du navigateur"
+      ? t("blocked")
       : on
-        ? "Actives sur cet appareil"
-        : "Désactivées";
+        ? t("on")
+        : t("off");
 
   const Icon = on ? Bell : BellOff;
 
@@ -68,7 +70,7 @@ export function NotificationSetting() {
         <Icon className="h-[22px] w-[22px] shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
         <span className="min-w-0 flex-1">
           <span id="notif-label" className="block text-sm font-medium">
-            Notifications
+            {t("title")}
           </span>
           <span className="block text-xs text-muted-foreground">{description}</span>
         </span>
@@ -94,6 +96,7 @@ export function NotificationSetting() {
  * d'amis. Le reglage vit sur le profil, lu par le cron des rappels.
  */
 export function PracticeRemindersSetting({ initialOn }: { initialOn: boolean }) {
+  const t = useTranslations("profile.notifications");
   const [on, setOn] = useState(initialOn);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -106,7 +109,7 @@ export function PracticeRemindersSetting({ initialOn }: { initialOn: boolean }) 
       const result = await updateProfile({ practice_reminders: next });
       if (!result.success) {
         setOn(!next);
-        setError("Le réglage n'a pas pu être enregistré. Réessaie.");
+        setError(t("saveFailed"));
       }
     });
   };
@@ -117,10 +120,10 @@ export function PracticeRemindersSetting({ initialOn }: { initialOn: boolean }) 
         <AlarmClock className="h-[22px] w-[22px] shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
         <span className="min-w-0 flex-1">
           <span id="reminders-label" className="block text-sm font-medium">
-            Rappels de pratique
+            {t("reminders")}
           </span>
           <span className="block text-xs text-muted-foreground">
-            {on ? "Morceau délaissé, pause, série, plan de la semaine — un par jour au plus" : "Désactivés"}
+            {on ? t("remindersOn") : t("off")}
           </span>
         </span>
         <Switch on={on} labelledBy="reminders-label" disabled={pending} onClick={toggle} />

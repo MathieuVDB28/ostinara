@@ -1,0 +1,20 @@
+{
+  "waitlist": {
+    "subjectEarly": "T'es n°{rank} sur la liste — {months} mois de {plan} offerts",
+    "subject": "T'es n°{rank} sur la liste d'Ostinara",
+    "offer": "Tu fais partie des {spots} premiers : {months} mois de {plan} t'attendent à l'ouverture de ton accès.",
+    "intro": "C'est noté. Tu es n°{rank} sur la liste d'attente d'Ostinara.",
+    "planLine": "Plan qui t'intéresse : {plan}.",
+    "waves": "On ouvre l'accès par vagues, dans l'ordre des inscriptions. Tu recevras ton lien d'accès par email quand ce sera ton tour.",
+    "shareIntro": "D'ici là, fais tourner à ton groupe :",
+    "unsubscribeLine": "Se désinscrire : {url}",
+    "eyebrow": "Accès anticipé · Plan {plan}",
+    "noted": "C'est noté.",
+    "yourSpot": "Ta place",
+    "rank": "n°{rank}",
+    "offerTitle": "Offre de lancement.",
+    "shareButton": "Faire tourner à mon groupe →",
+    "why": "Tu reçois cet email parce que tu t'es inscrit·e sur {host}. On ne t'écrira qu'au sujet de ton accès.",
+    "unsubscribe": "Se désinscrire"
+  }
+}

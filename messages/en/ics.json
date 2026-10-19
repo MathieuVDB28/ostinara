@@ -1,0 +1,7 @@
+{
+  "band": "Band: {name}",
+  "participants": "Attendees: {names}",
+  "inOneHour": "Rehearsal in 1 hour: {title}",
+  "tomorrow": "Rehearsal tomorrow: {title}",
+  "filename": "rehearsal"
+}

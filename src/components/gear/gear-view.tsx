@@ -3,6 +3,7 @@
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { gearTypesFor } from "@/lib/instruments";
 import { useState, useMemo, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import type {
   GearItem,
   GearType,
@@ -12,13 +13,7 @@ import type {
   GearPriority,
   UserPlan,
 } from "@/types";
-import {
-  GEAR_TYPE_LABELS,
-  GEAR_CONDITION_LABELS,
-  GEAR_CONDITION_COLORS,
-  GEAR_PRIORITY_LABELS,
-  GEAR_PRIORITY_COLORS,
-} from "@/types";
+import { GEAR_CONDITION_COLORS, GEAR_PRIORITY_COLORS } from "@/types";
 import {
   getGearItems,
   createGearItem,
@@ -52,21 +47,9 @@ interface GearViewProps {
 }
 
 
-const SORT_OPTIONS: { value: string; label: string }[] = [
-  { value: "date_desc", label: "Plus recent" },
-  { value: "date_asc", label: "Plus ancien" },
-  { value: "brand_asc", label: "Marque (A-Z)" },
-  { value: "type", label: "Type" },
-];
+const SORT_VALUES = ["date_desc", "date_asc", "brand_asc", "type"] as const;
 
-const CONDITION_OPTIONS: { value: GearCondition | "all"; label: string }[] = [
-  { value: "all", label: "Toutes" },
-  { value: "mint", label: "Neuf" },
-  { value: "excellent", label: "Excellent" },
-  { value: "good", label: "Bon" },
-  { value: "fair", label: "Correct" },
-  { value: "poor", label: "Mauvais" },
-];
+const CONDITION_VALUES: (GearCondition | "all")[] = ["all", "mint", "excellent", "good", "fair", "poor"];
 
 type MainTab = "gear" | "setups" | "wishlist";
 type SortBy = "date_desc" | "date_asc" | "brand_asc" | "type";
@@ -78,13 +61,22 @@ export function GearView({
   userPlan,
   initialGearId,
 }: GearViewProps) {
+  const t = useTranslations("gear.view");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const SORT_OPTIONS = SORT_VALUES.map((value) => ({ value, label: t(`sort.${value}`) }));
+  // « Mauvais » et non « Usé » ici : le filtre lit l'etat comme une echelle.
+  const CONDITION_OPTIONS = CONDITION_VALUES.map((value) => ({
+    value,
+    label: value === "all" ? t("conditionAll") : value === "poor" ? t("conditionPoor") : te(`gearCondition.${value}`),
+  }));
   // Les types de matos, ceux de mes instruments d'abord.
   const myInstruments = useMyInstruments();
   const GEAR_TYPES: { value: GearType | "all"; label: string }[] = [
-    { value: "all", label: "Tous" },
+    { value: "all", label: t("all") },
     ...gearTypesFor(myInstruments.instruments.map((i) => i.instrument)).map((value) => ({
       value,
-      label: GEAR_TYPE_LABELS[value],
+      label: te(`gearType.${value}`),
     })),
   ];
 
@@ -321,7 +313,7 @@ export function GearView({
   const tabs: { key: MainTab; label: string; count: number; icon: React.ReactNode }[] = [
     {
       key: "gear",
-      label: "Mon Matos",
+      label: t("tabs.gear"),
       count: gearItems.length,
       icon: (
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -334,13 +326,13 @@ export function GearView({
     },
     {
       key: "setups",
-      label: "Setups",
+      label: t("tabs.setups"),
       count: gearSetups.length,
       icon: <Icon name="settings" className="h-4 w-4" />,
     },
     {
       key: "wishlist",
-      label: "Wishlist",
+      label: t("tabs.wishlist"),
       count: wishlistItems.length,
       icon: <Icon name="favorite" className="h-4 w-4" />,
     },
@@ -386,7 +378,7 @@ export function GearView({
               <Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Rechercher par marque ou modèle…"
+                placeholder={t("search")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-xl border border-border/50 bg-card py-2.5 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -394,6 +386,7 @@ export function GearView({
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
+                  aria-label={t("clearSearch")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <Icon name="close" className="h-4 w-4" />
@@ -411,7 +404,7 @@ export function GearView({
                 }`}
               >
                 <Icon name="tune" className="h-4 w-4" />
-                <span className="hidden sm:inline">Filtres</span>
+                <span className="hidden sm:inline">{t("filters")}</span>
               </button>
 
               <select
@@ -432,12 +425,12 @@ export function GearView({
                   className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   <Icon name="add" className="h-4 w-4" />
-                  <span className="hidden sm:inline">Ajouter</span>
+                  <span className="hidden sm:inline">{t("add")}</span>
                 </button>
               ) : (
                 <ProUpsell
-                  feature="Matos illimité"
-                  description="Passe à Pro pour ajouter plus de matos."
+                  feature={t("upsellGear")}
+                  description={t("upsellGearHint")}
                   compact
                 />
               )}
@@ -451,7 +444,7 @@ export function GearView({
                 {/* Type filter */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">
-                    Type
+                    {t("type")}
                   </label>
                   <div className="flex flex-wrap gap-1.5">
                     {GEAR_TYPES.map((type) => (
@@ -473,7 +466,7 @@ export function GearView({
                 {/* Condition filter */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">
-                    Etat
+                    {t("condition")}
                   </label>
                   <div className="flex flex-wrap gap-1.5">
                     {CONDITION_OPTIONS.map((cond) => (
@@ -495,7 +488,7 @@ export function GearView({
                 {/* Active only toggle */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">
-                    Statut
+                    {t("status")}
                   </label>
                   <button
                     onClick={() => setActiveOnlyFilter(!activeOnlyFilter)}
@@ -505,7 +498,7 @@ export function GearView({
                         : "bg-accent text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    En utilisation
+                    {t("inUse")}
                   </button>
                 </div>
               </div>
@@ -520,7 +513,7 @@ export function GearView({
                   }}
                   className="text-xs text-primary hover:underline"
                 >
-                  Reinitialiser les filtres
+                  {t("resetFilters")}
                 </button>
               )}
             </div>
@@ -541,10 +534,9 @@ export function GearView({
             // Has items but filters hide them
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Icon name="search" className="h-12 w-12 text-muted-foreground/40 mb-4" />
-              <h3 className="text-lg font-semibold">Aucun résultat</h3>
+              <h3 className="text-lg font-semibold">{t("noResult")}</h3>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                Aucun matos ne correspond a vos criteres de recherche.
-                Essayez de modifier vos filtres.
+                {t("noResultHint")}
               </p>
               <button
                 onClick={() => {
@@ -555,7 +547,7 @@ export function GearView({
                 }}
                 className="mt-4 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
-                Reinitialiser les filtres
+                {t("resetFilters")}
               </button>
             </div>
           ) : (
@@ -567,10 +559,9 @@ export function GearView({
                 <path d="M14 6l3-3" />
                 <path d="M15.5 2.5l2 2" />
               </svg>
-              <h3 className="text-lg font-semibold">Aucun matos</h3>
+              <h3 className="text-lg font-semibold">{t("none")}</h3>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                Commencez par ajouter vos guitares, amplis, pedales et autres
-                equipements pour les retrouver facilement.
+                {t("noneHint")}
               </p>
               {canAddGear ? (
                 <button
@@ -578,13 +569,13 @@ export function GearView({
                   className="mt-4 flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
                   <Icon name="add" className="h-4 w-4" />
-                  Ajouter mon premier equipement
+                  {t("addFirst")}
                 </button>
               ) : (
                 <div className="mt-4">
                   <ProUpsell
-                    feature="Matos illimité"
-                    description="Passe à Pro pour ajouter plus de matos."
+                    feature={t("upsellGear")}
+                    description={t("upsellGearHint")}
                   />
                 </div>
               )}
@@ -594,8 +585,7 @@ export function GearView({
           {/* Plan limit info for free users */}
           {isFree && gearItems.length > 0 && (
             <p className="text-center text-xs text-muted-foreground">
-              {gearItems.length}/{GEAR_LIMIT_FREE} equipements utilises sur le
-              plan gratuit
+              {t("gearUsage", { count: gearItems.length, limit: GEAR_LIMIT_FREE })}
             </p>
           )}
         </div>
@@ -607,8 +597,7 @@ export function GearView({
           {/* Header */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Organisez vos equipements en setups pour retrouver vos
-              configurations preferees.
+              {t("setupsIntro")}
             </p>
             {canAddSetup ? (
               <button
@@ -616,12 +605,12 @@ export function GearView({
                 className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <Icon name="add" className="h-4 w-4" />
-                <span className="hidden sm:inline">Créer un setup</span>
+                <span className="hidden sm:inline">{t("createSetup")}</span>
               </button>
             ) : (
               <ProUpsell
-                feature="Setups illimités"
-                description="Passe à Pro pour créer plus de setups."
+                feature={t("upsellSetups")}
+                description={t("upsellSetupsHint")}
                 compact
               />
             )}
@@ -630,17 +619,17 @@ export function GearView({
           {/* Inline setup creation form */}
           {showSetupForm && (
             <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
-              <h3 className="text-sm font-semibold">Nouveau setup</h3>
+              <h3 className="text-sm font-semibold">{t("newSetup")}</h3>
               <div className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Nom du setup (ex: Live Rock, Studio Acoustique...)"
+                  placeholder={t("setupName")}
                   value={setupName}
                   onChange={(e) => setSetupName(e.target.value)}
                   className="w-full rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <textarea
-                  placeholder="Description (optionnel)"
+                  placeholder={t("descriptionOptional")}
                   value={setupDescription}
                   onChange={(e) => setSetupDescription(e.target.value)}
                   rows={2}
@@ -656,14 +645,14 @@ export function GearView({
                   }}
                   className="rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
-                  Annuler
+                  {tc("cancel")}
                 </button>
                 <button
                   onClick={handleCreateSetup}
                   disabled={!setupName.trim() || isCreatingSetup}
                   className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
-                  {isCreatingSetup ? "Creation..." : "Creer"}
+                  {isCreatingSetup ? t("creating") : t("create")}
                 </button>
               </div>
             </div>
@@ -693,10 +682,9 @@ export function GearView({
             // Empty state
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Icon name="layers" className="h-12 w-12 text-muted-foreground/40 mb-4" />
-              <h3 className="text-lg font-semibold">Aucun setup</h3>
+              <h3 className="text-lg font-semibold">{t("noSetup")}</h3>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                Creez des setups pour regrouper vos equipements par
-                configuration (Live, Studio, Repet...).
+                {t("noSetupHint")}
               </p>
               {canAddSetup ? (
                 <button
@@ -704,13 +692,13 @@ export function GearView({
                   className="mt-4 flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
                   <Icon name="add" className="h-4 w-4" />
-                  Creer mon premier setup
+                  {t("createFirstSetup")}
                 </button>
               ) : (
                 <div className="mt-4">
                   <ProUpsell
-                    feature="Setups illimités"
-                    description="Passe à Pro pour créer plus de setups."
+                    feature={t("upsellSetups")}
+                    description={t("upsellSetupsHint")}
                   />
                 </div>
               )}
@@ -720,8 +708,7 @@ export function GearView({
           {/* Plan limit info */}
           {isFree && gearSetups.length > 0 && (
             <p className="text-center text-xs text-muted-foreground">
-              {gearSetups.length}/{SETUP_LIMIT_FREE} setups utilises sur le plan
-              gratuit
+              {t("setupsUsage", { count: gearSetups.length, limit: SETUP_LIMIT_FREE })}
             </p>
           )}
         </div>
@@ -733,7 +720,7 @@ export function GearView({
           {/* Header */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Gardez une trace des equipements que vous aimeriez acquerir.
+              {t("wishlistIntro")}
             </p>
             {canAddWishlist ? (
               <button
@@ -741,12 +728,12 @@ export function GearView({
                 className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <Icon name="add" className="h-4 w-4" />
-                <span className="hidden sm:inline">Ajouter</span>
+                <span className="hidden sm:inline">{t("add")}</span>
               </button>
             ) : (
               <ProUpsell
-                feature="Wishlist illimitée"
-                description="Passe à Pro pour ajouter plus de souhaits."
+                feature={t("upsellWishlist")}
+                description={t("upsellWishlistHint")}
                 compact
               />
             )}
@@ -756,19 +743,19 @@ export function GearView({
           {showWishlistForm && (
             <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
               <h3 className="text-sm font-semibold">
-                Ajouter a la wishlist
+                {t("addToWishlist")}
               </h3>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <input
                   type="text"
-                  placeholder="Marque *"
+                  placeholder={t("brandRequired")}
                   value={wishlistBrand}
                   onChange={(e) => setWishlistBrand(e.target.value)}
                   className="rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <input
                   type="text"
-                  placeholder="Modèle *"
+                  placeholder={t("modelRequired")}
                   value={wishlistModel}
                   onChange={(e) => setWishlistModel(e.target.value)}
                   className="rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -778,7 +765,7 @@ export function GearView({
                   onChange={(e) => setWishlistType(e.target.value as GearType)}
                   className="w-full appearance-none rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  {GEAR_TYPES.filter((t) => t.value !== "all").map((type) => (
+                  {GEAR_TYPES.filter((option) => option.value !== "all").map((type) => (
                     <option key={type.value} value={type.value}>
                       {type.label}
                     </option>
@@ -791,27 +778,27 @@ export function GearView({
                   }
                   className="w-full appearance-none rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option value="low">Priorité basse</option>
-                  <option value="medium">Priorité moyenne</option>
-                  <option value="high">Priorité haute</option>
+                  <option value="low">{t("priorityLow")}</option>
+                  <option value="medium">{t("priorityMedium")}</option>
+                  <option value="high">{t("priorityHigh")}</option>
                 </select>
                 <input
                   type="number"
-                  placeholder="Prix estimé (€)"
+                  placeholder={t("estimatedPrice")}
                   value={wishlistEstimatedPrice}
                   onChange={(e) => setWishlistEstimatedPrice(e.target.value)}
                   className="rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <input
                   type="url"
-                  placeholder="Lien (optionnel)"
+                  placeholder={t("linkOptional")}
                   value={wishlistUrl}
                   onChange={(e) => setWishlistUrl(e.target.value)}
                   className="rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
               <textarea
-                placeholder="Notes (optionnel)"
+                placeholder={t("notesOptional")}
                 value={wishlistNotes}
                 onChange={(e) => setWishlistNotes(e.target.value)}
                 rows={2}
@@ -831,7 +818,7 @@ export function GearView({
                   }}
                   className="rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
-                  Annuler
+                  {tc("cancel")}
                 </button>
                 <button
                   onClick={handleAddWishlistItem}
@@ -842,7 +829,7 @@ export function GearView({
                   }
                   className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
-                  {isAddingWishlist ? "Ajout..." : "Ajouter"}
+                  {isAddingWishlist ? t("adding") : t("add")}
                 </button>
               </div>
             </div>
@@ -863,10 +850,9 @@ export function GearView({
             // Empty state
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Icon name="shopping_bag" className="h-12 w-12 text-muted-foreground/40 mb-4" />
-              <h3 className="text-lg font-semibold">Wishlist vide</h3>
+              <h3 className="text-lg font-semibold">{t("emptyWishlist")}</h3>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                Ajoutez les equipements que vous souhaitez acquerir pour garder
-                une trace de vos envies.
+                {t("emptyWishlistHint")}
               </p>
               {canAddWishlist ? (
                 <button
@@ -874,13 +860,13 @@ export function GearView({
                   className="mt-4 flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
                   <Icon name="add" className="h-4 w-4" />
-                  Ajouter mon premier souhait
+                  {t("addFirstWish")}
                 </button>
               ) : (
                 <div className="mt-4">
                   <ProUpsell
-                    feature="Wishlist illimitée"
-                    description="Passe à Pro pour ajouter plus de souhaits."
+                    feature={t("upsellWishlist")}
+                    description={t("upsellWishlistHint")}
                   />
                 </div>
               )}
@@ -890,8 +876,7 @@ export function GearView({
           {/* Plan limit info */}
           {isFree && wishlistItems.length > 0 && (
             <p className="text-center text-xs text-muted-foreground">
-              {wishlistItems.length}/{WISHLIST_LIMIT_FREE} souhaits utilises sur
-              le plan gratuit
+              {t("wishlistUsage", { count: wishlistItems.length, limit: WISHLIST_LIMIT_FREE })}
             </p>
           )}
         </div>

@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import { formatDuration as formatMinutes } from "./stats-summary";
 import { getPracticeSessionsBySong, getSongPracticeStats } from "@/lib/actions/practice";
 import { getMoodEmoji } from "./mood-selector";
 import { getSectionsLabels } from "./sections-selector";
@@ -12,6 +15,10 @@ interface SongSessionsPanelProps {
 }
 
 export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelProps) {
+  const t = useTranslations("progress.songSessions");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
   const [sessions, setSessions] = useState<PracticeSession[]>([]);
   const [stats, setStats] = useState<SongPracticeStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,17 +37,10 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
     loadData();
   }, [songId]);
 
-  const formatDuration = (minutes: number): string => {
-    if (minutes < 60) {
-      return `${minutes}min`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
-  };
+  const formatDuration = (minutes: number): string => formatMinutes(minutes, tc);
 
   const formatDate = (date: string): string => {
-    return new Date(date).toLocaleDateString("fr-FR", {
+    return new Date(date).toLocaleDateString(intlLocale, {
       day: "numeric",
       month: "short",
       hour: "2-digit",
@@ -55,11 +55,11 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
       (now.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    if (diffDays === 0) return "Aujourd'hui";
-    if (diffDays === 1) return "Hier";
-    if (diffDays < 7) return `Il y a ${diffDays} jours`;
-    if (diffDays < 30) return `Il y a ${Math.floor(diffDays / 7)} semaine${Math.floor(diffDays / 7) > 1 ? "s" : ""}`;
-    return sessionDate.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+    if (diffDays === 0) return tc("relative.todayCap");
+    if (diffDays === 1) return tc("relative.yesterdayCap");
+    if (diffDays < 7) return tc("relative.daysAgoCap", { count: diffDays });
+    if (diffDays < 30) return tc("relative.weeksAgoCap", { count: Math.floor(diffDays / 7) });
+    return sessionDate.toLocaleDateString(intlLocale, { day: "numeric", month: "short" });
   };
 
   if (loading) {
@@ -76,22 +76,22 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
       {stats && stats.totalSessions > 0 && (
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-lg bg-muted p-3">
-            <p className="text-xs text-muted-foreground">Sessions</p>
+            <p className="text-xs text-muted-foreground">{t("sessions")}</p>
             <p className="text-xl font-bold">{stats.totalSessions}</p>
           </div>
           <div className="rounded-lg bg-muted p-3">
-            <p className="text-xs text-muted-foreground">Temps total</p>
+            <p className="text-xs text-muted-foreground">{t("totalTime")}</p>
             <p className="text-xl font-bold">{formatDuration(stats.totalMinutes)}</p>
           </div>
           {stats.bestBpm && (
             <div className="rounded-lg bg-muted p-3">
-              <p className="text-xs text-muted-foreground">Meilleur BPM</p>
+              <p className="text-xs text-muted-foreground">{t("bestBpm")}</p>
               <p className="text-xl font-bold text-primary">{stats.bestBpm}</p>
             </div>
           )}
           {stats.lastPracticed && (
             <div className="rounded-lg bg-muted p-3">
-              <p className="text-xs text-muted-foreground">Dernière session</p>
+              <p className="text-xs text-muted-foreground">{t("lastSession")}</p>
               <p className="text-sm font-medium">{formatRelativeDate(stats.lastPracticed)}</p>
             </div>
           )}
@@ -101,7 +101,7 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
       {/* Liste des sessions */}
       {sessions.length > 0 ? (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-muted-foreground">Historique</h4>
+          <h4 className="text-sm font-medium text-muted-foreground">{t("history")}</h4>
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {sessions.map((session) => (
               <div
@@ -126,7 +126,7 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
                     {session.sections_worked.length > 0 && (
                       <>
                         <span>•</span>
-                        <span className="truncate">{getSectionsLabels(session.sections_worked)}</span>
+                        <span className="truncate">{getSectionsLabels(session.sections_worked, te)}</span>
                       </>
                     )}
                   </div>
@@ -151,7 +151,7 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">Aucune session enregistrée</p>
+          <p className="text-sm text-muted-foreground mb-4">{t("none")}</p>
         </div>
       )}
 
@@ -160,7 +160,7 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
         onClick={onAddSession}
         className="w-full rounded-lg border border-dashed border-primary py-3 text-sm font-medium text-primary transition-all hover:bg-primary/5"
       >
-        + Ajouter une session de pratique
+        {t("add")}
       </button>
     </div>
   );

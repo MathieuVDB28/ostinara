@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { leaveBand, deleteBand, removeBandMember } from "@/lib/actions/bands";
 import { getActiveJamSession } from "@/lib/actions/jam-sessions";
 import { getBandRehearsals } from "@/lib/actions/rehearsals";
@@ -16,6 +18,10 @@ interface BandCardProps {
 }
 
 export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
+  const t = useTranslations("setlists.bandCard");
+  const ts = useTranslations("setlists.band");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const [expanded, setExpanded] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showJamModal, setShowJamModal] = useState(false);
@@ -45,7 +51,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
   }, [band.id]);
 
   const handleLeave = async () => {
-    if (!confirm("Es-tu sur de vouloir quitter ce groupe ?")) return;
+    if (!confirm(t("confirmLeave"))) return;
     setLoading(true);
     await leaveBand(band.id);
     onUpdate();
@@ -59,7 +65,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
 
   const handleRemoveMember = async (memberId: string, memberName: string) => {
     if (
-      !confirm(`Es-tu sur de vouloir retirer ${memberName} du groupe ?`)
+      !confirm(t("confirmRemove", { name: memberName }))
     )
       return;
     await removeBandMember(band.id, memberId);
@@ -97,12 +103,12 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
               <h3 className="truncate font-semibold">{band.name}</h3>
               {isOwner && (
                 <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
-                  Admin
+                  {ts("admin")}
                 </span>
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              {memberCount} membre{memberCount > 1 ? "s" : ""}
+              {t("members", { count: memberCount })}
             </p>
           </div>
 
@@ -136,7 +142,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
 
             {/* Members list */}
             <div className="mb-4">
-              <h4 className="mb-2 text-sm font-medium">Membres</h4>
+              <h4 className="mb-2 text-sm font-medium">{t("membersTitle")}</h4>
               <div className="space-y-2">
                 {band.members.map((member) => (
                   <div
@@ -169,7 +175,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                     {/* Role badge */}
                     {member.role === "owner" && (
                       <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">
-                        Owner
+                        {t("owner")}
                       </span>
                     )}
 
@@ -183,6 +189,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                               member.profile.username
                           )
                         }
+                        aria-label={t("remove", { name: member.profile.display_name || member.profile.username })}
                         className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                       >
                         <svg
@@ -208,14 +215,14 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
             {/* Next rehearsal */}
             {nextRehearsal && (
               <div className="mb-4">
-                <h4 className="mb-2 text-sm font-medium">Prochaine répète</h4>
+                <h4 className="mb-2 text-sm font-medium">{t("nextRehearsal")}</h4>
                 <Link
                   href={`/setlists/rehearsals/${nextRehearsal.id}`}
                   className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3 transition-colors hover:bg-primary/10"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 flex-col items-center justify-center rounded-lg bg-primary/20 text-primary">
                     <span className="text-[11px] font-medium uppercase leading-none">
-                      {new Date(nextRehearsal.date).toLocaleDateString("fr-FR", { weekday: "short" })}
+                      {new Date(nextRehearsal.date).toLocaleDateString(intlLocale, { weekday: "short" })}
                     </span>
                     <span className="text-base font-bold leading-tight">
                       {new Date(nextRehearsal.date).getDate()}
@@ -224,7 +231,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{nextRehearsal.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(nextRehearsal.date).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(nextRehearsal.date).toLocaleTimeString(intlLocale, { hour: "2-digit", minute: "2-digit" })}
                       {nextRehearsal.location && ` - ${nextRehearsal.location}`}
                     </p>
                   </div>
@@ -255,7 +262,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Fiche Technique
+                {t("techRider")}
               </Link>
 
               {/* Jam Session button */}
@@ -265,7 +272,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                   className="inline-flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-sm font-medium text-success-foreground transition-all hover:opacity-90"
                 >
                   <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
-                  Rejoindre la Jam
+                  {t("joinJam")}
                 </Link>
               ) : (
                 <button
@@ -285,7 +292,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                       d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
                     />
                   </svg>
-                  Demarrer Jam
+                  {t("startJam")}
                 </button>
               )}
 
@@ -306,25 +313,25 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                Inviter
+                {t("invite")}
               </button>
 
               {isOwner ? (
                 confirmDelete ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-destructive">Confirmer ?</span>
+                    <span className="text-sm text-destructive">{t("confirm")}</span>
                     <button
                       onClick={handleDelete}
                       disabled={loading}
                       className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-all hover:opacity-90 disabled:opacity-50"
                     >
-                      {loading ? "..." : "Supprimer"}
+                      {loading ? "..." : tc("delete")}
                     </button>
                     <button
                       onClick={() => setConfirmDelete(false)}
                       className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent"
                     >
-                      Annuler
+                      {tc("cancel")}
                     </button>
                   </div>
                 ) : (
@@ -332,7 +339,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                     onClick={() => setConfirmDelete(true)}
                     className="rounded-lg border border-destructive/50 px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
                   >
-                    Supprimer le groupe
+                    {t("deleteBand")}
                   </button>
                 )
               ) : (
@@ -341,7 +348,7 @@ export function BandCard({ band, currentUserId, onUpdate }: BandCardProps) {
                   disabled={loading}
                   className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
                 >
-                  {loading ? "..." : "Quitter le groupe"}
+                  {loading ? "..." : t("leaveBand")}
                 </button>
               )}
             </div>

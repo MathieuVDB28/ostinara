@@ -1,4 +1,5 @@
 import { Guitar } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { CoverGearTag } from "@/types";
 
 /**
@@ -10,6 +11,7 @@ import type { CoverGearTag } from "@/types";
 const ORDER = ["guitar", "bass", "amp", "effect", "recording", "accessory", "other"];
 
 export function CoverGearLine({ gear, className = "" }: { gear?: CoverGearTag[]; className?: string }) {
+  const t = useTranslations("covers");
   if (!gear || gear.length === 0) return null;
 
   const names = [...gear]
@@ -20,7 +22,10 @@ export function CoverGearLine({ gear, className = "" }: { gear?: CoverGearTag[];
     <p className={`flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground ${className}`}>
       <Guitar className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
       <span className="truncate">
-        Joué avec <span className="font-semibold text-foreground">{names.join(" · ")}</span>
+        {t.rich("gearLine", {
+          gear: names.join(" · "),
+          strong: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
+        })}
       </span>
     </p>
   );

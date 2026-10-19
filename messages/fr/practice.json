@@ -1,0 +1,47 @@
+{
+  "target": {
+    "none": "Pas de tempo cible pour ce morceau. Fixe-le dans la liste ci-dessous (« + BPM cible ») pour suivre ta progression.",
+    "tempoTarget": "Tempo / cible",
+    "reached": "Objectif atteint",
+    "remaining": "encore {n} bpm",
+    "history": "Meilleur {best} bpm · {count, plural, one {# session} other {# sessions}} · {minutes} min"
+  },
+  "selector": {
+    "search": "Rechercher un morceau",
+    "searchPlaceholder": "Rechercher un morceau…",
+    "onStand": "Au pupitre",
+    "target": "cible",
+    "change": "Changer",
+    "targetFor": "Tempo cible pour {title}",
+    "saveTarget": "Enregistrer le tempo cible",
+    "bpm": "bpm",
+    "addTarget": "+ BPM cible",
+    "none": "Aucun morceau trouvé"
+  },
+  "tab": {
+    "title": "Tablature",
+    "open": "Ouvrir la tab",
+    "search": "Chercher une tab",
+    "blocked": "Le navigateur a bloqué la fenêtre.",
+    "openDirect": "Ouvrir la tablature directement",
+    "lockTempo": "Caler le métronome sur la partition · {bpm} BPM",
+    "summary": "{count, plural, one {# section} other {# sections}} · {measures} mesures · {duration} à {bpm} BPM",
+    "analyzeHint": "Analyse la tablature depuis la fiche du morceau pour récupérer le tempo et les sections.",
+    "linkHint": "Lie une tablature Songsterr au morceau : le tempo, la mesure et les sections viendront avec."
+  },
+  "sessionBar": {
+    "expand": "Afficher la session en plein écran",
+    "srRunning": "Session de pratique en cours",
+    "srPaused": "Session de pratique en pause",
+    "paused": "En pause",
+    "session": "Session",
+    "pause": "Mettre en pause",
+    "resume": "Reprendre",
+    "cancel": "Annuler",
+    "finish": "Terminer",
+    "dialog": "Session de pratique",
+    "minimize": "Réduire",
+    "finishSession": "Terminer la session",
+    "discard": "Annuler sans enregistrer"
+  }
+}

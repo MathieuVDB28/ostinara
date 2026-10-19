@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { AlbumWishlistItem } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
@@ -11,6 +12,7 @@ interface AlbumWishlistCardProps {
 }
 
 export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: AlbumWishlistCardProps) {
+  const t = useTranslations("albums.wishlistCard");
   return (
     <div className="group relative w-full overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/50">
       {/* Cover */}
@@ -29,7 +31,7 @@ export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: Alb
 
         {/* Wishlist badge */}
         <div className="absolute left-2 top-2 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
-          A écouter
+          {t("toListen")}
         </div>
       </div>
 
@@ -42,7 +44,7 @@ export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: Alb
           <p className="mt-1 text-xs text-muted-foreground">
             {album.release_date?.split("-")[0]}
             {album.release_date && album.total_tracks ? " - " : ""}
-            {album.total_tracks ? `${album.total_tracks} titres` : ""}
+            {album.total_tracks ? t("tracks", { count: album.total_tracks }) : ""}
           </p>
         )}
 
@@ -53,7 +55,7 @@ export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: Alb
             className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
           >
             <Icon name="rate_review" className="h-[16px] w-[16px]" />
-            Écouté
+            {t("listened")}
           </button>
           <button
             onClick={(e) => {
@@ -61,6 +63,7 @@ export function AlbumWishlistCard({ album, onListen, onRemove, isRemoving }: Alb
               onRemove();
             }}
             disabled={isRemoving}
+            aria-label={t("remove")}
             className="flex items-center justify-center rounded-lg border border-border px-3 py-2 text-muted-foreground transition-colors hover:border-destructive hover:text-destructive disabled:opacity-50"
           >
             {isRemoving ? (

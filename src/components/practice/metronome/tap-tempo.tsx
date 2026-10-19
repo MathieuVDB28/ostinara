@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Hand, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface TapTempoProps {
   onTap: () => void;
@@ -10,6 +11,7 @@ interface TapTempoProps {
 }
 
 export function TapTempo({ onTap, tapBpm, onReset }: TapTempoProps) {
+  const t = useTranslations("metronome");
   const [tapCount, setTapCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -37,20 +39,20 @@ export function TapTempo({ onTap, tapBpm, onReset }: TapTempoProps) {
   return (
     <div className="flex items-center gap-1.5">
       <button
-        aria-label="Taper le tempo"
+        aria-label={t("tapTempo")}
         onClick={handleTap}
         className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 font-mono text-xs font-semibold transition-all active:scale-95 ${
           isAnimating ? "scale-95 border-primary text-primary" : "border-border hover:bg-accent"
         }`}
       >
         <Hand className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-        {tapBpm !== null ? `${tapBpm}` : tapCount > 0 ? `${tapCount}×` : "Tap"}
+        {tapBpm !== null ? `${tapBpm}` : tapCount > 0 ? `${tapCount}×` : t("tap")}
       </button>
 
       {tapBpm !== null && onReset && (
         <button
           onClick={handleReset}
-          aria-label="Réinitialiser le tap tempo"
+          aria-label={t("resetTap")}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-border transition-colors hover:bg-accent"
         >
           <X className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={2} aria-hidden="true" />

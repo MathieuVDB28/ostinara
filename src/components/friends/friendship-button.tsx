@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Check, Clock, UserPlus } from "lucide-react";
 import {
   acceptFriendRequest,
@@ -32,6 +33,8 @@ interface FriendshipButtonProps {
  * parce qu'il n'y a pas de retour arriere.
  */
 export function FriendshipButton({ userId, status, friendshipId, requestIncoming }: FriendshipButtonProps) {
+  const t = useTranslations("friends.button");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -45,7 +48,7 @@ export function FriendshipButton({ userId, status, friendshipId, requestIncoming
         setConfirmRemove(false);
         router.refresh();
       } else {
-        setError(result.error || "Ça n'a pas marché. Réessaie.");
+        setError(result.error || t("failed"));
       }
     });
   };
@@ -58,26 +61,26 @@ export function FriendshipButton({ userId, status, friendshipId, requestIncoming
     content = confirmRemove ? (
       <span className="flex items-center gap-1.5">
         <button type="button" disabled={pending} onClick={() => run(() => removeFriend(friendshipId))} className={`${OUTLINE} text-destructive`}>
-          Retirer
+          {t("remove")}
         </button>
         <button type="button" onClick={() => setConfirmRemove(false)} className={OUTLINE}>
-          Annuler
+          {tc("cancel")}
         </button>
       </span>
     ) : (
-      <button type="button" onClick={() => setConfirmRemove(true)} className={OUTLINE} aria-label="Ami·e — retirer des amis">
+      <button type="button" onClick={() => setConfirmRemove(true)} className={OUTLINE} aria-label={t("friendAria")}>
         <Check className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
-        Ami·e
+        {t("friend")}
       </button>
     );
   } else if (status === "pending" && friendshipId && requestIncoming) {
     content = (
       <span className="flex items-center gap-1.5">
         <button type="button" disabled={pending} onClick={() => run(() => acceptFriendRequest(friendshipId))} className={SOLID}>
-          Accepter
+          {tc("accept")}
         </button>
         <button type="button" disabled={pending} onClick={() => run(() => rejectFriendRequest(friendshipId))} className={OUTLINE}>
-          Refuser
+          {tc("decline")}
         </button>
       </span>
     );
@@ -85,14 +88,14 @@ export function FriendshipButton({ userId, status, friendshipId, requestIncoming
     content = (
       <span className={`${OUTLINE} cursor-default text-muted-foreground hover:bg-background`}>
         <Clock className="h-4 w-4" aria-hidden="true" />
-        Demande envoyée
+        {t("sent")}
       </span>
     );
   } else {
     content = (
       <button type="button" disabled={pending} onClick={() => run(() => sendFriendRequest(userId))} className={SOLID}>
         <UserPlus className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
-        Ajouter
+        {t("add")}
       </button>
     );
   }

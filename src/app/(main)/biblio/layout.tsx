@@ -3,6 +3,7 @@ import {
   BiblioSearchProvider,
   BiblioSearchInput,
 } from "@/components/biblio/biblio-search";
+import { useTranslations } from "next-intl";
 import { NAV_TABS } from "@/lib/navigation";
 
 const biblioTab = NAV_TABS.find((tab) => tab.href === "/biblio")!;
@@ -19,10 +20,11 @@ export default function BiblioLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations("nav");
   return (
     <BiblioSearchProvider>
       <div className="mb-5 flex flex-wrap items-center gap-x-6 gap-y-3">
-        <h1 className="text-2xl font-extrabold tracking-[-0.01em] lg:text-3xl">Biblio</h1>
+        <h1 className="text-2xl font-extrabold tracking-[-0.01em] lg:text-3xl">{t("library")}</h1>
         <SegmentedNav
           tab={biblioTab}
           variant="segmented"

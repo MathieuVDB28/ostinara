@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { LogoutButton } from "@/components/layout/logout-button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { NotificationSetting, PracticeRemindersSetting } from "./notification-setting";
@@ -50,29 +52,31 @@ function Row({ row }: { row: SettingsRow }) {
  * illisible. Chaque ligne pousse une vue de detail.
  */
 export function SettingsList({ profile }: SettingsListProps) {
+  const t = useTranslations("profile.settings");
+  const te = useTranslations("enums");
   const instruments = sortInstruments(profile.instruments ?? []);
 
   const account: SettingsRow[] = [
     {
       href: "/profile/edit",
-      label: "Mon profil",
-      description: "Nom, bio, avatar, liens et vitrine",
+      label: t("profile"),
+      description: t("profileHint"),
       icon: "person",
     },
     {
       href: "/profil/reglages/instruments",
-      label: "Mes instruments",
+      label: t("instruments"),
       description: instruments.length
-        ? instruments.map(instrumentLabel).join(" · ")
-        : "Dis-nous ce que tu joues",
+        ? instruments.map((entry) => instrumentLabel(entry, te)).join(" · ")
+        : t("instrumentsEmpty"),
       icon: "music_note",
     },
     {
       href: "/profile/edit?tab=privacy",
-      label: "Confidentialité",
+      label: t("privacy"),
       description: profile.is_private
-        ? "Profil privé"
-        : "Profil visible par tes amis",
+        ? t("private")
+        : t("friendsOnly"),
       icon: "lock",
     },
   ];
@@ -82,7 +86,7 @@ export function SettingsList({ profile }: SettingsListProps) {
       {/* Abonnement */}
       <section>
         <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-          Abonnement
+          {t("subscription")}
         </h2>
         <div className="py-3">
           <div className="mb-3">
@@ -96,7 +100,7 @@ export function SettingsList({ profile }: SettingsListProps) {
             href="/account/subscription"
             className="flex min-h-[44px] items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
           >
-            {profile.plan === "free" ? "Passer à un plan payant" : "Gérer mon abonnement"}
+            {profile.plan === "free" ? t("upgrade") : t("manage")}
           </Link>
         </div>
       </section>
@@ -104,7 +108,7 @@ export function SettingsList({ profile }: SettingsListProps) {
       {/* Compte */}
       <section>
         <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-          Compte
+          {t("account")}
         </h2>
         <div className="divide-y divide-border border-b border-border">
           {account.map((row) => (
@@ -116,7 +120,7 @@ export function SettingsList({ profile }: SettingsListProps) {
       {/* Notifications : le bouton flottait sur toutes les pages, il vit ici */}
       <section>
         <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-          Notifications
+          {t("notifications")}
         </h2>
         <div className="divide-y divide-border border-b border-border">
           <NotificationSetting />
@@ -127,23 +131,34 @@ export function SettingsList({ profile }: SettingsListProps) {
       {/* Apparence : le bouton de theme n'existait que dans la sidebar desktop */}
       <section>
         <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-          Apparence
+          {t("appearance")}
         </h2>
         <div className="py-3">
           <ThemeToggle />
         </div>
       </section>
 
+      {/* Langue : choisie a l'inscription d'apres le pays, modifiable ici */}
+      <section>
+        <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          {t("language")}
+        </h2>
+        <div className="space-y-2 py-3">
+          <LocaleSwitcher variant="full" />
+          <p className="text-xs text-muted-foreground">{t("languageHint")}</p>
+        </div>
+      </section>
+
       {/* Session */}
       <section>
         <LogoutButton
-          label="Se déconnecter"
+          label={t("logout")}
           className="min-h-[44px] w-full rounded-xl border border-border px-4 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
         />
       </section>
 
       <p className="px-1 pb-2 text-center text-xs text-muted-foreground">
-        Connecté en tant que @{profile.username}
+        {t("loggedAs", { username: profile.username ?? "" })}
       </p>
     </div>
   );

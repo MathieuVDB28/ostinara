@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const ENABLED_KEY = 'ostinara_push_enabled';
 
@@ -50,6 +51,7 @@ export function isIOSBrowserTab() {
  * re-abonnement automatique.
  */
 export function usePushNotifications({ autoResubscribe = false }: Options = {}): PushNotificationsState {
+  const t = useTranslations('media');
   const [supported, setSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -60,14 +62,14 @@ export function usePushNotifications({ autoResubscribe = false }: Options = {}):
     if (!('serviceWorker' in navigator)) return;
 
     if (isIOSBrowserTab()) {
-      setMessage("Sur iPhone, installe d'abord l'app sur l'écran d'accueil (Partager › Sur l'écran d'accueil), puis relance-la depuis l'icône.");
+      setMessage(t('pushIosInstall'));
       return;
     }
 
     const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     if (!vapidPublicKey) {
       console.error('Push: NEXT_PUBLIC_VAPID_PUBLIC_KEY manquante');
-      setMessage("Les notifications ne sont pas configurées sur ce serveur.");
+      setMessage(t('pushNotConfigured'));
       return;
     }
 
@@ -117,13 +119,13 @@ export function usePushNotifications({ autoResubscribe = false }: Options = {}):
       console.error('Push: abonnement impossible', error);
       setMessage(
         error instanceof Error && error.message === 'Service worker timeout'
-          ? "Le service worker ne répond pas. Recharge la page et réessaie."
-          : "L'activation a échoué. Réessaie dans un instant."
+          ? t('pushSwTimeout')
+          : t('pushFailed')
       );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!('Notification' in window)) return;
@@ -181,11 +183,11 @@ export function usePushNotifications({ autoResubscribe = false }: Options = {}):
       if (perm === 'granted') await subscribe();
     } catch (error) {
       console.error('Push: demande de permission impossible', error);
-      setMessage("La demande d'autorisation a échoué.");
+      setMessage(t('pushPermissionFailed'));
     } finally {
       setLoading(false);
     }
-  }, [subscribe]);
+  }, [subscribe, t]);
 
   const disable = useCallback(async () => {
     if (!('serviceWorker' in navigator)) return;
@@ -208,11 +210,11 @@ export function usePushNotifications({ autoResubscribe = false }: Options = {}):
       localStorage.setItem(ENABLED_KEY, DISABLED);
     } catch (error) {
       console.error('Push: desabonnement impossible', error);
-      setMessage("La désactivation a échoué. Réessaie dans un instant.");
+      setMessage(t('pushDisableFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   return { supported, permission, isSubscribed, loading, message, enable, disable };
 }

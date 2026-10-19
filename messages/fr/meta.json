@@ -1,0 +1,34 @@
+{
+  "title": "Ostinara - Suis ta progression musicale",
+  "description": "Suis ta progression, gère ton répertoire et partage tes covers avec tes amis. L'app des musiciens et des groupes.",
+  "keywords": "musique,guitare,basse,batterie,piano,groupe,pratique,covers,apprentissage,progression",
+  "welcome": {
+    "title": "Bienvenue | Ostinara"
+  },
+  "settings": {
+    "title": "Réglages | Ostinara"
+  },
+  "instruments": {
+    "title": "Mes instruments | Ostinara"
+  },
+  "badges": {
+    "title": "Badges | Ostinara",
+    "description": "Tes badges et ce qu'il reste à faire pour les suivants"
+  },
+  "communityCovers": {
+    "title": "Covers | Ostinara",
+    "description": "Les covers de ton cercle"
+  },
+  "communityAlbums": {
+    "title": "Albums de la semaine | Ostinara",
+    "description": "Les albums écoutés par la communauté cette semaine"
+  },
+  "search": {
+    "title": "Recherche | Ostinara",
+    "description": "Chercher un morceau, un album, une cover, un exercice, du matos ou un ami"
+  },
+  "play": {
+    "title": "Jouer | Ostinara",
+    "description": "Métronome, exercices et accordeur"
+  }
+}

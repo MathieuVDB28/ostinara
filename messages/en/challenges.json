@@ -1,0 +1,91 @@
+{
+  "view": {
+    "mine": "My challenges",
+    "invitations": "Invitations",
+    "leaderboard": "Leaderboard",
+    "new": "Challenge",
+    "poster": "Challenge<br></br>your <accent>friends</accent>",
+    "posterHint": "A practice goal over a set period. Whoever goes furthest wins.",
+    "kindMinutes": "Minutes played",
+    "kindMastered": "Songs mastered",
+    "kindStreak": "Streak",
+    "create": "Create a challenge",
+    "autoHint": "Your practice sessions feed your challenges automatically: nothing extra to check off.",
+    "seeLeaderboard": "See the leaderboard",
+    "noneTitle": "No challenges in progress",
+    "noneWithFriends": "A challenge is a practice goal over a set period: minutes played, songs mastered, tempo reached. Whoever goes furthest wins.",
+    "noneNoFriends": "It takes two to challenge. Add a friend and you can set a shared practice goal.",
+    "addFriend": "Add a friend",
+    "needFriend": "You need at least one friend",
+    "sentPending": "Sent challenges awaiting a reply",
+    "noInvitation": "No invitations",
+    "noInvitationHint": "Nobody has challenged you yet. Nothing stops you from going first.",
+    "launch": "Start a challenge",
+    "seeMine": "See my challenges"
+  },
+  "type": {
+    "practice_time": "Practice time",
+    "streak": "Streak",
+    "song_mastery": "Mastery"
+  },
+  "typeLong": {
+    "practice_time": "Practice time",
+    "streak": "Daily streak",
+    "song_mastery": "Song mastery"
+  },
+  "typeDescription": {
+    "practice_time": "Whoever practices the most minutes wins",
+    "streak": "Whoever keeps the longest daily streak wins",
+    "song_mastery": "The first to master the song wins"
+  },
+  "card": {
+    "over": "Over",
+    "remainingDays": "{d}d {h}h",
+    "remainingHours": "{h}h {m}m",
+    "pending": "Pending",
+    "won": "Won!",
+    "lost": "Lost",
+    "tie": "Tie",
+    "vs": "VS",
+    "hoursMinutes": "{h}h {m}m",
+    "minutes": "{m}m",
+    "days": "{d}d",
+    "mastered": "Mastered!",
+    "inProgress": "In progress"
+  },
+  "invitation": {
+    "invites": "challenged you",
+    "type": "Type",
+    "duration": "Duration",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "song": "Song"
+  },
+  "leaderboard": {
+    "week": "This week",
+    "month": "This month",
+    "empty": "No leaderboard yet",
+    "emptyHint": "Add friends and practice to show up on the leaderboard!",
+    "sessions": "{count, plural, one {# session} other {# sessions}}"
+  },
+  "create": {
+    "duration": {
+      "1": "1 day",
+      "3": "3 days",
+      "7": "1 week",
+      "14": "2 weeks",
+      "30": "1 month"
+    },
+    "selectFriend": "Pick a friend",
+    "selectSong": "Pick a song",
+    "title": "New challenge",
+    "friend": "Challenge a friend",
+    "chooseFriend": "Choose a friend...",
+    "type": "Challenge type",
+    "songToMaster": "Song to master",
+    "noSong": "You don't have any songs left to master. Add one to your library!",
+    "chooseSong": "Choose a song...",
+    "durationLabel": "Challenge duration",
+    "sending": "Sending...",
+    "submit": "Send challenge"
+  }
+}

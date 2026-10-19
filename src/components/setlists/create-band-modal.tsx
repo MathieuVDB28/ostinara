@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { createBand } from "@/lib/actions/bands";
 
 interface CreateBandModalProps {
@@ -14,6 +15,8 @@ export function CreateBandModal({
   onClose,
   onSuccess,
 }: CreateBandModalProps) {
+  const t = useTranslations("setlists.createBand");
+  const tc = useTranslations("common");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
@@ -56,7 +59,7 @@ export function CreateBandModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError("Le nom est requis");
+      setError(tc("nameRequired"));
       return;
     }
 
@@ -74,7 +77,7 @@ export function CreateBandModal({
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Une erreur est survenue");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -91,12 +94,12 @@ export function CreateBandModal({
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Créer un groupe</h2>
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Collabore sur des setlists avec ton groupe
+              {t("subtitle")}
             </p>
           </div>
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -121,13 +124,13 @@ export function CreateBandModal({
           {/* Name */}
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Nom du groupe *
+              {t("name")}
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: The Rockers"
+              placeholder={t("namePlaceholder")}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               autoFocus
             />
@@ -136,12 +139,12 @@ export function CreateBandModal({
           {/* Description */}
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Description
+              {tc("description")}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Decris ton groupe..."
+              placeholder={t("descriptionPlaceholder")}
               rows={3}
               className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
@@ -161,14 +164,14 @@ export function CreateBandModal({
               onClick={onClose}
               className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
             >
-              Annuler
+              {tc("cancel")}
             </button>
             <button
               type="submit"
               disabled={saving || !name.trim()}
               className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {saving ? "Création..." : "Créer le groupe"}
+              {saving ? tc("creating") : t("submit")}
             </button>
           </div>
         </form>

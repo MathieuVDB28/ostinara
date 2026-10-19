@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import { formatDuration as formatMinutes } from "./stats-summary";
 import { updatePracticeSession, deletePracticeSession } from "@/lib/actions/practice";
 import { MoodSelector, getMoodEmoji } from "./mood-selector";
 import { SectionsSelector, getSectionsLabels } from "./sections-selector";
@@ -24,6 +27,11 @@ export function EditSessionModal({
   onSuccess,
   songs,
 }: EditSessionModalProps) {
+  const t = useTranslations("progress.form");
+  const ts = useTranslations("progress.session");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -93,7 +101,7 @@ export function EditSessionModal({
     if (!session) return;
 
     if (!durationMinutes || durationMinutes < 1) {
-      setError("La durée doit être d'au moins 1 minute");
+      setError(t("durationMin"));
       return;
     }
 
@@ -120,7 +128,7 @@ export function EditSessionModal({
       onSuccess();
       handleClose();
     } else {
-      setError(result.error || "Erreur lors de la mise à jour");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -139,21 +147,17 @@ export function EditSessionModal({
       onSuccess();
       handleClose();
     } else {
-      setError(result.error || "Erreur lors de la suppression");
+      setError(result.error || tc("genericError"));
     }
   };
 
   const formatDuration = (minutes: number): string => {
-    if (minutes < 60) {
-      return `${minutes} minutes`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+    if (minutes < 60) return tc("duration.minutesLong", { m: minutes });
+    return formatMinutes(minutes, tc);
   };
 
   const formatDate = (date: string): string => {
-    return new Date(date).toLocaleDateString("fr-FR", {
+    return new Date(date).toLocaleDateString(intlLocale, {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -180,21 +184,22 @@ export function EditSessionModal({
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
-            {isEditing ? "Modifier la session" : "Détail de la session"}
+            {isEditing ? t("editTitle") : t("detailTitle")}
           </h2>
           <div className="flex items-center gap-2">
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
                 className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
-                title="Modifier"
+                title={tc("edit")}
+                aria-label={tc("edit")}
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                 </svg>
               </button>
             )}
-            <button aria-label="Fermer"
+            <button aria-label={tc("close")}
               onClick={handleClose}
               className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
             >
@@ -217,7 +222,7 @@ export function EditSessionModal({
           <div className="space-y-6">
             {/* Morceau */}
             <div>
-              <label className="mb-2 block text-sm font-medium">Morceau</label>
+              <label className="mb-2 block text-sm font-medium">{t("song")}</label>
               {selectedSong ? (
                 <div className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3">
                   {selectedSong.cover_url ? (
@@ -244,7 +249,7 @@ export function EditSessionModal({
                 </div>
               ) : (
                 <button type="button" onClick={() => setShowSongSearch(true)} className="w-full rounded-lg border border-dashed border-border p-4 text-center text-muted-foreground hover:border-primary hover:bg-primary/5">
-                  Choisir un morceau (optionnel)
+                  {t("chooseSongOptional")}
                 </button>
               )}
             </div>
@@ -252,68 +257,68 @@ export function EditSessionModal({
             {/* Durée et Date */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="mb-2 block text-sm font-medium">Durée (minutes)</label>
+                <label className="mb-2 block text-sm font-medium">{t("durationMinutes")}</label>
                 <input type="number" inputMode="numeric" min="1" max="480" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value === "" ? "" : parseInt(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium">Date et heure</label>
+                <label className="mb-2 block text-sm font-medium">{t("dateTime")}</label>
                 <input type="datetime-local" value={practicedAt} onChange={(e) => setPracticedAt(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
               </div>
             </div>
 
             {/* Humeur */}
             <div>
-              <label className="mb-3 block text-sm font-medium">Comment te sentais-tu ?</label>
+              <label className="mb-3 block text-sm font-medium">{t("howFelt")}</label>
               <MoodSelector value={mood} onChange={setMood} />
             </div>
 
             {/* Énergie */}
             <div>
-              <label className="mb-3 block text-sm font-medium">Niveau d'énergie</label>
+              <label className="mb-3 block text-sm font-medium">{t("energyLevel")}</label>
               <EnergySelector value={energyLevel} onChange={setEnergyLevel} />
             </div>
 
             {/* BPM */}
             <div>
-              <label className="mb-2 block text-sm font-medium">BPM atteint</label>
-              <input type="number" min="20" max="300" placeholder="ex: 120" value={bpmAchieved} onChange={(e) => setBpmAchieved(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
+              <label className="mb-2 block text-sm font-medium">{t("bpmReached")}</label>
+              <input type="number" min="20" max="300" placeholder={t("bpmPlaceholder")} value={bpmAchieved} onChange={(e) => setBpmAchieved(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
             </div>
 
             {/* Sections */}
             <div>
-              <label className="mb-3 block text-sm font-medium">Sections travaillées</label>
+              <label className="mb-3 block text-sm font-medium">{t("sectionsWorked")}</label>
               <SectionsSelector value={sectionsWorked} onChange={setSectionsWorked} />
             </div>
 
             {/* Objectifs */}
             <div>
-              <label className="mb-2 block text-sm font-medium">Objectifs</label>
-              <textarea placeholder="Qu'est-ce que tu voulais travailler ?" value={sessionGoals} onChange={(e) => setSessionGoals(e.target.value)} rows={2} className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
+              <label className="mb-2 block text-sm font-medium">{t("goals")}</label>
+              <textarea placeholder={t("goalsPlaceholder")} value={sessionGoals} onChange={(e) => setSessionGoals(e.target.value)} rows={2} className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
               {sessionGoals && (
                 <label className="mt-2 flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={goalsAchieved} onChange={(e) => setGoalsAchieved(e.target.checked)} className="h-4 w-4 rounded border-input text-primary focus:ring-primary" />
-                  <span className="text-sm">Objectifs atteints</span>
+                  <span className="text-sm">{t("goalsAchieved")}</span>
                 </label>
               )}
             </div>
 
             {/* Notes */}
             <div>
-              <label className="mb-2 block text-sm font-medium">Notes</label>
-              <textarea placeholder="Remarques, difficultés, ce qui a bien marché..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
+              <label className="mb-2 block text-sm font-medium">{t("notes")}</label>
+              <textarea placeholder={t("notesPlaceholder")} value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
             </div>
 
             {/* Actions */}
             <div className="flex gap-3">
               <button onClick={() => setShowDeleteConfirm(true)} className="rounded-lg border border-destructive px-4 py-2.5 text-sm font-medium text-destructive transition-all hover:bg-destructive hover:text-destructive-foreground">
-                Supprimer
+                {tc("delete")}
               </button>
               <div className="flex-1" />
               <button onClick={() => setIsEditing(false)} className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent">
-                Annuler
+                {tc("cancel")}
               </button>
               <button onClick={handleSave} disabled={loading} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50">
-                {loading ? "Enregistrement..." : "Enregistrer"}
+                {loading ? tc("saving") : tc("save")}
               </button>
             </div>
           </div>
@@ -335,7 +340,7 @@ export function EditSessionModal({
                 </div>
               )}
               <div>
-                <h3 className="text-xl font-bold">{session.song?.title || "Session libre"}</h3>
+                <h3 className="text-xl font-bold">{session.song?.title || ts("free")}</h3>
                 {session.song?.artist && <p className="text-muted-foreground">{session.song.artist}</p>}
               </div>
             </div>
@@ -343,11 +348,11 @@ export function EditSessionModal({
             {/* Infos principales */}
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-lg bg-muted p-3">
-                <p className="text-xs text-muted-foreground">Durée</p>
+                <p className="text-xs text-muted-foreground">{t("duration")}</p>
                 <p className="font-semibold">{formatDuration(session.duration_minutes)}</p>
               </div>
               <div className="rounded-lg bg-muted p-3">
-                <p className="text-xs text-muted-foreground">Date</p>
+                <p className="text-xs text-muted-foreground">{t("date")}</p>
                 <p className="font-semibold text-sm">{formatDate(session.practiced_at)}</p>
               </div>
             </div>
@@ -357,14 +362,14 @@ export function EditSessionModal({
               <div className="flex gap-4">
                 {session.mood && (
                   <div className="flex-1 rounded-lg bg-muted p-3 text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Humeur</p>
+                    <p className="text-xs text-muted-foreground mb-1">{t("mood")}</p>
                     <span className="text-2xl">{getMoodEmoji(session.mood)}</span>
                   </div>
                 )}
                 {session.energy_level && (
                   <div className="flex-1 rounded-lg bg-muted p-3 text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Énergie</p>
-                    <p className="font-medium">{getEnergyLabel(session.energy_level)}</p>
+                    <p className="text-xs text-muted-foreground mb-1">{t("energy")}</p>
+                    <p className="font-medium">{getEnergyLabel(session.energy_level, te)}</p>
                   </div>
                 )}
               </div>
@@ -373,7 +378,7 @@ export function EditSessionModal({
             {/* BPM */}
             {session.bpm_achieved && (
               <div className="rounded-lg bg-muted p-3">
-                <p className="text-xs text-muted-foreground">BPM atteint</p>
+                <p className="text-xs text-muted-foreground">{t("bpmReached")}</p>
                 <p className="text-xl font-bold text-primary">{session.bpm_achieved} BPM</p>
               </div>
             )}
@@ -381,8 +386,8 @@ export function EditSessionModal({
             {/* Sections */}
             {session.sections_worked.length > 0 && (
               <div>
-                <p className="text-xs text-muted-foreground mb-2">Sections travaillées</p>
-                <p className="font-medium">{getSectionsLabels(session.sections_worked)}</p>
+                <p className="text-xs text-muted-foreground mb-2">{t("sectionsWorked")}</p>
+                <p className="font-medium">{getSectionsLabels(session.sections_worked, te)}</p>
               </div>
             )}
 
@@ -390,13 +395,13 @@ export function EditSessionModal({
             {session.session_goals && (
               <div className="rounded-lg border border-border p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <p className="text-xs font-medium text-muted-foreground">Objectifs</p>
+                  <p className="text-xs font-medium text-muted-foreground">{t("goals")}</p>
                   {session.goals_achieved && (
                     <span className="flex items-center gap-1 text-xs text-success">
                       <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
-                      Atteints
+                      {t("reached")}
                     </span>
                   )}
                 </div>
@@ -407,7 +412,7 @@ export function EditSessionModal({
             {/* Notes */}
             {session.notes && (
               <div>
-                <p className="text-xs text-muted-foreground mb-2">Notes</p>
+                <p className="text-xs text-muted-foreground mb-2">{t("notes")}</p>
                 <p className="text-sm whitespace-pre-wrap">{session.notes}</p>
               </div>
             )}
@@ -420,8 +425,8 @@ export function EditSessionModal({
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setShowSongSearch(false)} />
             <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-md">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-bold">Choisir un morceau</h3>
-                <button onClick={() => setShowSongSearch(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-accent">
+                <h3 className="text-lg font-bold">{t("chooseSong")}</h3>
+                <button onClick={() => setShowSongSearch(false)} aria-label={tc("close")} className="rounded-lg p-2 text-muted-foreground hover:bg-accent">
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -432,11 +437,11 @@ export function EditSessionModal({
                 <svg className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
-                <input type="text" placeholder="Rechercher..." value={songSearchQuery} onChange={(e) => setSongSearchQuery(e.target.value)} className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm focus:border-primary" />
+                <input type="text" placeholder={t("searchPlaceholder")} value={songSearchQuery} onChange={(e) => setSongSearchQuery(e.target.value)} className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm focus:border-primary" />
               </div>
 
               <button onClick={() => { setSelectedSong(null); setShowSongSearch(false); }} className="mb-2 w-full rounded-lg border border-dashed border-border p-3 text-left text-sm text-muted-foreground hover:border-primary hover:bg-primary/5">
-                Session libre (sans morceau)
+                {t("freeSession")}
               </button>
 
               <div className="max-h-64 space-y-2 overflow-y-auto">
@@ -452,7 +457,7 @@ export function EditSessionModal({
                     </div>
                   </button>
                 ))}
-                {filteredSongs.length === 0 && <p className="py-4 text-center text-sm text-muted-foreground">Aucun morceau trouvé</p>}
+                {filteredSongs.length === 0 && <p className="py-4 text-center text-sm text-muted-foreground">{t("noSongFound")}</p>}
               </div>
             </div>
           </div>
@@ -463,12 +468,12 @@ export function EditSessionModal({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
             <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-md">
-              <h3 className="text-lg font-bold mb-2">Supprimer la session ?</h3>
-              <p className="text-sm text-muted-foreground mb-6">Cette action est irréversible.</p>
+              <h3 className="text-lg font-bold mb-2">{t("confirmDeleteTitle")}</h3>
+              <p className="text-sm text-muted-foreground mb-6">{t("irreversible")}</p>
               <div className="flex gap-3 justify-end">
-                <button onClick={() => setShowDeleteConfirm(false)} className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent">Annuler</button>
+                <button onClick={() => setShowDeleteConfirm(false)} className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent">{tc("cancel")}</button>
                 <button onClick={handleDelete} disabled={deleting} className="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:opacity-90 disabled:opacity-50">
-                  {deleting ? "Suppression..." : "Supprimer"}
+                  {deleting ? tc("deleting") : tc("delete")}
                 </button>
               </div>
             </div>

@@ -1,0 +1,140 @@
+{
+  "someFriend": "Un ami",
+  "someone": "Quelqu'un",
+  "songAdded": {
+    "title": "Nouveau morceau",
+    "body": "{name} a ajouté « {title} » à sa bibliothèque"
+  },
+  "songLearning": {
+    "title": "Nouveau morceau en cours",
+    "body": "{name} a commencé à apprendre « {title} »{instrument, select, guitar { à la guitare} bass { à la basse} drums { à la batterie} keys { au clavier} other {}}"
+  },
+  "songMastered": {
+    "title": "Morceau maîtrisé !",
+    "body": "{name} a maîtrisé « {title} »{instrument, select, guitar { à la guitare} bass { à la basse} drums { à la batterie} keys { au clavier} other {}}{artist, select, none {} other { - {artist}}}"
+  },
+  "coverPosted": {
+    "title": "Nouvelle cover",
+    "body": "{name} a publié une nouvelle cover !"
+  },
+  "songWishlisted": {
+    "title": "Wishlist",
+    "body": "{name} veut apprendre « {title} »"
+  },
+  "setlistCreated": {
+    "title": "Nouvelle setlist",
+    "body": "{name} a créé la setlist « {setlist} »"
+  },
+  "bandCreated": {
+    "title": "Nouveau groupe",
+    "body": "{name} a créé le groupe « {band} »"
+  },
+  "bandJoined": {
+    "title": "Nouveau membre",
+    "body": "{name} a rejoint {band}"
+  },
+  "challengeCreated": {
+    "title": "Nouveau défi !",
+    "body": "{name} te lance un défi !"
+  },
+  "challengeAccepted": {
+    "title": "Défi accepté !",
+    "body": "{name} a accepté ton défi. C'est parti !"
+  },
+  "challengeCompleted": {
+    "title": "Défi terminé",
+    "body": "Un défi avec {name} vient de se terminer"
+  },
+  "challengeWon": {
+    "title": "Victoire !",
+    "body": "{name} a remporté un défi !"
+  },
+  "albumWishlisted": {
+    "title": "Album à écouter",
+    "body": "{name} veut écouter « {album} » de {artist}"
+  },
+  "albumReviewed": {
+    "title": "Nouvelle écoute",
+    "body": "{name} a écouté « {album} » — {stars}"
+  },
+  "exerciseShared": {
+    "title": "Nouvel exercice partagé",
+    "body": "{name} a partagé l'exercice « {exercise} »"
+  },
+  "gearAdded": {
+    "title": "Nouveau matos",
+    "body": "{name} a ajouté « {gear} » à sa collection"
+  },
+  "reaction": {
+    "title": "Nouvelle réaction",
+    "body": "{name} a réagi {emoji} à ton activité"
+  },
+  "comment": {
+    "title": "Nouveau commentaire",
+    "body": "{name} a commenté ton activité"
+  },
+  "friendRequest": {
+    "title": "Nouvelle demande d'ami",
+    "body": "{name} veut devenir ton ami !"
+  },
+  "friendAccepted": {
+    "title": "Demande acceptée !",
+    "body": "{name} a accepté ta demande d'ami"
+  },
+  "rehearsalCreated": {
+    "title": "Nouvelle répétition",
+    "body": "{name} t'invite à une répète : {title} - {date}"
+  },
+  "rehearsalUpdated": {
+    "title": "Répétition modifiée",
+    "body": "{name} a modifié la répète « {title} »"
+  },
+  "rehearsalAdded": {
+    "title": "Ajout à une répétition",
+    "body": "{name} t'a ajouté à la répète « {title} »"
+  },
+  "bandInvitation": {
+    "title": "Invitation à un groupe",
+    "body": "{name} t'invite à rejoindre {band}"
+  },
+  "jamStarted": {
+    "title": "Jam Session démarrée !",
+    "body": "{name} a démarré une Jam Session dans {band}"
+  },
+  "someMember": "Un membre",
+  "challengeNew": {
+    "title": "Nouveau défi !",
+    "body": "{name} te lance un défi de {type, select, practice_time {temps de pratique} streak {streak de jours} other {maîtrise de « {song} »}} !"
+  },
+  "challengeDeclined": {
+    "title": "Défi refusé",
+    "body": "{name} a refusé ton défi"
+  },
+  "challengeYouWon": {
+    "title": "Tu as gagné ! 🏆",
+    "body": "Félicitations, tu as remporté le défi !"
+  },
+  "challengeLost": {
+    "title": "Défi terminé",
+    "body": "{name} a remporté le défi. La prochaine sera la bonne !"
+  },
+  "challengeTie": {
+    "title": "Défi terminé - Égalité !",
+    "body": "Le défi s'est terminé sur une égalité parfaite !"
+  },
+  "reminder": {
+    "streakTitle": "Ta série de {count} jours s'arrête ce soir",
+    "streakBody": "Dix minutes de guitare suffisent pour la garder.",
+    "planTitle": "{count, plural, one {Il te reste # objectif cette semaine} other {Il te reste # objectifs cette semaine}}",
+    "planBody": "Prochain : {goal}. Encore trois jours d'ici dimanche.",
+    "songTitle": "{title} prend la poussière",
+    "songIdleBody": "Ça fait {count} jours que tu ne l'as pas joué. On le reprend ?",
+    "songNeverBody": "En cours depuis {count} jours, et pas encore de session. On s'y met ?",
+    "pauseTitle": "Ça fait {count} jours que t'as pas sorti la guitare",
+    "pauseBody": "Même un quart d'heure, ça compte."
+  },
+  "rehearsalToday": "Répète aujourd'hui !",
+  "rehearsalTomorrow": "Répète demain !",
+  "rehearsalReminderBody": "{title} avec {band} à {time}{location, select, none {} other { - {location}}}",
+  "yourBand": "ton groupe"
+}

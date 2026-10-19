@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
 import { extractSongsterrId } from "@/lib/songsterr-url";
 import type { TabSource, UserPlan, SongsterrTabStructure } from "@/types";
@@ -32,6 +33,7 @@ export function TabsSearchPanel({
   onTabStructure,
   userPlan,
 }: TabsSearchPanelProps) {
+  const t = useTranslations("library.tabs");
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<TabSource[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,13 +50,13 @@ export function TabsSearchPanel({
       );
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la recherche");
+        throw new Error("search_failed");
       }
 
       const data = await response.json();
       setResults(data.sources);
     } catch {
-      setError("Erreur lors de la recherche de tablatures");
+      setError(t("searchError"));
     } finally {
       setSearching(false);
     }
@@ -114,7 +116,7 @@ export function TabsSearchPanel({
     <div className="space-y-4">
       {/* Manual URL input */}
       <div>
-        <label className="mb-1 block text-sm font-medium">Lien tablature</label>
+        <label className="mb-1 block text-sm font-medium">{t("link")}</label>
         <div className="flex gap-2">
           <input
             type="url"
@@ -128,7 +130,7 @@ export function TabsSearchPanel({
               onClick={() => onSelectTab(manualUrl)}
               className="shrink-0 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              Sauver
+              {t("save")}
             </button>
           )}
         </div>
@@ -145,14 +147,14 @@ export function TabsSearchPanel({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
-                Analyse en cours...
+                {t("analyzing")}
               </>
             ) : (
               <>
                 <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                Analyser la tab (BPM, sections)
+                {t("analyze")}
               </>
             )}
           </button>
@@ -162,8 +164,8 @@ export function TabsSearchPanel({
       {/* Search tabs */}
       {userPlan === "free" ? (
         <ProUpsell
-          feature="Recherche de tablatures"
-          description="Trouve automatiquement les tablatures sur Songsterr."
+          feature={t("upsellFeature")}
+          description={t("upsellDescription")}
           compact
         />
       ) : (
@@ -179,14 +181,14 @@ export function TabsSearchPanel({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
-                Recherche sur Songsterr...
+                {t("searching")}
               </>
             ) : (
               <>
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                Trouver des tablatures
+                {t("find")}
               </>
             )}
           </button>
@@ -198,7 +200,7 @@ export function TabsSearchPanel({
           {results && results.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-sm font-medium text-muted-foreground">
-                {results.length} résultat{results.length > 1 ? "s" : ""} trouvé{results.length > 1 ? "s" : ""}
+                {t("results", { count: results.length })}
               </h4>
               <div className="space-y-2">
                 {results.map((result, index) => (
@@ -230,6 +232,7 @@ export function TabsSearchPanel({
                         href={result.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        aria-label={t("open")}
                         className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -241,7 +244,7 @@ export function TabsSearchPanel({
                         disabled={analyzingId !== null}
                         className="rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
                       >
-                        Utiliser
+                        {t("use")}
                       </button>
                     </div>
                   </div>
@@ -252,7 +255,7 @@ export function TabsSearchPanel({
 
           {results && results.length === 0 && (
             <p className="text-center text-sm text-muted-foreground">
-              Aucune tablature trouvee pour ce morceau
+              {t("none")}
             </p>
           )}
         </>

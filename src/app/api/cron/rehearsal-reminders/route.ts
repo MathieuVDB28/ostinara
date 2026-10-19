@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { sendPushNotificationToMultipleUsers } from "@/lib/notifications";
+import { sendPushNotificationToMultipleUsers, type PushT } from "@/lib/notifications";
+import { INTL_LOCALE, type Locale } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ async function sendReminders(
     participants: unknown;
   }>,
   type: "rehearsal_reminder" | "rehearsal_today",
-  titlePrefix: string
+  titleKey: "rehearsalToday" | "rehearsalTomorrow"
 ): Promise<{ sent: number; errors: number }> {
   let sent = 0;
   let errors = 0;
@@ -40,23 +41,23 @@ async function sendReminders(
 
     if (participants.length === 0) continue;
 
-    const bandName =
-      (rehearsal.band as unknown as { name: string })?.name || "ton groupe";
+    const bandName = (rehearsal.band as unknown as { name: string })?.name || null;
     const dateObj = new Date(rehearsal.date);
-    const timeStr = dateObj.toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
     try {
       await sendPushNotificationToMultipleUsers(
         participants.map((p) => ({
           userId: p.user_id,
-          payload: {
-            title: titlePrefix,
-            body: `${rehearsal.title} avec ${bandName} a ${timeStr}${rehearsal.location ? ` - ${rehearsal.location}` : ""}`,
+          payload: (t: PushT, locale: Locale) => ({
+            title: t(titleKey),
+            body: t("rehearsalReminderBody", {
+              title: rehearsal.title,
+              band: bandName ?? t("yourBand"),
+              time: dateObj.toLocaleTimeString(INTL_LOCALE[locale], { hour: "2-digit", minute: "2-digit" }),
+              location: rehearsal.location || "none",
+            }),
             data: { url: `/setlists/rehearsals/${rehearsal.id}` },
-          },
+          }),
           notificationType: type,
         }))
       );
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
     const r = await sendReminders(
       todayRehearsals,
       "rehearsal_today",
-      "Repet aujourd'hui !"
+      "rehearsalToday"
     );
     results.today = r.sent;
     results.errors += r.errors;
@@ -132,7 +133,7 @@ export async function GET(request: NextRequest) {
     const r = await sendReminders(
       tomorrowRehearsals,
       "rehearsal_reminder",
-      "Repet demain !"
+      "rehearsalTomorrow"
     );
     results.reminders = r.sent;
     results.errors += r.errors;

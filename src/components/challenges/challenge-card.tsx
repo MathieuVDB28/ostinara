@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { ChallengeWithDetails } from "@/types";
 import { ChallengeProgressBar } from "./challenge-progress-bar";
 
@@ -10,11 +11,6 @@ interface ChallengeCardProps {
   isPending?: boolean;
 }
 
-const CHALLENGE_TYPE_LABELS: Record<string, string> = {
-  practice_time: "Temps de pratique",
-  streak: "Streak",
-  song_mastery: "Maitrise",
-};
 
 const CHALLENGE_TYPE_ICONS: Record<string, React.ReactNode> = {
   practice_time: (
@@ -35,6 +31,7 @@ const CHALLENGE_TYPE_ICONS: Record<string, React.ReactNode> = {
 };
 
 export function ChallengeCard({ challenge, isPending }: ChallengeCardProps) {
+  const t = useTranslations("challenges");
   const [timeRemaining, setTimeRemaining] = useState<string>("");
 
   // Calculer le temps restant
@@ -47,7 +44,7 @@ export function ChallengeCard({ challenge, isPending }: ChallengeCardProps) {
       const diff = end.getTime() - now.getTime();
 
       if (diff <= 0) {
-        setTimeRemaining("Termine");
+        setTimeRemaining(t("card.over"));
         return;
       }
 
@@ -55,17 +52,17 @@ export function ChallengeCard({ challenge, isPending }: ChallengeCardProps) {
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
       if (days > 0) {
-        setTimeRemaining(`${days}j ${hours}h`);
+        setTimeRemaining(t("card.remainingDays", { d: days, h: hours }));
       } else {
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        setTimeRemaining(`${hours}h ${minutes}m`);
+        setTimeRemaining(t("card.remainingHours", { h: hours, m: minutes }));
       }
     };
 
     updateTime();
     const interval = setInterval(updateTime, 60000);
     return () => clearInterval(interval);
-  }, [challenge.status, challenge.ends_at]);
+  }, [challenge.status, challenge.ends_at, t]);
 
   const isCompleted = challenge.status === "completed";
   const isWinner = challenge.winner_id !== null;
@@ -90,7 +87,7 @@ export function ChallengeCard({ challenge, isPending }: ChallengeCardProps) {
           </span>
           <div>
             <span className="text-sm font-medium">
-              {CHALLENGE_TYPE_LABELS[challenge.challenge_type]}
+              {t(`type.${challenge.challenge_type}`)}
             </span>
             {challenge.song_title && (
               <p className="text-xs text-muted-foreground">
@@ -102,7 +99,7 @@ export function ChallengeCard({ challenge, isPending }: ChallengeCardProps) {
         <div className="text-right">
           {isPending ? (
             <span className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
-              En attente
+              {t("card.pending")}
             </span>
           ) : isCompleted ? (
             <span
@@ -114,7 +111,7 @@ export function ChallengeCard({ challenge, isPending }: ChallengeCardProps) {
                   : "bg-muted text-muted-foreground"
               }`}
             >
-              {iAmWinner ? "Gagne !" : isWinner ? "Perdu" : "Egalite"}
+              {iAmWinner ? t("card.won") : isWinner ? t("card.lost") : t("card.tie")}
             </span>
           ) : (
             <span className="text-xs text-muted-foreground">{timeRemaining}</span>
@@ -131,7 +128,7 @@ export function ChallengeCard({ challenge, isPending }: ChallengeCardProps) {
           isWinner={challenge.winner_id === challenge.creator_id}
           isCompleted={isCompleted}
         />
-        <span className="text-xl font-bold text-muted-foreground">VS</span>
+        <span className="text-xl font-bold text-muted-foreground">{t("card.vs")}</span>
         <ParticipantInfo
           profile={challenge.challenger}
           progress={challenge.challenger_progress}
@@ -169,6 +166,7 @@ function ParticipantInfo({
   isCompleted: boolean;
   reverse?: boolean;
 }) {
+  const t = useTranslations("challenges.card");
   const displayName = profile.display_name || profile.username;
 
   const getValue = () => {
@@ -176,13 +174,13 @@ function ParticipantInfo({
     if (challengeType === "practice_time") {
       const hours = Math.floor(progress.practice_minutes / 60);
       const mins = progress.practice_minutes % 60;
-      return hours > 0 ? `${hours}h${mins}m` : `${mins}m`;
+      return hours > 0 ? t("hoursMinutes", { h: hours, m: mins }) : t("minutes", { m: mins });
     }
     if (challengeType === "streak") {
-      return `${progress.streak_days}j`;
+      return t("days", { d: progress.streak_days });
     }
     if (challengeType === "song_mastery") {
-      return progress.song_mastered_at ? "Maitrise !" : "En cours";
+      return progress.song_mastered_at ? t("mastered") : t("inProgress");
     }
     return "-";
   };

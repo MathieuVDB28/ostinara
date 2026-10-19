@@ -4,6 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { profileHref } from "@/lib/navigation";
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import { formatActivityDate } from "@/lib/activity-messages";
 import { MessageCircle, Send } from "lucide-react";
 import { addComment, deleteComment, getActivityComments } from "@/lib/actions/activities";
 import type { ActivityCommentWithProfile } from "@/types";
@@ -19,6 +22,9 @@ export function ActivityComments({
   commentCount,
   currentUserId,
 }: ActivityCommentsProps) {
+  const t = useTranslations("social");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [comments, setComments] = useState<ActivityCommentWithProfile[]>([]);
   const [loadedOnce, setLoadedOnce] = useState(false);
@@ -72,20 +78,7 @@ export function ActivityComments({
     });
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "A l'instant";
-    if (diffMins < 60) return `${diffMins} min`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays < 7) return `${diffDays}j`;
-    return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-  };
+  const formatDate = (dateString: string) => formatActivityDate(dateString, tc, intlLocale);
 
   return (
     <div>
@@ -96,9 +89,9 @@ export function ActivityComments({
       >
         <MessageCircle className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
         {count > 0 ? (
-          <span>{count} commentaire{count > 1 ? "s" : ""}</span>
+          <span>{t("comments", { count })}</span>
         ) : (
-          <span>Commenter</span>
+          <span>{t("comment")}</span>
         )}
       </button>
 
@@ -152,7 +145,7 @@ export function ActivityComments({
                             disabled={isSending}
                             className="text-xs text-muted-foreground transition-colors hover:text-destructive"
                           >
-                            Supprimer
+                            {tc("delete")}
                           </button>
                         )}
                       </div>
@@ -169,11 +162,11 @@ export function ActivityComments({
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Ecrire un commentaire..."
+              placeholder={t("writeComment")}
               maxLength={500}
               className="min-w-0 flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none"
             />
-            <button aria-label="Envoyer le commentaire"
+            <button aria-label={t("sendComment")}
               type="submit"
               disabled={!newComment.trim() || isSending}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-foreground text-background transition-opacity disabled:opacity-40"

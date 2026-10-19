@@ -1,0 +1,65 @@
+{
+  "chat": {
+    "empty": "Aucun message pour l'instant",
+    "placeholder": "Envoyer un message...",
+    "send": "Envoyer le message"
+  },
+  "metronome": {
+    "synced": "Synchronisé avec l'hôte",
+    "bpm": "BPM",
+    "signature": "Signature :",
+    "tapTempo": "Tap tempo",
+    "signatureValue": "Signature : {value}",
+    "playing": "En cours",
+    "paused": "En pause"
+  },
+  "participants": {
+    "title": "Participants",
+    "connecting": "Connexion en cours...",
+    "host": "Hôte"
+  },
+  "session": {
+    "confirmEnd": "Terminer la Jam Session pour tout le monde ?",
+    "ended": "Session terminée",
+    "endedPersonal": "Ta session de pratique est terminée.",
+    "endedByHost": "La jam a été terminée par l'hôte.",
+    "back": "Retour aux groupes",
+    "solo": "Jam solo",
+    "band": "Jam session",
+    "connected": "Connecté",
+    "connecting": "Connexion...",
+    "nowPlaying": "En cours : {title} - {artist}",
+    "active": "En cours",
+    "paused": "En pause",
+    "waiting": "En attente",
+    "start": "Lancer",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "end": "Terminer",
+    "leave": "Quitter"
+  },
+  "queue": {
+    "setlist": "Setlist : {name}",
+    "items": "({count, plural, one {# élément} other {# éléments}})",
+    "tab": "Tab",
+    "current": "En cours"
+  },
+  "tabs": {
+    "measures": "Mesures {start}-{end}",
+    "open": "Tab ouverte",
+    "see": "Voir la tab",
+    "track": "Ta piste {instrument} dans Songsterr : <strong>« {name} »</strong>"
+  },
+  "start": {
+    "title": "Démarrer une jam",
+    "intro": "Lance une session collaborative avec les membres de <strong>{band}</strong>",
+    "setlist": "Setlist (optionnel)",
+    "loading": "Chargement des setlists...",
+    "free": "Session libre (sans setlist)",
+    "option": "{name} ({count, plural, one {# morceau} other {# morceaux}})",
+    "hint": "Choisir une setlist permet de naviguer les morceaux ensemble",
+    "notified": "Les membres suivants seront notifiés :",
+    "starting": "Démarrage…",
+    "submit": "Démarrer"
+  }
+}

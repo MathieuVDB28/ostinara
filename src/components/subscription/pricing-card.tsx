@@ -1,6 +1,8 @@
 "use client";
 
 import { Check, LoaderCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { UserPlan } from "@/types";
 import { PLANS, BillingInterval } from "@/lib/stripe/config";
 
@@ -21,6 +23,10 @@ export function PricingCard({
   loading,
   disabled,
 }: PricingCardProps) {
+  const t = useTranslations("plans");
+  const intlLocale = useIntlLocale();
+  const euros = (value: number) =>
+    new Intl.NumberFormat(intlLocale, { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
   const config = PLANS[plan];
   const isCurrentPlan = currentPlan === plan;
   const isPro = plan === "pro";
@@ -38,18 +44,18 @@ export function PricingCard({
 
   // Déterminer le texte du bouton
   const planOrder: Record<UserPlan, number> = { free: 0, pro: 1, band: 2 };
-  let buttonText = "Commencer";
+  let buttonText = t("card.start");
 
   if (isCurrentPlan) {
-    buttonText = "Plan actuel";
+    buttonText = t("card.current");
   } else if (currentPlan) {
     const isUpgrade = planOrder[plan] > planOrder[currentPlan];
     const isDowngrade = planOrder[plan] < planOrder[currentPlan];
 
     if (isUpgrade) {
-      buttonText = "Passer à ce plan";
+      buttonText = t("card.upgrade");
     } else if (isDowngrade) {
-      buttonText = isFree ? "Passer au gratuit" : "Changer de plan";
+      buttonText = isFree ? t("card.toFree") : t("card.change");
     }
   }
 
@@ -68,32 +74,32 @@ export function PricingCard({
         <h3 className="font-display text-3xl font-extrabold uppercase leading-none">{config.name}</h3>
         {isCurrentPlan ? (
           <span className="rounded border border-foreground px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
-            Ton plan
+            {t("card.yours")}
           </span>
         ) : (
           isPro && (
             <span className="rounded bg-foreground px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-background">
-              Populaire
+              {t("card.popular")}
             </span>
           )
         )}
       </div>
-      <p className="text-sm text-muted-foreground">{config.description}</p>
+      <p className="text-sm text-muted-foreground">{t(`description.${plan}`)}</p>
 
       <div className="mb-5 mt-5">
         {isFree ? (
-          <span className="font-display text-6xl font-extrabold leading-none">0€</span>
+          <span className="font-display text-6xl font-extrabold leading-none">{euros(0)}</span>
         ) : (
           <p className="tabular flex items-baseline">
-            <span className="font-display text-6xl font-extrabold leading-none">{price}€</span>
+            <span className="font-display text-6xl font-extrabold leading-none">{euros(price)}</span>
             <span className="ml-1 text-sm font-semibold text-muted-foreground">
-              /{interval === "monthly" ? "mois" : "an"}
+              {interval === "monthly" ? t("card.perMonth") : t("card.perYear")}
             </span>
           </p>
         )}
         {monthlyEquivalent && (
           <p className="tabular mt-1 text-sm text-muted-foreground">
-            soit {monthlyEquivalent.toFixed(2).replace(".", ",")}€/mois
+            {t("card.monthlyEquivalent", { price: euros(monthlyEquivalent) })}
           </p>
         )}
       </div>
@@ -102,7 +108,7 @@ export function PricingCard({
         {config.features.map((feature, index) => (
           <li key={index} className="flex items-start gap-2 border-b border-border py-2.5 text-sm">
             <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" strokeWidth={2.25} aria-hidden="true" />
-            <span>{feature}</span>
+            <span>{t(`features.${feature}`)}</span>
           </li>
         ))}
       </ul>
@@ -122,7 +128,7 @@ export function PricingCard({
         {loading ? (
           <span className="flex items-center justify-center gap-2">
             <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2} aria-hidden="true" />
-            Chargement…
+            {t("card.loading")}
           </span>
         ) : (
           buttonText

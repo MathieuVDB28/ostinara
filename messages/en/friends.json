@@ -1,0 +1,38 @@
+{
+  "add": {
+    "sent": "Request sent to @{username}",
+    "self": "You",
+    "friend": "Friend",
+    "pending": "Pending",
+    "blocked": "Blocked",
+    "add": "Add",
+    "title": "Add a friend",
+    "placeholder": "Search by username...",
+    "none": "No users found",
+    "hint": "Search for a user by name"
+  },
+  "card": {
+    "confirmRemove": "Remove this friend?",
+    "since": "friends since {date}",
+    "remove": "Remove {name} from your friends"
+  },
+  "view": {
+    "friends": "Friends",
+    "requests": "Requests",
+    "add": "Add",
+    "limit": "{current}/{limit} friends on your plan",
+    "emptyFriendsTitle": "No friends yet",
+    "emptyFriendsDescription": "Add friends to see their songs and covers.",
+    "emptyFriendsAction": "Add a friend",
+    "emptyRequestsTitle": "No pending requests",
+    "emptyRequestsDescription": "Friend requests you receive will show up here."
+  },
+  "button": {
+    "failed": "That didn't work. Try again.",
+    "remove": "Remove",
+    "friendAria": "Friend — remove from friends",
+    "friend": "Friend",
+    "sent": "Request sent",
+    "add": "Add"
+  }
+}

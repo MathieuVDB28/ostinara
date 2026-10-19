@@ -1,0 +1,31 @@
+{
+  "groups": {
+    "song": "Morceaux",
+    "album": "Albums",
+    "cover": "Covers",
+    "exercise": "Exercices",
+    "gear": "Matos",
+    "friend": "Amis"
+  },
+  "albumRated": "{artist} · noté {rating}/5",
+  "albumToListen": "{artist} · à écouter",
+  "coverOf": "Cover de {artist}",
+  "cover": "Cover",
+  "ui": {
+    "title": "Recherche",
+    "lead": "Morceaux, albums, covers, exercices, matos et amis — au même endroit.",
+    "placeholder": "Chercher…",
+    "ariaLabel": "Rechercher dans toute l'app",
+    "minChars": "Tape au moins deux caractères.",
+    "palettePlaceholder": "Morceaux, albums, covers, exercices, matos, amis…",
+    "escape": "Échap",
+    "goTo": "Aller à",
+    "hints": "↑ ↓ pour parcourir · Entrée pour ouvrir · ⌘K pour rouvrir",
+    "library": "Bibliothèque",
+    "searching": "Recherche…",
+    "nothing": "Rien pour « {query} »",
+    "nothingHint": "La recherche couvre tes morceaux, albums, covers, exercices, matos et amis. Vérifie l'orthographe, ou ajoute-le.",
+    "addSong": "Ajouter un morceau",
+    "findFriend": "Trouver un ami"
+  }
+}

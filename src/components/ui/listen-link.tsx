@@ -1,4 +1,5 @@
 import { Headphones } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /**
  * « Écouter sur Deezer » : le lien d'ecoute d'un album ou d'un titre.
@@ -7,6 +8,7 @@ import { Headphones } from "lucide-react";
  * va, il ne fait pas la publicite du fournisseur.
  */
 export function ListenLink({ href, className = "" }: { href?: string | null; className?: string }) {
+  const t = useTranslations("media");
   if (!href) return null;
   return (
     <a
@@ -16,7 +18,7 @@ export function ListenLink({ href, className = "" }: { href?: string | null; cla
       className={`inline-flex min-h-[40px] items-center gap-2 rounded-full border border-border px-4 text-sm font-semibold transition-colors hover:bg-accent ${className}`}
     >
       <Headphones className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
-      Écouter sur Deezer
+      {t("listenOnDeezer")}
     </a>
   );
 }

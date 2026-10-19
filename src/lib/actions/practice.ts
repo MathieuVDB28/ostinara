@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { updateChallengeProgress } from "./challenges";
@@ -176,7 +177,7 @@ export async function createPracticeSession(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const instrument = input.instrument ?? (await getMyPrimaryInstrument());
@@ -204,7 +205,7 @@ export async function createPracticeSession(
       : [{ song_id: input.song_id || null, duration_minutes: input.duration_minutes, bpm_achieved: input.bpm_achieved }];
 
   if (entries.length === 0) {
-    return { success: false, error: "La durée doit être d'au moins 1 minute" };
+    return { success: false, error: await tErr("durationMin") };
   }
 
   const groupId = entries.length > 1 ? crypto.randomUUID() : null;
@@ -224,7 +225,7 @@ export async function createPracticeSession(
 
   if (error || !data || data.length === 0) {
     console.error("Error creating practice session:", error);
-    return { success: false, error: "Erreur lors de l'enregistrement de la session" };
+    return { success: false, error: await tErr("sessionSaveFailed") };
   }
 
   // Mettre à jour la progression des challenges actifs, une fois pour
@@ -361,7 +362,7 @@ export async function updatePracticeSession(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { data: updated, error } = await supabase
@@ -377,7 +378,7 @@ export async function updatePracticeSession(
 
   if (error) {
     console.error("Error updating practice session:", error);
-    return { success: false, error: "Erreur lors de la mise à jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   // Corriger un tempo a la baisse doit corriger la progression du morceau,
@@ -399,7 +400,7 @@ export async function deletePracticeSession(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -410,7 +411,7 @@ export async function deletePracticeSession(
 
   if (error) {
     console.error("Error deleting practice session:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/progress");
@@ -701,12 +702,12 @@ export async function getAllSongPracticeStats(): Promise<
 }
 
 // Configuration des moods pour les graphiques
-const MOOD_CONFIG: Record<SessionMood, { label: string; emoji: string; color: string }> = {
-  frustrated: { label: "Frustré", emoji: "😤", color: "#ef4444" },
-  neutral: { label: "Neutre", emoji: "😐", color: "#6b7280" },
-  good: { label: "Bien", emoji: "🙂", color: "#22c55e" },
-  great: { label: "Super", emoji: "😊", color: "#3b82f6" },
-  on_fire: { label: "On fire", emoji: "🔥", color: "#f97316" },
+const MOOD_CONFIG: Record<SessionMood, { emoji: string; color: string }> = {
+  frustrated: { emoji: "😤", color: "#ef4444" },
+  neutral: { emoji: "😐", color: "#6b7280" },
+  good: { emoji: "🙂", color: "#22c55e" },
+  great: { emoji: "😊", color: "#3b82f6" },
+  on_fire: { emoji: "🔥", color: "#f97316" },
 };
 
 // Helper pour formater une date en YYYY-MM-DD local (sans conversion UTC)
@@ -966,7 +967,6 @@ function generateMoodDistribution(
         mood,
         count,
         percentage: Math.round((count / totalWithMood) * 100),
-        label: config.label,
         emoji: config.emoji,
         color: config.color,
       });

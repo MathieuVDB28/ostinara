@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
+import { useTranslations } from "next-intl";
 import { toggleShareExercise, deleteExercise } from "@/lib/actions/exercises";
 import type { ExerciseWithProgress, ExerciseDifficulty } from "@/types";
 
@@ -12,13 +12,6 @@ interface ExerciseDetailModalProps {
   onClose: () => void;
   onStartPractice: (exercise: ExerciseWithProgress, bpm: number) => void;
 }
-
-const DIFFICULTY_LABELS: Record<ExerciseDifficulty, string> = {
-  beginner: "Débutant",
-  intermediate: "Intermédiaire",
-  advanced: "Avancé",
-  expert: "Expert",
-};
 
 const DIFFICULTY_COLORS: Record<ExerciseDifficulty, string> = {
   beginner: "bg-success/20 text-success",
@@ -33,6 +26,9 @@ export function ExerciseDetailModal({
   onClose,
   onStartPractice,
 }: ExerciseDetailModalProps) {
+  const t = useTranslations("exercises.detail");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const router = useRouter();
   const progress = exercise.user_progress;
   const startingBpm = progress?.current_bpm || exercise.starting_bpm;
@@ -111,31 +107,31 @@ export function ExerciseDetailModal({
             <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{exercise.name}</h2>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <span className="text-sm text-muted-foreground">
-                {EXERCISE_CATEGORY_LABELS[exercise.category]}
+                {te(`exerciseCategory.${exercise.category}`)}
               </span>
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                   DIFFICULTY_COLORS[exercise.difficulty]
                 }`}
               >
-                {DIFFICULTY_LABELS[exercise.difficulty]}
+                {te(`difficulty.${exercise.difficulty}`)}
               </span>
               {exercise.is_from_friend && exercise.creator_name && (
                 <span className="flex items-center gap-1 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
                   <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  Par {exercise.creator_name}
+                  {t("by", { name: exercise.creator_name })}
                 </span>
               )}
               {isOwnExercise && (
                 <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
-                  Mon exercice
+                  {t("mine")}
                 </span>
               )}
             </div>
           </div>
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-1 transition-colors hover:bg-accent"
           >
@@ -167,7 +163,7 @@ export function ExerciseDetailModal({
           {/* BPM Progress */}
           <div className="mb-4 rounded-lg border border-border bg-accent/30 p-3">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-medium">Progression BPM</span>
+              <span className="text-sm font-medium">{t("bpmProgress")}</span>
               <span className="text-sm text-muted-foreground">
                 {Math.round(progressPercent)}%
               </span>
@@ -183,7 +179,7 @@ export function ExerciseDetailModal({
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>{exercise.starting_bpm} BPM</span>
               <span className="font-medium text-primary">
-                {progress?.current_bpm || exercise.starting_bpm} BPM actuel
+                {t("currentBpm", { bpm: progress?.current_bpm || exercise.starting_bpm })}
               </span>
               <span>{exercise.target_bpm} BPM</span>
             </div>
@@ -196,19 +192,19 @@ export function ExerciseDetailModal({
                 <div className="text-lg font-semibold text-primary">
                   {progress.best_bpm}
                 </div>
-                <div className="text-xs text-muted-foreground">Meilleur BPM</div>
+                <div className="text-xs text-muted-foreground">{t("bestBpm")}</div>
               </div>
               <div className="rounded-lg border border-border p-2 text-center">
                 <div className="text-lg font-semibold text-primary">
                   {progress.total_practice_minutes}
                 </div>
-                <div className="text-xs text-muted-foreground">Minutes</div>
+                <div className="text-xs text-muted-foreground">{t("minutes")}</div>
               </div>
               <div className="rounded-lg border border-border p-2 text-center">
                 <div className="text-lg font-semibold text-primary">
                   {progress.sessions_count}
                 </div>
-                <div className="text-xs text-muted-foreground">Sessions</div>
+                <div className="text-xs text-muted-foreground">{t("sessions")}</div>
               </div>
             </div>
           )}
@@ -216,7 +212,7 @@ export function ExerciseDetailModal({
           {/* Instructions */}
           {exercise.instructions && exercise.instructions.length > 0 && (
             <div className="mb-4">
-              <h3 className="mb-2 text-sm font-semibold">Instructions</h3>
+              <h3 className="mb-2 text-sm font-semibold">{t("instructions")}</h3>
               <ol className="space-y-2">
                 {exercise.instructions.map((instruction, index) => (
                   <li key={index} className="flex gap-2 text-sm">
@@ -233,7 +229,7 @@ export function ExerciseDetailModal({
           {/* Tips */}
           {exercise.tips && exercise.tips.length > 0 && (
             <div className="mb-4">
-              <h3 className="mb-2 text-sm font-semibold">Conseils</h3>
+              <h3 className="mb-2 text-sm font-semibold">{t("tips")}</h3>
               <ul className="space-y-1">
                 {exercise.tips.map((tip, index) => (
                   <li key={index} className="flex gap-2 text-sm">
@@ -248,13 +244,13 @@ export function ExerciseDetailModal({
           {/* Métadonnées */}
           <div className="flex flex-wrap gap-2">
             <span className="rounded-md bg-accent px-2 py-1 text-xs">
-              Signature: {exercise.time_signature}
+              {t("signature", { value: exercise.time_signature })}
             </span>
             <span className="rounded-md bg-accent px-2 py-1 text-xs">
-              Durée: ~{exercise.duration_minutes} min
+              {t("duration", { m: exercise.duration_minutes })}
             </span>
             <span className="rounded-md bg-accent px-2 py-1 text-xs">
-              Incrément: +{exercise.bpm_increment} BPM
+              {t("increment", { n: exercise.bpm_increment })}
             </span>
           </div>
 
@@ -268,11 +264,11 @@ export function ExerciseDetailModal({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                   <div>
-                    <p className="text-sm font-medium">Partager avec mes amis</p>
+                    <p className="text-sm font-medium">{t("share")}</p>
                     <p className="text-xs text-muted-foreground">
                       {exercise.shared_with_friends
-                        ? "Vos amis peuvent voir cet exercice"
-                        : "Exercice privé"}
+                        ? t("shared")
+                        : t("private")}
                     </p>
                   </div>
                 </div>
@@ -302,10 +298,10 @@ export function ExerciseDetailModal({
                 }`}
               >
                 {deleting
-                  ? "Suppression..."
+                  ? tc("deleting")
                   : confirmDelete
-                    ? "Confirmer la suppression"
-                    : "Supprimer cet exercice"}
+                    ? t("confirmDelete")
+                    : t("delete")}
               </button>
             </div>
           )}
@@ -326,7 +322,7 @@ export function ExerciseDetailModal({
             >
               <path d="M8 5v14l11-7z" />
             </svg>
-            Pratiquer à {startingBpm} BPM
+            {t("practiceAt", { bpm: startingBpm })}
           </button>
         </div>
       </div>

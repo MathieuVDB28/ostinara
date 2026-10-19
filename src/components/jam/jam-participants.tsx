@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { JamPresenceState } from "@/types";
 
 interface JamParticipantsProps {
@@ -10,11 +11,12 @@ interface JamParticipantsProps {
 }
 
 export function JamParticipants({ participants, hostId, postes = {} }: JamParticipantsProps) {
+  const t = useTranslations("jam.participants");
   return (
     <div className="rounded-xl border border-border bg-card">
       <div className="border-b border-border p-3">
         <h3 className="font-semibold">
-          Participants{" "}
+          {t("title")}{" "}
           <span className="text-muted-foreground font-normal">
             ({participants.length})
           </span>
@@ -24,7 +26,7 @@ export function JamParticipants({ participants, hostId, postes = {} }: JamPartic
       <div className="p-3 space-y-2 max-h-48 overflow-y-auto">
         {participants.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground py-4">
-            Connexion en cours...
+            {t("connecting")}
           </p>
         ) : (
           participants.map((participant) => {
@@ -67,7 +69,7 @@ export function JamParticipants({ participants, hostId, postes = {} }: JamPartic
                 {/* Host badge */}
                 {isHost && (
                   <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em]">
-                    Host
+                    {t("host")}
                   </span>
                 )}
               </div>

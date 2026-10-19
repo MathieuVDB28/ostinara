@@ -1,11 +1,12 @@
 "use client";
 
 import { Check, FileText, Video } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Cover } from "@/components/ui/cover";
 import { Icon } from "@/components/ui/icon";
 import { songTempoProgress } from "@/lib/song-progress";
 import { instrumentMeta, sortInstruments } from "@/lib/instruments";
-import type { Song, SongDifficulty, SongStatus } from "@/types";
+import type { Instrument, Song, SongDifficulty, SongStatus } from "@/types";
 
 interface SongCardProps {
   song: Song;
@@ -13,13 +14,6 @@ interface SongCardProps {
   bestBpm?: number | null;
   onClick: () => void;
 }
-
-const DIFFICULTY_LABELS: Record<SongDifficulty, string> = {
-  beginner: "Débutant",
-  intermediate: "Intermédiaire",
-  advanced: "Avancé",
-  expert: "Expert",
-};
 
 const DIFFICULTY_LEVEL: Record<SongDifficulty, number> = {
   beginner: 1,
@@ -40,11 +34,14 @@ const DIFFICULTY_LEVEL: Record<SongDifficulty, number> = {
  */
 function FretMarkers({ difficulty }: { difficulty: SongDifficulty }) {
   const level = DIFFICULTY_LEVEL[difficulty];
+  const t = useTranslations("library");
+  const te = useTranslations("enums");
+  const label = te(`difficulty.${difficulty}`);
 
   return (
     <span className="inline-flex items-center gap-[3px]">
       <span className="sr-only">
-        Difficulté : {DIFFICULTY_LABELS[difficulty]}
+        {t("difficultyLabel", { level: label })}
       </span>
       {[1, 2, 3, 4].map((step) => (
         <span
@@ -59,7 +56,7 @@ function FretMarkers({ difficulty }: { difficulty: SongDifficulty }) {
         aria-hidden="true"
         className="ml-1.5 text-[11px] font-medium text-muted-foreground"
       >
-        {DIFFICULTY_LABELS[difficulty]}
+        {label}
       </span>
     </span>
   );
@@ -87,13 +84,11 @@ export function songProgress(song: Song, bestBpm?: number | null) {
  * style Etagere) : les lignes reposent sur le fond, separees par un filet,
  * et toute la ligne ouvre la fiche.
  */
-const PART_STATUS_LABEL: Record<SongStatus, string> = {
-  want_to_learn: "à apprendre",
-  learning: "en cours",
-  mastered: "maîtrisé",
-};
-
 export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
+  const t = useTranslations("library");
+  const te = useTranslations("enums");
+  const partLabel = (instrument: Instrument, status: SongStatus) =>
+    `${te(`instrument.${instrument}`)} · ${te(`songStatus.${status}`).toLowerCase()}`;
   const isLearning = song.status === "learning";
   const isMastered = song.status === "mastered";
   const { tempo, percent } = songProgress(song, bestBpm);
@@ -104,7 +99,7 @@ export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
   const meta = [
     song.tuning,
     tempo ? `${tempo.target} BPM` : null,
-    song.capo_position > 0 ? `Capo ${song.capo_position}` : null,
+    song.capo_position > 0 ? t("capo", { position: song.capo_position }) : null,
   ].filter(Boolean) as string[];
 
   const coversCount = song.covers_count ?? 0;
@@ -142,13 +137,13 @@ export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
               {sortInstruments(song.parts.map((part) => ({ ...part, is_primary: false }))).map((part) => (
                 <span
                   key={part.instrument}
-                  title={`${instrumentMeta(part.instrument).label} · ${PART_STATUS_LABEL[part.status]}`}
+                  title={partLabel(part.instrument, part.status)}
                   className={`inline-flex items-center gap-0.5 ${part.status === "mastered" ? "text-success" : ""}`}
                 >
                   <Icon name={instrumentMeta(part.instrument).icon} className="h-3.5 w-3.5" />
                   {part.status === "mastered" && <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />}
                   <span className="sr-only">
-                    {instrumentMeta(part.instrument).label} : {PART_STATUS_LABEL[part.status]}
+                    {partLabel(part.instrument, part.status)}
                   </span>
                 </span>
               ))}
@@ -160,7 +155,7 @@ export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
           {song.tabs_url && (
             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
               <FileText className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
-              Tab
+              {t("tab")}
             </span>
           )}
 
@@ -168,7 +163,7 @@ export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
               <Video className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
               {coversCount}
-              <span className="sr-only">cover{coversCount > 1 ? "s" : ""}</span>
+              <span className="sr-only">{t("coversSr", { count: coversCount })}</span>
             </span>
           )}
         </div>
@@ -193,7 +188,7 @@ export function SongCard({ song, bestBpm, onClick }: SongCardProps) {
       {isMastered && (
         <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-success">
           <Check className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
-          <span className="sr-only">Maîtrisé</span>
+          <span className="sr-only">{te("songStatus.mastered")}</span>
         </span>
       )}
     </button>

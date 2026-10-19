@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { SlidersHorizontal } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { FilterState, SongDifficulty } from "@/types";
 
 interface FilterPopoverProps {
@@ -11,12 +12,7 @@ interface FilterPopoverProps {
   availableTunings: string[];
 }
 
-const difficultyOptions: { value: SongDifficulty; label: string }[] = [
-  { value: "beginner", label: "Débutant" },
-  { value: "intermediate", label: "Intermédiaire" },
-  { value: "advanced", label: "Avancé" },
-  { value: "expert", label: "Expert" },
-];
+const DIFFICULTIES: SongDifficulty[] = ["beginner", "intermediate", "advanced", "expert"];
 
 export function FilterPopover({
   filters,
@@ -24,6 +20,10 @@ export function FilterPopover({
   activeCount,
   availableTunings,
 }: FilterPopoverProps) {
+  const t = useTranslations("library.filters");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const difficultyOptions = DIFFICULTIES.map((value) => ({ value, label: te(`difficulty.${value}`) }));
   const [isOpen, setIsOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +87,7 @@ export function FilterPopover({
         }`}
       >
         <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-        <span>Filtres</span>
+        <span>{t("button")}</span>
         {activeCount > 0 && (
           <span className="tabular flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[10px] text-foreground">
             {activeCount}
@@ -99,9 +99,10 @@ export function FilterPopover({
         <div className="absolute left-0 z-50 mt-2 w-72 rounded-xl border border-border bg-card p-4 shadow-md">
           {/* Header */}
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-semibold">Filtres avancés</h3>
+            <h3 className="font-semibold">{t("title")}</h3>
             <button
               onClick={() => setIsOpen(false)}
+              aria-label={tc("close")}
               className="rounded p-1 hover:bg-accent"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -113,7 +114,7 @@ export function FilterPopover({
           {/* Difficulté */}
           <div className="mb-4">
             <label className="mb-2 block text-sm font-medium text-muted-foreground">
-              Difficulté
+              {t("difficulty")}
             </label>
             <div className="flex flex-wrap gap-2">
               {difficultyOptions.map((option) => (
@@ -136,7 +137,7 @@ export function FilterPopover({
           {availableTunings.length > 0 && (
             <div className="mb-4">
               <label className="mb-2 block text-sm font-medium text-muted-foreground">
-                Accordage
+                {t("tuning")}
               </label>
               <div className="flex flex-wrap gap-2">
                 {availableTunings.map((tuning) => (
@@ -159,7 +160,7 @@ export function FilterPopover({
           {/* Capo */}
           <div className="mb-4">
             <label className="mb-2 block text-sm font-medium text-muted-foreground">
-              Capo
+              {t("capo")}
             </label>
             <div className="flex gap-2">
               <button
@@ -170,7 +171,7 @@ export function FilterPopover({
                     : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
               >
-                Tous
+                {t("all")}
               </button>
               <button
                 onClick={() => setCapoFilter(true)}
@@ -180,7 +181,7 @@ export function FilterPopover({
                     : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
               >
-                Avec capo
+                {t("withCapo")}
               </button>
               <button
                 onClick={() => setCapoFilter(false)}
@@ -190,7 +191,7 @@ export function FilterPopover({
                     : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
               >
-                Sans capo
+                {t("withoutCapo")}
               </button>
             </div>
           </div>
@@ -201,7 +202,7 @@ export function FilterPopover({
               onClick={resetFilters}
               className="w-full rounded-lg border border-border py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
-              Réinitialiser les filtres
+              {t("reset")}
             </button>
           )}
         </div>

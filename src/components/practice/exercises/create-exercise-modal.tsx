@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createExercise } from "@/lib/actions/exercises";
-import { EXERCISE_CATEGORY_LABELS } from "@/types";
+import { useTranslations } from "next-intl";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
-import { EXERCISE_CATEGORIES } from "@/lib/instruments";
+import { ALL_EXERCISE_CATEGORIES, EXERCISE_CATEGORIES } from "@/lib/instruments";
 import type { ExerciseCategory, ExerciseDifficulty, Instrument } from "@/types";
 
 interface CreateExerciseModalProps {
@@ -14,18 +14,16 @@ interface CreateExerciseModalProps {
   onClose: () => void;
 }
 
-const DIFFICULTY_OPTIONS: { value: ExerciseDifficulty; label: string }[] = [
-  { value: "beginner", label: "Débutant" },
-  { value: "intermediate", label: "Intermédiaire" },
-  { value: "advanced", label: "Avancé" },
-  { value: "expert", label: "Expert" },
-];
+const DIFFICULTY_VALUES: ExerciseDifficulty[] = ["beginner", "intermediate", "advanced", "expert"];
 
-const ALL_CATEGORIES = Object.keys(EXERCISE_CATEGORY_LABELS) as ExerciseCategory[];
+const ALL_CATEGORIES = ALL_EXERCISE_CATEGORIES;
 
 const TIME_SIGNATURE_OPTIONS = ["4/4", "3/4", "6/8", "2/4", "5/4", "7/8", "12/8"];
 
 export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProps) {
+  const t = useTranslations("exercises.create");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -94,12 +92,12 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
     setError("");
 
     if (!name.trim()) {
-      setError("Le nom de l'exercice est requis");
+      setError(t("nameRequired"));
       return;
     }
 
     if (startingBpm >= targetBpm) {
-      setError("Le BPM de départ doit être inférieur au BPM cible");
+      setError(t("bpmOrder"));
       return;
     }
 
@@ -115,7 +113,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
       bpm_increment: bpmIncrement,
       time_signature: timeSignature,
       instructions: instructions.filter((i) => i.trim()),
-      tips: tips.filter((t) => t.trim()),
+      tips: tips.filter((tip) => tip.trim()),
       duration_minutes: durationMinutes,
       shared_with_friends: sharedWithFriends,
       instruments: instrument ? [instrument] : [],
@@ -128,7 +126,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
       onClose();
       router.refresh();
     } else {
-      setError(result.error || "Une erreur est survenue");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -155,8 +153,8 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
       <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-4">
-          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Créer un exercice</h2>
-          <button aria-label="Fermer"
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
+          <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-1 transition-colors hover:bg-accent"
           >
@@ -171,23 +169,23 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
           <div className="space-y-4">
             {/* Nom */}
             <div>
-              <label className="mb-1 block text-sm font-medium">Nom *</label>
+              <label className="mb-1 block text-sm font-medium">{t("name")}</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Gamme blues en La"
+                placeholder={t("namePlaceholder")}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary"
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="mb-1 block text-sm font-medium">Description</label>
+              <label className="mb-1 block text-sm font-medium">{t("description")}</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Décrivez l'exercice..."
+                placeholder={t("descriptionPlaceholder")}
                 rows={2}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary resize-none"
               />
@@ -196,14 +194,14 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
             {/* Instrument : seulement si on en joue plusieurs, « Tous » pour la mise en place */}
             {myInstruments.isMulti && (
               <div>
-                <span className="mb-1 block text-sm font-medium">Pour</span>
+                <span className="mb-1 block text-sm font-medium">{t("for")}</span>
                 <InstrumentSwitch
                   options={myInstruments.instruments}
                   value={instrument}
                   onChange={chooseInstrument}
-                  allLabel="Tous les instruments"
+                  allLabel={t("allInstruments")}
                   onAll={() => chooseInstrument(null)}
-                  label="Instrument de l'exercice"
+                  label={t("instrument")}
                 />
               </div>
             )}
@@ -211,26 +209,26 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
             {/* Catégorie + Difficulté */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-sm font-medium">Catégorie</label>
+                <label className="mb-1 block text-sm font-medium">{t("category")}</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as ExerciseCategory)}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary"
                 >
                   {categoryOptions.map((value) => (
-                    <option key={value} value={value}>{EXERCISE_CATEGORY_LABELS[value]}</option>
+                    <option key={value} value={value}>{te(`exerciseCategory.${value}`)}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium">Difficulté</label>
+                <label className="mb-1 block text-sm font-medium">{t("difficulty")}</label>
                 <select
                   value={difficulty}
                   onChange={(e) => setDifficulty(e.target.value as ExerciseDifficulty)}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary"
                 >
-                  {DIFFICULTY_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  {DIFFICULTY_VALUES.map((value) => (
+                    <option key={value} value={value}>{te(`difficulty.${value}`)}</option>
                   ))}
                 </select>
               </div>
@@ -239,7 +237,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
             {/* BPM Settings */}
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="mb-1 block text-sm font-medium">BPM départ</label>
+                <label className="mb-1 block text-sm font-medium">{t("startBpm")}</label>
                 <input
                   type="number"
                   value={startingBpm}
@@ -250,7 +248,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium">BPM cible</label>
+                <label className="mb-1 block text-sm font-medium">{t("targetBpm")}</label>
                 <input
                   type="number"
                   value={targetBpm}
@@ -261,7 +259,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium">Incrément</label>
+                <label className="mb-1 block text-sm font-medium">{t("increment")}</label>
                 <input
                   type="number"
                   value={bpmIncrement}
@@ -276,7 +274,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
             {/* Time Signature + Duration */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-sm font-medium">Signature</label>
+                <label className="mb-1 block text-sm font-medium">{t("signature")}</label>
                 <select
                   value={timeSignature}
                   onChange={(e) => setTimeSignature(e.target.value)}
@@ -288,7 +286,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium">Durée (min)</label>
+                <label className="mb-1 block text-sm font-medium">{t("duration")}</label>
                 <input
                   type="number"
                   value={durationMinutes}
@@ -303,13 +301,13 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
             {/* Instructions */}
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label className="text-sm font-medium">Instructions</label>
+                <label className="text-sm font-medium">{t("instructions")}</label>
                 <button
                   type="button"
                   onClick={addInstruction}
                   className="text-xs text-primary hover:underline"
                 >
-                  + Ajouter
+                  {t("add")}
                 </button>
               </div>
               <div className="space-y-2">
@@ -322,13 +320,14 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
                       type="text"
                       value={instruction}
                       onChange={(e) => updateInstruction(index, e.target.value)}
-                      placeholder={`Étape ${index + 1}...`}
+                      placeholder={t("step", { n: index + 1 })}
                       className="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm focus:border-primary"
                     />
                     {instructions.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeInstruction(index)}
+                        aria-label={t("remove")}
                         className="shrink-0 rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -344,13 +343,13 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
             {/* Tips */}
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label className="text-sm font-medium">Conseils</label>
+                <label className="text-sm font-medium">{t("tips")}</label>
                 <button
                   type="button"
                   onClick={addTip}
                   className="text-xs text-primary hover:underline"
                 >
-                  + Ajouter
+                  {t("add")}
                 </button>
               </div>
               <div className="space-y-2">
@@ -361,13 +360,14 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
                       type="text"
                       value={tip}
                       onChange={(e) => updateTip(index, e.target.value)}
-                      placeholder={`Conseil ${index + 1}...`}
+                      placeholder={t("tip", { n: index + 1 })}
                       className="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm focus:border-primary"
                     />
                     {tips.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeTip(index)}
+                        aria-label={t("remove")}
                         className="shrink-0 rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -387,9 +387,9 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <div>
-                  <p className="text-sm font-medium">Partager avec mes amis</p>
+                  <p className="text-sm font-medium">{t("share")}</p>
                   <p className="text-xs text-muted-foreground">
-                    Vos amis pourront voir et pratiquer cet exercice
+                    {t("shareHint")}
                   </p>
                 </div>
               </div>
@@ -422,7 +422,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
             onClick={onClose}
             className="flex-1 rounded-lg border border-border py-2.5 text-sm font-medium transition-colors hover:bg-accent"
           >
-            Annuler
+            {tc("cancel")}
           </button>
           <button
             onClick={handleSubmit}
@@ -436,7 +436,7 @@ export function CreateExerciseModal({ isOpen, onClose }: CreateExerciseModalProp
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                Créer
+                {t("submit")}
               </>
             )}
           </button>

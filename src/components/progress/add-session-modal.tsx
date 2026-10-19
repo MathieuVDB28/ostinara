@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { ChevronDown, CloudOff, Plus, X } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { useOffline } from "@/components/offline/offline-provider";
@@ -61,11 +63,7 @@ function initialEntries(
   return [];
 }
 
-const STATUS_OPTIONS: { value: SongStatus; label: string }[] = [
-  { value: "want_to_learn", label: "À apprendre" },
-  { value: "learning", label: "En cours" },
-  { value: "mastered", label: "Maîtrisé" },
-];
+const STATUS_OPTIONS: SongStatus[] = ["want_to_learn", "learning", "mastered"];
 
 interface AddSessionModalProps {
   isOpen: boolean;
@@ -93,6 +91,10 @@ export function AddSessionModal({
   timerSongTimes,
   mode,
 }: AddSessionModalProps) {
+  const t = useTranslations("progress.add");
+  const tf = useTranslations("progress.form");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const router = useRouter();
   const nextSteps = useNextSteps();
   const [loading, setLoading] = useState(false);
@@ -200,11 +202,11 @@ export function AddSessionModal({
 
   const handleSubmit = async () => {
     if (!totalMinutes || totalMinutes < 1) {
-      setError("La durée doit être d'au moins 1 minute");
+      setError(tf("durationMin"));
       return;
     }
     if (isMulti && entries.some((entry) => !entry.minutes || Number(entry.minutes) < 1)) {
-      setError("Indique les minutes passées sur chaque morceau");
+      setError(t("minutesPerSong"));
       return;
     }
 
@@ -277,7 +279,7 @@ export function AddSessionModal({
       onSuccess();
       handleClose();
     } else {
-      setError(result.error || "Erreur lors de l'enregistrement");
+      setError(result.error || tc("genericError"));
     }
   };
 
@@ -305,16 +307,15 @@ export function AddSessionModal({
         <div className="mb-5 flex items-start justify-between gap-3">
           <div>
             <h2 className="font-display text-4xl font-extrabold uppercase leading-none tracking-[0.01em]">
-              {mode === "timer" ? "Bien joué" : "Ajouter une session"}
+              {mode === "timer" ? t("wellPlayed") : t("addTitle")}
             </h2>
             {mode === "timer" && (
               <p className="mt-1.5 text-sm text-muted-foreground">
-                Session du{" "}
-                {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
+                {t("sessionOf", { date: new Date().toLocaleDateString(intlLocale, { day: "numeric", month: "long" }) })}
               </p>
             )}
           </div>
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={handleClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
           >
@@ -324,12 +325,12 @@ export function AddSessionModal({
 
         {mode === "timer" && (
           <dl className="mb-6 grid grid-cols-3 gap-3 border-y border-border py-3">
-            <RecapStat label="durée" value={<>{totalMinutes || 0}<small className="text-base text-muted-foreground"> min</small></>} />
+            <RecapStat label={t("recapDuration")} value={<>{totalMinutes || 0}<small className="text-base text-muted-foreground"> {t("min")}</small></>} />
             {isMulti ? (
-              <RecapStat label="morceaux" value={<>{entries.filter((entry) => entry.songId).length}</>} />
+              <RecapStat label={t("recapSongs")} value={<>{entries.filter((entry) => entry.songId).length}</>} />
             ) : (
               <RecapStat
-                label="bpm tenu"
+                label={t("recapBpm")}
                 value={
                   (entries[0]?.bpm || bpmAchieved)
                     ? <>{entries[0]?.bpm || bpmAchieved}</>
@@ -337,7 +338,7 @@ export function AddSessionModal({
                 }
               />
             )}
-            <RecapStat label="sections" value={<>{sectionsWorked.length}</>} />
+            <RecapStat label={t("recapSections")} value={<>{sectionsWorked.length}</>} />
           </dl>
         )}
 
@@ -356,8 +357,7 @@ export function AddSessionModal({
         {!isOnline && (
           <p className="mb-4 flex items-center gap-2 rounded-lg bg-accent/60 px-4 py-3 text-sm text-muted-foreground">
             <CloudOff className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
-            Pas de réseau : la session sera gardée et envoyée automatiquement
-            au retour de la connexion.
+            {t("offline")}
           </p>
         )}
 
@@ -365,13 +365,13 @@ export function AddSessionModal({
           {myInstruments.isMulti && (
             <div>
               <p className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                Instrument
+                {t("instrument")}
               </p>
               <InstrumentSwitch
                 options={myInstruments.instruments}
                 value={instrument}
                 onChange={setInstrument}
-                label="Instrument joué pendant la session"
+                label={t("instrumentPlayed")}
               />
             </div>
           )}
@@ -383,7 +383,7 @@ export function AddSessionModal({
           */}
           <div>
             <label className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              {entries.length > 1 ? `Morceaux · ${entries.length}` : "Morceau"}
+              {entries.length > 1 ? t("songsCount", { count: entries.length }) : t("song")}
             </label>
             {entries.length > 0 && (
               <ul className="border-t border-border">
@@ -407,14 +407,14 @@ export function AddSessionModal({
               className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border text-sm font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
-              {entries.length === 0 ? "Choisir un morceau (optionnel)" : "Ajouter un morceau"}
+              {entries.length === 0 ? t("chooseOptional") : t("addSong")}
             </button>
           </div>
 
           {/* Durée et Date : le chrono les a deja, on ne les montre qu'en saisie manuelle */}
           <div className={`grid grid-cols-2 gap-4 ${mode === "timer" ? "hidden" : ""}`}>
             <div>
-              <label className="mb-2 block text-sm font-medium">Durée (minutes)</label>
+              <label className="mb-2 block text-sm font-medium">{tf("durationMinutes")}</label>
               <input
                 type="number"
                 inputMode="numeric"
@@ -429,7 +429,7 @@ export function AddSessionModal({
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium">Date et heure</label>
+              <label className="mb-2 block text-sm font-medium">{tf("dateTime")}</label>
               <input
                 type="datetime-local"
                 value={practicedAt}
@@ -442,7 +442,7 @@ export function AddSessionModal({
 
           {/* Humeur */}
           <div>
-            <label className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Comment ça s&apos;est passé ?</label>
+            <label className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("howWent")}</label>
             <MoodSelector value={mood} onChange={setMood} />
           </div>
 
@@ -453,7 +453,7 @@ export function AddSessionModal({
               onClick={() => setShowPerformance(!showPerformance)}
               className="flex w-full items-center justify-between py-3"
             >
-              <span className="text-sm font-semibold">Performance</span>
+              <span className="text-sm font-semibold">{t("performance")}</span>
               <ChevronDown
                 className={`h-4 w-4 text-muted-foreground transition-transform ${showPerformance ? "rotate-180" : ""}`}
                 strokeWidth={2}
@@ -464,19 +464,19 @@ export function AddSessionModal({
               <div className="space-y-4 pb-4">
                 {/* Avec un morceau, le tempo se note sur sa ligne. */}
                 {entries.length === 0 && <div>
-                  <label className="mb-2 block text-sm font-medium">BPM atteint</label>
+                  <label className="mb-2 block text-sm font-medium">{tf("bpmReached")}</label>
                   <input
                     type="number"
                     min="20"
                     max="300"
-                    placeholder="ex: 120"
+                    placeholder={tf("bpmPlaceholder")}
                     value={bpmAchieved}
                     onChange={(e) => setBpmAchieved(e.target.value)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                   />
                 </div>}
                 <div>
-                  <label className="mb-3 block text-sm font-medium">Sections travaillées</label>
+                  <label className="mb-3 block text-sm font-medium">{tf("sectionsWorked")}</label>
                   <SectionsSelector value={sectionsWorked} onChange={setSectionsWorked} />
                 </div>
               </div>
@@ -490,7 +490,7 @@ export function AddSessionModal({
               onClick={() => setShowFeeling(!showFeeling)}
               className="flex w-full items-center justify-between py-3"
             >
-              <span className="text-sm font-semibold">Niveau d&apos;énergie</span>
+              <span className="text-sm font-semibold">{t("energy")}</span>
               <ChevronDown
                 className={`h-4 w-4 text-muted-foreground transition-transform ${showFeeling ? "rotate-180" : ""}`}
                 strokeWidth={2}
@@ -511,7 +511,7 @@ export function AddSessionModal({
               onClick={() => setShowGoals(!showGoals)}
               className="flex w-full items-center justify-between py-3"
             >
-              <span className="text-sm font-semibold">Objectifs</span>
+              <span className="text-sm font-semibold">{t("goals")}</span>
               <ChevronDown
                 className={`h-4 w-4 text-muted-foreground transition-transform ${showGoals ? "rotate-180" : ""}`}
                 strokeWidth={2}
@@ -521,9 +521,9 @@ export function AddSessionModal({
             {showGoals && (
               <div className="space-y-4 pb-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium">Objectifs de la session</label>
+                  <label className="mb-2 block text-sm font-medium">{t("sessionGoals")}</label>
                   <textarea
-                    placeholder="Qu'est-ce que tu voulais travailler ?"
+                    placeholder={tf("goalsPlaceholder")}
                     value={sessionGoals}
                     onChange={(e) => setSessionGoals(e.target.value)}
                     rows={2}
@@ -538,7 +538,7 @@ export function AddSessionModal({
                       onChange={(e) => setGoalsAchieved(e.target.checked)}
                       className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
                     />
-                    <span className="text-sm">Objectifs atteints</span>
+                    <span className="text-sm">{tf("goalsAchieved")}</span>
                   </label>
                 )}
               </div>
@@ -547,9 +547,9 @@ export function AddSessionModal({
 
           {/* Notes */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Notes</label>
+            <label className="mb-2 block text-sm font-medium">{tf("notes")}</label>
             <textarea
-              placeholder="Remarques, difficultés, ce qui a bien marché..."
+              placeholder={tf("notesPlaceholder")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -566,12 +566,12 @@ export function AddSessionModal({
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                Enregistrement...
+                {tc("saving")}
               </span>
             ) : isOnline ? (
-              "Enregistrer la session"
+              t("saveSession")
             ) : (
-              "Garder pour le retour du réseau"
+              t("keepOffline")
             )}
           </button>
         </div>
@@ -585,9 +585,10 @@ export function AddSessionModal({
             />
             <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-md">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-bold">Ajouter un morceau</h3>
+                <h3 className="text-lg font-bold">{t("addSong")}</h3>
                 <button
                   onClick={() => setShowSongSearch(false)}
+                  aria-label={tc("close")}
                   className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -602,7 +603,7 @@ export function AddSessionModal({
                 </svg>
                 <input
                   type="text"
-                  placeholder="Rechercher..."
+                  placeholder={tf("searchPlaceholder")}
                   value={songSearchQuery}
                   onChange={(e) => setSongSearchQuery(e.target.value)}
                   className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4 text-sm focus:border-primary"
@@ -649,7 +650,7 @@ export function AddSessionModal({
 
                 {filteredSongs.length === 0 && (
                   <p className="py-4 text-center text-sm text-muted-foreground">
-                    Aucun morceau trouvé
+                    {tf("noSongFound")}
                   </p>
                 )}
               </div>
@@ -696,6 +697,8 @@ function EntryRow({
   onChange: (patch: Partial<Entry>) => void;
   onRemove: () => void;
 }) {
+  const t = useTranslations("progress.add");
+  const te = useTranslations("enums");
   const part = song ? partOf(song, instrument) : null;
   const status = entry.status ?? part?.status ?? null;
   const hasTarget = song ? songTargetBpm(song) !== null : false;
@@ -706,13 +709,13 @@ function EntryRow({
       <div className="flex items-center gap-3">
         <Cover src={song?.cover_url} className="h-11 w-11 rounded-[3px]" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{song?.title ?? (entry.songId ? "Morceau" : "Sans morceau")}</p>
+          <p className="truncate text-sm font-semibold">{song?.title ?? (entry.songId ? t("song") : t("noSong"))}</p>
           {song?.artist && <p className="truncate text-xs text-muted-foreground">{song.artist}</p>}
         </div>
         <button
           type="button"
           onClick={onRemove}
-          aria-label={`Retirer ${song?.title ?? "cette ligne"}`}
+          aria-label={t("remove", { name: song?.title ?? t("thisRow") })}
           className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
         >
           <X className="h-4 w-4" aria-hidden="true" />
@@ -732,7 +735,7 @@ function EntryRow({
               onFocus={(e) => e.target.select()}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
             />
-            min
+            {t("min")}
           </label>
         )}
         {entry.songId && (
@@ -742,20 +745,20 @@ function EntryRow({
               inputMode="numeric"
               min="20"
               max="300"
-              placeholder="BPM tenu"
+              placeholder={t("bpmHeld")}
               value={entry.bpm}
               onChange={(e) => onChange({ bpm: e.target.value })}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
             />
-            bpm
+            {t("bpm")}
           </label>
         )}
       </div>
 
       {song && canEditSong && (
         <div className="space-y-2.5">
-          <div role="radiogroup" aria-label={`Statut de ${song.title}`} className="flex gap-1.5">
-            {STATUS_OPTIONS.map((option) => (
+          <div role="radiogroup" aria-label={t("statusOf", { title: song.title })} className="flex gap-1.5">
+            {STATUS_OPTIONS.map((value) => ({ value, label: te(`songStatus.${value}`) })).map((option) => (
               <button
                 key={option.value}
                 type="button"
@@ -776,12 +779,12 @@ function EntryRow({
           {status !== "mastered" &&
             (hasTarget ? (
               <p className="text-xs text-muted-foreground">
-                Progression calculée d&apos;après ton meilleur tempo tenu.
+                {t("tempoComputed")}
               </p>
             ) : (
               <FretsInput
                 value={percent}
-                label={`Progression de ${song.title}`}
+                label={t("progressOf", { title: song.title })}
                 onChange={(value) => onChange({ percent: value })}
               />
             ))}

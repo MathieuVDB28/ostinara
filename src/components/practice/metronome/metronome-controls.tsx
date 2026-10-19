@@ -2,7 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import { ChevronDown, Volume2, VolumeX } from "lucide-react";
-import { TIME_SIGNATURES, SUBDIVISION_LABELS } from "@/types";
+import { useTranslations } from "next-intl";
+import { TIME_SIGNATURES } from "@/types";
 import type { TimeSignature, Subdivision } from "@/types";
 
 interface MetronomeControlsProps {
@@ -47,6 +48,8 @@ export function MetronomeControls({
   beats,
   tap,
 }: MetronomeControlsProps) {
+  const t = useTranslations("metronome");
+  const te = useTranslations("enums");
   const [open, setOpen] = useState<"signature" | "subdivision" | null>(null);
 
   const step =
@@ -58,13 +61,13 @@ export function MetronomeControls({
       <div className="flex items-center gap-4">
         <button
           onClick={() => onBpmIncrement(-1)}
-          aria-label="Moins 1 BPM"
+          aria-label={t("minus", { n: 1 })}
           className="flex h-12 w-12 items-center justify-center rounded-full border border-border text-2xl transition-colors hover:bg-accent"
         >
           −
         </button>
         <label className="flex flex-col items-center">
-          <span className="sr-only">Tempo en BPM</span>
+          <span className="sr-only">{t("tempoSr")}</span>
           <input
             type="number"
             inputMode="numeric"
@@ -80,7 +83,7 @@ export function MetronomeControls({
         </label>
         <button
           onClick={() => onBpmIncrement(1)}
-          aria-label="Plus 1 BPM"
+          aria-label={t("plus", { n: 1 })}
           className="flex h-12 w-12 items-center justify-center rounded-full border border-border text-2xl transition-colors hover:bg-accent"
         >
           +
@@ -90,10 +93,10 @@ export function MetronomeControls({
       {beats}
 
       <div className="flex flex-wrap items-center justify-center gap-1.5">
-        <button onClick={() => onBpmIncrement(-5)} aria-label="Moins 5 BPM" className={step}>
+        <button onClick={() => onBpmIncrement(-5)} aria-label={t("minus", { n: 5 })} className={step}>
           −5
         </button>
-        <button onClick={() => onBpmIncrement(5)} aria-label="Plus 5 BPM" className={step}>
+        <button onClick={() => onBpmIncrement(5)} aria-label={t("plus", { n: 5 })} className={step}>
           +5
         </button>
         {tap}
@@ -105,13 +108,13 @@ export function MetronomeControls({
         max={300}
         value={bpm}
         onChange={(e) => onBpmChange(parseInt(e.target.value))}
-        aria-label="Tempo"
+        aria-label={t("tempo")}
         className="w-full max-w-sm accent-primary"
       />
 
       {/* Reglages : une grille a filets, chaque case un reglage */}
       <div className="grid w-full grid-cols-2 gap-px overflow-visible border-y border-border bg-border">
-        <Setting label="Mesure">
+        <Setting label={t("signature")}>
           <Dropdown
             isOpen={open === "signature"}
             onToggle={() => setOpen(open === "signature" ? null : "signature")}
@@ -136,11 +139,11 @@ export function MetronomeControls({
           </Dropdown>
         </Setting>
 
-        <Setting label="Subdivision">
+        <Setting label={t("subdivision")}>
           <Dropdown
             isOpen={open === "subdivision"}
             onToggle={() => setOpen(open === "subdivision" ? null : "subdivision")}
-            value={SUBDIVISION_LABELS[subdivision]}
+            value={te(`subdivision.${subdivision}`)}
           >
             {SUBDIVISIONS.map((sub) => (
               <DropdownItem
@@ -151,13 +154,13 @@ export function MetronomeControls({
                   setOpen(null);
                 }}
               >
-                {SUBDIVISION_LABELS[sub]}
+                {te(`subdivision.${sub}`)}
               </DropdownItem>
             ))}
           </Dropdown>
         </Setting>
 
-        <Setting label="Volume">
+        <Setting label={t("volume")}>
           <div className="flex items-center gap-2">
             <input
               type="range"
@@ -165,7 +168,7 @@ export function MetronomeControls({
               max={100}
               value={Math.round(volume * 100)}
               onChange={(e) => onVolumeChange(parseInt(e.target.value) / 100)}
-              aria-label="Volume"
+              aria-label={t("volume")}
               className="min-w-0 flex-1 accent-primary"
             />
             <span className="tabular w-9 text-right text-xs font-semibold">
@@ -174,7 +177,7 @@ export function MetronomeControls({
           </div>
         </Setting>
 
-        <Setting label="Silence">
+        <Setting label={t("silence")}>
           <button
             type="button"
             role="switch"
@@ -187,7 +190,7 @@ export function MetronomeControls({
             ) : (
               <Volume2 className="h-4 w-4 text-muted-foreground" strokeWidth={2} aria-hidden="true" />
             )}
-            {silentMode ? "Temps muets" : "Désactivé"}
+            {silentMode ? t("silentBeats") : t("off")}
           </button>
         </Setting>
       </div>

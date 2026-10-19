@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import * as tus from "tus-js-client";
 import { createClient } from "@/lib/supabase/client";
 import { needsCompression } from "@/lib/video-compression";
@@ -23,6 +24,9 @@ const ALLOWED_AUDIO_TYPES = ["audio/mpeg", "audio/wav", "audio/webm"];
 type UploadPhase = "idle" | "compressing" | "uploading";
 
 export function VideoUpload({ songId, onUploadComplete, onError, disabled }: VideoUploadProps) {
+  const t = useTranslations("covers.upload");
+  const tm = useTranslations("media");
+  const tc = useTranslations("errors");
   const [phase, setPhase] = useState<UploadPhase>("idle");
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
@@ -34,7 +38,7 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
 
   const handleFileSelect = async (file: File) => {
     if (file.size > MAX_FILE_SIZE) {
-      onError("Le fichier dépasse la limite de 500 Mo");
+      onError(t("tooLarge"));
       return;
     }
 
@@ -42,7 +46,7 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
     const isAudio = ALLOWED_AUDIO_TYPES.includes(file.type);
 
     if (!isVideo && !isAudio) {
-      onError("Seuls les fichiers vidéo et audio sont acceptés (MP4, WebM, MOV, MP3, WAV)");
+      onError(t("wrongType"));
       return;
     }
 
@@ -53,7 +57,7 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
       if (needsCompression(file)) {
         setPhase("compressing");
         setProgress(0);
-        setStatusMessage("Chargement du moteur de compression...");
+        setStatusMessage(tm("compressionLoading"));
 
         // @ffmpeg n'est telecharge qu'ici, quand une compression est
         // reellement necessaire.
@@ -62,22 +66,22 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
           file,
           (p) => {
             setProgress(p);
-            setStatusMessage(`Compression en cours... ${p}%`);
+            setStatusMessage(t("compressing", { p }));
           },
-          (msg) => setStatusMessage(msg)
+          () => setStatusMessage(tm("compressionLoading"))
         );
       }
 
       // Upload
       setPhase("uploading");
       setProgress(0);
-      setStatusMessage("Upload en cours...");
+      setStatusMessage(t("uploading"));
 
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
-        onError("Non authentifié");
+        onError(tc("notAuthenticated"));
         return;
       }
 
@@ -104,12 +108,12 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
           },
           chunkSize: 6 * 1024 * 1024,
           onError: (err) => {
-            reject(new Error(err.message || "Erreur lors de l'upload"));
+            reject(new Error(err.message || t("failed")));
           },
           onProgress: (bytesUploaded, bytesTotal) => {
             const p = Math.round((bytesUploaded / bytesTotal) * 100);
             setProgress(p);
-            setStatusMessage(`Upload en cours... ${p}%`);
+            setStatusMessage(t("uploadingPercent", { p }));
           },
           onSuccess: () => {
             resolve();
@@ -136,7 +140,13 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
         fileSize: fileToUpload.size,
       });
     } catch (error) {
-      onError(error instanceof Error ? error.message : "Erreur lors de l'upload");
+      onError(
+        error instanceof Error && error.message !== "video_unreadable"
+          ? error.message
+          : error instanceof Error
+            ? tm("videoUnreadable")
+            : t("failed")
+      );
     } finally {
       uploadRef.current = null;
       setPhase("idle");
@@ -196,7 +206,7 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
             </div>
             <div>
               <p className="font-medium">
-                {phase === "compressing" ? "Compression de la vidéo..." : "Upload en cours..."}
+                {phase === "compressing" ? t("compressingTitle") : t("uploading")}
               </p>
               <p className="text-sm text-muted-foreground">{statusMessage}</p>
             </div>
@@ -214,15 +224,15 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
             </div>
-            <p className="font-medium">Glisse ta vidéo ici</p>
+            <p className="font-medium">{t("drop")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              ou clique pour sélectionner (max 500 Mo)
+              {t("orClick")}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
-              MP4, WebM, MOV, MP3, WAV
+              {t("formats")}
             </p>
             <p className="mt-1 text-xs text-muted-foreground/60">
-              Les vidéos de plus de 50 Mo seront compressées automatiquement
+              {t("autoCompress")}
             </p>
           </>
         )}

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { profileHref } from "@/lib/navigation";
 import { UserMinus } from "lucide-react";
 import type { Friend } from "@/types";
@@ -14,10 +16,13 @@ interface FriendCardProps {
 }
 
 export function FriendCard({ friend, onRefresh }: FriendCardProps) {
+  const t = useTranslations("friends.card");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
   const [removing, setRemoving] = useState(false);
 
   const handleRemove = async () => {
-    if (!confirm("Supprimer cet ami ?")) return;
+    if (!confirm(t("confirmRemove"))) return;
     setRemoving(true);
     await removeFriend(friend.id);
     onRefresh();
@@ -25,7 +30,7 @@ export function FriendCard({ friend, onRefresh }: FriendCardProps) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString(intlLocale, {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -69,14 +74,14 @@ export function FriendCard({ friend, onRefresh }: FriendCardProps) {
         </p>
         <p className="truncate text-xs text-muted-foreground">
           @{friend.profile.username}
-          {primary && ` · ${instrumentLabel(primary)}`} · ami depuis le {formatDate(friend.since)}
+          {primary && ` · ${instrumentLabel(primary, te)}`} · {t("since", { date: formatDate(friend.since) })}
         </p>
       </div>
       </Link>
       <button
         onClick={handleRemove}
         disabled={removing}
-        aria-label={`Retirer ${name} de tes amis`}
+        aria-label={t("remove", { name })}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-destructive disabled:opacity-50"
       >
         <UserMinus className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />

@@ -6,6 +6,8 @@ import Link from "next/link";
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { ListPlus, Music, Play, X } from "lucide-react";
 import { updateSong, deleteSong } from "@/lib/actions/songs";
 import { getCoversBySong, canUploadCover } from "@/lib/actions/covers";
@@ -59,19 +61,8 @@ interface EditSongModalProps {
   bestBpm?: number | null;
 }
 
-const statusOptions: { value: SongStatus; label: string }[] = [
-  { value: "want_to_learn", label: "À apprendre" },
-  { value: "learning", label: "En cours" },
-  { value: "mastered", label: "Maîtrisé" },
-];
-
-const difficultyOptions: { value: SongDifficulty | ""; label: string }[] = [
-  { value: "", label: "Non définie" },
-  { value: "beginner", label: "Débutant" },
-  { value: "intermediate", label: "Intermédiaire" },
-  { value: "advanced", label: "Avancé" },
-  { value: "expert", label: "Expert" },
-];
+const STATUS_VALUES: SongStatus[] = ["want_to_learn", "learning", "mastered"];
+const DIFFICULTY_VALUES: SongDifficulty[] = ["beginner", "intermediate", "advanced", "expert"];
 
 import { TUNING_GROUPS } from "@/lib/tunings";
 import { Icon } from "@/components/ui/icon";
@@ -85,6 +76,16 @@ export function EditSongModal({
   userPlan = "free",
   bestBpm = null,
 }: EditSongModalProps) {
+  const t = useTranslations("library.sheet");
+  const tl = useTranslations("library");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
+  const statusOptions = STATUS_VALUES.map((value) => ({ value, label: te(`songStatus.${value}`) }));
+  const difficultyOptions: { value: SongDifficulty | ""; label: string }[] = [
+    { value: "", label: tl("song.undefined") },
+    ...DIFFICULTY_VALUES.map((value) => ({ value, label: te(`difficulty.${value}`) })),
+  ];
   const router = useRouter();
   const nextSteps = useNextSteps();
   const myInstruments = useMyInstruments();
@@ -221,7 +222,7 @@ export function EditSongModal({
 
     const parsedTarget = targetBpm ? parseInt(targetBpm, 10) : null;
     if (parsedTarget !== null && (isNaN(parsedTarget) || parsedTarget < 20 || parsedTarget > 300)) {
-      setError("Le tempo cible doit être compris entre 20 et 300 BPM");
+      setError(t("tempoRange"));
       setSaving(false);
       return;
     }
@@ -259,7 +260,7 @@ export function EditSongModal({
         });
       }
     } else {
-      setError(result.error || "Erreur lors de la sauvegarde");
+      setError(result.error || tc("genericError"));
     }
 
     setSaving(false);
@@ -267,7 +268,7 @@ export function EditSongModal({
 
   const handleDelete = async () => {
     if (!song) return;
-    if (!confirm("Supprimer ce morceau de ta bibliothèque ?")) return;
+    if (!confirm(t("confirmDelete"))) return;
 
     setDeleting(true);
     const result = await deleteSong(song.id);
@@ -280,7 +281,7 @@ export function EditSongModal({
         onClose();
       }
     } else {
-      setError(result.error || "Erreur lors de la suppression");
+      setError(result.error || tc("genericError"));
       setDeleting(false);
     }
   };
@@ -338,7 +339,7 @@ export function EditSongModal({
           <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent via-40% to-card" />
 
           <button
-            aria-label="Fermer"
+            aria-label={tc("close")}
             onClick={handleClose}
             className="absolute left-4 top-[calc(env(safe-area-inset-top)+12px)] flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70 sm:left-auto sm:right-4 sm:top-4"
           >
@@ -363,10 +364,10 @@ export function EditSongModal({
           {song.added_from && song.added_from_label && (
             <p className="mt-0.5 text-xs text-muted-foreground">
               {song.added_from === "album"
-                ? `Repéré sur « ${song.added_from_label} »`
+                ? t("fromAlbum", { label: song.added_from_label })
                 : song.added_from === "friend"
-                  ? `Vu chez ${song.added_from_label}`
-                  : `Défi de ${song.added_from_label}`}
+                  ? t("fromFriend", { label: song.added_from_label })
+                  : t("fromChallenge", { label: song.added_from_label })}
             </p>
           )}
 
@@ -374,8 +375,8 @@ export function EditSongModal({
             {[
               statusOptions.find((option) => option.value === song.status)?.label,
               song.tuning,
-              song.capo_position > 0 ? `Capo ${song.capo_position}` : null,
-              song.difficulty ? ({ beginner: "Débutant", intermediate: "Intermédiaire", advanced: "Avancé", expert: "Expert" } as const)[song.difficulty] : null,
+              song.capo_position > 0 ? tl("capo", { position: song.capo_position }) : null,
+              song.difficulty ? te(`difficulty.${song.difficulty}`) : null,
             ]
               .filter(Boolean)
               .map((label) => (
@@ -398,12 +399,12 @@ export function EditSongModal({
               className="inline-flex min-h-[46px] flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card sm:flex-none"
             >
               <Play className="h-4 w-4 fill-current" strokeWidth={0} aria-hidden="true" />
-              Jouer ce morceau
+              {t("play")}
             </button>
             <button
               type="button"
               onClick={() => setShowAddToPlaylist(true)}
-              aria-label="Ajouter à une playlist"
+              aria-label={t("addToPlaylist")}
               className="inline-flex min-h-[46px] w-[46px] items-center justify-center rounded-xl border border-border transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ListPlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
@@ -421,15 +422,15 @@ export function EditSongModal({
         {/* Tabs */}
         <div
           role="tablist"
-          aria-label="Sections de la fiche"
+          aria-label={t("tabsAria")}
           className="mt-5 flex gap-6 overflow-x-auto border-b border-border px-5 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-6 [&::-webkit-scrollbar]:hidden"
         >
           {(
             [
-              ["details", "Détails"],
-              ["tablatures", "Tablatures"],
-              ["covers", "Covers"],
-              ["sessions", "Sessions"],
+              ["details", t("tabDetails")],
+              ["tablatures", t("tabTabs")],
+              ["covers", t("tabCovers")],
+              ["sessions", t("tabSessions")],
             ] as const
           ).map(([value, label]) => (
             <button
@@ -456,7 +457,7 @@ export function EditSongModal({
         <div className="space-y-6 p-6">
           {/* Statut, par instrument quand on en joue plusieurs */}
           <div>
-            <span id="song-status-label" className="mb-2 block text-sm font-medium">Statut</span>
+            <span id="song-status-label" className="mb-2 block text-sm font-medium">{t("status")}</span>
             <div className="space-y-2.5" aria-labelledby="song-status-label" role="group">
               {statusRows.map((entry) => {
                 const current = partStatuses[entry.instrument] ?? null;
@@ -465,12 +466,12 @@ export function EditSongModal({
                     {statusRows.length > 1 && (
                       <span className="flex w-28 shrink-0 items-center gap-1.5 truncate text-xs font-semibold text-muted-foreground">
                         <Icon name={instrumentMeta(entry.instrument).icon} className="h-3.5 w-3.5 shrink-0" />
-                        {instrumentLabel(entry)}
+                        {instrumentLabel(entry, te)}
                       </span>
                     )}
                     <div
                       role="radiogroup"
-                      aria-label={`Statut à la ${instrumentLabel(entry).toLowerCase()}`}
+                      aria-label={t("statusFor", { instrument: instrumentLabel(entry, te) })}
                       className="grid flex-1 grid-cols-3 gap-0.5 rounded-xl border border-border bg-card p-[3px]"
                     >
                       {statusOptions.map((option) => (
@@ -511,7 +512,7 @@ export function EditSongModal({
               options={myInstruments.instruments}
               value={tempoInstrument}
               onChange={setTempoInstrument}
-              label="Tempo de quel instrument"
+              label={t("tempoOf")}
             />
           )}
           <TempoBlock
@@ -533,7 +534,7 @@ export function EditSongModal({
           {/* Basic info */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium">Titre</label>
+              <label className="mb-1 block text-sm font-medium">{t("title")}</label>
               <input
                 type="text"
                 value={title}
@@ -542,7 +543,7 @@ export function EditSongModal({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Artiste</label>
+              <label className="mb-1 block text-sm font-medium">{t("artist")}</label>
               <input
                 type="text"
                 value={artist}
@@ -555,7 +556,7 @@ export function EditSongModal({
           {/* Reglages : accordage pour les cordes, capo pour la guitare */}
           <div className={`grid gap-4 ${showCapo ? "sm:grid-cols-3" : showTuning ? "sm:grid-cols-2" : ""}`}>
             <div>
-              <label className="mb-1 block text-sm font-medium">Difficulté</label>
+              <label className="mb-1 block text-sm font-medium">{tl("song.difficulty")}</label>
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as SongDifficulty)}
@@ -569,7 +570,7 @@ export function EditSongModal({
               </select>
             </div>
             {showTuning && <div>
-              <label className="mb-1 block text-sm font-medium">Tuning</label>
+              <label className="mb-1 block text-sm font-medium">{tl("song.tuning")}</label>
               <select
                 value={tuning}
                 onChange={(e) => setTuning(e.target.value)}
@@ -577,9 +578,9 @@ export function EditSongModal({
               >
                 {TUNING_GROUPS.map((group) => (
                   <optgroup key={group.label} label={group.label}>
-                    {group.tunings.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label} ({t.notes})
+                    {group.tunings.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label} ({option.notes})
                       </option>
                     ))}
                   </optgroup>
@@ -587,16 +588,16 @@ export function EditSongModal({
               </select>
             </div>}
             {showCapo && <div>
-              <label className="mb-1 block text-sm font-medium">Capo</label>
+              <label className="mb-1 block text-sm font-medium">{tl("song.capo")}</label>
               <select
                 value={capo}
                 onChange={(e) => setCapo(parseInt(e.target.value))}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
               >
-                <option value={0}>Pas de capo</option>
+                <option value={0}>{t("noCapo")}</option>
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
                   <option key={n} value={n}>
-                    Case {n}
+                    {t("fret", { n })}
                   </option>
                 ))}
               </select>
@@ -605,11 +606,11 @@ export function EditSongModal({
 
           {/* Notes */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Notes personnelles</label>
+            <label className="mb-1 block text-sm font-medium">{t("personalNotes")}</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Astuces, passages difficiles, remarques..."
+              placeholder={t("notesPlaceholder")}
               rows={4}
               className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
@@ -628,14 +629,14 @@ export function EditSongModal({
               disabled={deleting}
               className="rounded-lg px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
             >
-              {deleting ? "Suppression..." : "Supprimer"}
+              {deleting ? tc("deleting") : tc("delete")}
             </button>
             <div className="flex-1" />
             <button
               onClick={handleClose}
               className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
             >
-              Annuler
+              {tc("cancel")}
             </button>
             <button
               onClick={handleSave}
@@ -644,7 +645,7 @@ export function EditSongModal({
               // passe a l'encre, toujours lisible comme l'action du formulaire.
               className="rounded-xl bg-foreground px-6 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              {saving ? "Sauvegarde..." : "Sauvegarder"}
+              {saving ? tc("savingShort") : tc("saveShort")}
             </button>
           </div>
         </div>
@@ -705,7 +706,7 @@ export function EditSongModal({
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">
-                  {covers.length} cover{covers.length > 1 ? "s" : ""} pour ce morceau
+                  {t("coversCount", { count: covers.length })}
                 </p>
               </div>
               <button
@@ -716,14 +717,14 @@ export function EditSongModal({
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Ajouter
+                {tc("add")}
               </button>
             </div>
 
             {/* Limite message */}
             {!canUpload.allowed && (
               <div className="mb-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                Tu as atteint la limite de {canUpload.limit} covers. Passe en Pro pour en ajouter plus !
+                {t("coverLimit", { limit: canUpload.limit ?? 0 })}
               </div>
             )}
 
@@ -768,12 +769,12 @@ export function EditSongModal({
                       </div>
                       {/* Visibility badge */}
                       <div className="absolute left-2 top-2 rounded-full bg-background/80 px-2 py-1 text-xs backdrop-blur-sm">
-                        {cover.visibility === "private" ? "Privé" : cover.visibility === "friends" ? "Amis" : "Public"}
+                        {te(`visibility.${cover.visibility}`)}
                       </div>
                     </div>
                     <div className="p-3">
                       <p className="text-xs text-muted-foreground">
-                        {new Date(cover.created_at).toLocaleDateString("fr-FR", {
+                        {new Date(cover.created_at).toLocaleDateString(intlLocale, {
                           day: "numeric",
                           month: "short",
                           year: "numeric"
@@ -794,13 +795,13 @@ export function EditSongModal({
                     <path d="M10 9L15 12L10 15V9Z" fill="currentColor" stroke="none"/>
                   </svg>
                 </div>
-                <p className="text-sm text-muted-foreground">Aucun cover pour ce morceau</p>
+                <p className="text-sm text-muted-foreground">{t("noCovers")}</p>
                 <button
                   onClick={() => setShowAddCover(true)}
                   disabled={!canUpload.allowed}
                   className="mt-3 text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:no-underline"
                 >
-                  Ajouter ton premier cover
+                  {t("addFirstCover")}
                 </button>
               </div>
             )}
@@ -904,15 +905,16 @@ function TempoBlock({
   bestBpm,
   points,
 }: TempoBlockProps) {
+  const t = useTranslations("library.sheet");
   const parsed = targetBpm ? parseInt(targetBpm, 10) : NaN;
   const effectiveTarget = !isNaN(parsed) && parsed > 0 ? parsed : null;
 
   // Les propositions : la partition d'abord, l'enregistrement ensuite.
   // Ce sont des raccourcis, pas des valeurs imposees.
   const suggestions = [
-    song.tab_bpm ? { bpm: song.tab_bpm, label: "Tablature" } : null,
+    song.tab_bpm ? { bpm: song.tab_bpm, label: t("suggestionTab") } : null,
     song.spotify_bpm
-      ? { bpm: Math.round(song.spotify_bpm), label: "Original" }
+      ? { bpm: Math.round(song.spotify_bpm), label: t("suggestionOriginal") }
       : null,
   ].filter(Boolean) as { bpm: number; label: string }[];
 
@@ -922,7 +924,7 @@ function TempoBlock({
   return (
     <div className="space-y-4 rounded-xl border border-border p-4">
       {/* « Travailler » doublonnait « Jouer ce morceau », en tete de fiche. */}
-      <h3 className="text-sm font-medium">Progression au tempo</h3>
+      <h3 className="text-sm font-medium">{t("tempoProgress")}</h3>
 
       {ladderTarget ? (
         <TempoLadder
@@ -932,8 +934,7 @@ function TempoBlock({
         />
       ) : (
         <p className="text-sm text-muted-foreground">
-          Donne-toi un tempo à atteindre : c&apos;est lui qui mesurera la
-          progression, séance après séance.
+          {t("tempoHint")}
         </p>
       )}
 
@@ -951,7 +952,7 @@ function TempoBlock({
           htmlFor="target-bpm"
           className="mb-1 block text-sm font-medium"
         >
-          Tempo cible
+          {t("targetTempo")}
         </label>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2">
@@ -981,8 +982,7 @@ function TempoBlock({
           ))}
         </div>
         <p className="mt-1.5 text-xs text-muted-foreground">
-          Le pourcentage affiché ailleurs se déduit de ce tempo et du
-          meilleur que tu aies tenu — il ne se saisit plus.
+          {t("percentHint")}
         </p>
       </div>
     </div>
@@ -1011,18 +1011,18 @@ function TabStructureSummary({
   syncedAt,
   onUseAsTarget,
 }: TabStructureSummaryProps) {
+  const t = useTranslations("library.sheet");
+  const intlLocale = useIntlLocale();
   if (!structure) return null;
 
   return (
     <div className="rounded-xl border border-border p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h4 className="text-sm font-medium">Ce que dit la tablature</h4>
+        <h4 className="text-sm font-medium">{t("tabSays")}</h4>
         {syncedAt && (
           <span className="text-xs text-muted-foreground">
-            Analysée le{" "}
-            {new Date(syncedAt).toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "short",
+            {t("analyzedOn", {
+              date: new Date(syncedAt).toLocaleDateString(intlLocale, { day: "numeric", month: "short" }),
             })}
           </span>
         )}
@@ -1030,19 +1030,19 @@ function TabStructureSummary({
 
       <dl className="mt-3 grid grid-cols-3 gap-3">
         <div>
-          <dt className="text-xs text-muted-foreground">Tempo</dt>
+          <dt className="text-xs text-muted-foreground">{t("tempo")}</dt>
           <dd className="tabular text-lg font-bold text-primary">
             {structure.bpm}
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Mesure</dt>
+          <dt className="text-xs text-muted-foreground">{t("timeSignature")}</dt>
           <dd className="tabular text-lg font-bold">
             {structure.timeSignatureBeats}/{structure.timeSignatureValue}
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Mesures</dt>
+          <dt className="text-xs text-muted-foreground">{t("measures")}</dt>
           <dd className="tabular text-lg font-bold">
             {structure.totalMeasures || "—"}
           </dd>
@@ -1052,8 +1052,7 @@ function TabStructureSummary({
       {structure.sections.length > 0 && (
         <div className="mt-3">
           <p className="mb-1.5 text-xs text-muted-foreground">
-            {structure.sections.length} section
-            {structure.sections.length > 1 ? "s" : ""}
+            {t("sections", { count: structure.sections.length })}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {structure.sections.map((section) => (
@@ -1078,7 +1077,7 @@ function TabStructureSummary({
         className="mt-3 inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-input px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Icon name="speed" className="h-[16px] w-[16px]" />
-        Prendre {structure.bpm} BPM comme cible
+        {t("useAsTarget", { bpm: structure.bpm })}
       </button>
     </div>
   );

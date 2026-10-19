@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { TimeSignature } from "@/types";
 
 interface MetronomeVisualizerProps {
@@ -23,6 +24,7 @@ export function MetronomeVisualizer({
   onToggleAccent,
   onToggleSilent,
 }: MetronomeVisualizerProps) {
+  const t = useTranslations("metronome");
   const beats = Array.from({ length: timeSignature.beats }, (_, i) => i);
 
   return (
@@ -43,7 +45,7 @@ export function MetronomeVisualizer({
                   onToggleAccent?.(beatIndex);
                 }
               }}
-              aria-label={`Temps ${beatIndex + 1}${isAccent ? ", accentué" : ""}${isSilent ? ", silencieux" : ""}`}
+              aria-label={t("beat", { n: beatIndex + 1, accent: isAccent ? "yes" : "no", silent: isSilent ? "yes" : "no" })}
               aria-pressed={silentMode ? isSilent : isAccent}
               className="flex h-9 w-9 items-center justify-center rounded-full"
             >
@@ -67,7 +69,7 @@ export function MetronomeVisualizer({
 
       <p className="text-center text-[11px] text-muted-foreground">
         {timeSignature.beats}/{timeSignature.noteValue} ·{" "}
-        {silentMode ? "touche un temps pour le rendre muet" : "touche un temps pour l'accentuer"}
+        {silentMode ? t("tapToMute") : t("tapToAccent")}
       </p>
     </div>
   );

@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+import { tErr } from "@/i18n/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,7 +29,7 @@ export async function GET(
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Non authentifie" }, { status: 401 });
+    return NextResponse.json({ error: await tErr("notAuthenticated") }, { status: 401 });
   }
 
   const { data: rehearsal, error } = await supabase
@@ -44,7 +46,7 @@ export async function GET(
     .single();
 
   if (error || !rehearsal) {
-    return NextResponse.json({ error: "Repetition non trouvee" }, { status: 404 });
+    return NextResponse.json({ error: await tErr("rehearsalNotFound") }, { status: 404 });
   }
 
   const startDate = new Date(rehearsal.date);
@@ -52,7 +54,8 @@ export async function GET(
     ? new Date(rehearsal.end_date)
     : new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // default 2h
 
-  const bandName = (rehearsal.band as { name: string })?.name || "Groupe";
+  const t = await getTranslations("ics");
+  const bandName = (rehearsal.band as { name: string })?.name || (await getTranslations("common"))("band");
   const setlistName = (rehearsal.setlist as { name: string })?.name;
 
   const attendees = (rehearsal.participants as { profile: { display_name: string | null; username: string } }[])
@@ -60,10 +63,10 @@ export async function GET(
     .filter(Boolean)
     .join(", ");
 
-  let description = `Groupe: ${bandName}`;
+  let description = t("band", { name: bandName });
   if (setlistName) description += `\\nSetlist: ${setlistName}`;
   if (rehearsal.description) description += `\\n\\n${escapeICS(rehearsal.description)}`;
-  if (attendees) description += `\\n\\nParticipants: ${attendees}`;
+  if (attendees) description += `\\n\\n${t("participants", { names: attendees })}`;
 
   const location = rehearsal.location ? escapeICS(rehearsal.location) : "";
 
@@ -85,12 +88,12 @@ export async function GET(
     "BEGIN:VALARM",
     "TRIGGER:-PT1H",
     "ACTION:DISPLAY",
-    `DESCRIPTION:Repet dans 1h : ${escapeICS(rehearsal.title)}`,
+    `DESCRIPTION:${t("inOneHour", { title: escapeICS(rehearsal.title) })}`,
     "END:VALARM",
     "BEGIN:VALARM",
     "TRIGGER:-P1D",
     "ACTION:DISPLAY",
-    `DESCRIPTION:Repet demain : ${escapeICS(rehearsal.title)}`,
+    `DESCRIPTION:${t("tomorrow", { title: escapeICS(rehearsal.title) })}`,
     "END:VALARM",
     "END:VEVENT",
     "END:VCALENDAR",
@@ -99,7 +102,7 @@ export async function GET(
   return new NextResponse(icsContent, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": `attachment; filename="repet-${rehearsal.id}.ics"`,
+      "Content-Disposition": `attachment; filename="${t("filename")}-${rehearsal.id}.ics"`,
     },
   });
 }

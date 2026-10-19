@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Play, Square } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useMetronome } from "@/lib/hooks/use-metronome";
 import { MetronomeControls } from "./metronome-controls";
 import { MetronomeVisualizer } from "./metronome-visualizer";
@@ -30,6 +31,7 @@ export function Metronome({
   onPlayingChange,
   className = "",
 }: MetronomeProps) {
+  const t = useTranslations("metronome");
   const metronome = useMetronome({
     initialBpm,
     onBeat: (beat, isAccent) => {
@@ -103,7 +105,7 @@ export function Metronome({
       {/* Le bouton : ambre pour lancer, encre pour arreter. */}
       <button
         onClick={handleToggle}
-        aria-label={metronome.isPlaying ? "Arrêter le métronome" : "Lancer le métronome"}
+        aria-label={metronome.isPlaying ? t("stop") : t("start")}
         aria-pressed={metronome.isPlaying}
         className={`flex h-[76px] w-[76px] items-center justify-center rounded-full transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
           metronome.isPlaying

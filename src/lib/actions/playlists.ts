@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import type {
@@ -137,7 +138,7 @@ export async function createPlaylist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { data, error } = await supabase
@@ -151,7 +152,7 @@ export async function createPlaylist(
 
   if (error) {
     console.error("Error creating playlist:", error);
-    return { success: false, error: "Erreur lors de la création" };
+    return { success: false, error: await tErr("createFailed") };
   }
 
   revalidatePath("/library");
@@ -167,7 +168,7 @@ export async function updatePlaylist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -178,7 +179,7 @@ export async function updatePlaylist(
 
   if (error) {
     console.error("Error updating playlist:", error);
-    return { success: false, error: "Erreur lors de la mise à jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   revalidatePath("/library");
@@ -193,7 +194,7 @@ export async function deletePlaylist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -204,7 +205,7 @@ export async function deletePlaylist(
 
   if (error) {
     console.error("Error deleting playlist:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/library");
@@ -220,7 +221,7 @@ export async function addSongToPlaylist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   // Get max position
@@ -241,10 +242,10 @@ export async function addSongToPlaylist(
 
   if (error) {
     if (error.code === "23505") {
-      return { success: false, error: "Ce morceau est déjà dans cette playlist" };
+      return { success: false, error: await tErr("songAlreadyInPlaylist") };
     }
     console.error("Error adding song to playlist:", error);
-    return { success: false, error: "Erreur lors de l'ajout" };
+    return { success: false, error: await tErr("addFailed") };
   }
 
   revalidatePath("/library");
@@ -260,7 +261,7 @@ export async function removeSongFromPlaylist(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -271,7 +272,7 @@ export async function removeSongFromPlaylist(
 
   if (error) {
     console.error("Error removing song from playlist:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/library");

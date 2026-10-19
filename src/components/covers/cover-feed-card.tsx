@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useOptimistic, useRef, useState, useTransition } from "react";
 import { profileHref } from "@/lib/navigation";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import type { CommonT } from "@/i18n/types";
 import { AudioLines, Reply, SmilePlus, Video } from "lucide-react";
 import { toggleCoverReaction } from "@/lib/actions/activities";
 import { ActivityComments } from "@/components/social/activity-comments";
@@ -30,16 +33,16 @@ interface CoverFeedCardProps {
   onReply: (item: CoverFeedItem) => void;
 }
 
-function formatRelative(iso: string): string {
+function formatRelative(iso: string, t: CommonT, intlLocale: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return "à l'instant";
-  if (minutes < 60) return `il y a ${minutes} min`;
+  if (minutes < 1) return t("relative.now");
+  if (minutes < 60) return t("relative.minutesAgo", { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `il y a ${hours} h`;
+  if (hours < 24) return t("relative.hoursAgo", { count: hours });
   const days = Math.floor(hours / 24);
-  if (days < 7) return `il y a ${days} j`;
-  return new Date(iso).toLocaleDateString("fr-FR", {
+  if (days < 7) return t("relative.daysAgoShort", { count: days });
+  return new Date(iso).toLocaleDateString(intlLocale, {
     day: "numeric",
     month: "short",
   });
@@ -50,6 +53,9 @@ export function CoverFeedCard({
   currentUserId,
   onReply,
 }: CoverFeedCardProps) {
+  const t = useTranslations("covers.feed");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   const [isPending, startTransition] = useTransition();
   const [showPalette, setShowPalette] = useState(false);
   const [burst, setBurst] = useState(false);
@@ -88,7 +94,7 @@ export function CoverFeedCard({
     startTransition(async () => {
       applyOptimistic(emoji);
       const result = await toggleCoverReaction(item.id, emoji);
-      if (!result.success) setError(result.error ?? "Réaction impossible");
+      if (!result.success) setError(result.error ?? t("reactionFailed"));
     });
   };
 
@@ -116,7 +122,7 @@ export function CoverFeedCard({
 
   const liked = state.mine.includes(QUICK_EMOJI);
   const authorName =
-    item.author.display_name || item.author.username || "Musicien";
+    item.author.display_name || item.author.username || t("musician");
 
   const chip =
     "inline-flex min-h-[38px] items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -146,21 +152,21 @@ export function CoverFeedCard({
               href={item.isOwn ? "/profil" : profileHref(item.author.username)}
               className="font-bold underline-offset-2 hover:underline"
             >
-              {item.isOwn ? "Toi" : authorName}
+              {item.isOwn ? t("you") : authorName}
             </Link>
           ) : (
-            <span className="font-bold">{item.isOwn ? "Toi" : authorName}</span>
+            <span className="font-bold">{item.isOwn ? t("you") : authorName}</span>
           )}{" "}
-          <span className="text-muted-foreground">a posté une cover</span>
+          <span className="text-muted-foreground">{t("posted")}</span>
         </p>
         <time dateTime={item.created_at} className="shrink-0 text-xs text-muted-foreground">
-          {formatRelative(item.created_at)}
+          {formatRelative(item.created_at, tc, intlLocale)}
         </time>
       </header>
 
       <div className="px-4 pb-2.5 sm:px-0">
         <p className="font-display text-[34px] font-extrabold uppercase leading-[0.9]">
-          {item.song?.title ?? "Morceau inconnu"}
+          {item.song?.title ?? t("unknownSong")}
         </p>
         {item.song?.artist && (
           <p className="font-display text-[13px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
@@ -170,7 +176,7 @@ export function CoverFeedCard({
         {item.replyTo && (
           <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
             <Reply className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-            En réponse à {item.replyTo.authorName} sur «&nbsp;{item.replyTo.songTitle}&nbsp;»
+            {t("replyTo", { name: item.replyTo.authorName, title: item.replyTo.songTitle })}
           </p>
         )}
         <CoverGearLine gear={item.gear} className="mt-1.5" />
@@ -208,7 +214,7 @@ export function CoverFeedCard({
       {item.description && (
         <p className="px-4 pt-3 font-serif text-[15px] italic leading-relaxed sm:px-0">
           <span className="mr-1 font-sans text-[13px] font-bold not-italic">
-            {item.isOwn ? "Toi" : authorName}
+            {item.isOwn ? t("you") : authorName}
           </span>
           {item.description}
         </p>
@@ -224,7 +230,7 @@ export function CoverFeedCard({
           className={`${chip} ${liked ? "border-foreground bg-secondary" : "border-border hover:bg-accent"}`}
         >
           <span aria-hidden="true">{QUICK_EMOJI}</span>
-          <span>{liked ? "Réagi" : "Réagir"}</span>
+          <span>{liked ? t("reacted") : t("react")}</span>
         </button>
 
         {/* Les autres reactions, derriere un geste de plus */}
@@ -232,7 +238,7 @@ export function CoverFeedCard({
           <button
             type="button"
             onClick={() => setShowPalette((open) => !open)}
-            aria-label="Autres réactions"
+            aria-label={t("otherReactions")}
             aria-expanded={showPalette}
             className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
@@ -250,7 +256,7 @@ export function CoverFeedCard({
 
         <button type="button" onClick={() => onReply(item)} className={`${chip} border-border hover:bg-accent`}>
           <Video className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-          Répondre en cover
+          {t("replyWithCover")}
         </button>
 
         <div className="flex-1" />
@@ -258,7 +264,7 @@ export function CoverFeedCard({
         {item.replyCount > 0 && (
           <span className="tabular inline-flex items-center gap-1 text-xs text-muted-foreground">
             <Reply className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-            {item.replyCount} réponse{item.replyCount > 1 ? "s" : ""}
+            {t("replies", { count: item.replyCount })}
           </span>
         )}
       </div>

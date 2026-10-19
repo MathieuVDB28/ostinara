@@ -1,4 +1,5 @@
 import { after } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
@@ -340,8 +341,11 @@ export async function syncBadges(
 
         // Le titre suit l'instrument principal (« Ampoules aux baguettes »).
         const instrument = await getMyPrimaryInstrument();
+        const tBadges = await getTranslations("badges");
         for (const row of highest.values()) {
-          const label = badgeLabel(row.badge_id, row.level, instrument);
+          // Le titre ecrit dans le feed reste un repli : la carte le
+          // recalcule dans la langue de qui la lit (badge_id, level, instrument).
+          const label = badgeLabel(row.badge_id, row.level, instrument, tBadges);
           // Insertion directe plutot que createActivity : celle-ci
           // revalide /feed, ce qu'un rendu de page n'a pas le droit de
           // faire. Les amis ne recoivent pas de notification pour un badge.
@@ -354,11 +358,17 @@ export async function syncBadges(
           after(() =>
             sendPushNotification(
               user.id,
-              {
-                title: "Badge débloqué",
-                body: `${label} — ${badgeGoal(row.badge_id, row.level)}`,
-                tag: `badge-${row.badge_id}`,
-                data: { url: "/profil/badges" },
+              async (_t, locale) => {
+                const tb = await getTranslations({ locale, namespace: "badges" });
+                return {
+                  title: tb("unlockedPush.title"),
+                  body: tb("unlockedPush.body", {
+                    label: badgeLabel(row.badge_id, row.level, instrument, tb),
+                    goal: badgeGoal(row.badge_id, row.level, tb),
+                  }),
+                  tag: `badge-${row.badge_id}`,
+                  data: { url: "/profil/badges" },
+                };
               },
               "badge_unlocked"
             )

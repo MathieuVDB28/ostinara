@@ -1,10 +1,11 @@
 import { Suspense } from "react";
 import { SearchPageView } from "@/components/search/search-page-view";
+import { getTranslations } from "next-intl/server";
 
-export const metadata = {
-  title: "Recherche | Ostinara",
-  description: "Chercher un morceau, un album, une cover, un exercice, du matos ou un ami",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("meta.search");
+  return { title: t("title"), description: t("description") };
+}
 
 export default function RecherchePage() {
   // useSearchParams impose une frontiere de Suspense : sans elle, toute la

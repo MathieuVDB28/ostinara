@@ -9,6 +9,8 @@
  * d'amis.
  */
 
+import type { PushT } from "./send-push";
+
 export type ReminderType = "reminder_streak" | "reminder_plan" | "reminder_song" | "reminder_pause";
 
 export const REMINDER_TYPES: ReminderType[] = [
@@ -48,8 +50,8 @@ export interface ReminderInput {
 
 export interface Reminder {
   type: ReminderType;
-  title: string;
-  body: string;
+  /** Le texte, ecrit dans la langue du destinataire au moment de l'envoi. */
+  text: (t: PushT) => { title: string; body: string };
   url: string;
   songId?: string;
 }
@@ -76,10 +78,6 @@ export function streakUntilYesterday(days: Set<string>, today: string): number {
   return count;
 }
 
-function plural(n: number, one: string, many: string) {
-  return n > 1 ? many : one;
-}
-
 export function pickReminder(input: ReminderInput): Reminder | null {
   const { today, weekday, practiceDays, learningSongs, remainingGoals, recent } = input;
 
@@ -99,8 +97,7 @@ export function pickReminder(input: ReminderInput): Reminder | null {
   if (streak >= STREAK_MIN) {
     return {
       type: "reminder_streak",
-      title: `Ta série de ${streak} jours s'arrête ce soir`,
-      body: "Dix minutes de guitare suffisent pour la garder.",
+      text: (t) => ({ title: t("reminder.streakTitle", { count: streak }), body: t("reminder.streakBody") }),
       url: "/jouer",
     };
   }
@@ -110,8 +107,10 @@ export function pickReminder(input: ReminderInput): Reminder | null {
     const n = remainingGoals.length;
     return {
       type: "reminder_plan",
-      title: `Il te reste ${n} ${plural(n, "objectif", "objectifs")} cette semaine`,
-      body: `Prochain : ${remainingGoals[0]}. Encore trois jours d'ici dimanche.`,
+      text: (t) => ({
+        title: t("reminder.planTitle", { count: n }),
+        body: t("reminder.planBody", { goal: remainingGoals[0] }),
+      }),
       url: "/jouer",
     };
   }
@@ -131,10 +130,12 @@ export function pickReminder(input: ReminderInput): Reminder | null {
   if (idle) {
     return {
       type: "reminder_song",
-      title: `${idle.song.title} prend la poussière`,
-      body: idle.song.lastPlayed
-        ? `Ça fait ${idle.idle} jours que tu ne l'as pas joué. On le reprend ?`
-        : `En cours depuis ${idle.idle} jours, et pas encore de session. On s'y met ?`,
+      text: (t) => ({
+        title: t("reminder.songTitle", { title: idle.song.title }),
+        body: idle.song.lastPlayed
+          ? t("reminder.songIdleBody", { count: idle.idle })
+          : t("reminder.songNeverBody", { count: idle.idle }),
+      }),
       url: `/jouer?song=${idle.song.id}`,
       songId: idle.song.id,
     };
@@ -148,8 +149,7 @@ export function pickReminder(input: ReminderInput): Reminder | null {
     if (pause >= PAUSE_DAYS && (!lastPause || daysBetween(lastPause, today) >= PAUSE_COOLDOWN_DAYS)) {
       return {
         type: "reminder_pause",
-        title: `Ça fait ${pause} jours que t'as pas sorti la guitare`,
-        body: "Même un quart d'heure, ça compte.",
+        text: (t) => ({ title: t("reminder.pauseTitle", { count: pause }), body: t("reminder.pauseBody") }),
         url: "/jouer",
       };
     }

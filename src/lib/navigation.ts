@@ -16,16 +16,24 @@
 
 export type BadgeKey = "friends" | "challenges" | "bands";
 
+/** Une cle du namespace `nav` (messages/<langue>/nav.json). */
+export type NavLabelKey =
+  | "home" | "play" | "library" | "community" | "profile"
+  | "songs" | "albums" | "covers" | "feed" | "friends" | "challenges" | "bands"
+  | "progress" | "badges" | "gear" | "settings";
+
 export interface NavSegment {
   href: string;
-  label: string;
+  /** Cle de traduction : t(label) dans le namespace `nav`. */
+  label: NavLabelKey;
   icon: string;
   badgeKey?: BadgeKey;
 }
 
 export interface NavTab {
   href: string;
-  label: string;
+  /** Cle de traduction : t(label) dans le namespace `nav`. */
+  label: NavLabelKey;
   icon: string;
   /** Segments servis par des routes distinctes. Vide = segments client. */
   segments: NavSegment[];
@@ -41,14 +49,14 @@ export const NAV_TABS: NavTab[] = [
     // page (/recherche), ouverte depuis la loupe de l'accueil. Sur
     // desktop, le logo de la sidebar mene a l'accueil : pas d'onglet.
     href: "/accueil",
-    label: "Accueil",
+    label: "home",
     icon: "home",
     mobileOnly: true,
     segments: [],
   },
   {
     href: "/jouer",
-    label: "Jouer",
+    label: "play",
     icon: "metronome",
     // Les segments de /jouer sont du state client : le metronome et le
     // chrono de session doivent survivre au changement d'onglet.
@@ -56,42 +64,42 @@ export const NAV_TABS: NavTab[] = [
   },
   {
     href: "/biblio",
-    label: "Biblio",
+    label: "library",
     icon: "library",
     segments: [
-      { href: "/biblio", label: "Morceaux", icon: "library" },
-      { href: "/biblio/albums", label: "Albums", icon: "album" },
-      { href: "/biblio/covers", label: "Covers", icon: "video" },
+      { href: "/biblio", label: "songs", icon: "library" },
+      { href: "/biblio/albums", label: "albums", icon: "album" },
+      { href: "/biblio/covers", label: "covers", icon: "video" },
     ],
   },
   {
     href: "/commu",
-    label: "Commu",
+    label: "community",
     icon: "social",
     badgeKeys: ["friends", "challenges", "bands"],
     segments: [
-      { href: "/commu", label: "Feed", icon: "feed" },
+      { href: "/commu", label: "feed", icon: "feed" },
       // Les covers ont quitte la bibliotheque pour la communaute : c'est
       // le seul contenu de l'app qu'on publie pour etre vu, pas pour
       // s'en souvenir. « Biblio › Covers » reste l'archive personnelle.
-      { href: "/commu/covers", label: "Covers", icon: "video" },
+      { href: "/commu/covers", label: "covers", icon: "video" },
       // Les albums de la semaine : la meme vue que l'onglet « Semaine » de
       // « Biblio › Albums », ou l'on note ce qu'on ecoute.
-      { href: "/commu/albums", label: "Albums", icon: "album" },
-      { href: "/commu/amis", label: "Amis", icon: "users", badgeKey: "friends" },
-      { href: "/commu/defis", label: "Défis", icon: "trophy", badgeKey: "challenges" },
-      { href: "/commu/groupes", label: "Groupes", icon: "setlist", badgeKey: "bands" },
+      { href: "/commu/albums", label: "albums", icon: "album" },
+      { href: "/commu/amis", label: "friends", icon: "users", badgeKey: "friends" },
+      { href: "/commu/defis", label: "challenges", icon: "trophy", badgeKey: "challenges" },
+      { href: "/commu/groupes", label: "bands", icon: "setlist", badgeKey: "bands" },
     ],
   },
   {
     href: "/profil",
-    label: "Profil",
+    label: "profile",
     icon: "person",
     segments: [
-      { href: "/profil", label: "Progression", icon: "chart" },
-      { href: "/profil/badges", label: "Badges", icon: "medal" },
-      { href: "/profil/matos", label: "Matos", icon: "guitar" },
-      { href: "/profil/reglages", label: "Réglages", icon: "settings" },
+      { href: "/profil", label: "progress", icon: "chart" },
+      { href: "/profil/badges", label: "badges", icon: "medal" },
+      { href: "/profil/matos", label: "gear", icon: "guitar" },
+      { href: "/profil/reglages", label: "settings", icon: "settings" },
     ],
   },
 ];

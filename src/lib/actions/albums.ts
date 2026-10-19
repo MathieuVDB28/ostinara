@@ -1,5 +1,7 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
+import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
@@ -41,11 +43,11 @@ export async function createAlbumReview(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   if (input.rating < 0 || input.rating > 10) {
-    return { success: false, error: "La note doit être entre 0 et 10" };
+    return { success: false, error: await tErr("ratingRange") };
   }
 
   const { data, error } = await supabase
@@ -68,7 +70,7 @@ export async function createAlbumReview(
 
   if (error) {
     console.error("Error creating album review:", error);
-    return { success: false, error: "Erreur lors de la création de la review" };
+    return { success: false, error: await tErr("reviewCreateFailed") };
   }
 
   // Créer l'activité pour le feed
@@ -128,11 +130,11 @@ export async function updateAlbumReview(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   if (input.rating !== undefined && (input.rating < 0 || input.rating > 10)) {
-    return { success: false, error: "La note doit être entre 0 et 10" };
+    return { success: false, error: await tErr("ratingRange") };
   }
 
   const { error } = await supabase
@@ -143,7 +145,7 @@ export async function updateAlbumReview(
 
   if (error) {
     console.error("Error updating album review:", error);
-    return { success: false, error: "Erreur lors de la mise à jour" };
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   revalidatePath("/albums");
@@ -158,7 +160,7 @@ export async function deleteAlbumReview(
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { error } = await supabase
@@ -169,7 +171,7 @@ export async function deleteAlbumReview(
 
   if (error) {
     console.error("Error deleting album review:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   revalidatePath("/albums");
@@ -424,7 +426,7 @@ export async function getAlbumRecommendations(): Promise<{
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return { success: false, error: "Non authentifié" };
+    return { success: false, error: await tErr("notAuthenticated") };
   }
 
   const { data: profile } = await supabase
@@ -434,7 +436,7 @@ export async function getAlbumRecommendations(): Promise<{
     .single();
 
   if (!profile || profile.plan === "free") {
-    return { success: false, error: "Cette fonctionnalité nécessite un plan Pro ou Band" };
+    return { success: false, error: await tErr("proOnly") };
   }
 
   const [{ data: reviews }, { data: songs }, { data: wishlist }] = await Promise.all([
@@ -489,6 +491,7 @@ export async function getAlbumRecommendations(): Promise<{
   const knownNames = new Set(seeds.keys());
   const candidates = new Map<string, { id: string; name: string; score: number; why: string }>();
 
+  const tr = await getTranslations("albums.recommendations");
   await Promise.all(
     topSeeds.map(async (seed) => {
       const [artist] = await searchArtists(seed.name, 1);
@@ -502,8 +505,8 @@ export async function getAlbumRecommendations(): Promise<{
           current.score += gain;
         } else {
           const reason = seed.played
-            ? `Parce que tu joues ${seed.name}`
-            : `Proche de ${seed.name}, dont tu as aimé « ${seed.album} »`;
+            ? tr("becausePlay", { artist: seed.name })
+            : tr("closeTo", { artist: seed.name, album: seed.album ?? "" });
           candidates.set(candidate.id, { id: candidate.id, name: candidate.name, score: gain, why: reason });
         }
       });

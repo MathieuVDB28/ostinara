@@ -1,0 +1,58 @@
+{
+  "later": "Later",
+  "mastered": {
+    "eyebrow": "Mastered",
+    "lead": "It's yours. Why not let people hear it?",
+    "newCover": "Record a new cover",
+    "cover": "Record your cover",
+    "coverHint": "For your friends, or just to keep a record",
+    "setlist": "Add it to a setlist",
+    "setlistHint": "Ready for the stage or the next rehearsal"
+  },
+  "gear": {
+    "playedWith": "Played with",
+    "hint": "With Pro or Band, shown on your next covers of this song."
+  },
+  "cover": {
+    "eyebrow": "Cover posted",
+    "lead": "You recorded it, your band can play it. Shall we add it to the next rehearsal?",
+    "added": "Added to “{name}”",
+    "already": "Already in “{name}”",
+    "seeRehearsal": "See rehearsal",
+    "addTo": "Add to “{name}”"
+  },
+  "addFailed": "Couldn't add it. Try again.",
+  "setlists": {
+    "see": "See",
+    "which": "Which setlist?",
+    "loading": "Loading…",
+    "none": "No setlists yet.",
+    "create": "Create one",
+    "personal": "Personal",
+    "songs": "{count, plural, one {# song} other {# songs}}"
+  },
+  "added": {
+    "eyebrow": "In your library",
+    "work": "Work on it now",
+    "workHint": "Opens the metronome on this song",
+    "challengeSent": "Challenge sent to {name}: first to master it wins.",
+    "challenge": "Challenge {name}",
+    "challengeHint": "First to master it within 2 weeks wins",
+    "challengeFailed": "Couldn't start the challenge."
+  },
+  "album": {
+    "eyebrow": "After listening",
+    "added": "{count, plural, one {# track} other {# tracks}} in “To learn”",
+    "allThere": "Everything was already in your library",
+    "alreadyThere": "{count} already there, no duplicates.",
+    "seeLibrary": "See my library",
+    "lead": "Did a track make you want to pick up your instrument?",
+    "loading": "Loading tracks…",
+    "unavailable": "Tracklist unavailable for this album.",
+    "tracks": "Album tracks",
+    "partial": "{count} added, then: ",
+    "adding": "Adding…",
+    "pick": "Pick one or more tracks",
+    "add": "Add {count, plural, one {# track} other {# tracks}} to my library"
+  }
+}

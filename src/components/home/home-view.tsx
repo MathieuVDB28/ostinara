@@ -1,11 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import type { CommonT } from "@/i18n/types";
 import { ArrowRight, ChevronRight, Play, Search, Star, Trophy, UserPlus, Users } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
 import { songTempoProgress } from "@/lib/song-progress";
 import { profileHref } from "@/lib/navigation";
-import { ACTIVITY_MESSAGES, formatActivityDate } from "@/lib/activity-messages";
+import { activityMessage, formatActivityDate } from "@/lib/activity-messages";
 import type {
   ActivityWithDetails,
   AlbumReview,
@@ -56,7 +59,10 @@ export function HomeView({
   friendActivities,
   friendCovers,
 }: HomeViewProps) {
-  const today = new Date().toLocaleDateString("fr-FR", {
+  const t = useTranslations("home");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
+  const today = new Date().toLocaleDateString(intlLocale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -71,7 +77,7 @@ export function HomeView({
             {today}
           </p>
           <h1 className="mt-1 truncate font-display text-[40px] font-extrabold uppercase leading-none tracking-[0.01em] lg:text-5xl">
-            {displayName ? `Salut ${displayName}` : "Salut"}
+            {displayName ? t("hello", { name: displayName }) : t("helloAnonymous")}
           </h1>
         </div>
         {/*
@@ -84,7 +90,7 @@ export function HomeView({
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground lg:hidden"
         >
           <Search className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-          <span className="sr-only">Rechercher</span>
+          <span className="sr-only">{tc("search")}</span>
         </Link>
       </header>
 
@@ -112,12 +118,13 @@ export function HomeView({
 // ---------------------------------------------------------------------------
 
 /** Le titre de bloc : un filet, un libelle en mono, et « Tout voir ». */
-function BlockHeading({ id, title, href, linkLabel = "Tout voir" }: {
+function BlockHeading({ id, title, href, linkLabel }: {
   id: string;
   title: string;
   href?: string;
   linkLabel?: string;
 }) {
+  const t = useTranslations("common");
   return (
     <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
       <h2
@@ -131,7 +138,7 @@ function BlockHeading({ id, title, href, linkLabel = "Tout voir" }: {
           href={href}
           className="inline-flex items-center gap-0.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
-          {linkLabel}
+          {linkLabel ?? t("seeAll")}
           <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       )}
@@ -156,8 +163,8 @@ function EmptyLine({ children, href, action }: {
 }
 
 /** « 4,5 » : la note stockee sur 10, lue en etoiles sur 5. */
-function formatRating(rating: number): string {
-  return (Math.round(rating) / 2).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+function formatRating(rating: number, intlLocale: string): string {
+  return (Math.round(rating) / 2).toLocaleString(intlLocale, { maximumFractionDigits: 1 });
 }
 
 function Avatar({ url, name, size = 32 }: { url?: string | null; name: string; size?: number }) {
@@ -186,26 +193,27 @@ function Avatar({ url, name, size = 32 }: { url?: string | null; name: string; s
 // ---------------------------------------------------------------------------
 
 function WeekStats({ stats, plan }: { stats: PracticeStats; plan: WeeklyPlan | null }) {
+  const t = useTranslations("home");
   return (
     <section aria-labelledby="home-week">
-      <BlockHeading id="home-week" title="Ta semaine" href="/jouer" linkLabel="Carnet" />
+      <BlockHeading id="home-week" title={t("week")} href="/jouer" linkLabel={t("logbook")} />
       <dl className="grid grid-cols-4 gap-3">
         <Stat
-          label="minutes"
+          label={t("statMinutes")}
           value={stats.minutesThisWeek}
         />
-        <Stat label={stats.sessionsThisWeek > 1 ? "sessions" : "session"} value={stats.sessionsThisWeek} />
+        <Stat label={t("statSessions", { count: stats.sessionsThisWeek })} value={stats.sessionsThisWeek} />
         <Stat
-          label={`série · record ${stats.longestStreak}`}
+          label={t("statStreak", { record: stats.longestStreak })}
           value={
             <>
               {stats.currentStreak}
-              <small className="text-[0.55em] text-muted-foreground">j</small>
+              <small className="text-[0.55em] text-muted-foreground">{t("dayShort")}</small>
             </>
           }
         />
         <Stat
-          label="objectifs"
+          label={t("statGoals")}
           value={
             plan && plan.goals.length > 0 ? (
               <>
@@ -233,13 +241,13 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function formatWhen(practicedAt: string): string {
+function formatWhen(practicedAt: string, t: CommonT, intlLocale: string): string {
   const then = new Date(practicedAt);
   const days = Math.floor((Date.now() - then.getTime()) / 86_400_000);
-  if (days <= 0) return "aujourd'hui";
-  if (days === 1) return "hier";
-  if (days < 7) return `il y a ${days} jours`;
-  return `le ${then.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
+  if (days <= 0) return t("relative.today");
+  if (days === 1) return t("relative.yesterday");
+  if (days < 7) return t("relative.daysAgo", { count: days });
+  return t("relative.onDate", { date: then.toLocaleDateString(intlLocale, { day: "numeric", month: "long" }) });
 }
 
 /**
@@ -247,12 +255,15 @@ function formatWhen(practicedAt: string): string {
  * Jouer, ou le metronome se cale sur son tempo.
  */
 function ResumeBlock({ resume }: { resume: HomeViewProps["resume"] }) {
+  const t = useTranslations("home");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   if (!resume) {
     return (
       <section aria-labelledby="home-resume">
-        <BlockHeading id="home-resume" title="Reprendre" />
-        <EmptyLine href="/biblio" action="Choisis un morceau à travailler">
-          Aucun morceau en cours.
+        <BlockHeading id="home-resume" title={t("resume")} />
+        <EmptyLine href="/biblio" action={t("chooseSong")}>
+          {t("noSongInProgress")}
         </EmptyLine>
       </section>
     );
@@ -264,16 +275,16 @@ function ResumeBlock({ resume }: { resume: HomeViewProps["resume"] }) {
 
   const recap = lastSession
     ? [
-        `Dernière session ${formatWhen(lastSession.practiced_at)}`,
+        t("lastSession", { when: formatWhen(lastSession.practiced_at, tc, intlLocale) }),
         lastSession.bpm_achieved ? `${lastSession.bpm_achieved} BPM` : null,
       ]
         .filter(Boolean)
         .join(" · ")
-    : "En cours d'apprentissage";
+    : t("inProgress");
 
   return (
     <section aria-labelledby="home-resume">
-      <BlockHeading id="home-resume" title="Reprendre" />
+      <BlockHeading id="home-resume" title={t("resume")} />
       <div className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-x-3.5 gap-y-1">
         <Cover src={song.cover_url} className="row-span-2 h-14 w-14 rounded-[4px]" priority />
         <p id="home-resume-title" className="min-w-0 truncate text-[15px] font-bold">
@@ -294,7 +305,7 @@ function ResumeBlock({ resume }: { resume: HomeViewProps["resume"] }) {
               </>
             )}
           </span>
-          <Frets value={percent} label={tempo ? `${tempo.achieved} sur ${tempo.target} BPM` : `${percent} %`} />
+          <Frets value={percent} label={tempo ? t("bpmOf", { achieved: tempo.achieved, target: tempo.target }) : `${percent} %`} />
         </span>
         <p className="tabular min-w-0 truncate text-[13px] text-muted-foreground">{recap}</p>
       </div>
@@ -304,7 +315,7 @@ function ResumeBlock({ resume }: { resume: HomeViewProps["resume"] }) {
         className="mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-bold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         <Play className="h-4 w-4 fill-current" strokeWidth={0} aria-hidden="true" />
-        Jouer ce morceau
+        {t("playThisSong")}
       </Link>
     </section>
   );
@@ -312,22 +323,23 @@ function ResumeBlock({ resume }: { resume: HomeViewProps["resume"] }) {
 
 /** N'apparait que s'il y a quelque chose a faire. */
 function PendingBlock({ pending }: { pending: HomeViewProps["pending"] }) {
+  const t = useTranslations("home");
   const rows = [
     {
       count: pending.friends,
-      label: (n: number) => (n > 1 ? `${n} demandes d'amis` : "1 demande d'ami"),
+      label: (n: number) => t("friendRequests", { count: n }),
       href: "/commu/amis",
       icon: UserPlus,
     },
     {
       count: pending.challenges,
-      label: (n: number) => (n > 1 ? `${n} défis en attente` : "1 défi en attente"),
+      label: (n: number) => t("pendingChallenges", { count: n }),
       href: "/commu/defis",
       icon: Trophy,
     },
     {
       count: pending.bands,
-      label: (n: number) => (n > 1 ? `${n} invitations de groupe` : "1 invitation de groupe"),
+      label: (n: number) => t("bandInvitations", { count: n }),
       href: "/commu/groupes",
       icon: Users,
     },
@@ -337,7 +349,7 @@ function PendingBlock({ pending }: { pending: HomeViewProps["pending"] }) {
 
   return (
     <section aria-labelledby="home-pending">
-      <BlockHeading id="home-pending" title="À traiter" />
+      <BlockHeading id="home-pending" title={t("todo")} />
       <ul>
         {rows.map(({ count, label, href, icon: RowIcon }) => (
           <li key={href} className="border-b border-border last:border-b-0">
@@ -391,12 +403,14 @@ function ShelfItem({ href, cover, title, subtitle, badge }: {
 }
 
 function RecentSongsShelf({ songs }: { songs: Song[] }) {
+  const t = useTranslations("home");
+  const tn = useTranslations("nav");
   return (
     <section aria-labelledby="home-songs">
-      <BlockHeading id="home-songs" title="Derniers morceaux ajoutés" href="/biblio" linkLabel="Biblio" />
+      <BlockHeading id="home-songs" title={t("recentSongs")} href="/biblio" linkLabel={tn("library")} />
       {songs.length === 0 ? (
-        <EmptyLine href="/biblio" action="Ajoute ton premier morceau">
-          Ta bibliothèque est vide.
+        <EmptyLine href="/biblio" action={t("addFirstSong")}>
+          {t("emptyLibrary")}
         </EmptyLine>
       ) : (
         <Shelf>
@@ -416,12 +430,14 @@ function RecentSongsShelf({ songs }: { songs: Song[] }) {
 }
 
 function RecentAlbumsShelf({ albums }: { albums: AlbumReview[] }) {
+  const t = useTranslations("home");
+  const tn = useTranslations("nav");
   return (
     <section aria-labelledby="home-albums">
-      <BlockHeading id="home-albums" title="Tes dernières écoutes" href="/biblio/albums" linkLabel="Albums" />
+      <BlockHeading id="home-albums" title={t("recentAlbums")} href="/biblio/albums" linkLabel={tn("albums")} />
       {albums.length === 0 ? (
-        <EmptyLine href="/biblio/albums" action="Note ton premier album">
-          Aucun album écouté pour l&apos;instant.
+        <EmptyLine href="/biblio/albums" action={t("rateFirstAlbum")}>
+          {t("noAlbums")}
         </EmptyLine>
       ) : (
         <Shelf>
@@ -442,11 +458,13 @@ function RecentAlbumsShelf({ albums }: { albums: AlbumReview[] }) {
 }
 
 function RatingBadge({ rating }: { rating: number }) {
+  const t = useTranslations("common");
+  const intlLocale = useIntlLocale();
   return (
     <span className="tabular absolute bottom-1 right-1 inline-flex items-center gap-0.5 rounded-[3px] bg-black/75 px-1 py-0.5 text-[11px] font-bold text-white">
       <Star className="h-2.5 w-2.5 fill-current" strokeWidth={0} aria-hidden="true" />
-      {formatRating(rating)}
-      <span className="sr-only"> sur 5</span>
+      {formatRating(rating, intlLocale)}
+      <span className="sr-only">{t("outOf5")}</span>
     </span>
   );
 }
@@ -456,12 +474,14 @@ function RatingBadge({ rating }: { rating: number }) {
 // ---------------------------------------------------------------------------
 
 function WeeklyAlbumsBlock({ albums }: { albums: WeeklyAlbum[] }) {
+  const t = useTranslations("home");
+  const intlLocale = useIntlLocale();
   return (
     <section aria-labelledby="home-weekly">
-      <BlockHeading id="home-weekly" title="Albums de la semaine" href="/commu/albums" />
+      <BlockHeading id="home-weekly" title={t("weeklyAlbums")} href="/commu/albums" />
       {albums.length === 0 ? (
-        <EmptyLine href="/biblio/albums" action="Note ce que tu écoutes">
-          Personne n&apos;a encore noté d&apos;album cette semaine.
+        <EmptyLine href="/biblio/albums" action={t("rateListening")}>
+          {t("noWeeklyAlbums")}
         </EmptyLine>
       ) : (
         <ol className="grid grid-cols-3 gap-2">
@@ -478,9 +498,9 @@ function WeeklyAlbumsBlock({ albums }: { albums: WeeklyAlbum[] }) {
                   </span>
                   <span className="tabular flex items-center gap-1 text-[11px] text-white/80">
                     <Star className="h-2.5 w-2.5 fill-current" strokeWidth={0} aria-hidden="true" />
-                    {formatRating(album.avg_rating)}
+                    {formatRating(album.avg_rating, intlLocale)}
                     <span aria-hidden="true">·</span>
-                    {album.review_count} {album.review_count > 1 ? "écoutes" : "écoute"}
+                    {t("listens", { count: album.review_count })}
                   </span>
                 </span>
               </Cover>
@@ -528,12 +548,17 @@ function activitySubject(activity: ActivityWithDetails): { title: string; cover?
 }
 
 function FriendsFeedBlock({ activities }: { activities: ActivityWithDetails[] }) {
+  const t = useTranslations("home");
+  const tn = useTranslations("nav");
+  const ta = useTranslations("activity");
+  const tc = useTranslations("common");
+  const intlLocale = useIntlLocale();
   return (
     <section aria-labelledby="home-feed">
-      <BlockHeading id="home-feed" title="Chez tes amis" href="/commu" linkLabel="Feed" />
+      <BlockHeading id="home-feed" title={t("friendsFeed")} href="/commu" linkLabel={tn("feed")} />
       {activities.length === 0 ? (
-        <EmptyLine href="/commu/amis" action="Trouve des amis">
-          Rien de neuf chez tes amis.
+        <EmptyLine href="/commu/amis" action={t("findFriends")}>
+          {t("noFriendNews")}
         </EmptyLine>
       ) : (
         <ul>
@@ -550,10 +575,10 @@ function FriendsFeedBlock({ activities }: { activities: ActivityWithDetails[] })
                   <Avatar url={activity.user.avatar_url} name={name} />
                   <span className="min-w-0 text-sm leading-snug">
                     <span className="font-semibold">{name}</span>{" "}
-                    <span className="text-muted-foreground">{ACTIVITY_MESSAGES[activity.type]}</span>
+                    <span className="text-muted-foreground">{activityMessage(activity.type, ta)}</span>
                     {subject && <span className="block truncate font-semibold">{subject.title}</span>}
                     <span className="block text-xs text-muted-foreground">
-                      {formatActivityDate(activity.created_at)}
+                      {formatActivityDate(activity.created_at, tc, intlLocale)}
                     </span>
                   </span>
                   {subject && subject.cover !== undefined ? (
@@ -572,11 +597,13 @@ function FriendsFeedBlock({ activities }: { activities: ActivityWithDetails[] })
 }
 
 function FriendCoversBlock({ covers }: { covers: CoverFeedItem[] }) {
+  const t = useTranslations("home");
+  const tc = useTranslations("common");
   if (covers.length === 0) return null;
 
   return (
     <section aria-labelledby="home-covers">
-      <BlockHeading id="home-covers" title="Dernières covers" href="/commu/covers" />
+      <BlockHeading id="home-covers" title={t("recentCovers")} href="/commu/covers" />
       <ul className="grid grid-cols-2 gap-2">
         {covers.map((cover) => {
           const name = cover.author.display_name || cover.author.username;
@@ -596,7 +623,7 @@ function FriendCoversBlock({ covers }: { covers: CoverFeedItem[] }) {
                     <span className="block truncate font-display text-lg font-extrabold uppercase leading-[0.95]">
                       {cover.song.title}
                     </span>
-                    <span className="block truncate text-[11px] text-white/80">par {name}</span>
+                    <span className="block truncate text-[11px] text-white/80">{tc("by", { name })}</span>
                   </span>
                 </Cover>
               </Link>

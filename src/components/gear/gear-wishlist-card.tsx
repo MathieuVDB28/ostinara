@@ -1,11 +1,9 @@
 "use client";
 
 import type { GearWishlistItem } from "@/types";
-import {
-  GEAR_TYPE_LABELS,
-  GEAR_PRIORITY_LABELS,
-  GEAR_PRIORITY_COLORS,
-} from "@/types";
+import { GEAR_PRIORITY_COLORS } from "@/types";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { GearTypeIcon } from "./gear-card";
 
 interface GearWishlistCardProps {
@@ -14,6 +12,10 @@ interface GearWishlistCardProps {
 }
 
 export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
+  const t = useTranslations("gear.wishlist");
+  const tg = useTranslations("gear.card");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
   const title = [item.brand, item.model].filter(Boolean).join(" ");
 
   return (
@@ -26,18 +28,18 @@ export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
       {/* Content */}
       <div className="min-w-0 flex-1">
         {/* Title */}
-        <h3 className="truncate font-display text-xl font-extrabold uppercase leading-tight">{title || "Sans nom"}</h3>
+        <h3 className="truncate font-display text-xl font-extrabold uppercase leading-tight">{title || tg("untitled")}</h3>
 
         {/* Badges */}
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           <span className="rounded border border-border px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em]">
-            {GEAR_TYPE_LABELS[item.type]}
+            {te(`gearType.${item.type}`)}
           </span>
           {item.priority && (
             <span
               className={`rounded border border-border px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em] ${GEAR_PRIORITY_COLORS[item.priority]}`}
             >
-              {GEAR_PRIORITY_LABELS[item.priority]}
+              {te(`gearPriority.${item.priority}`)}
             </span>
           )}
         </div>
@@ -45,9 +47,9 @@ export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
         {/* Estimated price */}
         {item.estimated_price != null && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Prix estimé :{" "}
+            {t("estimated")}{" "}
             <span className="font-medium text-foreground">
-              {item.estimated_price.toLocaleString("fr-FR", {
+              {item.estimated_price.toLocaleString(intlLocale, {
                 style: "currency",
                 currency: "EUR",
               })}
@@ -70,7 +72,7 @@ export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
             rel="noopener noreferrer"
             className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary/80"
           >
-            <span>Voir le lien</span>
+            <span>{t("link")}</span>
             <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
               <polyline points="15 3 21 3 21 9" />
@@ -81,10 +83,10 @@ export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
       </div>
 
       {/* Remove button */}
-      <button aria-label="Retirer de la wishlist"
+      <button aria-label={t("remove")}
         onClick={onRemove}
         className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
-        title="Retirer de la wishlist"
+        title={t("remove")}
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />

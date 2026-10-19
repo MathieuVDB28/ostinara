@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
+import { formatDuration } from "@/components/progress/stats-summary";
 import { ChevronLeft, ExternalLink, Heart, Lock, X } from "lucide-react";
 import type { CoverWithSong, Instrument, PracticeSessionWithSong, PublicProfile, SessionMood, Song } from "@/types";
-import { GEAR_TYPE_LABELS } from "@/types";
 import { ProfileIdentity } from "./profile-identity";
 import { ProfileShowcase } from "./profile-showcase";
 import { FriendshipButton } from "@/components/friends/friendship-button";
@@ -19,18 +21,7 @@ import { badgeLabel, type BadgeStatus } from "@/lib/badges/catalog";
 
 type Tab = "songs" | "albums" | "gear" | "activity";
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: "songs", label: "Morceaux" },
-  { key: "albums", label: "Albums" },
-  { key: "gear", label: "Matos" },
-  { key: "activity", label: "Activité" },
-];
-
-const STATUS_LABEL: Record<Song["status"], string> = {
-  learning: "En cours",
-  mastered: "Maîtrisé",
-  want_to_learn: "À apprendre",
-};
+const TABS: Tab[] = ["songs", "albums", "gear", "activity"];
 
 const MOOD_EMOJI: Record<SessionMood, string> = {
   frustrated: "😤",
@@ -43,15 +34,8 @@ const MOOD_EMOJI: Record<SessionMood, string> = {
 const SECTION_TITLE =
   "mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground";
 
-function formatMinutes(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h} h ${m}` : `${h} h`;
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+function formatDate(dateStr: string, intlLocale: string): string {
+  return new Date(dateStr).toLocaleDateString(intlLocale, { day: "numeric", month: "short" });
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
@@ -67,6 +51,9 @@ function Empty({ children }: { children: React.ReactNode }) {
  * son propre profil ; en dessous, ce qu'on vient voir chez un ami.
  */
 export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; badges?: BadgeStatus[] }) {
+  const t = useTranslations("profile.public");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const { profile } = data;
   const [tab, setTab] = useState<Tab>("songs");
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
@@ -91,7 +78,7 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
         className="-ml-1 mb-3 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
-        Amis
+        {t("friends")}
       </Link>
 
       <ProfileIdentity
@@ -100,10 +87,10 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
         favoriteAlbums={data.favorite_albums}
         showDetails={canView}
         stats={[
-          { label: "Morceaux", value: data.stats.totalSongs ?? "—" },
-          { label: "Maîtrisés", value: data.stats.masteredSongs ?? "—" },
-          { label: "Covers", value: data.stats.totalCovers },
-          { label: "Série", value: data.practice_stats ? `${data.practice_stats.currentStreak} j` : "—" },
+          { label: t("songs"), value: data.stats.totalSongs ?? "—" },
+          { label: t("mastered"), value: data.stats.masteredSongs ?? "—" },
+          { label: t("covers"), value: data.stats.totalCovers },
+          { label: t("streak"), value: data.practice_stats ? tc("duration.days", { d: data.practice_stats.currentStreak }) : "—" },
         ]}
         action={
           <FriendshipButton
@@ -118,11 +105,11 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
       {!canView ? (
         <div className="flex flex-col items-center gap-2 border-b border-border py-12 text-center">
           <Lock className="h-7 w-7 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
-          <h2 className="font-display text-2xl font-extrabold uppercase leading-none">Profil privé</h2>
+          <h2 className="font-display text-2xl font-extrabold uppercase leading-none">{t("private")}</h2>
           <p className="max-w-xs text-sm text-muted-foreground">
             {data.friendship_status === "pending"
-              ? `${name} n'a pas encore répondu à ta demande.`
-              : `Deviens ami·e avec ${name} pour voir sa biblio, ses albums et son matos.`}
+              ? t("pending", { name })
+              : t("befriend", { name })}
           </p>
         </div>
       ) : (
@@ -136,8 +123,8 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
           <FriendBadges badges={badges} instrument={profile.instruments?.find((i) => i.is_primary)?.instrument} />
 
           {/* Onglets locaux, style Atelier comme ceux du profil */}
-          <div role="tablist" aria-label={`Profil de ${name}`} className="mb-5 flex gap-6 overflow-x-auto border-b border-border [scrollbar-width:none]">
-            {TABS.map((item) => {
+          <div role="tablist" aria-label={t("tablist", { name })} className="mb-5 flex gap-6 overflow-x-auto border-b border-border [scrollbar-width:none]">
+            {TABS.map((key) => ({ key, label: t(`tabs.${key}`) })).map((item) => {
               const active = tab === item.key;
               return (
                 <button
@@ -160,13 +147,13 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
 
           {tab === "songs" &&
             (shelves.length === 0 ? (
-              <Empty>Pas encore de morceaux dans sa biblio.</Empty>
+              <Empty>{t("noSongs")}</Empty>
             ) : (
               <div className="flex flex-col gap-6">
                 {shelves.map((shelf) => (
-                  <section key={shelf.status} aria-label={STATUS_LABEL[shelf.status]}>
+                  <section key={shelf.status} aria-label={te(`songStatus.${shelf.status}`)}>
                     <h2 className="mb-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
-                      {STATUS_LABEL[shelf.status]} · {shelf.songs.length}
+                      {te(`songStatus.${shelf.status}`)} · {shelf.songs.length}
                     </h2>
                     <SongShelf songs={shelf.songs} bestBpm={{}} onSelect={setSelectedSong} />
                   </section>
@@ -176,7 +163,7 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
 
           {tab === "albums" &&
             (!data.album_reviews || data.album_reviews.length === 0 ? (
-              <Empty>Pas encore d&apos;album noté.</Empty>
+              <Empty>{t("noAlbums")}</Empty>
             ) : (
               <ul className="divide-y divide-border border-b border-border">
                 {data.album_reviews.map((review) => {
@@ -190,7 +177,7 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
                           <StarRating value={review.rating / 2} size="sm" />
                           {review.favorite_track_name && (
                             <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
-                              <Heart className="h-3 w-3 shrink-0 fill-primary text-primary" strokeWidth={0} aria-label="Morceau préféré" />
+                              <Heart className="h-3 w-3 shrink-0 fill-primary text-primary" strokeWidth={0} aria-label={t("favoriteSong")} />
                               <span className="truncate">{review.favorite_track_name}</span>
                             </span>
                           )}
@@ -223,7 +210,7 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
 
           {tab === "gear" &&
             (!data.gear_items || data.gear_items.length === 0 ? (
-              <Empty>Pas de matos partagé.</Empty>
+              <Empty>{t("noGear")}</Empty>
             ) : (
               <ul className="divide-y divide-border border-b border-border">
                 {data.gear_items.map((gear) => (
@@ -234,13 +221,13 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
                         {gear.brand} {gear.model}
                       </p>
                       <p className="truncate text-[13px] text-muted-foreground">
-                        {GEAR_TYPE_LABELS[gear.type]}
+                        {te(`gearType.${gear.type}`)}
                         {gear.year ? ` · ${gear.year}` : ""}
                       </p>
                     </div>
                     {gear.is_active && (
                       <span className="shrink-0 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-success">
-                        Joue en ce moment
+                        {t("playingNow")}
                       </span>
                     )}
                   </li>
@@ -265,12 +252,14 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
 }
 
 function ActivityTab({ data }: { data: PublicProfile }) {
+  const t = useTranslations("profile.public");
+  const tc = useTranslations("common");
   const stats = data.practice_stats;
   const sessions = data.recent_sessions ?? [];
   const covers = data.recent_covers;
 
   if (!stats?.totalSessions && sessions.length === 0 && covers.length === 0) {
-    return <Empty>Pas encore d&apos;activité.</Empty>;
+    return <Empty>{t("noActivity")}</Empty>;
   }
 
   return (
@@ -278,9 +267,9 @@ function ActivityTab({ data }: { data: PublicProfile }) {
       {stats && stats.totalSessions > 0 && (
         <dl className="grid grid-cols-3 border-y border-border py-2.5">
           {[
-            { label: "Cette semaine", value: formatMinutes(stats.minutesThisWeek) },
-            { label: "Au total", value: formatMinutes(stats.totalMinutes) },
-            { label: "Sessions", value: String(stats.totalSessions) },
+            { label: t("thisWeek"), value: formatDuration(stats.minutesThisWeek, tc) },
+            { label: t("total"), value: formatDuration(stats.totalMinutes, tc) },
+            { label: t("sessions"), value: String(stats.totalSessions) },
           ].map((stat) => (
             <div key={stat.label} className="flex flex-col-reverse gap-0.5">
               <dt className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
@@ -294,7 +283,7 @@ function ActivityTab({ data }: { data: PublicProfile }) {
 
       {sessions.length > 0 && (
         <section>
-          <h2 className={SECTION_TITLE}>Dernières sessions</h2>
+          <h2 className={SECTION_TITLE}>{t("lastSessions")}</h2>
           <ul className="divide-y divide-border border-b border-border">
             {sessions.map((session) => (
               <SessionRow key={session.id} session={session} />
@@ -305,7 +294,7 @@ function ActivityTab({ data }: { data: PublicProfile }) {
 
       {covers.length > 0 && (
         <section>
-          <h2 className={SECTION_TITLE}>Covers récentes</h2>
+          <h2 className={SECTION_TITLE}>{t("recentCovers")}</h2>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {covers.slice(0, 6).map((cover) => (
               <CoverTile key={cover.id} cover={cover} />
@@ -318,21 +307,25 @@ function ActivityTab({ data }: { data: PublicProfile }) {
 }
 
 function SessionRow({ session }: { session: PracticeSessionWithSong }) {
+  const t = useTranslations("profile.public");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
   const meta = [
-    formatMinutes(session.duration_minutes),
+    formatDuration(session.duration_minutes, tc),
     session.bpm_achieved ? `${session.bpm_achieved} BPM` : null,
-    formatDate(session.practiced_at),
+    formatDate(session.practiced_at, intlLocale),
   ].filter(Boolean);
 
   return (
     <li className="flex items-center gap-3 py-2.5">
       <Cover src={session.song?.cover_url} className="h-10 w-10 rounded-[4px]" />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{session.song?.title || "Session libre"}</p>
+        <p className="truncate text-sm font-medium">{session.song?.title || t("freeSession")}</p>
         <p className="truncate text-xs text-muted-foreground">{meta.join(" · ")}</p>
       </div>
       {session.mood && (
-        <span className="text-lg" aria-label={session.mood}>
+        <span className="text-lg" aria-label={te(`mood.${session.mood}`)}>
           {MOOD_EMOJI[session.mood]}
         </span>
       )}
@@ -375,6 +368,9 @@ function FriendSongSheet({
   ownerName: string;
   onClose: () => void;
 }) {
+  const t = useTranslations("profile.public");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const { tempo, percent } = songProgress(song);
 
   useEffect(() => {
@@ -408,7 +404,7 @@ function FriendSongSheet({
           <Cover src={song.cover_url} className="h-20 w-20 rounded-[4px]" />
           <div className="min-w-0 flex-1">
             <p className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-              {STATUS_LABEL[song.status]} chez {ownerName}
+              {t("statusAt", { status: te(`songStatus.${song.status}`), name: ownerName })}
             </p>
             <h2 id="friend-song-title" className="mt-0.5 truncate text-lg font-bold">
               {song.title}
@@ -420,7 +416,7 @@ function FriendSongSheet({
           </div>
           <button
             type="button"
-            aria-label="Fermer"
+            aria-label={tc("close")}
             onClick={onClose}
             className="-m-1 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent"
           >
@@ -442,7 +438,7 @@ function FriendSongSheet({
               rel="noopener noreferrer"
               className="mb-4 flex min-h-[44px] items-center gap-2 border-y border-border text-sm font-semibold transition-colors hover:bg-accent/50"
             >
-              Voir sa tablature
+              {t("seeTab")}
               <ExternalLink className="ml-auto h-4 w-4 text-muted-foreground" aria-hidden="true" />
             </a>
           )}
@@ -470,6 +466,8 @@ function FriendSongSheet({
 
 /** Les badges obtenus, en un rang de medailles. Rien quand il n'y en a pas. */
 function FriendBadges({ badges, instrument }: { badges: BadgeStatus[]; instrument?: Instrument }) {
+  const t = useTranslations("profile.public");
+  const tb = useTranslations("badges");
   const unlocked = badges
     .filter((badge) => badge.level > 0)
     .sort((a, b) => (b.unlockedAt ?? "").localeCompare(a.unlockedAt ?? ""));
@@ -482,14 +480,14 @@ function FriendBadges({ badges, instrument }: { badges: BadgeStatus[]; instrumen
         id="friend-badges"
         className="mb-3 border-b border-border pb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
       >
-        Badges · {unlocked.length}
+        {t("badges", { count: unlocked.length })}
       </h2>
       <ul className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:px-0">
         {unlocked.map((badge) => (
           <li key={badge.id} className="flex w-[72px] shrink-0 flex-col items-center gap-1 text-center">
             <BadgeMedal badgeId={badge.id} level={badge.level} count={badge.count} />
             <span className="line-clamp-2 text-[11px] font-semibold leading-tight">
-              {badgeLabel(badge.id, badge.level, instrument)}
+              {badgeLabel(badge.id, badge.level, instrument, tb)}
             </span>
           </li>
         ))}

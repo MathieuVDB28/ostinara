@@ -1,0 +1,47 @@
+{
+  "target": {
+    "none": "No target tempo for this song. Set one in the list below (\"+ target BPM\") to track your progress.",
+    "tempoTarget": "Tempo / target",
+    "reached": "Target reached",
+    "remaining": "{n} bpm to go",
+    "history": "Best {best} bpm · {count, plural, one {# session} other {# sessions}} · {minutes} min"
+  },
+  "selector": {
+    "search": "Search for a song",
+    "searchPlaceholder": "Search for a song…",
+    "onStand": "On the stand",
+    "target": "target",
+    "change": "Change",
+    "targetFor": "Target tempo for {title}",
+    "saveTarget": "Save target tempo",
+    "bpm": "bpm",
+    "addTarget": "+ target BPM",
+    "none": "No songs found"
+  },
+  "tab": {
+    "title": "Tab",
+    "open": "Open the tab",
+    "search": "Find a tab",
+    "blocked": "Your browser blocked the window.",
+    "openDirect": "Open the tab directly",
+    "lockTempo": "Set the metronome to the tab · {bpm} BPM",
+    "summary": "{count, plural, one {# section} other {# sections}} · {measures} bars · {duration} at {bpm} BPM",
+    "analyzeHint": "Analyze the tab from the song sheet to get the tempo and sections.",
+    "linkHint": "Link a Songsterr tab to the song: the tempo, time signature and sections will come with it."
+  },
+  "sessionBar": {
+    "expand": "Show the session full screen",
+    "srRunning": "Practice session running",
+    "srPaused": "Practice session paused",
+    "paused": "Paused",
+    "session": "Session",
+    "pause": "Pause",
+    "resume": "Resume",
+    "cancel": "Cancel",
+    "finish": "Finish",
+    "dialog": "Practice session",
+    "minimize": "Minimize",
+    "finishSession": "Finish session",
+    "discard": "Cancel without saving"
+  }
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type {
   ChallengeWithDetails,
   LeaderboardEntry,
@@ -31,6 +32,7 @@ export function ChallengesView({
   friends,
   songs,
 }: ChallengesViewProps) {
+  const t = useTranslations("challenges.view");
   const [activeTab, setActiveTab] = useState<Tab>("challenges");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -59,9 +61,9 @@ export function ChallengesView({
       <div className="flex items-center gap-1.5">
         {(
           [
-            ["challenges", "Mes défis", myChallenges.length, false],
-            ["invitations", "Invitations", pendingCount, true],
-            ["leaderboard", "Classement", 0, false],
+            ["challenges", t("mine"), myChallenges.length, false],
+            ["invitations", t("invitations"), pendingCount, true],
+            ["leaderboard", t("leaderboard"), 0, false],
           ] as const
         ).map(([value, label, count, alert]) => (
           <button
@@ -91,7 +93,7 @@ export function ChallengesView({
             className="ml-auto inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-primary px-3.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-            Défi
+            {t("new")}
           </button>
         )}
       </div>
@@ -108,17 +110,16 @@ export function ChallengesView({
             <div className="space-y-4">
               <div className="rounded-[4px] bg-secondary px-5 pb-5 pt-6">
                 <p className="font-display text-[52px] font-extrabold uppercase leading-[0.86]">
-                  Lance
-                  <br />
-                  un <span className="text-primary">défi</span>
-                  <br />
-                  à tes amis
+                  {t.rich("poster", {
+                    br: () => <br />,
+                    accent: (chunks) => <span className="text-primary">{chunks}</span>,
+                  })}
                 </p>
                 <p className="mt-3 max-w-[32ch] font-serif text-[15px] italic leading-relaxed">
-                  Un objectif de pratique sur une période. Celui qui va le plus loin gagne.
+                  {t("posterHint")}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {["Minutes jouées", "Morceaux maîtrisés", "Série"].map((kind) => (
+                  {[t("kindMinutes"), t("kindMastered"), t("kindStreak")].map((kind) => (
                     <span
                       key={kind}
                       className="rounded border border-border px-2 py-1 font-display text-[11px] font-bold uppercase tracking-[0.06em]"
@@ -132,13 +133,13 @@ export function ChallengesView({
                   className="mt-5 inline-flex min-h-[46px] items-center gap-2 rounded-xl bg-primary px-5 font-bold text-primary-foreground transition-opacity hover:opacity-90"
                 >
                   <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-                  Créer un défi
+                  {t("create")}
                 </button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Tes sessions de pratique alimentent tes défis toutes seules : rien à cocher en plus.{" "}
+                {t("autoHint")}{" "}
                 <button onClick={() => setActiveTab("leaderboard")} className="font-semibold text-foreground underline underline-offset-2">
-                  Voir le classement
+                  {t("seeLeaderboard")}
                 </button>
               </p>
             </div>
@@ -150,43 +151,43 @@ export function ChallengesView({
             */
             <EmptyState
               icon="emoji_events"
-              title="Aucun défi en cours"
+              title={t("noneTitle")}
               description={
                 friends.length > 0
-                  ? "Un défi, c'est un objectif de pratique sur une période : minutes jouées, morceaux maîtrisés, tempo atteint. Celui qui va le plus loin gagne."
-                  : "Un défi se joue à deux. Ajoute un ami, et vous pourrez vous fixer un objectif de pratique commun."
+                  ? t("noneWithFriends")
+                  : t("noneNoFriends")
               }
               actions={
                 friends.length > 0
                   ? [
                       {
-                        label: "Créer un défi",
+                        label: t("create"),
                         icon: "add",
                         primary: true,
                         onClick: () => setIsCreateModalOpen(true),
                       },
                       {
-                        label: "Voir le classement",
+                        label: t("seeLeaderboard"),
                         icon: "leaderboard",
                         onClick: () => setActiveTab("leaderboard"),
                       },
                     ]
                   : [
                       {
-                        label: "Ajouter un ami",
+                        label: t("addFriend"),
                         icon: "person_add",
                         primary: true,
                         href: "/commu/amis",
                       },
                       {
-                        label: "Créer un défi",
+                        label: t("create"),
                         icon: "add",
                         disabled: true,
-                        disabledReason: "Il faut au moins un ami",
+                        disabledReason: t("needFriend"),
                       },
                     ]
               }
-              hint="Tes sessions de pratique alimentent tes défis toutes seules : rien à cocher en plus."
+              hint={t("autoHint")}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -200,7 +201,7 @@ export function ChallengesView({
           {sentInvitations.length > 0 && (
             <div className="mt-8">
               <h2 className="mb-4 text-lg font-semibold text-muted-foreground">
-                Défis envoyés en attente
+                {t("sentPending")}
               </h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {sentInvitations.map((challenge) => (
@@ -221,20 +222,20 @@ export function ChallengesView({
           {pendingInvitations.length === 0 ? (
             <EmptyState
               icon="emoji_events"
-              title="Aucune invitation"
-              description="Personne ne t'a défié pour l'instant. Rien n'empêche de commencer."
+              title={t("noInvitation")}
+              description={t("noInvitationHint")}
               actions={[
                 {
-                  label: "Lancer un défi",
+                  label: t("launch"),
                   icon: "add",
                   primary: true,
                   disabled: friends.length === 0,
                   disabledReason:
-                    friends.length === 0 ? "Il faut au moins un ami" : undefined,
+                    friends.length === 0 ? t("needFriend") : undefined,
                   onClick: () => setIsCreateModalOpen(true),
                 },
                 {
-                  label: "Voir mes défis",
+                  label: t("seeMine"),
                   icon: "emoji_events",
                   onClick: () => setActiveTab("challenges"),
                 },

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { ChallengeWithDetails, ChallengeProgress } from "@/types";
 
 interface ChallengeProgressBarProps {
@@ -13,6 +14,7 @@ export function ChallengeProgressBar({
   creatorProgress,
   challengerProgress,
 }: ChallengeProgressBarProps) {
+  const t = useTranslations("challenges.card");
   const getProgressValues = () => {
     if (!creatorProgress || !challengerProgress) {
       return { creator: 0, challenger: 0, total: 1 };
@@ -55,12 +57,12 @@ export function ChallengeProgressBar({
             }`}
           />
           <span className="text-xs text-muted-foreground">
-            {creatorProgress?.song_mastered_at ? "Maitrise !" : "En cours"}
+            {creatorProgress?.song_mastered_at ? t("mastered") : t("inProgress")}
           </span>
         </div>
         <div className="flex flex-1 items-center justify-end gap-2">
           <span className="text-xs text-muted-foreground">
-            {challengerProgress?.song_mastered_at ? "Maitrise !" : "En cours"}
+            {challengerProgress?.song_mastered_at ? t("mastered") : t("inProgress")}
           </span>
           <div
             className={`h-3 w-3 rounded-full ${

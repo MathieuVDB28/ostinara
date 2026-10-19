@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { updatePlaylist, deletePlaylist, removeSongFromPlaylist } from "@/lib/actions/playlists";
 import type { PlaylistWithSongs } from "@/types";
 
@@ -13,6 +14,8 @@ interface EditPlaylistModalProps {
 }
 
 export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: EditPlaylistModalProps) {
+  const t = useTranslations("library.playlist");
+  const tc = useTranslations("common");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
@@ -62,7 +65,7 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de la mise à jour");
+      setError(result.error || tc("genericError"));
     }
 
     setSaving(false);
@@ -70,7 +73,7 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
 
   const handleDelete = async () => {
     if (!playlist) return;
-    if (!confirm("Supprimer cette playlist ? Les morceaux ne seront pas supprimés de ta bibliothèque.")) return;
+    if (!confirm(t("confirmDelete"))) return;
 
     setDeleting(true);
     const result = await deletePlaylist(playlist.id);
@@ -79,7 +82,7 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
       onSuccess();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de la suppression");
+      setError(result.error || tc("genericError"));
       setDeleting(false);
     }
   };
@@ -106,8 +109,8 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
 
       <div className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card shadow-md">
         <div className="flex items-center justify-between border-b border-border p-6">
-          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">Modifier la playlist</h2>
-          <button aria-label="Fermer"
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("edit")}</h2>
+          <button aria-label={tc("close")}
             onClick={handleClose}
             className="rounded-lg p-2 transition-colors hover:bg-accent"
           >
@@ -120,7 +123,7 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
         <div className="space-y-6 p-6">
           {/* Name */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Nom</label>
+            <label className="mb-1 block text-sm font-medium">{t("name")}</label>
             <input
               type="text"
               value={name}
@@ -132,12 +135,12 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
           {/* Description */}
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Description <span className="text-muted-foreground">(optionnel)</span>
+              {t("description")} <span className="text-muted-foreground">{t("optional")}</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Décris ta playlist..."
+              placeholder={t("descriptionPlaceholder")}
               rows={3}
               className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
@@ -147,7 +150,7 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
           {playlist.songs.length > 0 && (
             <div>
               <label className="mb-2 block text-sm font-medium">
-                Morceaux ({playlist.songs.length})
+                {t("songs", { count: playlist.songs.length })}
               </label>
               <div className="space-y-2 rounded-lg border border-border">
                 {playlist.songs.map((song) => (
@@ -182,6 +185,7 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
                     <button
                       onClick={() => handleRemoveSong(song.id)}
                       disabled={removingSongId === song.id}
+                      aria-label={t("removeSong")}
                       className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -207,21 +211,21 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
               disabled={deleting}
               className="rounded-lg px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
             >
-              {deleting ? "Suppression..." : "Supprimer"}
+              {deleting ? tc("deleting") : tc("delete")}
             </button>
             <div className="flex-1" />
             <button
               onClick={handleClose}
               className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
             >
-              Annuler
+              {tc("cancel")}
             </button>
             <button
               onClick={handleSave}
               disabled={saving || !name.trim()}
               className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {saving ? "Sauvegarde..." : "Sauvegarder"}
+              {saving ? tc("savingShort") : tc("saveShort")}
             </button>
           </div>
         </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import { updateCover, deleteCover } from "@/lib/actions/covers";
 import type { CoverWithSong, CoverVisibility } from "@/types";
 
@@ -11,13 +13,14 @@ interface CoverDetailModalProps {
   onUpdate: () => void;
 }
 
-const visibilityOptions: { value: CoverVisibility; label: string }[] = [
-  { value: "private", label: "Privé" },
-  { value: "friends", label: "Amis" },
-  { value: "public", label: "Public" },
-];
+const VISIBILITIES: CoverVisibility[] = ["private", "friends", "public"];
 
 export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDetailModalProps) {
+  const t = useTranslations("covers.detail");
+  const tc = useTranslations("common");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
+  const visibilityOptions = VISIBILITIES.map((value) => ({ value, label: te(`visibility.${value}`) }));
   const [visibility, setVisibility] = useState<CoverVisibility>("friends");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
@@ -56,7 +59,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
       onUpdate();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de la sauvegarde");
+      setError(result.error || tc("genericError"));
     }
 
     setSaving(false);
@@ -72,7 +75,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
       onUpdate();
       onClose();
     } else {
-      setError(result.error || "Erreur lors de la suppression");
+      setError(result.error || tc("genericError"));
       setDeleting(false);
       setShowDeleteConfirm(false);
     }
@@ -101,7 +104,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
   if (!isOpen || !cover) return null;
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString(intlLocale, {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -134,7 +137,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
             </div>
           )}
 
-          <button aria-label="Fermer"
+          <button aria-label={tc("close")}
             onClick={handleClose}
             className="absolute right-4 top-4 rounded-lg bg-black/50 p-2 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
           >
@@ -150,13 +153,13 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
             <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{cover.song.title}</h2>
             <p className="text-muted-foreground">{cover.song.artist}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Ajouté le {formatDate(cover.created_at)}
+              {t("addedOn", { date: formatDate(cover.created_at) })}
             </p>
           </div>
 
           {/* Sélecteur de visibilité */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Visibilité</label>
+            <label className="mb-2 block text-sm font-medium">{t("visibility")}</label>
             <div className="flex gap-2">
               {visibilityOptions.map((option) => (
                 <button
@@ -176,11 +179,11 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
 
           {/* Description */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Description</label>
+            <label className="mb-1 block text-sm font-medium">{t("description")}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ajoute une description..."
+              placeholder={t("descriptionPlaceholder")}
               rows={3}
               className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             />
@@ -195,21 +198,21 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
           {/* Confirmation de suppression */}
           {showDeleteConfirm && (
             <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-              <p className="text-sm font-medium text-destructive">Supprimer ce cover ?</p>
-              <p className="mt-1 text-sm text-muted-foreground">Cette action est irréversible.</p>
+              <p className="text-sm font-medium text-destructive">{t("confirmDelete")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("irreversible")}</p>
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent"
                 >
-                  Annuler
+                  {tc("cancel")}
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
                   className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-colors hover:opacity-90 disabled:opacity-50"
                 >
-                  {deleting ? "Suppression..." : "Confirmer"}
+                  {deleting ? tc("deleting") : t("confirm")}
                 </button>
               </div>
             </div>
@@ -223,7 +226,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
                 disabled={deleting}
                 className="rounded-lg px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
               >
-                Supprimer
+                {tc("delete")}
               </button>
             )}
             <div className="flex-1" />
@@ -231,7 +234,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
               onClick={handleClose}
               className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
             >
-              Fermer
+              {tc("close")}
             </button>
             {hasChanges && (
               <button
@@ -239,7 +242,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
                 disabled={saving}
                 className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
               >
-                {saving ? "Sauvegarde..." : "Sauvegarder"}
+                {saving ? tc("savingShort") : tc("saveShort")}
               </button>
             )}
           </div>

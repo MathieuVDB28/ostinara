@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import type { JamSessionMessageWithProfile } from "@/types";
 
 interface JamChatProps {
@@ -14,6 +16,8 @@ export function JamChat({
   currentUserId,
   onSendMessage,
 }: JamChatProps) {
+  const t = useTranslations("jam.chat");
+  const intlLocale = useIntlLocale();
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -34,7 +38,7 @@ export function JamChat({
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("fr-FR", {
+    return new Date(dateString).toLocaleTimeString(intlLocale, {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -50,7 +54,7 @@ export function JamChat({
       <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
         {messages.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground py-8">
-            Aucun message pour l&apos;instant
+            {t("empty")}
           </p>
         ) : (
           messages.map((msg) => {
@@ -111,11 +115,11 @@ export function JamChat({
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Envoyer un message..."
+            placeholder={t("placeholder")}
             className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
             disabled={sending}
           />
-          <button aria-label="Envoyer le message"
+          <button aria-label={t("send")}
             type="submit"
             disabled={!input.trim() || sending}
             className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"

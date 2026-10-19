@@ -1,0 +1,65 @@
+{
+  "chat": {
+    "empty": "No messages yet",
+    "placeholder": "Send a message...",
+    "send": "Send message"
+  },
+  "metronome": {
+    "synced": "Synced with the host",
+    "bpm": "BPM",
+    "signature": "Time signature:",
+    "tapTempo": "Tap tempo",
+    "signatureValue": "Time signature: {value}",
+    "playing": "Playing",
+    "paused": "Paused"
+  },
+  "participants": {
+    "title": "Participants",
+    "connecting": "Connecting...",
+    "host": "Host"
+  },
+  "session": {
+    "confirmEnd": "End the jam session for everyone?",
+    "ended": "Session ended",
+    "endedPersonal": "Your practice session is over.",
+    "endedByHost": "The host ended the jam.",
+    "back": "Back to bands",
+    "solo": "Solo jam",
+    "band": "Jam session",
+    "connected": "Connected",
+    "connecting": "Connecting...",
+    "nowPlaying": "Now playing: {title} - {artist}",
+    "active": "Live",
+    "paused": "Paused",
+    "waiting": "Waiting",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "end": "End",
+    "leave": "Leave"
+  },
+  "queue": {
+    "setlist": "Setlist: {name}",
+    "items": "({count, plural, one {# item} other {# items}})",
+    "tab": "Tab",
+    "current": "Now"
+  },
+  "tabs": {
+    "measures": "Bars {start}-{end}",
+    "open": "Tab open",
+    "see": "View tab",
+    "track": "Your track {instrument} on Songsterr: <strong>\"{name}\"</strong>"
+  },
+  "start": {
+    "title": "Start a jam",
+    "intro": "Start a collaborative session with the members of <strong>{band}</strong>",
+    "setlist": "Setlist (optional)",
+    "loading": "Loading setlists...",
+    "free": "Free session (no setlist)",
+    "option": "{name} ({count, plural, one {# song} other {# songs}})",
+    "hint": "Picking a setlist lets you move through the songs together",
+    "notified": "These members will be notified:",
+    "starting": "Starting…",
+    "submit": "Start"
+  }
+}

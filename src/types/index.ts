@@ -214,8 +214,13 @@ export interface WikiArticle {
 }
 
 /** Une ligne de la fiche : « Producteur » → « Daft Punk, Todd Edwards ». */
+/** Le libelle d'une ligne de fiche se traduit a l'affichage : albums.wiki.facts.<label>. */
+export type WikiFactKey =
+  | "released" | "recorded" | "studio" | "production" | "genre" | "label"
+  | "born" | "instruments" | "origin" | "active";
+
 export interface WikiFact {
-  label: string;
+  label: WikiFactKey;
   value: string;
 }
 
@@ -717,7 +722,7 @@ export interface MoodDistribution {
   mood: SessionMood;
   count: number;
   percentage: number;
-  label: string;
+  /** Le libelle se traduit a l'affichage : enums.mood.<mood>. */
   emoji: string;
   color: string;
 }
@@ -833,10 +838,11 @@ export interface PlayedSection {
   endMeasure: number;   // Mesure de fin
 }
 
+// Les noms proposes pour les sections jouees : setlists.playedPresets.<key>.
 export const PLAYED_SECTION_PRESETS = [
-  'Intro', 'Couplet 1', 'Couplet 2', 'Couplet 3',
-  'Refrain', 'Pre-refrain', 'Post-refrain',
-  'Pont', 'Solo', 'Outro', 'Break', 'Riff',
+  'intro', 'verse1', 'verse2', 'verse3',
+  'chorus', 'preChorus', 'postChorus',
+  'bridge', 'solo', 'outro', 'break', 'riff',
 ] as const;
 
 export interface Setlist {
@@ -956,17 +962,18 @@ export interface UpdateSetlistItemInput {
   played_sections?: PlayedSection[];
 }
 
-// Predefined section types for setlists
+// Predefined section types for setlists. Le nom affiche (et ecrit dans la
+// setlist) vient de setlists.presets.<key>, dans la langue de qui l'ajoute.
 export const SECTION_PRESETS = [
-  { name: 'Intro', icon: 'play', color: 'bg-chart-2/20 text-chart-2' },
-  { name: 'Pause', icon: 'pause', color: 'bg-muted text-muted-foreground' },
-  { name: 'Rappel', icon: 'repeat', color: 'bg-chart-4/20 text-chart-4' },
-  { name: 'Outro', icon: 'stop', color: 'bg-chart-1/20 text-chart-1' },
-  { name: 'Medley', icon: 'layers', color: 'bg-chart-3/20 text-chart-3' },
-  { name: 'Acoustique', icon: 'guitar', color: 'bg-primary/15 text-primary' },
+  { key: 'intro', icon: 'play', color: 'bg-chart-2/20 text-chart-2' },
+  { key: 'pause', icon: 'pause', color: 'bg-muted text-muted-foreground' },
+  { key: 'encore', icon: 'repeat', color: 'bg-chart-4/20 text-chart-4' },
+  { key: 'outro', icon: 'stop', color: 'bg-chart-1/20 text-chart-1' },
+  { key: 'medley', icon: 'layers', color: 'bg-chart-3/20 text-chart-3' },
+  { key: 'acoustic', icon: 'guitar', color: 'bg-primary/15 text-primary' },
 ] as const;
 
-export type SectionPresetName = typeof SECTION_PRESETS[number]['name'];
+export type SectionPresetKey = typeof SECTION_PRESETS[number]['key'];
 
 // =============================================
 // Types pour les Routines (sessions de travail reutilisables)
@@ -1115,9 +1122,18 @@ export interface Exercise {
   shared_with_friends: boolean;
   /** Les instruments concernes ; vide : tous. */
   instruments: Instrument[];
+  /** Exercices systeme : le texte dans les autres langues (cf. localizeExercise). */
+  translations?: Partial<Record<"en", ExerciseTranslation>>;
   created_by?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface ExerciseTranslation {
+  name: string;
+  description?: string;
+  instructions?: string[];
+  tips?: string[];
 }
 
 export interface UserExercise {
@@ -1203,33 +1219,6 @@ export const TIME_SIGNATURES: TimeSignature[] = [
   { beats: 7, noteValue: 8 },   // 7/8 - Balkans
   { beats: 12, noteValue: 8 },  // 12/8 - Blues shuffle
 ];
-
-// Labels pour les catégories d'exercices
-export const EXERCISE_CATEGORY_LABELS: Record<ExerciseCategory, string> = {
-  scales: 'Gammes',
-  arpeggios: 'Arpèges',
-  picking: 'Picking',
-  chord_changes: 'Accords',
-  fingerstyle: 'Fingerstyle',
-  technique: 'Technique',
-  rhythm: 'Rythme',
-  rudiments: 'Rudiments',
-  grooves: 'Grooves',
-  fills: 'Breaks',
-  independence: 'Indépendance',
-  slap: 'Slap',
-  walking_bass: 'Walking bass',
-  voicings: 'Voicings',
-  reading: 'Lecture',
-};
-
-// Labels pour les subdivisions
-export const SUBDIVISION_LABELS: Record<Subdivision, string> = {
-  none: 'Aucune',
-  eighth: 'Croches',
-  triplet: 'Triolets',
-  sixteenth: 'Doubles croches',
-};
 
 // =============================================
 // Types pour les Jam Sessions
@@ -1562,22 +1551,6 @@ export interface UpdateRehearsalInput {
   status?: RehearsalStatus;
 }
 
-// Labels pour la recurrence
-export const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
-  none: 'Unique',
-  weekly: 'Chaque semaine',
-  biweekly: 'Toutes les 2 semaines',
-  monthly: 'Chaque mois',
-};
-
-// Labels pour le RSVP
-export const RSVP_LABELS: Record<RehearsalRsvpStatus, string> = {
-  invited: 'En attente',
-  accepted: 'Presente',
-  declined: 'Absente',
-  maybe: 'Peut-etre',
-};
-
 export const RSVP_COLORS: Record<RehearsalRsvpStatus, string> = {
   invited: 'bg-muted text-muted-foreground',
   accepted: 'bg-success/15 text-success',
@@ -1810,20 +1783,6 @@ export interface CoverGear {
   gear: GearItem;
 }
 
-// Labels pour les types de matériel
-export const GEAR_TYPE_LABELS: Record<GearType, string> = {
-  guitar: 'Guitare',
-  bass: 'Basse',
-  amp: 'Ampli',
-  effect: 'Pédale',
-  drums: 'Batterie',
-  cymbals: 'Cymbales',
-  keyboard: 'Clavier',
-  accessory: 'Accessoire',
-  recording: 'Enregistrement',
-  other: 'Autre',
-};
-
 export const GEAR_TYPE_ICONS: Record<GearType, string> = {
   guitar: 'guitar',
   bass: 'bass',
@@ -1837,26 +1796,12 @@ export const GEAR_TYPE_ICONS: Record<GearType, string> = {
   other: 'more_horiz',
 };
 
-export const GEAR_CONDITION_LABELS: Record<GearCondition, string> = {
-  mint: 'Neuf',
-  excellent: 'Excellent',
-  good: 'Bon',
-  fair: 'Correct',
-  poor: 'Usé',
-};
-
 export const GEAR_CONDITION_COLORS: Record<GearCondition, string> = {
   mint: 'bg-success/15 text-success',
   excellent: 'bg-chart-2/20 text-chart-2',
   good: 'bg-primary/15 text-primary',
   fair: 'bg-chart-1/20 text-chart-1',
   poor: 'bg-destructive/15 text-destructive',
-};
-
-export const GEAR_PRIORITY_LABELS: Record<GearPriority, string> = {
-  low: 'Basse',
-  medium: 'Moyenne',
-  high: 'Haute',
 };
 
 export const GEAR_PRIORITY_COLORS: Record<GearPriority, string> = {

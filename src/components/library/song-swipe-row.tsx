@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { SwipeRow, type SwipeAction, type SwipeActionTone } from "@/components/ui/swipe-row";
 import { updateSongStatus } from "@/lib/actions/songs";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
@@ -16,11 +17,11 @@ import type { Song, SongStatus } from "@/types";
 
 const STATUS_ACTION: Record<
   SongStatus,
-  { label: string; icon: string; tone: SwipeActionTone }
+  { icon: string; tone: SwipeActionTone }
 > = {
-  learning: { label: "En cours", icon: "play_arrow", tone: "primary" },
-  mastered: { label: "Maîtrisé", icon: "check", tone: "success" },
-  want_to_learn: { label: "À apprendre", icon: "bookmark", tone: "neutral" },
+  learning: { icon: "play_arrow", tone: "primary" },
+  mastered: { icon: "check", tone: "success" },
+  want_to_learn: { icon: "bookmark", tone: "neutral" },
 };
 
 /**
@@ -41,6 +42,7 @@ export function SongSwipeRow({
   onStatusChange,
   children,
 }: SongSwipeRowProps) {
+  const t = useTranslations("enums");
   const nextSteps = useNextSteps();
 
   const apply = useCallback(
@@ -66,7 +68,7 @@ export function SongSwipeRow({
     (status) => status !== song.status
   ).map((status) => ({
     key: status,
-    label: STATUS_ACTION[status].label,
+    label: t(`songStatus.${status}`),
     icon: STATUS_ACTION[status].icon,
     tone: STATUS_ACTION[status].tone,
     onAction: () => apply(status),

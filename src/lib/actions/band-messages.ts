@@ -1,5 +1,6 @@
 "use server";
 
+import { tErr } from "@/i18n/server";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import type { BandMessageWithProfile } from "@/types";
 
@@ -48,7 +49,7 @@ export async function sendBandMessage(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Non authentifie" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   // Verify band membership
   const { data: membership } = await supabase
@@ -58,7 +59,7 @@ export async function sendBandMessage(
     .eq("user_id", user.id)
     .single();
 
-  if (!membership) return { success: false, error: "Tu n'es pas membre de ce groupe" };
+  if (!membership) return { success: false, error: await tErr("notBandMember") };
 
   const { error } = await supabase
     .from("band_messages")
@@ -71,7 +72,7 @@ export async function sendBandMessage(
 
   if (error) {
     console.error("Error sending band message:", error);
-    return { success: false, error: "Erreur lors de l'envoi du message" };
+    return { success: false, error: await tErr("messageSendFailed") };
   }
 
   return { success: true };
@@ -83,7 +84,7 @@ export async function deleteBandMessage(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Non authentifie" };
+  if (!user) return { success: false, error: await tErr("notAuthenticated") };
 
   const { error } = await supabase
     .from("band_messages")
@@ -93,7 +94,7 @@ export async function deleteBandMessage(
 
   if (error) {
     console.error("Error deleting message:", error);
-    return { success: false, error: "Erreur lors de la suppression" };
+    return { success: false, error: await tErr("deleteFailed") };
   }
 
   return { success: true };

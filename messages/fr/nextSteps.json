@@ -1,0 +1,58 @@
+{
+  "later": "Plus tard",
+  "mastered": {
+    "eyebrow": "Maîtrisé",
+    "lead": "Il est à toi. Et si tu le faisais entendre ?",
+    "newCover": "Enregistrer une nouvelle cover",
+    "cover": "Enregistrer ta cover",
+    "coverHint": "Pour tes amis, ou juste pour garder une trace",
+    "setlist": "L'ajouter à une setlist",
+    "setlistHint": "Prêt pour la scène ou la prochaine répète"
+  },
+  "gear": {
+    "playedWith": "Joué avec",
+    "hint": "Avec Pro ou Band, affiché sur tes prochaines covers de ce morceau."
+  },
+  "cover": {
+    "eyebrow": "Cover postée",
+    "lead": "Tu l'as enregistré, ton groupe peut le jouer. On le met à la prochaine répète ?",
+    "added": "Ajouté à « {name} »",
+    "already": "Déjà dans « {name} »",
+    "seeRehearsal": "Voir la répète",
+    "addTo": "Ajouter à « {name} »"
+  },
+  "addFailed": "L'ajout a échoué. Réessaie.",
+  "setlists": {
+    "see": "Voir",
+    "which": "Dans quelle setlist ?",
+    "loading": "Chargement…",
+    "none": "Pas encore de setlist.",
+    "create": "En créer une",
+    "personal": "Perso",
+    "songs": "{count, plural, one {# morceau} other {# morceaux}}"
+  },
+  "added": {
+    "eyebrow": "Dans ta biblio",
+    "work": "Le travailler maintenant",
+    "workHint": "Ouvre le métronome sur ce morceau",
+    "challengeSent": "Défi envoyé à {name} : le premier qui le maîtrise gagne.",
+    "challenge": "Défier {name}",
+    "challengeHint": "Le premier à le maîtriser en 2 semaines gagne",
+    "challengeFailed": "Le défi n'a pas pu être lancé."
+  },
+  "album": {
+    "eyebrow": "Après l'écoute",
+    "added": "{count, plural, one {# titre} other {# titres}} dans « À apprendre »",
+    "allThere": "Tout était déjà dans ta biblio",
+    "alreadyThere": "{count, plural, one {# déjà présent} other {# déjà présents}}, pas de doublon.",
+    "seeLibrary": "Voir ma biblio",
+    "lead": "Un titre t'a donné envie de prendre ton instrument ?",
+    "loading": "Chargement des titres…",
+    "unavailable": "Tracklist indisponible pour cet album.",
+    "tracks": "Titres de l'album",
+    "partial": "{count, plural, one {# ajouté} other {# ajoutés}}, puis : ",
+    "adding": "Ajout…",
+    "pick": "Choisis un ou plusieurs titres",
+    "add": "Ajouter {count, plural, one {# titre} other {# titres}} à ma biblio"
+  }
+}

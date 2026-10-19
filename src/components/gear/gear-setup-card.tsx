@@ -1,7 +1,7 @@
 "use client";
 
 import type { GearSetupWithItems } from "@/types";
-import { GEAR_TYPE_LABELS } from "@/types";
+import { useTranslations } from "next-intl";
 import { GearTypeIcon } from "./gear-card";
 
 interface GearSetupCardProps {
@@ -17,6 +17,10 @@ export function GearSetupCard({
   onDelete,
   onRemoveItem,
 }: GearSetupCardProps) {
+  const t = useTranslations("gear.setup");
+  const tc = useTranslations("common");
+  const tg = useTranslations("gear.card");
+  const te = useTranslations("enums");
   return (
     <div className="border-b border-border py-3 transition-colors hover:bg-accent/50">
       {/* Header */}
@@ -30,20 +34,20 @@ export function GearSetupCard({
           )}
         </div>
         <div className="ml-2 flex items-center gap-1">
-          <button aria-label="Modifier le setup"
+          <button aria-label={t("edit")}
             onClick={onEdit}
             className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
-            title="Modifier"
+            title={tc("edit")}
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
           </button>
-          <button aria-label="Supprimer le setup"
+          <button aria-label={t("delete")}
             onClick={onDelete}
             className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-            title="Supprimer"
+            title={tc("delete")}
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
@@ -82,10 +86,10 @@ export function GearSetupCard({
                 {/* Info */}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-medium">
-                    {itemTitle || "Sans nom"}
+                    {itemTitle || tg("untitled")}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    {GEAR_TYPE_LABELS[gear.type]}
+                    {te(`gearType.${gear.type}`)}
                   </p>
                 </div>
 
@@ -93,7 +97,8 @@ export function GearSetupCard({
                 <button
                   onClick={() => onRemoveItem(gear.id)}
                   className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover/item:opacity-100"
-                  title="Retirer du setup"
+                  title={t("remove")}
+                  aria-label={t("remove")}
                 >
                   <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M18 6L6 18M6 6l12 12" />
@@ -106,7 +111,7 @@ export function GearSetupCard({
       ) : (
         <div className="rounded-lg border border-dashed border-border/50 py-4 text-center">
           <p className="text-xs text-muted-foreground">
-            Aucun matériel dans ce setup
+            {t("empty")}
           </p>
         </div>
       )}
@@ -114,7 +119,7 @@ export function GearSetupCard({
       {/* Item count */}
       <div className="mt-3 flex items-center justify-between">
         <p className="text-[11px] text-muted-foreground">
-          {setup.items?.length || 0} élément{(setup.items?.length || 0) !== 1 ? "s" : ""}
+          {t("items", { count: setup.items?.length || 0 })}
         </p>
       </div>
     </div>

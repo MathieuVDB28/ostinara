@@ -1,3 +1,4 @@
+import { tErr } from "@/i18n/server";
 import { NextResponse } from "next/server";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { getPracticeStats } from "@/lib/actions/practice";
@@ -26,7 +27,7 @@ export async function GET() {
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    return NextResponse.json({ error: await tErr("notAuthenticated") }, { status: 401 });
   }
 
   const supabase = await createClient();
