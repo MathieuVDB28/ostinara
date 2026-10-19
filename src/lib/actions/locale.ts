@@ -26,6 +26,10 @@ export async function setLocale(locale: Locale) {
     const supabase = await createClient();
     const { error } = await supabase.from("profiles").update({ locale }).eq("id", user.id);
     if (error) console.error("Error saving locale:", error);
+    // Les emails d'auth (mot de passe oublie, changement d'adresse) lisent
+    // la langue dans les metadonnees du compte, pas sur le profil.
+    const { error: authError } = await supabase.auth.updateUser({ data: { locale } });
+    if (authError) console.error("Error saving auth locale:", authError);
   }
 
   revalidatePath("/", "layout");
