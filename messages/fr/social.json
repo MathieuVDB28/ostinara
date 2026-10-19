@@ -3,6 +3,8 @@
   "comment": "Commenter",
   "writeComment": "Écrire un commentaire...",
   "sendComment": "Envoyer le commentaire",
+  "editComment": "Modifier le commentaire",
+  "commentEdited": "modifié",
   "react": "Réagir",
   "allEmojis": "Tous les emojis",
   "searchEmoji": "Rechercher un emoji",

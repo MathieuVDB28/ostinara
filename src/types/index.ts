@@ -554,6 +554,7 @@ export interface ActivityComment {
   user_id: string;
   content: string;
   created_at: string;
+  edited_at: string | null;
 }
 
 export interface ActivityCommentWithProfile extends ActivityComment {

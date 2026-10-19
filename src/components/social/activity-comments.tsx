@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import { formatActivityDate } from "@/lib/activity-messages";
 import { MessageCircle, Send } from "lucide-react";
-import { addComment, deleteComment, getActivityComments } from "@/lib/actions/activities";
+import { addComment, deleteComment, getActivityComments, updateComment } from "@/lib/actions/activities";
 import type { ActivityCommentWithProfile } from "@/types";
 
 interface ActivityCommentsProps {
@@ -30,6 +30,8 @@ export function ActivityComments({
   const [loadedOnce, setLoadedOnce] = useState(false);
   const [count, setCount] = useState(commentCount);
   const [newComment, setNewComment] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, startSending] = useTransition();
 
@@ -64,6 +66,37 @@ export function ActivityComments({
         const data = await getActivityComments(activityId);
         setComments(data);
         setCount(data.length);
+      }
+    });
+  };
+
+  const startEditing = (comment: ActivityCommentWithProfile) => {
+    setEditingId(comment.id);
+    setEditContent(comment.content);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditContent("");
+  };
+
+  const handleUpdate = (e: React.FormEvent, comment: ActivityCommentWithProfile) => {
+    e.preventDefault();
+    const content = editContent.trim();
+    if (!content) return;
+    if (content === comment.content) {
+      cancelEditing();
+      return;
+    }
+
+    startSending(async () => {
+      const result = await updateComment(comment.id, content);
+      if (result.success && result.data) {
+        const updated = result.data;
+        setComments((prev) =>
+          prev.map((c) => (c.id === comment.id ? { ...c, ...updated } : c))
+        );
+        cancelEditing();
       }
     });
   };
@@ -133,20 +166,63 @@ export function ActivityComments({
                         >
                           {comment.user.display_name || comment.user.username}
                         </Link>
-                        <p className="font-serif text-[14px] italic leading-snug">{comment.content}</p>
+                        {editingId === comment.id ? (
+                          <form onSubmit={(e) => handleUpdate(e, comment)} className="mt-1">
+                            <input
+                              type="text"
+                              value={editContent}
+                              onChange={(e) => setEditContent(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Escape") cancelEditing();
+                              }}
+                              aria-label={t("editComment")}
+                              maxLength={500}
+                              autoFocus
+                              className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
+                            />
+                            <div className="mt-1.5 flex justify-end gap-3">
+                              <button
+                                type="button"
+                                onClick={cancelEditing}
+                                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                              >
+                                {tc("cancel")}
+                              </button>
+                              <button
+                                type="submit"
+                                disabled={!editContent.trim() || isSending}
+                                className="text-xs font-semibold text-foreground transition-opacity disabled:opacity-40"
+                              >
+                                {tc("save")}
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <p className="font-serif text-[14px] italic leading-snug">{comment.content}</p>
+                        )}
                       </div>
                       <div className="mt-0.5 flex items-center gap-2 px-1">
                         <span className="text-xs text-muted-foreground">
                           {formatDate(comment.created_at)}
+                          {comment.edited_at && ` · ${t("commentEdited")}`}
                         </span>
-                        {comment.user_id === currentUserId && (
-                          <button
-                            onClick={() => handleDelete(comment.id)}
-                            disabled={isSending}
-                            className="text-xs text-muted-foreground transition-colors hover:text-destructive"
-                          >
-                            {tc("delete")}
-                          </button>
+                        {comment.user_id === currentUserId && editingId !== comment.id && (
+                          <>
+                            <button
+                              onClick={() => startEditing(comment)}
+                              disabled={isSending}
+                              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                              {tc("edit")}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(comment.id)}
+                              disabled={isSending}
+                              className="text-xs text-muted-foreground transition-colors hover:text-destructive"
+                            >
+                              {tc("delete")}
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>

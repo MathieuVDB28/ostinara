@@ -699,6 +699,40 @@ export async function addComment(
   return { success: true };
 }
 
+// === Modifier un commentaire ===
+export async function updateComment(
+  commentId: string,
+  content: string
+): Promise<{ success: boolean; error?: string; data?: { content: string; edited_at: string | null } }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: await tErr("notAuthenticated") };
+  }
+
+  const trimmed = content.trim();
+  if (!trimmed || trimmed.length > 500) {
+    return { success: false, error: await tErr("commentLength") };
+  }
+
+  const { data, error } = await supabase
+    .from("activity_comments")
+    .update({ content: trimmed })
+    .eq("id", commentId)
+    .eq("user_id", user.id)
+    .select("content, edited_at")
+    .single();
+
+  if (error || !data) {
+    console.error("Error updating comment:", error);
+    return { success: false, error: await tErr("commentUpdateFailed") };
+  }
+
+  revalidatePath("/feed");
+  return { success: true, data };
+}
+
 // === Supprimer un commentaire ===
 export async function deleteComment(
   commentId: string

@@ -3,6 +3,8 @@
   "comment": "Comment",
   "writeComment": "Write a comment...",
   "sendComment": "Send comment",
+  "editComment": "Edit comment",
+  "commentEdited": "edited",
   "react": "React",
   "allEmojis": "All emojis",
   "searchEmoji": "Search for an emoji",

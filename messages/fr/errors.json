@@ -71,6 +71,7 @@
   "leaveFailed": "Erreur lors du départ",
   "blockFailed": "Erreur lors du blocage",
   "commentDeleteFailed": "Erreur lors de la suppression du commentaire",
+  "commentUpdateFailed": "Erreur lors de la modification du commentaire",
   "reactionDeleteFailed": "Erreur lors de la suppression de la réaction",
   "respondFailed": "Erreur lors de la réponse",
   "regenerateFailed": "Erreur lors de la régénération",

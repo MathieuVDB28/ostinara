@@ -71,6 +71,7 @@
   "leaveFailed": "Couldn't leave",
   "blockFailed": "Couldn't block",
   "commentDeleteFailed": "Couldn't delete the comment",
+  "commentUpdateFailed": "Couldn't update the comment",
   "reactionDeleteFailed": "Couldn't remove the reaction",
   "respondFailed": "Couldn't send your answer",
   "regenerateFailed": "Couldn't regenerate",
