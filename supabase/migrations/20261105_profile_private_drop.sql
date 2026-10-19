@@ -1,8 +1,8 @@
 -- Migration: les donnees privees du profil quittent `profiles` (2/2)
 --
--- A NE PAS APPLIQUER avant que le code qui lit `profile_private` soit en
--- production (cf. 20261104_profile_private et docs/profils-prives.md).
--- Ensuite : deplacer ce fichier dans supabase/migrations/ et l'appliquer.
+-- Appliquee une fois le code qui lit `profile_private` en production
+-- (cf. 20261104_profile_private et docs/profils-prives.md) : avant, l'ancien
+-- code aurait lu des colonnes disparues.
 --
 -- Apres elle, `profiles` ne contient plus que ce qui peut etre montre a
 -- tous ; la cle anon ne lit plus ni l'abonnement, ni la langue, ni les

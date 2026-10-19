@@ -13,7 +13,7 @@
 --   1. (ici) creer la table, recopier, tenir la copie a jour pendant la
 --      transition : l'ancien code, encore servi pendant le deploiement,
 --      ecrit toujours dans `profiles` (webhook Stripe compris).
---   2. (supabase/pending/20261105_profile_private_drop.sql, une fois le
+--   2. (20261105_profile_private_drop.sql, une fois le
 --      nouveau code en production) supprimer les colonnes de `profiles`
 --      et le miroir.
 

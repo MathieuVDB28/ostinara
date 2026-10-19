@@ -1,9 +1,8 @@
 # Chantier : sortir les donnees privees de `profiles`
 
 > **Etat (octobre 2026)** : etape 1 faite — `supabase/migrations/20261104_profile_private.sql`
-> et le code qui lit / ecrit `profile_private`. Etape 2 prete dans
-> `supabase/pending/20261105_profile_private_drop.sql`, a appliquer **apres** la
-> mise en production du code (voir « Deploiement » en bas).
+> et le code qui lit / ecrit `profile_private`, en production. Etape 2 :
+> `supabase/migrations/20261105_profile_private_drop.sql` (voir « Deploiement » en bas).
 
 ## Le probleme
 
@@ -91,9 +90,9 @@ table. Le plus delicat est `getMyProfile`, qui nourrit Reglages et l'abonnement.
 2. Deployer le code.
 3. Verifier : Reglages > Abonnement affiche le bon statut ; un changement de
    langue s'enregistre (`select locale from profile_private where user_id = …`).
-4. Deplacer `supabase/pending/20261105_profile_private_drop.sql` dans
-   `supabase/migrations/` et l'appliquer : les colonnes quittent `profiles`, le
-   miroir s'arrete, `protect_profile_billing` ne garde que `plan`.
+4. Appliquer `supabase/migrations/20261105_profile_private_drop.sql` : les
+   colonnes quittent `profiles`, le miroir s'arrete, `protect_profile_billing`
+   ne garde que `plan`.
 
 Avant 1, verifier qu'aucun `stripe_customer_id` n'est en double (la nouvelle
 colonne est UNIQUE) :

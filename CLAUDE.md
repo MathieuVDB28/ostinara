@@ -784,7 +784,7 @@ peut etre montre. L'abonnement, la langue et les reglages vivent dans
 abonnement ecrit par le service role). Le profil d'un autre se lit avec
 `PUBLIC_PROFILE_COLUMNS` (`src/lib/public-profile.ts`), jamais en `select("*")` ;
 son propre profil avec `getMyProfile` (joint `PROFILE_PRIVATE_SELECT`, champs
-remis a plat). Cf. `docs/profils-prives.md` (etape 2 a appliquer apres deploiement).
+remis a plat). Les colonnes privees ont quitte `profiles` (`20261105_profile_private_drop`) ; cf. `docs/profils-prives.md`.
 
 ```sql
 profile_private (
