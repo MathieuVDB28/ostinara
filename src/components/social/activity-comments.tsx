@@ -24,6 +24,7 @@ export function ActivityComments({
 }: ActivityCommentsProps) {
   const t = useTranslations("social");
   const tc = useTranslations("common");
+  const tErr = useTranslations("errors");
   const intlLocale = useIntlLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [comments, setComments] = useState<ActivityCommentWithProfile[]>([]);
@@ -32,6 +33,7 @@ export function ActivityComments({
   const [newComment, setNewComment] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [editError, setEditError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, startSending] = useTransition();
 
@@ -73,11 +75,13 @@ export function ActivityComments({
   const startEditing = (comment: ActivityCommentWithProfile) => {
     setEditingId(comment.id);
     setEditContent(comment.content);
+    setEditError(null);
   };
 
   const cancelEditing = () => {
     setEditingId(null);
     setEditContent("");
+    setEditError(null);
   };
 
   const handleUpdate = (e: React.FormEvent, comment: ActivityCommentWithProfile) => {
@@ -89,6 +93,7 @@ export function ActivityComments({
       return;
     }
 
+    setEditError(null);
     startSending(async () => {
       const result = await updateComment(comment.id, content);
       if (result.success && result.data) {
@@ -97,6 +102,8 @@ export function ActivityComments({
           prev.map((c) => (c.id === comment.id ? { ...c, ...updated } : c))
         );
         cancelEditing();
+      } else {
+        setEditError(result.error ?? tErr("commentUpdateFailed"));
       }
     });
   };
@@ -171,15 +178,22 @@ export function ActivityComments({
                             <input
                               type="text"
                               value={editContent}
-                              onChange={(e) => setEditContent(e.target.value)}
+                              onChange={(e) => {
+                                setEditContent(e.target.value);
+                                setEditError(null);
+                              }}
                               onKeyDown={(e) => {
                                 if (e.key === "Escape") cancelEditing();
                               }}
                               aria-label={t("editComment")}
                               maxLength={500}
                               autoFocus
+                              aria-invalid={editError ? true : undefined}
                               className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
                             />
+                            {editError && (
+                              <p role="status" className="mt-1.5 text-xs text-destructive">{editError}</p>
+                            )}
                             <div className="mt-1.5 flex justify-end gap-3">
                               <button
                                 type="button"
