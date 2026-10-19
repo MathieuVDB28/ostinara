@@ -39,10 +39,11 @@
   "tracks": {
     "aria": "Album tracks",
     "addFailed": "Couldn't add it. Try again.",
-    "added": "Added to your library, under \"To learn\"",
-    "already": "Already in your library",
+    "added": "{count, plural, one {Added to your library, under \"To learn\"} other {# songs added to your library, under \"To learn\"}}",
+    "already": "{count, plural, one {Already in your library} other {All already in your library}}",
     "see": "View",
-    "add": "Add to my library"
+    "add": "{count, plural, one {Add to my library} other {Add all # to my library}}",
+    "partial": "{count, plural, one {# added} other {# added}}, then: "
   },
   "artist": {
     "back": "Back",
@@ -119,7 +120,7 @@
   "review": {
     "outOf5": " out of 5",
     "options": "Options for {album}",
-    "favorite": "Favorite song",
+    "favorite": "{count, plural, one {Favorite song} other {Favorite songs}}",
     "yourRating": "Your rating",
     "ratingValue": "{rating} / 5",
     "impression": "Your thoughts",
@@ -133,7 +134,7 @@
     "search": "Find an album",
     "yourReview": "Your review",
     "back": "Back",
-    "favorite": "Your favorite song",
+    "favorite": "Your favorite songs",
     "loadingTracks": "Loading tracks…",
     "noTracklist": "No tracklist available for this album.",
     "publishing": "Posting...",
@@ -152,9 +153,9 @@
     "notRated": "You haven't rated this album yet.",
     "addReview": "Add a review",
     "tracksTitle": "Tracks",
-    "tapFavorite": "Tap your favorite song",
+    "tapFavorite": "Tap your favorite songs",
     "learnTracks": "Learn some tracks",
-    "yourFavorite": "Your favorite: "
+    "yourFavorite": "{count, plural, one {Your favorite: } other {Your favorites: }}"
   },
   "view": {
     "tabs": {

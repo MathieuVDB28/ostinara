@@ -46,7 +46,7 @@
     "song_mastery": "Mastery challenge"
   },
   "album": "Album",
-  "favorite": "Favorite:",
+  "favorite": "{count, plural, one {Favorite:} other {Favorites:}}",
   "collapse": "Show less",
   "readReview": "Read review",
   "playCover": "Play the cover of {title}",

@@ -171,10 +171,10 @@ export function AlbumReviewCard({ review, onDeleted, onUpdated }: AlbumReviewCar
             {review.artist_name}
           </Link>
 
-          {review.favorite_track_name && (
+          {review.favorite_tracks?.length > 0 && (
             <p className="mt-1 flex items-center gap-1 truncate text-[12px] text-muted-foreground">
-              <Heart className="h-3 w-3 shrink-0 fill-primary text-primary" strokeWidth={0} aria-label={t("favorite")} />
-              <span className="truncate">{review.favorite_track_name}</span>
+              <Heart className="h-3 w-3 shrink-0 fill-primary text-primary" strokeWidth={0} aria-label={t("favorite", { count: review.favorite_tracks.length })} />
+              <span className="truncate">{review.favorite_tracks.map((track) => track.name).join(", ")}</span>
             </p>
           )}
 

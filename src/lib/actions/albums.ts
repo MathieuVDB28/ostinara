@@ -13,7 +13,6 @@ import {
   getRelatedArtists,
   searchArtists,
 } from "@/lib/services/deezer";
-import { addSongToLibrary } from "./songs";
 import type {
   AlbumReview,
   AlbumCommunityStats,
@@ -24,6 +23,7 @@ import type {
   AlbumRecommendation,
   CatalogAlbumDetails,
   CatalogAlbumTrack,
+  FavoriteTrack,
   Song,
 } from "@/types";
 import { syncBadges } from "@/lib/badges/sync";
@@ -33,6 +33,27 @@ function getServiceRoleSupabase() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("Supabase service role credentials not configured");
   return createServiceRoleClient(url, key);
+}
+
+/**
+ * Les preferes tels qu'on les garde : un nom non vide, un titre une seule
+ * fois, 100 au plus (la contrainte de la table).
+ */
+function cleanFavoriteTracks(tracks: FavoriteTrack[] | undefined): FavoriteTrack[] {
+  if (!Array.isArray(tracks)) return [];
+  const seen = new Set<string>();
+  const clean: FavoriteTrack[] = [];
+  for (const track of tracks) {
+    const name = typeof track?.name === "string" ? track.name.trim().slice(0, 300) : "";
+    if (!name) continue;
+    const deezerId = typeof track.deezer_id === "string" && track.deezer_id ? track.deezer_id : undefined;
+    const key = deezerId ?? name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    clean.push(deezerId ? { name, deezer_id: deezerId } : { name });
+    if (clean.length === 100) break;
+  }
+  return clean;
 }
 
 // === Créer une review d'album ===
@@ -50,6 +71,8 @@ export async function createAlbumReview(
     return { success: false, error: await tErr("ratingRange") };
   }
 
+  const favoriteTracks = cleanFavoriteTracks(input.favorite_tracks);
+
   const { data, error } = await supabase
     .from("album_reviews")
     .insert({
@@ -62,8 +85,7 @@ export async function createAlbumReview(
       total_tracks: input.total_tracks || null,
       rating: input.rating,
       review: input.review || null,
-      favorite_track_name: input.favorite_track_name || null,
-      favorite_track_deezer_id: input.favorite_track_deezer_id || null,
+      favorite_tracks: favoriteTracks,
     })
     .select()
     .single();
@@ -83,7 +105,7 @@ export async function createAlbumReview(
       cover_url: input.cover_url,
       rating: input.rating,
       review: input.review,
-      favorite_track_name: input.favorite_track_name,
+      favorite_tracks: favoriteTracks.map((track) => track.name),
     },
   });
 
@@ -139,7 +161,12 @@ export async function updateAlbumReview(
 
   const { error } = await supabase
     .from("album_reviews")
-    .update(input)
+    .update({
+      rating: input.rating,
+      review: input.review,
+      favorite_tracks:
+        input.favorite_tracks === undefined ? undefined : cleanFavoriteTracks(input.favorite_tracks),
+    })
     .eq("id", reviewId)
     .eq("user_id", user.id);
 
@@ -557,24 +584,6 @@ export async function getAlbumTracks(albumId: string): Promise<CatalogAlbumTrack
     console.error("Error fetching album tracks:", error);
     return [];
   }
-}
-
-/**
- * Le morceau prefere d'un album, ajoute a la bibliotheque « à apprendre ».
- * Sans doublon : cf. addSongToLibrary.
- */
-export async function addAlbumTrackToLibrary(input: {
-  title: string;
-  artist: string;
-  album?: string;
-  cover_url?: string;
-  deezer_id?: string;
-}): Promise<{ success: boolean; error?: string; song?: Song; alreadyThere?: boolean }> {
-  return addSongToLibrary(
-    input,
-    "want_to_learn",
-    input.album ? { from: "album", label: input.album } : undefined
-  );
 }
 
 // === Ce que l'on a deja d'un artiste ===

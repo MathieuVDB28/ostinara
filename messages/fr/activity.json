@@ -46,7 +46,7 @@
     "song_mastery": "Défi maîtrise"
   },
   "album": "Album",
-  "favorite": "Préféré :",
+  "favorite": "{count, plural, one {Préféré :} other {Préférés :}}",
   "collapse": "Réduire",
   "readReview": "Lire l'avis",
   "playCover": "Lire la cover de {title}",

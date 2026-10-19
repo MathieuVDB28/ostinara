@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import { StarRating } from "@/components/ui/star-rating";
 import { updateAlbumReview, deleteAlbumReview } from "@/lib/actions/albums";
-import type { CatalogAlbumDetails, AlbumReview, AlbumCommunityStats, CatalogAlbumTrack } from "@/types";
+import type { CatalogAlbumDetails, AlbumReview, AlbumCommunityStats, CatalogAlbumTrack, FavoriteTrack } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { Cover } from "@/components/ui/cover";
-import { AddTrackToLibraryButton, FavoriteTrackPicker } from "./favorite-track-picker";
+import { AddTracksToLibraryButton, FavoriteTrackPicker, toFavoriteTracks } from "./favorite-track-picker";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { Plus } from "lucide-react";
 import { ListenLink } from "@/components/ui/listen-link";
@@ -71,32 +71,37 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
     setIsUpdating(false);
   };
 
-  const [savingFavorite, setSavingFavorite] = useState(false);
   const [favoriteError, setFavoriteError] = useState("");
+  // Les preferes tels qu'enregistres, et la file des enregistrements : on
+  // envoie la liste entiere a chaque coeur, l'un apres l'autre, pour que
+  // le dernier touche gagne meme si l'on touche vite.
+  const savedFavorites = useRef<FavoriteTrack[]>(initialReview?.favorite_tracks ?? []);
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
+  const lastSave = useRef(0);
 
-  // Le coeur s'enregistre tout de suite : pas de mode edition pour un
-  // seul choix.
-  const handleFavorite = async (track: CatalogAlbumTrack | null) => {
+  // Chaque coeur s'enregistre tout de suite : pas de mode edition.
+  const handleFavorites = (picked: CatalogAlbumTrack[]) => {
     if (!userReview) return;
-    const previous = userReview;
-    setUserReview({
-      ...userReview,
-      favorite_track_name: track?.name,
-      favorite_track_deezer_id: track?.id,
-    });
-    setSavingFavorite(true);
+    const reviewId = userReview.id;
+    const favorites = toFavoriteTracks(picked);
+    const save = ++lastSave.current;
+    setUserReview({ ...userReview, favorite_tracks: favorites });
     setFavoriteError("");
 
-    const result = await updateAlbumReview(userReview.id, {
-      favorite_track_name: track?.name ?? null,
-      favorite_track_deezer_id: track?.id ?? null,
+    saveQueue.current = saveQueue.current.then(async () => {
+      const result = await updateAlbumReview(reviewId, { favorite_tracks: favorites });
+      if (result.success) {
+        savedFavorites.current = favorites;
+      } else if (save === lastSave.current) {
+        // Si un coeur plus recent attend derriere, c'est lui qui tranchera.
+        const saved = savedFavorites.current;
+        setUserReview((review) => (review ? { ...review, favorite_tracks: saved } : review));
+        setFavoriteError(result.error || t("favoriteFailed"));
+      }
     });
-    if (!result.success) {
-      setUserReview(previous);
-      setFavoriteError(result.error || t("favoriteFailed"));
-    }
-    setSavingFavorite(false);
   };
+
+  const favorites = userReview?.favorite_tracks ?? [];
 
   const tracks = album.tracks?.items ?? [];
 
@@ -305,7 +310,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
               {userReview && (
                 <span className="hidden text-xs text-muted-foreground sm:inline">{t("tapFavorite")}</span>
               )}
-              {/* Plusieurs titres d'un coup vers la biblio : le coeur n'en marque qu'un. */}
+              {/* N'importe quels titres vers la biblio, les preferes coches d'emblee. */}
               <button
                 type="button"
                 onClick={() =>
@@ -318,7 +323,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
                       deezerId: album.id,
                     },
                     tracks,
-                    preselected: userReview?.favorite_track_deezer_id ? [userReview.favorite_track_deezer_id] : [],
+                    preselected: favorites.flatMap((track) => (track.deezer_id ? [track.deezer_id] : [])),
                   })
                 }
                 className="inline-flex items-center gap-1 text-xs font-semibold text-primary underline-offset-2 hover:underline"
@@ -329,19 +334,18 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
             </div>
           </div>
 
-          {userReview?.favorite_track_name && (
+          {favorites.length > 0 && (
             <div className="flex flex-wrap items-center justify-between gap-3 py-3">
               <p className="min-w-0 text-sm">
-                <span className="text-muted-foreground">{t("yourFavorite")}</span>
-                <span className="font-semibold">{userReview.favorite_track_name}</span>
+                <span className="text-muted-foreground">{t("yourFavorite", { count: favorites.length })}</span>
+                <span className="font-semibold">{favorites.map((track) => track.name).join(", ")}</span>
               </p>
-              <AddTrackToLibraryButton
-                key={userReview.favorite_track_deezer_id}
-                title={userReview.favorite_track_name}
+              <AddTracksToLibraryButton
+                key={favorites.map((track) => track.deezer_id ?? track.name).join("|")}
+                tracks={favorites}
                 artist={mainArtist.name}
                 album={album.name}
                 coverUrl={album.images[0]?.url}
-                deezerId={userReview.favorite_track_deezer_id}
               />
             </div>
           )}
@@ -351,9 +355,8 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
           {userReview ? (
             <FavoriteTrackPicker
               tracks={tracks}
-              value={userReview.favorite_track_deezer_id ?? null}
-              onChange={handleFavorite}
-              disabled={savingFavorite}
+              value={favorites.flatMap((track) => (track.deezer_id ? [track.deezer_id] : []))}
+              onChange={handleFavorites}
             />
           ) : (
             <ol className="divide-y divide-border border-b border-border">

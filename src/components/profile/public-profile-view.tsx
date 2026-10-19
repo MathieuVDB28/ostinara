@@ -12,7 +12,7 @@ import { ProfileShowcase } from "./profile-showcase";
 import { FriendshipButton } from "@/components/friends/friendship-button";
 import { SongShelf } from "@/components/library/song-shelf";
 import { songProgress } from "@/components/library/song-card";
-import { AddTrackToLibraryButton } from "@/components/albums/favorite-track-picker";
+import { AddTracksToLibraryButton } from "@/components/albums/favorite-track-picker";
 import { StarRating } from "@/components/ui/star-rating";
 import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
@@ -175,10 +175,10 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
                         <p className="truncate text-[13px] text-muted-foreground">{review.artist_name}</p>
                         <div className="mt-1 flex items-center gap-2">
                           <StarRating value={review.rating / 2} size="sm" />
-                          {review.favorite_track_name && (
+                          {review.favorite_tracks?.length > 0 && (
                             <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
-                              <Heart className="h-3 w-3 shrink-0 fill-primary text-primary" strokeWidth={0} aria-label={t("favoriteSong")} />
-                              <span className="truncate">{review.favorite_track_name}</span>
+                              <Heart className="h-3 w-3 shrink-0 fill-primary text-primary" strokeWidth={0} aria-label={t("favoriteSong", { count: review.favorite_tracks.length })} />
+                              <span className="truncate">{review.favorite_tracks.map((track) => track.name).join(", ")}</span>
                             </span>
                           )}
                         </div>
@@ -451,12 +451,11 @@ function FriendSongSheet({
             </div>
           )}
 
-          <AddTrackToLibraryButton
-            title={song.title}
+          <AddTracksToLibraryButton
+            tracks={[{ name: song.title, deezer_id: song.deezer_id ?? undefined }]}
             artist={song.artist}
             album={song.album}
             coverUrl={song.cover_url}
-            deezerId={song.deezer_id}
           />
         </div>
       </div>

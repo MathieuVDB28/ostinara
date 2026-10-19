@@ -220,11 +220,13 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
               </span>
             }
           />
-          {activity.albumReview.favorite_track_name && (
+          {activity.albumReview.favorite_tracks?.length > 0 && (
             <p className="flex items-center gap-1.5 px-4 pt-3 text-[13px] sm:px-0">
               <Heart className="h-3.5 w-3.5 shrink-0 fill-primary text-primary" strokeWidth={0} aria-hidden="true" />
-              <span className="text-muted-foreground">{t("favorite")}</span>
-              <span className="truncate font-semibold">{activity.albumReview.favorite_track_name}</span>
+              <span className="shrink-0 text-muted-foreground">{t("favorite", { count: activity.albumReview.favorite_tracks.length })}</span>
+              <span className="truncate font-semibold">
+                {activity.albumReview.favorite_tracks.map((track) => track.name).join(", ")}
+              </span>
             </p>
           )}
           {activity.albumReview.review && (

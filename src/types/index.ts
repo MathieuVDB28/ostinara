@@ -1421,11 +1421,15 @@ export interface AlbumReview {
   total_tracks?: number;
   rating: number; // 0–10 integer stored in DB (stars × 2); display as rating / 2 stars
   review?: string;
-  /** Le morceau prefere, choisi apres l'ecoute. */
-  favorite_track_name?: string;
-  favorite_track_deezer_id?: string;
+  /** Les morceaux preferes, choisis apres l'ecoute, dans l'ordre de l'album. */
+  favorite_tracks: FavoriteTrack[];
   created_at: string;
   updated_at: string;
+}
+
+export interface FavoriteTrack {
+  name: string;
+  deezer_id?: string;
 }
 
 export interface AlbumReviewWithProfile extends AlbumReview {
@@ -1441,15 +1445,13 @@ export interface CreateAlbumReviewInput {
   total_tracks?: number;
   rating: number;
   review?: string;
-  favorite_track_name?: string;
-  favorite_track_deezer_id?: string;
+  favorite_tracks?: FavoriteTrack[];
 }
 
 export interface UpdateAlbumReviewInput {
   rating?: number;
   review?: string;
-  favorite_track_name?: string | null;
-  favorite_track_deezer_id?: string | null;
+  favorite_tracks?: FavoriteTrack[];
 }
 
 // =============================================

@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Check, Heart, Plus } from "lucide-react";
-import { addAlbumTrackToLibrary } from "@/lib/actions/albums";
-import type { CatalogAlbumTrack } from "@/types";
+import { addSongsToLibrary } from "@/lib/actions/songs";
+import type { CatalogAlbumTrack, FavoriteTrack } from "@/types";
 
 function formatDuration(ms: number): string {
   const seconds = Math.round(ms / 1000);
@@ -14,24 +14,30 @@ function formatDuration(ms: number): string {
 
 interface FavoriteTrackPickerProps {
   tracks: CatalogAlbumTrack[];
-  /** Identifiant Deezer du titre prefere, ou null. */
-  value: string | null;
-  onChange: (track: CatalogAlbumTrack | null) => void;
+  /** Identifiants Deezer des titres preferes. */
+  value: string[];
+  /** Les preferes apres le changement, dans l'ordre de l'album. */
+  onChange: (tracks: CatalogAlbumTrack[]) => void;
   disabled?: boolean;
   /** Hauteur bornee dans une modale, liste entiere sur la page de l'album. */
   scroll?: boolean;
 }
 
 /**
- * La tracklist, ou l'on marque son morceau prefere d'un coeur.
- *
- * Un seul choix, et on peut le retirer en touchant de nouveau le meme
- * titre : un radio qu'on ne peut pas decocher obligerait a garder un
- * prefere qu'on ne veut plus.
+ * La tracklist, ou l'on marque ses morceaux preferes d'un coeur. Toucher
+ * un titre l'ajoute ou le retire ; les preferes suivent l'ordre de l'album.
  */
 export function FavoriteTrackPicker({ tracks, value, onChange, disabled, scroll }: FavoriteTrackPickerProps) {
   const t = useTranslations("albums.tracks");
   const multiDisc = tracks.some((track) => track.disc_number > 1);
+  const chosen = new Set(value);
+
+  const toggle = (id: string) => {
+    const next = new Set(chosen);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onChange(tracks.filter((track) => next.has(track.id)));
+  };
 
   return (
     <ol
@@ -39,14 +45,14 @@ export function FavoriteTrackPicker({ tracks, value, onChange, disabled, scroll 
       className={`divide-y divide-border border-y border-border ${scroll ? "max-h-64 overflow-y-auto" : ""}`}
     >
       {tracks.map((track) => {
-        const selected = track.id === value;
+        const selected = chosen.has(track.id);
         return (
           <li key={track.id}>
             <button
               type="button"
               aria-pressed={selected}
               disabled={disabled}
-              onClick={() => onChange(selected ? null : track)}
+              onClick={() => toggle(track.id)}
               className={`grid min-h-[44px] w-full grid-cols-[28px_minmax(0,1fr)_auto_24px] items-center gap-2 py-2 text-left transition-colors hover:bg-accent/50 disabled:opacity-60 ${
                 selected ? "font-semibold" : ""
               }`}
@@ -71,49 +77,55 @@ export function FavoriteTrackPicker({ tracks, value, onChange, disabled, scroll 
   );
 }
 
-interface AddTrackToLibraryButtonProps {
-  title: string;
+/** Les preferes a enregistrer, a partir des titres choisis. */
+export function toFavoriteTracks(tracks: CatalogAlbumTrack[]): FavoriteTrack[] {
+  return tracks.map((track) => ({ name: track.name, deezer_id: track.id }));
+}
+
+interface AddTracksToLibraryButtonProps {
+  tracks: FavoriteTrack[];
   artist: string;
   album?: string;
   coverUrl?: string;
-  deezerId?: string;
 }
 
 /**
- * « Ajouter à ma biblio » : le morceau prefere rejoint la file « à
+ * « Ajouter à ma biblio » : les morceaux preferes rejoignent la file « à
  * apprendre ». Un morceau deja dans la biblio n'est pas duplique, le
  * bouton le dit et mene a la bibliotheque.
  */
-export function AddTrackToLibraryButton({ title, artist, album, coverUrl, deezerId }: AddTrackToLibraryButtonProps) {
+export function AddTracksToLibraryButton({ tracks, artist, album, coverUrl }: AddTracksToLibraryButtonProps) {
   const t = useTranslations("albums.tracks");
   const tc = useTranslations("common");
-  const [state, setState] = useState<"idle" | "added" | "already">("idle");
+  const [outcome, setOutcome] = useState<{ added: number; alreadyThere: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const handleAdd = () => {
     setError(null);
     startTransition(async () => {
-      const result = await addAlbumTrackToLibrary({
-        title,
-        artist,
-        album,
-        cover_url: coverUrl,
-        deezer_id: deezerId,
-      });
-      if (result.success) {
-        setState(result.alreadyThere ? "already" : "added");
-      } else {
-        setError(result.error || t("addFailed"));
-      }
+      const result = await addSongsToLibrary(
+        tracks.map((track) => ({
+          title: track.name,
+          artist,
+          album,
+          cover_url: coverUrl,
+          deezer_id: track.deezer_id,
+        })),
+        album ? { from: "album", label: album } : undefined
+      );
+      setOutcome({ added: result.added, alreadyThere: result.alreadyThere });
+      if (!result.success || result.error) setError(result.error || t("addFailed"));
     });
   };
 
-  if (state !== "idle") {
+  if (outcome && !error) {
     return (
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
         <Check className="h-4 w-4 text-success" strokeWidth={2.25} aria-hidden="true" />
-        <span>{state === "added" ? t("added") : t("already")}</span>
+        <span>
+          {outcome.added > 0 ? t("added", { count: outcome.added }) : t("already", { count: outcome.alreadyThere })}
+        </span>
         <Link href="/biblio" className="font-semibold underline-offset-2 hover:underline">
           {t("see")}
         </Link>
@@ -130,10 +142,11 @@ export function AddTrackToLibraryButton({ title, artist, album, coverUrl, deezer
         className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         <Plus className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
-        {pending ? tc("adding") : t("add")}
+        {pending ? tc("adding") : t("add", { count: tracks.length })}
       </button>
       {error && (
         <p role="status" className="mt-2 text-xs text-destructive">
+          {outcome && outcome.added > 0 && t("partial", { count: outcome.added })}
           {error}
         </p>
       )}

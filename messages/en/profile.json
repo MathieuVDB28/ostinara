@@ -60,7 +60,7 @@
     "tablist": "{name}'s profile",
     "noSongs": "No songs in their library yet.",
     "noAlbums": "No rated albums yet.",
-    "favoriteSong": "Favorite song",
+    "favoriteSong": "{count, plural, one {Favorite song} other {Favorite songs}}",
     "noGear": "No shared gear.",
     "playingNow": "Playing now",
     "noActivity": "No activity yet.",

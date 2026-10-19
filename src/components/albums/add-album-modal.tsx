@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import { createAlbumReview, getCatalogAlbum } from "@/lib/actions/albums";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
-import { FavoriteTrackPicker } from "./favorite-track-picker";
+import { FavoriteTrackPicker, toFavoriteTracks } from "./favorite-track-picker";
 import { StarRating } from "@/components/ui/star-rating";
 import type { AlbumReview, CatalogAlbum, CatalogAlbumTrack } from "@/types";
 import { Icon } from "@/components/ui/icon";
@@ -34,7 +34,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [tracks, setTracks] = useState<CatalogAlbumTrack[] | null>(null);
-  const [favorite, setFavorite] = useState<CatalogAlbumTrack | null>(null);
+  const [favorites, setFavorites] = useState<CatalogAlbumTrack[]>([]);
   const nextSteps = useNextSteps();
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -47,7 +47,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
       setRating(3.5);
       setReview("");
       setError("");
-      setFavorite(null);
+      setFavorites([]);
     } else if (prefillAlbum) {
       setSelectedAlbum(prefillAlbum);
       setStep("review");
@@ -90,7 +90,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
     if (!albumId) return;
     let cancelled = false;
     setTracks(null);
-    setFavorite(null);
+    setFavorites([]);
     // La fiche complete : la tracklist, et la date de sortie que la
     // recherche ne donne pas.
     getCatalogAlbum(albumId).then((details) => {
@@ -131,15 +131,14 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
       total_tracks: selectedAlbum.total_tracks,
       rating: Math.round(rating * 2),
       review: review.trim() || undefined,
-      favorite_track_name: favorite?.name,
-      favorite_track_deezer_id: favorite?.id,
+      favorite_tracks: toFavoriteTracks(favorites),
     });
 
     if (result.success && result.data) {
       onAdded(result.data);
       /*
        * Apres l'avis, les titres a apprendre : l'ecoute passe la main a la
-       * guitare. Le prefere est coche d'emblee, on peut en cocher d'autres.
+       * guitare. Les preferes sont coches d'emblee, on peut en cocher d'autres.
        */
       if (selectedAlbum.id && tracks && tracks.length > 0) {
         nextSteps.show({
@@ -151,7 +150,7 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
             deezerId: selectedAlbum.id,
           },
           tracks,
-          preselected: favorite ? [favorite.id] : [],
+          preselected: favorites.map((track) => track.id),
         });
       }
     } else {
@@ -303,8 +302,10 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                   <label className="text-sm font-medium">
                     {t("favorite")} <span className="text-muted-foreground">{tr("optional")}</span>
                   </label>
-                  {favorite && (
-                    <span className="truncate text-xs font-semibold text-primary">{favorite.name}</span>
+                  {favorites.length > 0 && (
+                    <span className="truncate text-xs font-semibold text-primary">
+                      {favorites.map((track) => track.name).join(", ")}
+                    </span>
                   )}
                 </div>
                 {tracks === null ? (
@@ -314,8 +315,8 @@ export function AddAlbumModal({ isOpen, onClose, onAdded, prefillAlbum }: AddAlb
                 ) : (
                   <FavoriteTrackPicker
                     tracks={tracks}
-                    value={favorite?.id ?? null}
-                    onChange={setFavorite}
+                    value={favorites.map((track) => track.id)}
+                    onChange={setFavorites}
                     scroll
                   />
                 )}

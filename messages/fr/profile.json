@@ -60,7 +60,7 @@
     "tablist": "Profil de {name}",
     "noSongs": "Pas encore de morceaux dans sa biblio.",
     "noAlbums": "Pas encore d'album noté.",
-    "favoriteSong": "Morceau préféré",
+    "favoriteSong": "{count, plural, one {Morceau préféré} other {Morceaux préférés}}",
     "noGear": "Pas de matos partagé.",
     "playingNow": "Joue en ce moment",
     "noActivity": "Pas encore d'activité.",
