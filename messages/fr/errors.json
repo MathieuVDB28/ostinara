@@ -142,5 +142,22 @@
   "posteUpdateFailed": "Erreur lors de la mise à jour du poste",
   "planIntervalRequired": "Plan et intervalle requis",
   "subscriptionUpdated": "Abonnement mis à jour",
-  "songNotRecognized": "Morceau non reconnu"
+  "songNotRecognized": "Morceau non reconnu",
+  "staffMotivationLength": "Ta motivation doit faire entre 20 et 2000 caractères.",
+  "staffApplicationPending": "Tu as déjà une demande en attente.",
+  "staffAdminOnly": "Réservé aux admins de l'équipe.",
+  "staffCannotDemoteSelf": "Tu ne peux pas retirer ton propre rôle d'admin.",
+  "blogTitleLength": "Le titre doit faire entre 1 et 160 caractères.",
+  "blogTooShort": "L'article est trop court pour être publié (200 caractères minimum).",
+  "blogPostNotFound": "Article introuvable.",
+  "blogTranslationExists": "Cet article a déjà une version dans cette langue.",
+  "staffOnly": "Réservé à l'équipe.",
+  "blogDeleteForbidden": "Seuls l'auteur et les admins peuvent supprimer cet article.",
+  "blogCommentLength": "Ton commentaire doit faire entre 1 et 1000 caractères.",
+  "forumRateLimit": "Doucement ! Tu as beaucoup posté aujourd'hui, réessaie demain.",
+  "forumTopicLocked": "Ce sujet est verrouillé.",
+  "forumTitleLength": "Le titre doit faire entre 8 et 160 caractères.",
+  "forumBodyLength": "Le message doit faire entre 20 et 10 000 caractères.",
+  "forumReplyLength": "Ta réponse doit faire entre 2 et 10 000 caractères.",
+  "forumVoteFailed": "Le vote n'a pas été pris en compte."
 }

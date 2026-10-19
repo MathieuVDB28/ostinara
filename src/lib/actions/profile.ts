@@ -1,5 +1,7 @@
 "use server";
 
+import { PUBLIC_PROFILE_COLUMNS } from "@/lib/public-profile";
+import { PROFILE_PRIVATE_SELECT, privateRow } from "@/lib/profile-private";
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
@@ -11,6 +13,7 @@ import type {
   SetFavoriteSongInput,
   SetFavoriteAlbumInput,
   Profile,
+  ProfilePrivate,
   FavoriteSong,
   FavoriteAlbum,
   FavoriteGear,
@@ -112,14 +115,15 @@ export async function getMyProfile(): Promise<UserProfile | null> {
 
   if (!user) return null;
 
-  // Récupérer le profil
-  const { data: profile } = await supabase
+  // Récupérer le profil, et sa partie privee (abonnement, langue, rappels)
+  const { data: row } = await supabase
     .from("profiles")
-    .select(`*, ${PROFILE_INSTRUMENTS_SELECT}`)
+    .select(`*, ${PROFILE_INSTRUMENTS_SELECT}, ${PROFILE_PRIVATE_SELECT}`)
     .eq("id", user.id)
     .single();
 
-  if (!profile) return null;
+  if (!row) return null;
+  const { private: privateData, ...profile } = row as Profile & { private: ProfilePrivate | ProfilePrivate[] | null };
 
   // Récupérer les morceaux favoris avec leurs données complètes
   const { data: favoriteSongs } = await supabase
@@ -178,6 +182,7 @@ export async function getMyProfile(): Promise<UserProfile | null> {
 
   return {
     ...(profile as Profile),
+    ...privateRow(privateData),
     favorite_songs: mappedFavoriteSongs as FavoriteSong[],
     favorite_albums: (favoriteAlbums || []) as FavoriteAlbum[],
     favorite_gear: mappedFavoriteGear as FavoriteGear[],
@@ -199,10 +204,11 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
 
-  // Récupérer le profil de base
+  // Récupérer le profil de base : ses colonnes publiques seulement, meme
+  // pour soi (la page est celle que voient les autres)
   const { data: profile } = await supabase
     .from("profiles")
-    .select(`*, ${PROFILE_INSTRUMENTS_SELECT}`)
+    .select(`${PUBLIC_PROFILE_COLUMNS}, ${PROFILE_INSTRUMENTS_SELECT}`)
     .eq("id", userId)
     .single();
 
@@ -510,13 +516,19 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ succes
     return { success: false, error: await tErr("bioLength") };
   }
 
-  const { error } = await supabase
-    .from("profiles")
-    .update(input)
-    .eq("id", user.id);
+  // Les rappels vivent dans profile_private ; le reste dans profiles
+  const { practice_reminders, ...publicFields } = input;
+  const [{ error }, { error: privateError }] = await Promise.all([
+    Object.keys(publicFields).length > 0
+      ? supabase.from("profiles").update(publicFields).eq("id", user.id)
+      : Promise.resolve({ error: null }),
+    practice_reminders !== undefined
+      ? supabase.from("profile_private").update({ practice_reminders }).eq("user_id", user.id)
+      : Promise.resolve({ error: null }),
+  ]);
 
-  if (error) {
-    console.error("Error updating profile:", error);
+  if (error || privateError) {
+    console.error("Error updating profile:", error ?? privateError);
     return { success: false, error: await tErr("updateFailed") };
   }
 

@@ -30,11 +30,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Récupérer ou créer le customer Stripe
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('stripe_customer_id, stripe_subscription_id, plan, email:id')
-      .eq('id', user.id)
-      .single();
+    // Le plan est sur profiles (public), le client Stripe sur profile_private
+    const [{ data: publicProfile }, { data: privateProfile }] = await Promise.all([
+      supabase.from('profiles').select('plan').eq('id', user.id).single(),
+      supabase
+        .from('profile_private')
+        .select('stripe_customer_id, stripe_subscription_id')
+        .eq('user_id', user.id)
+        .maybeSingle(),
+    ]);
+    const profile = {
+      plan: publicProfile?.plan,
+      stripe_customer_id: privateProfile?.stripe_customer_id,
+      stripe_subscription_id: privateProfile?.stripe_subscription_id,
+    };
 
     let customerId = profile?.stripe_customer_id;
 
@@ -49,15 +58,14 @@ export async function POST(req: NextRequest) {
       customerId = customer.id;
 
       // Sauvegarder le customer ID dans Supabase. Colonne verrouillee pour
-      // les utilisateurs (cf. migration 20261027) : on passe par le service role.
+      // les utilisateurs (cf. migration 20261104) : on passe par le service role.
       const supabaseAdmin = createAdminClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
       await supabaseAdmin
-        .from('profiles')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', user.id);
+        .from('profile_private')
+        .upsert({ user_id: user.id, stripe_customer_id: customerId }, { onConflict: 'user_id' });
     }
 
     // Si l'utilisateur a déjà un abonnement actif, on fait un changement de plan

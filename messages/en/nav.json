@@ -25,5 +25,7 @@
   "appearance": "Appearance",
   "themeSystem": "System",
   "themeLight": "Light",
-  "themeDark": "Dark"
+  "themeDark": "Dark",
+  "blog": "Blog",
+  "forum": "Forum"
 }

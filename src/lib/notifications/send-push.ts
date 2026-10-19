@@ -38,7 +38,7 @@ export type PushT = Translator<'push'>;
 /**
  * Un payload, ou de quoi le fabriquer dans la langue du destinataire :
  * une notification envoyee a plusieurs amis part dans la langue de
- * chacun (profiles.locale), pas dans celle de qui l'a declenchee.
+ * chacun (profile_private.locale), pas dans celle de qui l'a declenchee.
  */
 export type LocalizedPayload =
   | NotificationPayload
@@ -46,7 +46,7 @@ export type LocalizedPayload =
 
 async function resolvePayload(userId: string, payload: LocalizedPayload): Promise<NotificationPayload> {
   if (typeof payload !== 'function') return payload;
-  const { data } = await supabaseAdmin.from('profiles').select('locale').eq('id', userId).maybeSingle();
+  const { data } = await supabaseAdmin.from('profile_private').select('locale').eq('user_id', userId).maybeSingle();
   const locale = recipientLocale(data?.locale);
   const t = await getTranslations({ locale, namespace: 'push' });
   return payload(t, locale);
@@ -80,6 +80,12 @@ export type NotificationType =
   | 'gear_added'
   | 'song_learning'
   | 'badge_unlocked'
+  | 'staff_application'
+  | 'staff_application_reviewed'
+  | 'blog_comment'
+  | 'forum_reply'
+  | 'forum_solved'
+  | 'forum_mention'
   | ReminderType;
 
 export async function sendPushNotification(

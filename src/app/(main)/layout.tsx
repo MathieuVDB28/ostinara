@@ -16,6 +16,7 @@ import { OfflineProvider } from "@/components/offline/offline-provider";
 import { NextStepsProvider } from "@/components/next-steps/next-steps-provider";
 import { InstrumentsProvider } from "@/components/providers/instruments-provider";
 import { PROFILE_INSTRUMENTS_SELECT } from "@/lib/instruments";
+import { privateRow } from "@/lib/profile-private";
 import type { BadgeCounts } from "@/lib/navigation";
 import type { ProfileInstrument } from "@/types";
 
@@ -43,7 +44,7 @@ export default async function MainLayout({
   ] = await Promise.all([
     supabase
       .from("profiles")
-      .select(`username, display_name, avatar_url, locale, ${PROFILE_INSTRUMENTS_SELECT}`)
+      .select(`username, display_name, avatar_url, ${PROFILE_INSTRUMENTS_SELECT}, private:profile_private(locale)`)
       .eq("id", user.id)
       .single(),
     getPendingRequestsCount(),
@@ -61,8 +62,8 @@ export default async function MainLayout({
 
   // Comptes d'avant le choix de langue : on garde celle de la session,
   // pour que push et rappels partent dans la langue de l'app.
-  if (profile && !profile.locale) {
-    await supabase.from("profiles").update({ locale: await getLocale() }).eq("id", user.id);
+  if (profile && !privateRow(profile.private)?.locale) {
+    await supabase.from("profile_private").update({ locale: await getLocale() }).eq("user_id", user.id);
   }
 
   const badges: BadgeCounts = {

@@ -1,5 +1,6 @@
 "use server";
 
+import { PUBLIC_PROFILE_COLUMNS } from "@/lib/public-profile";
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { PROFILE_INSTRUMENTS_SELECT } from "@/lib/instruments";
@@ -501,10 +502,10 @@ export async function getFriendProfile(
     return null;
   }
 
-  // Récupérer le profil
+  // Récupérer le profil (colonnes publiques : pas l'abonnement d'un ami)
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*")
+    .select(PUBLIC_PROFILE_COLUMNS)
     .eq("id", friendId)
     .single();
 

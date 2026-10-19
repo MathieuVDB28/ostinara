@@ -1,5 +1,6 @@
 "use server";
 
+import { PUBLIC_PROFILE_COLUMNS } from "@/lib/public-profile";
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
@@ -400,7 +401,7 @@ export async function getFeedActivities(
   if (friendProfileIds.length > 0) {
     const { data: friends } = await supabase
       .from("profiles")
-      .select("*")
+      .select(PUBLIC_PROFILE_COLUMNS)
       .in("id", friendProfileIds);
 
     if (friends) {

@@ -20,7 +20,9 @@
     "terms": "Terms of use",
     "privacy": "Privacy",
     "contact": "Contact",
-    "rights": "© {year} Ostinara. All rights reserved."
+    "rights": "© {year} Ostinara. All rights reserved.",
+    "blog": "Blog",
+    "forum": "Forum"
   },
   "binding": "This translation is provided for your convenience. Only the French version is legally binding."
 }

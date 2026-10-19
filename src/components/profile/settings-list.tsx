@@ -79,6 +79,18 @@ export function SettingsList({ profile }: SettingsListProps) {
         : t("friendsOnly"),
       icon: "lock",
     },
+    // L'equipe editoriale : on y postule, ou l'on y est deja
+    {
+      href: "/profil/reglages/equipe",
+      label: t("staff"),
+      description: profile.staff_role
+        ? t(profile.staff_role === "admin" ? "staffAdmin" : "staffEditor")
+        : t("staffHint"),
+      icon: "edit",
+    },
+    ...(profile.staff_role === "admin"
+      ? [{ href: "/admin", label: t("admin"), description: t("adminHint"), icon: "group" }]
+      : []),
   ];
 
   return (

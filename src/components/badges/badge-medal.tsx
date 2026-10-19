@@ -7,6 +7,7 @@ import {
   Flame,
   Gauge,
   GraduationCap,
+  Handshake,
   Library,
   Shuffle,
   Trophy,
@@ -30,6 +31,7 @@ const ICONS: Record<BadgeIcon, LucideIcon> = {
   shuffle: Shuffle,
   calendar: CalendarDays,
   circle_check: CircleCheck,
+  handshake: Handshake,
 };
 
 interface BadgeMedalProps {

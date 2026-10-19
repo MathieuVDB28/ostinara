@@ -161,13 +161,13 @@ Chaque musicien declare ses instruments a l'onboarding (`/bienvenue`, impose par
 - **Badges** : `titles` par instrument dans `src/lib/badges/catalog.ts` (ex. « Corne aux doigts » / « Ampoules aux baguettes » / « Ivoire usé »), via `badgeLabel(id, level, instrument)`.
 
 ### Langues (i18n)
-Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les URL, la langue vit dans le cookie `NEXT_LOCALE` et dans `profiles.locale`.
+Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les URL, la langue vit dans le cookie `NEXT_LOCALE` et dans `profile_private.locale`.
 - **Detection** (`src/i18n/detect.ts`, appelee par le middleware a la premiere visite) : pays de l'IP (`x-vercel-ip-country`) — francais dans les pays francophones, anglais ailleurs ; pays bilingues (BE, CH, CA, LU…) ou pas d'en-tete : langue du navigateur ; a defaut le francais. Un cookie existant n'est jamais ecrase. Changement : Profil > Reglages > Langue (`LocaleSwitcher`, action `setLocale`), ou le selecteur compact des pages publiques (auth, landing, legal, onboarding).
 - **Messages** : `messages/{fr,en}/<namespace>.json`, un fichier par domaine. `messages/*/index.ts` est **genere** par `npm run check:i18n` (qui verifie aussi que fr et en ont les memes cles et les memes variables ICU) : le lancer apres tout ajout de cle, avant `tsc`. Les cles sont typees (`src/global.d.ts`) : une cle absente casse la compilation.
 - **Ecrire un texte** : jamais de chaine en dur dans l'UI. Client et composants serveur synchrones : `useTranslations("ns")` ; serveur async / server actions : `getTranslations`. Pluriels et variables en ICU (`{count, plural, one {# morceau} other {# morceaux}}`), mise en forme avec `t.rich` (`<strong>`, `<accent>`, `<link>`). Enums (instrument, statut, humeur, type de matos…) : namespace `enums` (``te(`gearType.${type}`)``) ; libelles avec traducteur : `instrumentLabel(entry, te)`, `badgeLabel(id, level, instrument, t)`, etc.
 - **Dates et nombres** : `useIntlLocale()` (client) / `getIntlLocale()` (serveur) → `"fr-FR"` / `"en-US"` ; jamais `"fr-FR"` en dur. Prix toujours en EUR (`Intl.NumberFormat` avec `currency: "EUR"`).
 - **Erreurs des server actions** : `return { success: false, error: await tErr("cle") }` (`src/i18n/server.ts`, namespace `errors`).
-- **Sans requete** (push, cron, emails) : la langue du destinataire, `profiles.locale` (`recipientLocale()`). `sendPushNotification` accepte un payload fonction `(t, locale) => ({ title, body })` evalue par destinataire. Email de la liste d'attente : `waitlist.locale`, traducteur passe a `waitlistConfirmationEmail`. Emails d'auth Supabase : `locale` est dans les metadonnees du compte (`{{ if eq .Data.locale "en" }}` dans les templates).
+- **Sans requete** (push, cron, emails) : la langue du destinataire, `profile_private.locale` (`recipientLocale()`). `sendPushNotification` accepte un payload fonction `(t, locale) => ({ title, body })` evalue par destinataire. Email de la liste d'attente : `waitlist.locale`, traducteur passe a `waitlistConfirmationEmail`. Emails d'auth Supabase : `locale` est dans les metadonnees du compte (`{{ if eq .Data.locale "en" }}` dans les templates).
 - **Contenu en base** : exercices systeme traduits dans `exercises.translations` (`localizeExercise`). Ce que l'utilisateur ecrit (titres, notes) reste tel quel ; quelques valeurs anciennes stockees en francais (unites du plan de la semaine) sont rattrapees a l'affichage.
 - **Cas particuliers** : `/offline` est statique (pre-rendue au build) et choisit sa langue cote client (`OfflineIntl`). Le PDF (react-pdf) est rendu hors de l'arbre React : les traducteurs lui arrivent en props. Pages legales : `legal-fr.tsx` (texte de reference) + `legal-en.tsx` (traduction) dans chaque dossier, bandeau « seule la version francaise fait foi » en anglais ; toute modification du texte francais doit etre reportee dans l'anglais.
 
@@ -243,6 +243,19 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - Feed des reviews des amis
 - Plan gate : seules les recommandations sont Pro/Band
 - **Encyclopedie** (gratuit) : sur `/albums/[id]` fiche Wikidata (sortie originale, studio, production, genre, label, album precedent/suivant) + article Wikipedia (intro, sections repliables) ; sur `/artists/[id]` line-up (qui joue quoi, « Ton poste ») + fiche + article. Service `src/lib/services/wikipedia.ts`, composants `src/components/albums/encyclopedia.tsx` (serveur, Suspense) / `wiki-panel.tsx` / `band-lineup.tsx`
+
+### Equipe editoriale et blog
+- **Equipe** : `profiles.staff_role` = `admin` (nomme les autres) | `editor` (ecrit sur le blog, modere). Jamais ecrit depuis le navigateur (trigger) : RPC `set_staff_role` / `review_staff_application` (admins). Policies via `is_staff()` / `is_staff_admin()`. Premier admin a la main dans le SQL editor (cf. migration `20261101_staff`). Demande : Profil > Reglages > « Ecrire pour Ostinara » (`/profil/reglages/equipe`, table `staff_applications`) ; examen sur `/admin`. Actions : `src/lib/actions/staff.ts`.
+- **Blog** (migration `20261102_blog`) : `blog_posts` (contenu = JSON Tiptap, rendu par `src/components/blog/blog-content.tsx` en liste blanche, jamais de HTML stocke ; `locale` + `translation_group` pour les traductions ; publie = `status = 'published'` et `published_at` passe, une date future programme) et `blog_comments`. Bucket `blog` (images, ecriture equipe). Actions : `src/lib/actions/blog.ts`.
+- **Pages** : publiques `/blog`, `/blog/[slug]`, `/blog/rss.xml` (sans compte, referencees : `sitemap.ts`, `robots.ts`, JSON-LD, hreflang) ; connecte, elles redirigent vers `/commu/blog` et `/commu/blog/[slug]`. Editeur (equipe) : `/commu/blog/ecrire` et `/commu/blog/ecrire/[id]`. Blocs propres : morceau (`songEmbed`, « Ajouter a ma biblio »), exercice systeme (`exerciseEmbed`, recopie fr/en, « Le travailler dans Jouer » → `/jouer?exercise=`) et metronome (`metronomeEmbed`), cf. `src/lib/blog/document.ts`. Les brouillons s'enregistrent tout seuls (4 s apres la derniere frappe) ; jamais un article en ligne ou programme.
+
+### Forum
+- Migration `20261103_forum` : `forum_topics` (texte brut, `slug` = titre + suffixe aleatoire, `locale`, rubrique `forum_category`, jusqu'a 4 photos du bucket `forum`, `gear` = fiche du Matos recopiee sans serie ni prix, `solved_reply_id` = meilleure reponse choisie par l'auteur, drapeaux `is_pinned/is_locked/is_hidden` reserves a l'equipe), `forum_replies` (`vote_count` tenu par trigger), `forum_reply_votes` (pas pour soi), `forum_reports` (signalements, traites par l'equipe). Les triggers BEFORE filtrent ce que chacun peut changer et limitent a 5 sujets / 60 reponses par 24 h hors equipe ; ils ne sont pas SECURITY DEFINER (ils lisent `current_user`), les compteurs AFTER le sont.
+- Recherche : RPC `search_forum_topics(p_query, p_locale, p_any_word, p_limit)` (tsvector 'simple', bilingue) ; `p_any_word` sert « Ces sujets ressemblent au tien ».
+- Pages : publiques `/forum`, `/forum/[slug]` (JSON-LD DiscussionForumPosting, recherches en noindex), dans l'app `/commu/forum`, `/commu/forum/[slug]`, `/commu/forum/nouveau`, `/commu/forum/[slug]/modifier`, `/commu/forum/moderation` (equipe). Filtres dans l'URL (`?q=&rubrique=&filtre=sans-reponse|resolus&langues=toutes&page=`), cf. `parseForumParams` dans `src/lib/forum.ts`. Actions : `src/lib/actions/forum.ts`. Push : `forum_reply` (a tous ceux qui suivent le sujet), `forum_solved` (a l'auteur de la reponse choisie), `forum_mention`.
+- Suivre : `forum_topic_follows` (l'auteur et ceux qui repondent suivent d'office, trigger ; `following = false` = desabonne, une nouvelle reponse ne reabonne pas). Les abonnes se lisent avec le service role.
+- Mentions `@pseudo` (sujets et reponses) : `src/lib/mentions.ts` (pseudos `[A-Za-z0-9_.-]`, 10 max par message), saisie assistee `MentionTextarea` (participants du sujet d'abord), rendu dans `PlainText` (seuls les pseudos existants ressortent). Une personne mentionnee recoit la mention, pas en plus la notification d'abonne. Les modifications ne re-notifient pas.
+- Badge « Coup de main » (`entraide`, famille commu, 1 / 10 / 25) : musiciens distincts dont le sujet a ete resolu par ma reponse, date `forum_topics.solved_at`.
 
 ### Setlists (`/setlists`)
 - **3 onglets** : Setlists / Groupes / Repetitions
@@ -763,10 +776,31 @@ band_members.instrument_label text             -- precise 'other' (chant, saxo�
 waitlist.instruments instrument[]              -- « Tu joues de quoi ? » de la liste d'attente
 ```
 
+### Donnees privees du profil
+
+`profiles` est lisible par tous (y compris sans compte) : il ne garde que ce qui
+peut etre montre. L'abonnement, la langue et les reglages vivent dans
+`profile_private` (migration `20261104_profile_private`, lisible par soi seul,
+abonnement ecrit par le service role). Le profil d'un autre se lit avec
+`PUBLIC_PROFILE_COLUMNS` (`src/lib/public-profile.ts`), jamais en `select("*")` ;
+son propre profil avec `getMyProfile` (joint `PROFILE_PRIVATE_SELECT`, champs
+remis a plat). Cf. `docs/profils-prives.md` (etape 2 a appliquer apres deploiement).
+
+```sql
+profile_private (
+  user_id uuid PRIMARY KEY REFERENCES profiles ON DELETE CASCADE,
+  stripe_customer_id text UNIQUE, stripe_subscription_id text, stripe_price_id text,
+  subscription_status text, subscription_period_end timestamptz,
+  locale text,                  -- 'fr' | 'en' : push, emails, crons
+  practice_reminders boolean,   -- rappels de pratique
+  badges_synced_at timestamptz
+)
+```
+
 ### Colonnes ajoutees pour les langues
 
 ```sql
-profiles.locale text                           -- 'fr' | 'en', langue des push, emails et crons (migration 20261028_locale)
+profile_private.locale text                    -- 'fr' | 'en', langue des push, emails et crons (migration 20261028_locale, deplacee par 20261104)
 waitlist.locale text                           -- langue de la page d'inscription, celle de l'email de confirmation
 exercises.translations jsonb                   -- { "en": { name, description, instructions[], tips[] } } (migration 20261029_exercise_translations)
 ```

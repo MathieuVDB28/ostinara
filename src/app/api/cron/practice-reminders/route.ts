@@ -88,11 +88,11 @@ export async function GET(request: NextRequest) {
   }
 
   const { data: profiles } = await supabaseAdmin
-    .from("profiles")
-    .select("id")
-    .in("id", subscribed)
+    .from("profile_private")
+    .select("user_id")
+    .in("user_id", subscribed)
     .eq("practice_reminders", true);
-  const userIds = (profiles ?? []).map((p) => p.id as string);
+  const userIds = (profiles ?? []).map((p) => p.user_id as string);
   if (userIds.length === 0) {
     return NextResponse.json({ success: true, sent: 0, candidates: 0 });
   }

@@ -139,5 +139,25 @@
     "walking_bass": "WB",
     "voicings": "VO",
     "reading": "LE"
+  },
+  "blogCategory": {
+    "gear": "Matos",
+    "technique": "Technique",
+    "theory": "Théorie",
+    "learning": "Apprendre",
+    "home_studio": "Home studio",
+    "band_life": "Vie de groupe",
+    "culture": "Culture",
+    "news": "Actus"
+  },
+  "forumCategory": {
+    "gear_buying": "Achat & matos",
+    "setup_repair": "Réglages & lutherie",
+    "technique": "Technique",
+    "theory": "Théorie",
+    "home_studio": "Home studio",
+    "band_stage": "Groupe & scène",
+    "introductions": "Présentations",
+    "off_topic": "Bla-bla"
   }
 }

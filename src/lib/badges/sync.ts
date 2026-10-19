@@ -130,6 +130,7 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
     { data: friendships },
     { data: challenges },
     { data: masteredActivities },
+    { data: solvedTopics },
     weeklyPlan,
   ] = await Promise.all([
     supabase
@@ -155,6 +156,12 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
       .select("reference_id, created_at")
       .eq("user_id", userId)
       .eq("type", "song_mastered"),
+    // Les sujets du forum resolus par une de mes reponses
+    supabase
+      .from("forum_topics")
+      .select("author_id, solved_at, reply:forum_replies!forum_topics_solved_reply_fkey!inner(author_id)")
+      .eq("reply.author_id", userId)
+      .not("solved_at", "is", null),
     getWeeklyPlan(),
   ]);
 
@@ -190,6 +197,15 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
     if (first) tempoDates.push(first);
   }
 
+  // Un musicien aide compte une fois, a la date de sa premiere question
+  // resolue par moi. Se repondre a soi-meme ne compte pas.
+  const helpedAt = new Map<string, string>();
+  for (const topic of solvedTopics ?? []) {
+    if (!topic.solved_at || topic.author_id === userId) continue;
+    const known = helpedAt.get(topic.author_id);
+    if (!known || topic.solved_at < known) helpedAt.set(topic.author_id, topic.solved_at);
+  }
+
   const metrics: Record<string, Metric> = {
     repertoire: countMetric(
       songRows
@@ -205,6 +221,7 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
     melomane: countMetric((albums ?? []).map((a) => a.created_at)),
     entoure: countMetric((friendships ?? []).map((f) => f.updated_at ?? f.created_at)),
     competiteur: countMetric((challenges ?? []).map((c) => c.updated_at)),
+    entraide: countMetric([...helpedAt.values()]),
   };
 
   const earned: UserBadgeRow[] = [];
@@ -301,7 +318,7 @@ export async function syncBadges(
     const [{ earned, values }, { data: existing }, { data: profile }] = await Promise.all([
       evaluateBadges(user.id),
       admin.from("user_badges").select("badge_id, level, period, unlocked_at").eq("user_id", user.id),
-      admin.from("profiles").select("badges_synced_at").eq("id", user.id).single(),
+      admin.from("profile_private").select("badges_synced_at").eq("user_id", user.id).maybeSingle(),
     ]);
 
     const rows = (existing ?? []) as UserBadgeRow[];
@@ -378,7 +395,7 @@ export async function syncBadges(
     }
 
     if (silent || fresh.length > 0) {
-      await admin.from("profiles").update({ badges_synced_at: now }).eq("id", user.id);
+      await admin.from("profile_private").update({ badges_synced_at: now }).eq("user_id", user.id);
     }
 
     // Le toast vit dans le layout : il faut le re-rendre.

@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   ChartLine,
   Disc3,
   Dumbbell,
@@ -11,6 +12,7 @@ import {
   Medal,
   ListMusic,
   MessageCircle,
+  MessagesSquare,
   Metronome,
   Mic,
   Music,
@@ -33,6 +35,8 @@ import {
  */
 const ICONS: Record<string, LucideIcon> = {
   home: House,
+  menu_book: BookOpen,
+  forum: MessagesSquare,
   dashboard: LayoutDashboard,
   library: Library,
   chart: ChartLine,

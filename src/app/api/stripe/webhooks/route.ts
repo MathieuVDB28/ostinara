@@ -19,6 +19,41 @@ function getSupabaseAdmin() {
   return supabaseAdminInstance;
 }
 
+/**
+ * Le compte d'un client Stripe. Le lien vit dans profile_private (lisible
+ * par son seul proprietaire) : on le lit avec le service role.
+ */
+async function findProfileByCustomer(customerId: string): Promise<{ id: string } | null> {
+  const { data } = await getSupabaseAdmin()
+    .from('profile_private')
+    .select('user_id')
+    .eq('stripe_customer_id', customerId)
+    .maybeSingle();
+  return data ? { id: data.user_id as string } : null;
+}
+
+/**
+ * Enregistre l'etat d'un abonnement : le plan sur profiles (public, il
+ * donne le badge Pro / Band), le reste sur profile_private. `plan` null :
+ * inchange.
+ */
+async function writeSubscription(
+  userId: string,
+  plan: string | null,
+  details: {
+    stripe_subscription_id?: string | null;
+    subscription_status?: string;
+    subscription_period_end?: string | null;
+  }
+): Promise<{ error: unknown }> {
+  const admin = getSupabaseAdmin();
+  const [privateResult, planResult] = await Promise.all([
+    admin.from('profile_private').upsert({ user_id: userId, ...details }, { onConflict: 'user_id' }),
+    plan ? admin.from('profiles').update({ plan }).eq('id', userId) : Promise.resolve({ error: null }),
+  ]);
+  return { error: privateResult.error ?? planResult.error };
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const headersList = await headers();
@@ -104,11 +139,7 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 
   if (!userId) {
     // Essayer de trouver l'utilisateur via le customer ID
-    const { data: profile } = await getSupabaseAdmin()
-      .from('profiles')
-      .select('id')
-      .eq('stripe_customer_id', subscription.customer as string)
-      .single();
+    const profile = await findProfileByCustomer(subscription.customer as string);
 
     if (!profile) {
       console.error('[Stripe Webhook] Could not find user for subscription');
@@ -129,11 +160,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   let targetUserId = userId;
 
   if (!targetUserId) {
-    const { data: profile } = await getSupabaseAdmin()
-      .from('profiles')
-      .select('id')
-      .eq('stripe_customer_id', subscription.customer as string)
-      .single();
+    const profile = await findProfileByCustomer(subscription.customer as string);
 
     if (!profile) {
       console.error('[Stripe Webhook] Could not find user for deleted subscription');
@@ -143,15 +170,11 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 
   // Réinitialiser au plan free
-  const { error } = await getSupabaseAdmin()
-    .from('profiles')
-    .update({
-      plan: 'free',
-      subscription_status: 'canceled',
-      stripe_subscription_id: null,
-      subscription_period_end: null,
-    })
-    .eq('id', targetUserId);
+  const { error } = await writeSubscription(targetUserId, 'free', {
+    subscription_status: 'canceled',
+    stripe_subscription_id: null,
+    subscription_period_end: null,
+  });
 
   if (error) {
     console.error('[Stripe Webhook] Error resetting user to free plan:', error);
@@ -169,25 +192,15 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   const userId = subscription.metadata?.supabase_user_id;
 
   if (!userId) {
-    const { data: profile } = await getSupabaseAdmin()
-      .from('profiles')
-      .select('id')
-      .eq('stripe_customer_id', invoice.customer as string)
-      .single();
+    const profile = await findProfileByCustomer(invoice.customer as string);
 
     if (profile) {
-      await getSupabaseAdmin()
-        .from('profiles')
-        .update({ subscription_status: 'active' })
-        .eq('id', profile.id);
+      await writeSubscription(profile.id, null, { subscription_status: 'active' });
     }
     return;
   }
 
-  await getSupabaseAdmin()
-    .from('profiles')
-    .update({ subscription_status: 'active' })
-    .eq('id', userId);
+  await writeSubscription(userId, null, { subscription_status: 'active' });
 
   console.log(`[Stripe Webhook] Payment succeeded for user ${userId}`);
 }
@@ -195,21 +208,14 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
 
-  const { data: profile } = await getSupabaseAdmin()
-    .from('profiles')
-    .select('id')
-    .eq('stripe_customer_id', customerId)
-    .single();
+  const profile = await findProfileByCustomer(customerId);
 
   if (!profile) {
     console.error('[Stripe Webhook] Could not find user for failed payment');
     return;
   }
 
-  await getSupabaseAdmin()
-    .from('profiles')
-    .update({ subscription_status: 'past_due' })
-    .eq('id', profile.id);
+  await writeSubscription(profile.id, null, { subscription_status: 'past_due' });
 
   console.log(`[Stripe Webhook] Payment failed for user ${profile.id}`);
 }
@@ -227,15 +233,11 @@ async function updateUserSubscription(userId: string, subscription: Stripe.Subsc
   const subData = subscription as unknown as { current_period_end: number };
   const periodEnd = new Date(subData.current_period_end * 1000).toISOString();
 
-  const { error } = await getSupabaseAdmin()
-    .from('profiles')
-    .update({
-      plan,
-      stripe_subscription_id: subscription.id,
-      subscription_status: subscription.status,
-      subscription_period_end: periodEnd,
-    })
-    .eq('id', userId);
+  const { error } = await writeSubscription(userId, plan, {
+    stripe_subscription_id: subscription.id,
+    subscription_status: subscription.status,
+    subscription_period_end: periodEnd,
+  });
 
   if (error) {
     console.error('[Stripe Webhook] Error updating user subscription:', error);

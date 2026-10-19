@@ -30,5 +30,31 @@
   "play": {
     "title": "Play | Ostinara",
     "description": "Metronome, exercises and tuner"
+  },
+  "admin": {
+    "title": "Admin | Ostinara"
+  },
+  "staffApply": {
+    "title": "Write for Ostinara | Ostinara"
+  },
+  "blog": {
+    "title": "The blog | Ostinara",
+    "description": "Guitar, bass, drums, keys: practice tips, gear, theory and band life, from the Ostinara team."
+  },
+  "blogWrite": {
+    "title": "Write | Ostinara"
+  },
+  "forum": {
+    "title": "The forum | Ostinara",
+    "description": "Musicians helping musicians: buying gear, setup, technique, theory, home studio and band life."
+  },
+  "forumNew": {
+    "title": "Ask a question | Ostinara"
+  },
+  "forumEdit": {
+    "title": "Edit topic | Ostinara"
+  },
+  "forumModeration": {
+    "title": "Reports | Ostinara"
   }
 }

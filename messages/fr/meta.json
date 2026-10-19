@@ -30,5 +30,31 @@
   "play": {
     "title": "Jouer | Ostinara",
     "description": "Métronome, exercices et accordeur"
+  },
+  "admin": {
+    "title": "Administration | Ostinara"
+  },
+  "staffApply": {
+    "title": "Écrire pour Ostinara | Ostinara"
+  },
+  "blog": {
+    "title": "Le blog | Ostinara",
+    "description": "Guitare, basse, batterie, clavier : conseils de pratique, matos, théorie et vie de groupe, par l'équipe Ostinara."
+  },
+  "blogWrite": {
+    "title": "Écrire | Ostinara"
+  },
+  "forum": {
+    "title": "Le forum | Ostinara",
+    "description": "Entraide entre musiciens : achat de matos, réglages, technique, théorie, home studio et vie de groupe."
+  },
+  "forumNew": {
+    "title": "Poser une question | Ostinara"
+  },
+  "forumEdit": {
+    "title": "Modifier le sujet | Ostinara"
+  },
+  "forumModeration": {
+    "title": "Signalements | Ostinara"
   }
 }

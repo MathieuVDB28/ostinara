@@ -136,5 +136,33 @@
   "rehearsalToday": "Rehearsal today!",
   "rehearsalTomorrow": "Rehearsal tomorrow!",
   "rehearsalReminderBody": "{title} with {band} at {time}{location, select, none {} other { - {location}}}",
-  "yourBand": "your band"
+  "yourBand": "your band",
+  "staffApplication": {
+    "title": "New team request",
+    "body": "{name} would like to write for Ostinara"
+  },
+  "staffAccepted": {
+    "title": "Welcome to the team!",
+    "body": "Your request was accepted: you can now write on the blog and moderate the forum."
+  },
+  "staffDeclined": {
+    "title": "Your team request",
+    "body": "It wasn't accepted this time. Thanks for your interest!"
+  },
+  "blogComment": {
+    "title": "New comment",
+    "body": "{name} commented on “{title}”"
+  },
+  "forumReply": {
+    "title": "New reply",
+    "body": "{name} replied to “{title}”"
+  },
+  "forumSolved": {
+    "title": "Your reply helped!",
+    "body": "It was picked as the solution to “{title}”"
+  },
+  "forumMention": {
+    "title": "You were mentioned",
+    "body": "{name} mentioned you in “{title}”"
+  }
 }

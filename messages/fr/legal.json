@@ -20,7 +20,9 @@
     "terms": "CGU",
     "privacy": "Confidentialité",
     "contact": "Contact",
-    "rights": "© {year} Ostinara. Tous droits réservés."
+    "rights": "© {year} Ostinara. Tous droits réservés.",
+    "blog": "Blog",
+    "forum": "Forum"
   },
   "binding": "Cette traduction est fournie pour ta commodité. Seule la version française fait foi."
 }

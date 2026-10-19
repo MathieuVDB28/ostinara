@@ -1,0 +1,33 @@
+{
+  "apply": {
+    "back": "Settings",
+    "title": "Write for Ostinara",
+    "hint": "The Ostinara team writes the blog posts and runs the forum. Tell us what you play, what you'd like to write about, and what you've already written or published.",
+    "declinedBefore": "Your last request wasn't accepted, but you can send a new one.",
+    "motivation": "Why you?",
+    "motivationPlaceholder": "Your background, the topics you'd like to cover…",
+    "links": "Links (optional)",
+    "linksPlaceholder": "Blog, channel, articles…",
+    "submit": "Send my request",
+    "pending": "Your request has been sent: an admin will read it. You'll get a notification.",
+    "withdraw": "Withdraw my request",
+    "isEditor": "You're on the team: you can write on the blog and moderate the forum.",
+    "isAdmin": "You're a team admin: you review requests and appoint writers.",
+    "openAdmin": "Open admin"
+  },
+  "admin": {
+    "title": "Admin",
+    "applications": "{count, plural, =0 {Requests} one {# request} other {# requests}}",
+    "noApplications": "No pending requests.",
+    "accept": "Accept",
+    "decline": "Decline",
+    "team": "{count, plural, one {Team · # member} other {Team · # members}}",
+    "role": {
+      "admin": "Admin",
+      "editor": "Writer"
+    },
+    "makeAdmin": "Make admin",
+    "makeEditor": "Back to writer",
+    "remove": "Remove"
+  }
+}

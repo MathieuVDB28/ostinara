@@ -70,6 +70,10 @@
     "competiteur": {
       "title": "Competitor",
       "goal": "{count, plural, one {Win your first challenge} other {Win # challenges}}"
+    },
+    "entraide": {
+      "title": "Helping hand",
+      "goal": "{count, plural, one {Give your first best answer on the forum} other {Help # musicians on the forum}}"
     }
   },
   "toast": {

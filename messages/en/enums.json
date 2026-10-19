@@ -139,5 +139,25 @@
     "walking_bass": "WB",
     "voicings": "VO",
     "reading": "RE"
+  },
+  "blogCategory": {
+    "gear": "Gear",
+    "technique": "Technique",
+    "theory": "Theory",
+    "learning": "Learning",
+    "home_studio": "Home studio",
+    "band_life": "Band life",
+    "culture": "Culture",
+    "news": "News"
+  },
+  "forumCategory": {
+    "gear_buying": "Buying & gear",
+    "setup_repair": "Setup & repair",
+    "technique": "Technique",
+    "theory": "Theory",
+    "home_studio": "Home studio",
+    "band_stage": "Band & stage",
+    "introductions": "Introductions",
+    "off_topic": "Off topic"
   }
 }

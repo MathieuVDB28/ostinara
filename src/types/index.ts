@@ -313,16 +313,160 @@ export interface Profile {
   twitter_url?: string;
   facebook_url?: string;
   is_private: boolean;
-  /** Rappels de pratique (morceau delaisse, pause, serie, plan). Vrai par defaut. */
-  practice_reminders?: boolean;
   updated_at?: string;
-  // Stripe subscription fields
+  /** Joint depuis profile_instruments quand la requete le demande. */
+  instruments?: ProfileInstrument[];
+  /** Equipe editoriale (blog + forum). NULL = membre ordinaire. */
+  staff_role?: StaffRole | null;
+}
+
+/**
+ * Ce qui ne regarde que soi : la table profile_private, lisible par son
+ * seul proprietaire (cf. docs/profils-prives.md). `profiles`, lui, est
+ * lisible par tous.
+ */
+export interface ProfilePrivate {
   stripe_customer_id?: string;
   stripe_subscription_id?: string;
   subscription_status?: SubscriptionStatus;
   subscription_period_end?: string;
-  /** Joint depuis profile_instruments quand la requete le demande. */
-  instruments?: ProfileInstrument[];
+  locale?: 'fr' | 'en';
+  /** Rappels de pratique (morceau delaisse, pause, serie, plan). Vrai par defaut. */
+  practice_reminders?: boolean;
+}
+
+// Equipe editoriale : admin (nomme les autres) ou editor (blog + moderation)
+export type StaffRole = 'admin' | 'editor';
+export type StaffApplicationStatus = 'pending' | 'accepted' | 'declined';
+
+export interface StaffApplication {
+  id: string;
+  user_id: string;
+  motivation: string;
+  links: string | null;
+  status: StaffApplicationStatus;
+  reviewed_at: string | null;
+  created_at: string;
+  user?: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> & {
+    instruments?: ProfileInstrument[];
+  };
+}
+
+// === Blog ===
+export type BlogPostStatus = 'draft' | 'published';
+export type BlogCategory =
+  | 'gear' | 'technique' | 'theory' | 'learning'
+  | 'home_studio' | 'band_life' | 'culture' | 'news';
+
+export type BlogAuthor = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'bio'>;
+
+/** Un article sans son contenu : listes, cartes, flux RSS. */
+export interface BlogPostSummary {
+  id: string;
+  slug: string;
+  locale: 'fr' | 'en';
+  translation_group: string;
+  title: string;
+  excerpt: string | null;
+  cover_url: string | null;
+  category: BlogCategory;
+  instruments: Instrument[];
+  reading_minutes: number;
+  status: BlogPostStatus;
+  published_at: string | null;
+  updated_at: string;
+  author: BlogAuthor | null;
+}
+
+export interface BlogPost extends BlogPostSummary {
+  /** Le document de l'editeur (JSON Tiptap), cf. src/lib/blog/document.ts. */
+  content: unknown;
+}
+
+export interface BlogComment {
+  id: string;
+  post_id: string;
+  user_id: string;
+  content: string;
+  edited_at: string | null;
+  created_at: string;
+  user: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null;
+}
+
+// === Forum ===
+export type ForumCategory =
+  | 'gear_buying' | 'setup_repair' | 'technique' | 'theory'
+  | 'home_studio' | 'band_stage' | 'introductions' | 'off_topic';
+export type ForumReportReason = 'spam' | 'abuse' | 'off_topic' | 'other';
+export type ForumAuthor = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> & {
+  staff_role?: StaffRole | null;
+};
+
+/** La fiche d'un instrument du Matos, recopiee dans le sujet (publique). */
+export interface ForumGearSnapshot {
+  type: GearType;
+  brand: string;
+  model: string;
+  year: number | null;
+  color: string | null;
+  image_url: string | null;
+}
+
+export interface ForumTopicSummary {
+  id: string;
+  slug: string;
+  locale: 'fr' | 'en';
+  category: ForumCategory;
+  title: string;
+  instruments: Instrument[];
+  reply_count: number;
+  solved_reply_id: string | null;
+  is_pinned: boolean;
+  is_locked: boolean;
+  is_hidden: boolean;
+  last_activity_at: string;
+  created_at: string;
+  author: ForumAuthor | null;
+}
+
+export interface ForumTopic extends ForumTopicSummary {
+  body: string;
+  images: string[];
+  gear: ForumGearSnapshot | null;
+  edited_at: string | null;
+}
+
+export interface ForumReply {
+  id: string;
+  topic_id: string;
+  body: string;
+  vote_count: number;
+  is_hidden: boolean;
+  edited_at: string | null;
+  created_at: string;
+  author: ForumAuthor | null;
+  /** J'ai vote pour cette reponse. */
+  voted?: boolean;
+}
+
+export interface ForumReport {
+  id: string;
+  reason: ForumReportReason;
+  note: string | null;
+  created_at: string;
+  reporter: Pick<Profile, 'id' | 'username' | 'display_name'> | null;
+  topic: Pick<ForumTopic, 'id' | 'slug' | 'title' | 'body' | 'is_hidden'> | null;
+  reply: (Pick<ForumReply, 'id' | 'body' | 'is_hidden'> & {
+    topic: Pick<ForumTopic, 'slug' | 'title'> | null;
+  }) | null;
+}
+
+export interface StaffMember {
+  id: string;
+  username: string;
+  display_name?: string;
+  avatar_url?: string;
+  staff_role: StaffRole;
 }
 
 // Types pour les liens sociaux
@@ -355,7 +499,8 @@ export interface FavoriteAlbum {
 }
 
 // Type pour le profil utilisateur complet (propre profil)
-export interface UserProfile extends Profile {
+/** Son propre profil : le public et le prive, a plat (getMyProfile). */
+export interface UserProfile extends Profile, ProfilePrivate {
   favorite_songs: FavoriteSong[];
   favorite_albums: FavoriteAlbum[];
   favorite_gear: FavoriteGear[];

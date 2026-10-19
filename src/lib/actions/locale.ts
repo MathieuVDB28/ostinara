@@ -14,7 +14,7 @@ async function writeLocaleCookie(locale: Locale) {
 }
 
 // === Changer de langue (Reglages, landing, pages publiques) ===
-// Le cookie pour les pages, le profil pour ce qui part sans requete
+// Le cookie pour les pages, profile_private pour ce qui part sans requete
 // (push, rappels, emails).
 export async function setLocale(locale: Locale) {
   if (!isLocale(locale)) return { success: false as const };
@@ -24,7 +24,7 @@ export async function setLocale(locale: Locale) {
   const user = await getAuthenticatedUser();
   if (user) {
     const supabase = await createClient();
-    const { error } = await supabase.from("profiles").update({ locale }).eq("id", user.id);
+    const { error } = await supabase.from("profile_private").update({ locale }).eq("user_id", user.id);
     if (error) console.error("Error saving locale:", error);
     // Les emails d'auth (mot de passe oublie, changement d'adresse) lisent
     // la langue dans les metadonnees du compte, pas sur le profil.
@@ -41,6 +41,6 @@ export async function setLocale(locale: Locale) {
 // deja une langue, elle l'emporte.
 export async function applyProfileLocale(userId: string) {
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select("locale").eq("id", userId).maybeSingle();
+  const { data } = await supabase.from("profile_private").select("locale").eq("user_id", userId).maybeSingle();
   if (isLocale(data?.locale)) await writeLocaleCookie(data.locale);
 }

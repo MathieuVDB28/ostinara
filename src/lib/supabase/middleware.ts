@@ -19,6 +19,10 @@ const PUBLIC_PREFIXES = [
   '/auth',
   // La landing du lancement (liste d'attente) et son image d'apercu.
   '/acces-anticipe',
+  // Le blog se lit sans compte : c'est la porte d'entree des moteurs de recherche.
+  '/blog',
+  // Le forum aussi : on lit sans compte, il en faut un pour ecrire.
+  '/forum',
 ]
 
 const AUTH_ROUTES = ['/login', '/register']

@@ -16,7 +16,13 @@
     "language": "Langue",
     "languageHint": "La langue de l'app, des notifications et des emails",
     "logout": "Se déconnecter",
-    "loggedAs": "Connecté en tant que @{username}"
+    "loggedAs": "Connecté en tant que @{username}",
+    "staff": "Écrire pour Ostinara",
+    "staffHint": "Rejoindre l'équipe du blog et du forum",
+    "staffEditor": "Rédacteur de l'équipe",
+    "staffAdmin": "Admin de l'équipe",
+    "admin": "Administration",
+    "adminHint": "Demandes et membres de l'équipe"
   },
   "notifications": {
     "unsupported": "Ce navigateur ne gère pas les notifications",

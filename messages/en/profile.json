@@ -16,7 +16,13 @@
     "language": "Language",
     "languageHint": "The language of the app, notifications and emails",
     "logout": "Log out",
-    "loggedAs": "Logged in as @{username}"
+    "loggedAs": "Logged in as @{username}",
+    "staff": "Write for Ostinara",
+    "staffHint": "Join the blog and forum team",
+    "staffEditor": "Team writer",
+    "staffAdmin": "Team admin",
+    "admin": "Admin",
+    "adminHint": "Team requests and members"
   },
   "notifications": {
     "unsupported": "This browser doesn't support notifications",

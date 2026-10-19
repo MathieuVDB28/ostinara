@@ -20,7 +20,7 @@ export type BadgesT = Translator<"badges">;
 export type BadgeId =
   | "repertoire" | "bibliotheque" | "tempo"
   | "sessions" | "serie" | "heures" | "mois-varie" | "mois-assidu" | "semaine-bouclee"
-  | "scene" | "melomane" | "entoure" | "competiteur";
+  | "scene" | "melomane" | "entoure" | "competiteur" | "entraide";
 
 export type BadgeFamily = "repertoire" | "pratique" | "commu";
 
@@ -37,7 +37,8 @@ export type BadgeIcon =
   | "trophy"
   | "shuffle"
   | "calendar"
-  | "circle_check";
+  | "circle_check"
+  | "handshake";
 
 interface BadgeBase {
   id: BadgeId;
@@ -161,6 +162,15 @@ export const BADGES: BadgeDef[] = [
     family: "commu",
     icon: "trophy",
     tiers: [1, 5, 15],
+  },
+  {
+    // Les musiciens aides : auteurs distincts des sujets du forum dont ma
+    // reponse a ete choisie comme la meilleure.
+    id: "entraide",
+    kind: "tiered",
+    family: "commu",
+    icon: "handshake",
+    tiers: [1, 10, 25],
   },
 ];
 

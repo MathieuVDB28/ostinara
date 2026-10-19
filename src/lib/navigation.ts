@@ -19,7 +19,7 @@ export type BadgeKey = "friends" | "challenges" | "bands";
 /** Une cle du namespace `nav` (messages/<langue>/nav.json). */
 export type NavLabelKey =
   | "home" | "play" | "library" | "community" | "profile"
-  | "songs" | "albums" | "covers" | "feed" | "friends" | "challenges" | "bands"
+  | "songs" | "albums" | "covers" | "feed" | "blog" | "forum" | "friends" | "challenges" | "bands"
   | "progress" | "badges" | "gear" | "settings";
 
 export interface NavSegment {
@@ -79,6 +79,10 @@ export const NAV_TABS: NavTab[] = [
     badgeKeys: ["friends", "challenges", "bands"],
     segments: [
       { href: "/commu", label: "feed", icon: "feed" },
+      // Le blog de l'equipe : le meme qu'en public (/blog), dans l'app.
+      { href: "/commu/blog", label: "blog", icon: "menu_book" },
+      // Le forum : questions et entraide, ouvert a tous les membres.
+      { href: "/commu/forum", label: "forum", icon: "forum" },
       // Les covers ont quitte la bibliotheque pour la communaute : c'est
       // le seul contenu de l'app qu'on publie pour etre vu, pas pour
       // s'en souvenir. « Biblio › Covers » reste l'archive personnelle.

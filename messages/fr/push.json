@@ -136,5 +136,33 @@
   "rehearsalToday": "Répète aujourd'hui !",
   "rehearsalTomorrow": "Répète demain !",
   "rehearsalReminderBody": "{title} avec {band} à {time}{location, select, none {} other { - {location}}}",
-  "yourBand": "ton groupe"
+  "yourBand": "ton groupe",
+  "staffApplication": {
+    "title": "Nouvelle demande pour l'équipe",
+    "body": "{name} aimerait écrire pour Ostinara"
+  },
+  "staffAccepted": {
+    "title": "Bienvenue dans l'équipe !",
+    "body": "Ta demande est acceptée : tu peux écrire sur le blog et modérer le forum."
+  },
+  "staffDeclined": {
+    "title": "Ta demande pour l'équipe",
+    "body": "Elle n'a pas été retenue cette fois-ci. Merci de ton intérêt !"
+  },
+  "blogComment": {
+    "title": "Nouveau commentaire",
+    "body": "{name} a commenté « {title} »"
+  },
+  "forumReply": {
+    "title": "Nouvelle réponse",
+    "body": "{name} a répondu à « {title} »"
+  },
+  "forumSolved": {
+    "title": "Ta réponse a aidé !",
+    "body": "Elle a été choisie comme solution de « {title} »"
+  },
+  "forumMention": {
+    "title": "On parle de toi",
+    "body": "{name} t'a mentionné dans « {title} »"
+  }
 }

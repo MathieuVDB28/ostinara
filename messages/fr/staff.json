@@ -1,0 +1,33 @@
+{
+  "apply": {
+    "back": "Réglages",
+    "title": "Écrire pour Ostinara",
+    "hint": "L'équipe d'Ostinara écrit les articles du blog et anime le forum. Raconte-nous ce que tu joues, ce dont tu aimerais parler, et ce que tu as déjà écrit ou publié.",
+    "declinedBefore": "Ta dernière demande n'a pas été retenue, mais tu peux en refaire une.",
+    "motivation": "Pourquoi toi ?",
+    "motivationPlaceholder": "Ton parcours, les sujets que tu aimerais traiter…",
+    "links": "Liens (facultatif)",
+    "linksPlaceholder": "Blog, chaîne, articles…",
+    "submit": "Envoyer ma demande",
+    "pending": "Ta demande a bien été envoyée : un admin va la lire. Tu recevras une notification.",
+    "withdraw": "Retirer ma demande",
+    "isEditor": "Tu fais partie de l'équipe : tu peux écrire sur le blog et modérer le forum.",
+    "isAdmin": "Tu es admin de l'équipe : tu examines les demandes et nommes les rédacteurs.",
+    "openAdmin": "Ouvrir l'administration"
+  },
+  "admin": {
+    "title": "Administration",
+    "applications": "{count, plural, =0 {Demandes} one {# demande} other {# demandes}}",
+    "noApplications": "Aucune demande en attente.",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "team": "{count, plural, one {L'équipe · # membre} other {L'équipe · # membres}}",
+    "role": {
+      "admin": "Admin",
+      "editor": "Rédacteur"
+    },
+    "makeAdmin": "Nommer admin",
+    "makeEditor": "Repasser rédacteur",
+    "remove": "Retirer"
+  }
+}

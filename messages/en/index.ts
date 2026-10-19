@@ -4,6 +4,7 @@ import albums from "./albums.json";
 import audio from "./audio.json";
 import auth from "./auth.json";
 import badges from "./badges.json";
+import blog from "./blog.json";
 import challenges from "./challenges.json";
 import common from "./common.json";
 import covers from "./covers.json";
@@ -11,6 +12,7 @@ import email from "./email.json";
 import enums from "./enums.json";
 import errors from "./errors.json";
 import exercises from "./exercises.json";
+import forum from "./forum.json";
 import friends from "./friends.json";
 import gear from "./gear.json";
 import home from "./home.json";
@@ -36,6 +38,7 @@ import rehearsals from "./rehearsals.json";
 import search from "./search.json";
 import setlists from "./setlists.json";
 import social from "./social.json";
+import staff from "./staff.json";
 import techRider from "./techRider.json";
 import tunings from "./tunings.json";
 import weeklyPlan from "./weeklyPlan.json";
@@ -46,6 +49,7 @@ const messages = {
   "audio": audio,
   "auth": auth,
   "badges": badges,
+  "blog": blog,
   "challenges": challenges,
   "common": common,
   "covers": covers,
@@ -53,6 +57,7 @@ const messages = {
   "enums": enums,
   "errors": errors,
   "exercises": exercises,
+  "forum": forum,
   "friends": friends,
   "gear": gear,
   "home": home,
@@ -78,6 +83,7 @@ const messages = {
   "search": search,
   "setlists": setlists,
   "social": social,
+  "staff": staff,
   "techRider": techRider,
   "tunings": tunings,
   "weeklyPlan": weeklyPlan,
