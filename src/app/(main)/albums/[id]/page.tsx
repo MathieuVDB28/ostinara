@@ -5,6 +5,7 @@ import {
   getUserAlbumReviewByDeezerId,
   resolveLegacyAlbumId,
 } from "@/lib/actions/albums";
+import { getLibraryMatches } from "@/lib/actions/songs";
 import { AlbumDetailView } from "@/components/albums/album-detail-view";
 import { AlbumEncyclopediaSection } from "@/components/albums/encyclopedia";
 
@@ -32,11 +33,21 @@ export default async function AlbumDetailPage({ params }: Props) {
 
   if (!album) notFound();
 
+  const libraryTrackIds = await getLibraryMatches(
+    (album.tracks?.items ?? []).map((track) => ({
+      key: track.id,
+      title: track.name,
+      artist: album.artists[0].name,
+      deezer_id: track.id,
+    }))
+  );
+
   return (
     <AlbumDetailView
       album={album}
       stats={stats}
       userReview={userReview}
+      libraryTrackIds={libraryTrackIds}
       encyclopedia={<AlbumEncyclopediaSection album={album} />}
     />
   );

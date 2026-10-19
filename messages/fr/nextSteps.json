@@ -50,6 +50,7 @@
     "loading": "Chargement des titres…",
     "unavailable": "Tracklist indisponible pour cet album.",
     "tracks": "Titres de l'album",
+    "inLibrary": "Dans ta biblio",
     "partial": "{count, plural, one {# ajouté} other {# ajoutés}}, puis : ",
     "adding": "Ajout…",
     "pick": "Choisis un ou plusieurs titres",

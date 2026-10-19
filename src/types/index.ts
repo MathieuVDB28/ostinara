@@ -528,6 +528,10 @@ export interface ActivityWithDetails extends ActivityWithProfile {
   wishlistSong?: WishlistSong;
   albumReview?: AlbumReview;
   albumWishlistItem?: AlbumWishlistItem;
+  /** L'album d'une review, de mon cote : deja ecoute (note) ou dans ma liste « À écouter ». */
+  myAlbumStatus?: "reviewed" | "wishlisted";
+  /** Le morceau de l'activite (ajoute, appris, maitrise, en cover) est deja dans ma biblio. */
+  songInMyLibrary?: boolean;
   reactions?: ReactionSummary[];
   commentCount?: number;
   currentUserReactions?: string[];

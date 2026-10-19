@@ -12,7 +12,7 @@ import { ProfileShowcase } from "./profile-showcase";
 import { FriendshipButton } from "@/components/friends/friendship-button";
 import { SongShelf } from "@/components/library/song-shelf";
 import { songProgress } from "@/components/library/song-card";
-import { AddTracksToLibraryButton } from "@/components/albums/favorite-track-picker";
+import { AddTracksToLibraryButton, libraryKey } from "@/components/albums/favorite-track-picker";
 import { StarRating } from "@/components/ui/star-rating";
 import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
@@ -50,7 +50,16 @@ function Empty({ children }: { children: React.ReactNode }) {
  * arriere avec le geste du telephone. Meme en-tete et meme vitrine que
  * son propre profil ; en dessous, ce qu'on vient voir chez un ami.
  */
-export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; badges?: BadgeStatus[] }) {
+export function PublicProfileView({
+  data,
+  badges = [],
+  librarySongIds = [],
+}: {
+  data: PublicProfile;
+  badges?: BadgeStatus[];
+  /** Ses morceaux deja dans ma biblio. */
+  librarySongIds?: string[];
+}) {
   const t = useTranslations("profile.public");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
@@ -58,6 +67,7 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
   const [tab, setTab] = useState<Tab>("songs");
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const closeSong = useCallback(() => setSelectedSong(null), []);
+  const [inMyLibrary, setInMyLibrary] = useState<ReadonlySet<string>>(() => new Set(librarySongIds));
 
   const canView = !profile.is_private || data.is_friend;
   const name = profile.display_name || profile.username;
@@ -244,6 +254,8 @@ export function PublicProfileView({ data, badges = [] }: { data: PublicProfile; 
           song={selectedSong}
           covers={data.recent_covers.filter((cover) => cover.song_id === selectedSong.id)}
           ownerName={name}
+          inMyLibrary={inMyLibrary.has(selectedSong.id)}
+          onAdded={() => setInMyLibrary((previous) => new Set([...previous, selectedSong.id]))}
           onClose={closeSong}
         />
       )}
@@ -361,17 +373,22 @@ function FriendSongSheet({
   song,
   covers,
   ownerName,
+  inMyLibrary,
+  onAdded,
   onClose,
 }: {
   song: Song;
   covers: CoverWithSong[];
   ownerName: string;
+  inMyLibrary: boolean;
+  onAdded: () => void;
   onClose: () => void;
 }) {
   const t = useTranslations("profile.public");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
   const { tempo, percent } = songProgress(song);
+  const track = { name: song.title, deezer_id: song.deezer_id ?? undefined };
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -452,10 +469,12 @@ function FriendSongSheet({
           )}
 
           <AddTracksToLibraryButton
-            tracks={[{ name: song.title, deezer_id: song.deezer_id ?? undefined }]}
+            tracks={[track]}
             artist={song.artist}
             album={song.album}
             coverUrl={song.cover_url}
+            inLibrary={inMyLibrary ? new Set([libraryKey(track)]) : undefined}
+            onAdded={onAdded}
           />
         </div>
       </div>

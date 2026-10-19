@@ -239,6 +239,37 @@ export async function addSongsToLibrary(
   return { success: true, added, alreadyThere };
 }
 
+/**
+ * Les morceaux deja dans ma biblio, avec la regle de addSongToLibrary :
+ * meme identifiant Deezer, ou meme titre et artiste. Pour ne pas proposer
+ * d'ajouter ce qui y est deja. Renvoie les `key` des morceaux trouves.
+ */
+export async function getLibraryMatches(
+  items: { key: string; title: string; artist: string; deezer_id?: string | null }[]
+): Promise<string[]> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user || items.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("songs")
+    .select("deezer_id, title, artist")
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("Error checking songs in library:", error);
+    return [];
+  }
+
+  const titleKey = (title: string, artist: string | null) => `${title.toLowerCase()}|${(artist ?? "").toLowerCase()}`;
+  const deezerIds = new Set(data.map((song) => song.deezer_id).filter(Boolean));
+  const titles = new Set(data.map((song) => titleKey(song.title, song.artist)));
+  return items
+    .filter((item) => (item.deezer_id && deezerIds.has(item.deezer_id)) || titles.has(titleKey(item.title, item.artist)))
+    .map((item) => item.key);
+}
+
 /** Une valeur entre guillemets dans un filtre PostgREST `or()`. */
 function escapeFilter(value: string): string {
   return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;

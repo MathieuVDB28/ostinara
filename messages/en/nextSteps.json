@@ -50,6 +50,7 @@
     "loading": "Loading tracks…",
     "unavailable": "Tracklist unavailable for this album.",
     "tracks": "Album tracks",
+    "inLibrary": "In your library",
     "partial": "{count} added, then: ",
     "adding": "Adding…",
     "pick": "Pick one or more tracks",

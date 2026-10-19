@@ -82,24 +82,41 @@ export function toFavoriteTracks(tracks: CatalogAlbumTrack[]): FavoriteTrack[] {
   return tracks.map((track) => ({ name: track.name, deezer_id: track.id }));
 }
 
+/** Ce qui identifie un titre pour inLibrary : son identifiant Deezer, a defaut son nom. */
+export function libraryKey(track: FavoriteTrack): string {
+  return track.deezer_id ?? track.name;
+}
+
 interface AddTracksToLibraryButtonProps {
   tracks: FavoriteTrack[];
   artist: string;
   album?: string;
   coverUrl?: string;
+  /** Les titres deja dans la biblio (cf. libraryKey) : on ne les propose pas. */
+  inLibrary?: ReadonlySet<string>;
+  /** Les titres envoyes a la biblio (cf. libraryKey). */
+  onAdded?: (keys: string[]) => void;
 }
 
 /**
  * « Ajouter à ma biblio » : les morceaux preferes rejoignent la file « à
- * apprendre ». Un morceau deja dans la biblio n'est pas duplique, le
- * bouton le dit et mene a la bibliotheque.
+ * apprendre ». Ceux deja dans la biblio ne sont pas proposes ; s'il n'en
+ * reste aucun, le bouton le dit et mene a la bibliotheque.
  */
-export function AddTracksToLibraryButton({ tracks, artist, album, coverUrl }: AddTracksToLibraryButtonProps) {
+export function AddTracksToLibraryButton({
+  tracks: favorites,
+  artist,
+  album,
+  coverUrl,
+  inLibrary,
+  onAdded,
+}: AddTracksToLibraryButtonProps) {
   const t = useTranslations("albums.tracks");
   const tc = useTranslations("common");
   const [outcome, setOutcome] = useState<{ added: number; alreadyThere: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const tracks = favorites.filter((track) => !inLibrary?.has(libraryKey(track)));
 
   const handleAdd = () => {
     setError(null);
@@ -116,8 +133,21 @@ export function AddTracksToLibraryButton({ tracks, artist, album, coverUrl }: Ad
       );
       setOutcome({ added: result.added, alreadyThere: result.alreadyThere });
       if (!result.success || result.error) setError(result.error || t("addFailed"));
+      else onAdded?.(tracks.map(libraryKey));
     });
   };
+
+  if (!outcome && tracks.length === 0) {
+    return (
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+        <Check className="h-4 w-4 text-success" strokeWidth={2.25} aria-hidden="true" />
+        <span>{t("already", { count: favorites.length })}</span>
+        <Link href="/biblio" className="font-semibold text-foreground underline-offset-2 hover:underline">
+          {t("see")}
+        </Link>
+      </p>
+    );
+  }
 
   if (outcome && !error) {
     return (

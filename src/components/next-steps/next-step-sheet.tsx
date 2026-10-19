@@ -91,6 +91,7 @@ export function NextStepSheet({ step, onDone }: NextStepSheetProps) {
             album={step.album}
             initialTracks={step.tracks}
             preselected={step.preselected}
+            inLibrary={step.inLibrary}
             onDone={onDone}
           />
         )}
@@ -477,13 +478,15 @@ function SongAdded({ song, from, onDone }: {
 
 // === Album ecoute : titres a apprendre ===
 
-function AlbumTracks({ album, initialTracks, preselected, onDone }: {
+function AlbumTracks({ album, initialTracks, preselected, inLibrary, onDone }: {
   album: { name: string; artist: string; coverUrl?: string; deezerId: string };
   initialTracks?: CatalogAlbumTrack[];
   preselected?: string[];
+  inLibrary?: string[];
   onDone: () => void;
 }) {
   const t = useTranslations("nextSteps.album");
+  const owned = new Set(inLibrary);
   const [tracks, setTracks] = useState<CatalogAlbumTrack[] | null>(initialTracks ?? null);
   const [selected, setSelected] = useState<Set<string>>(() => new Set(preselected));
   const [result, setResult] = useState<{ added: number; alreadyThere: number; error?: string } | null>(null);
@@ -561,6 +564,21 @@ function AlbumTracks({ album, initialTracks, preselected, onDone }: {
           ) : (
             <ol aria-label={t("tracks")} className="max-h-72 divide-y divide-border overflow-y-auto border-y border-border">
               {tracks.map((track) => {
+                if (owned.has(track.id)) {
+                  return (
+                    <li
+                      key={track.id}
+                      className="grid min-h-[44px] grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 py-2 text-muted-foreground"
+                    >
+                      <span className="tabular text-right font-mono text-xs">{track.track_number}</span>
+                      <span className="truncate text-sm">{track.name}</span>
+                      <span className="flex items-center gap-1 text-xs">
+                        <Check className="h-3.5 w-3.5 text-success" strokeWidth={2.25} aria-hidden="true" />
+                        {t("inLibrary")}
+                      </span>
+                    </li>
+                  );
+                }
                 const checked = selected.has(track.id);
                 return (
                   <li key={track.id}>

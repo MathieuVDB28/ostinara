@@ -27,7 +27,15 @@ const button =
  */
 export function FeedBridge({ activity, friendName }: FeedBridgeProps) {
   const song = songOf(activity);
-  if (song) return <LearnToo song={song} friend={{ id: activity.user_id, name: friendName }} />;
+  if (song) {
+    return (
+      <LearnToo
+        song={song}
+        friend={{ id: activity.user_id, name: friendName }}
+        alreadyThere={activity.songInMyLibrary ?? false}
+      />
+    );
+  }
 
   if (activity.type === "album_reviewed" && activity.albumReview) {
     return <ListenToo activity={activity} />;
@@ -50,11 +58,16 @@ function songOf(activity: ActivityWithDetails): Song | null {
   }
 }
 
-function LearnToo({ song, friend }: { song: Song; friend: { id: string; name: string } }) {
+function LearnToo({ song, friend, alreadyThere }: {
+  song: Song;
+  friend: { id: string; name: string };
+  /** Deja dans ma biblio : on le dit d'emblee, sans bouton. */
+  alreadyThere: boolean;
+}) {
   const t = useTranslations("social");
   const tc = useTranslations("common");
   const nextSteps = useNextSteps();
-  const [state, setState] = useState<"idle" | "already">("idle");
+  const [state, setState] = useState<"idle" | "already">(alreadyThere ? "already" : "idle");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -105,8 +118,11 @@ function ListenToo({ activity }: { activity: ActivityWithDetails }) {
   const t = useTranslations("social");
   const tc = useTranslations("common");
   const review = activity.albumReview!;
-  const [state, setState] = useState<"idle" | "done">("idle");
-  const [message, setMessage] = useState<string | null>(null);
+  // Deja ecoute ou deja dans la liste : on le dit d'emblee, sans bouton.
+  const [state, setState] = useState<"idle" | "done">(activity.myAlbumStatus ? "done" : "idle");
+  const [message, setMessage] = useState<string | null>(
+    activity.myAlbumStatus === "reviewed" ? t("alreadyListened") : null
+  );
   const [pending, startTransition] = useTransition();
 
   const handleClick = () => {
@@ -131,7 +147,10 @@ function ListenToo({ activity }: { activity: ActivityWithDetails }) {
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Check className="h-3.5 w-3.5 text-success" strokeWidth={2.25} aria-hidden="true" />
         {message ?? t("inListenList")}
-        <Link href="/biblio/albums" className="font-semibold text-foreground underline-offset-2 hover:underline">
+        <Link
+          href={activity.myAlbumStatus === "reviewed" && review.deezer_id ? `/albums/${review.deezer_id}` : "/biblio/albums"}
+          className="font-semibold text-foreground underline-offset-2 hover:underline"
+        >
           {t("see")}
         </Link>
       </p>

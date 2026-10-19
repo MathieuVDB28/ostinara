@@ -21,6 +21,8 @@ export type NextStep =
       tracks?: CatalogAlbumTrack[];
       /** Les titres coches d'emblee — le prefere, en general. */
       preselected?: string[];
+      /** Les titres deja dans la biblio : affiches, pas proposes. */
+      inLibrary?: string[];
     };
 
 /** Une repete a venir qui a une setlist ou ranger le morceau. */

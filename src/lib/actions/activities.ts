@@ -6,6 +6,7 @@ import { after } from "next/server";
 import { INSTRUMENT_VALUES } from "@/lib/instruments";
 import { INTL_LOCALE, type Locale } from "@/i18n/config";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import { getLibraryMatches } from "@/lib/actions/songs";
 import { sendPushNotification, sendPushNotificationToMultipleUsers } from "@/lib/notifications";
 import type { LocalizedPayload, NotificationType, PushT } from "@/lib/notifications";
 import type {
@@ -446,6 +447,40 @@ export async function getFeedActivities(
     }
   }
 
+  // Mes albums deja notes ou mis de cote : pas de « À écouter » sur un
+  // album que j'ai deja ecoute ou deja garde pour plus tard.
+  const myReviewedAlbums = new Set<string>();
+  const myWishlistedAlbums = new Set<string>();
+  if (albumReviewIds.length > 0) {
+    const [{ data: myReviews }, { data: myWishlist }] = await Promise.all([
+      supabase.from("album_reviews").select("deezer_id, album_name, artist_name").eq("user_id", user.id),
+      supabase.from("album_wishlist").select("deezer_id, album_name, artist_name").eq("user_id", user.id),
+    ]);
+    for (const album of myReviews ?? []) albumKeys(album).forEach((key) => myReviewedAlbums.add(key));
+    for (const album of myWishlist ?? []) albumKeys(album).forEach((key) => myWishlistedAlbums.add(key));
+  }
+
+  // Les morceaux des amis que j'ai deja : pas de « Je l'apprends aussi ».
+  const friendSongs = activities.flatMap((activity) => {
+    if (activity.user_id === user.id || !activity.reference_id) return [];
+    const song =
+      activity.type === "cover_posted"
+        ? coversMap.get(activity.reference_id)?.song
+        : activity.type === "song_added" || activity.type === "song_learning" || activity.type === "song_mastered"
+          ? songsMap.get(activity.reference_id)
+          : undefined;
+    // Morceau illisible (RLS) : les metadonnees de l'activite en tiennent lieu.
+    const title = song?.title ?? (activity.type === "cover_posted" ? undefined : activity.metadata?.title);
+    if (typeof title !== "string") return [];
+    return [{
+      key: activity.id,
+      title,
+      artist: song?.artist ?? String(activity.metadata?.artist ?? ""),
+      deezer_id: song?.deezer_id,
+    }];
+  });
+  const songsInMyLibrary = new Set(await getLibraryMatches(friendSongs));
+
   // Récupérer les réactions en batch pour toutes les activités
   const activityIds = activities.map((a) => a.id);
   const reactionsMap = new Map<string, ReactionSummary[]>();
@@ -513,6 +548,7 @@ export async function getFeedActivities(
       commentCount: commentCountMap.get(activity.id) || 0,
       currentUserReactions: userReactionsMap.get(activity.id) || [],
     };
+    if (songsInMyLibrary.has(activity.id)) enriched.songInMyLibrary = true;
 
     if (activity.reference_id) {
       if (activity.type === "song_added" || activity.type === "song_learning" || activity.type === "song_mastered") {
@@ -588,6 +624,11 @@ export async function getFeedActivities(
             updated_at: activity.created_at,
           } as AlbumReview;
         }
+        if (enriched.albumReview && activity.user_id !== user.id) {
+          const keys = albumKeys(enriched.albumReview);
+          if (keys.some((key) => myReviewedAlbums.has(key))) enriched.myAlbumStatus = "reviewed";
+          else if (keys.some((key) => myWishlistedAlbums.has(key))) enriched.myAlbumStatus = "wishlisted";
+        }
       }
     }
 
@@ -595,6 +636,13 @@ export async function getFeedActivities(
   });
 
   return enrichedActivities;
+}
+
+/** Ce qui identifie un album : son identifiant Deezer, et son titre et artiste (albums saisis a la main). */
+function albumKeys(album: { deezer_id?: string | null; album_name: string; artist_name: string }): string[] {
+  const keys = [`name:${album.album_name.toLowerCase()}|${album.artist_name.toLowerCase()}`];
+  if (album.deezer_id) keys.push(`deezer:${album.deezer_id}`);
+  return keys;
 }
 
 // Une reaction est un seul emoji. Le selecteur en propose tout le

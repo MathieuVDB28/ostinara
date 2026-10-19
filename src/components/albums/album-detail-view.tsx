@@ -19,6 +19,8 @@ interface Props {
   album: CatalogAlbumDetails;
   stats: AlbumCommunityStats | null;
   userReview: AlbumReview | null;
+  /** Identifiants Deezer des titres deja dans la biblio. */
+  libraryTrackIds: string[];
   /** Wikipedia et Wikidata, rendus cote serveur en streaming. */
   encyclopedia?: React.ReactNode;
 }
@@ -27,7 +29,7 @@ function starsFromDb(dbRating: number) {
   return dbRating / 2;
 }
 
-export function AlbumDetailView({ album, stats, userReview: initialReview, encyclopedia }: Props) {
+export function AlbumDetailView({ album, stats, userReview: initialReview, libraryTrackIds, encyclopedia }: Props) {
   const t = useTranslations("albums.detail");
   const tr = useTranslations("albums.review");
   const tc = useTranslations("common");
@@ -42,6 +44,7 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editError, setEditError] = useState("");
+  const [inLibrary, setInLibrary] = useState<ReadonlySet<string>>(() => new Set(libraryTrackIds));
 
   const mainArtist = album.artists[0];
   const year = album.release_date?.split("-")[0];
@@ -323,7 +326,10 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
                       deezerId: album.id,
                     },
                     tracks,
-                    preselected: favorites.flatMap((track) => (track.deezer_id ? [track.deezer_id] : [])),
+                    preselected: favorites.flatMap((track) =>
+                      track.deezer_id && !inLibrary.has(track.deezer_id) ? [track.deezer_id] : []
+                    ),
+                    inLibrary: [...inLibrary],
                   })
                 }
                 className="inline-flex items-center gap-1 text-xs font-semibold text-primary underline-offset-2 hover:underline"
@@ -346,6 +352,8 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, encyc
                 artist={mainArtist.name}
                 album={album.name}
                 coverUrl={album.images[0]?.url}
+                inLibrary={inLibrary}
+                onAdded={(ids) => setInLibrary((previous) => new Set([...previous, ...ids]))}
               />
             </div>
           )}
