@@ -22,7 +22,8 @@ import type {
   WishlistSong,
   PlaylistWithSongs,
   AlbumReview,
-  PracticeSessionWithSong,
+  ProfileSession,
+  SessionActivityMetadata,
   CoverWithSong,
 } from "@/types";
 
@@ -253,7 +254,7 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
   let playlists: PlaylistWithSongs[] | null = null;
   let albumReviews: AlbumReview[] | null = null;
   let practiceStats = null;
-  let recentSessions: PracticeSessionWithSong[] | null = null;
+  let recentSessions: ProfileSession[] | null = null;
   let totalSongs: number | null = null;
   let masteredSongs: number | null = null;
   let totalAlbumReviews = 0;
@@ -330,16 +331,17 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
+      // Les sessions ne sont lisibles que par leur proprietaire : pour les
+      // chiffres, la date et la duree de chacune, et rien d'autre.
+      supabase.rpc("get_profile_practice_days", { p_user_id: userId }),
+      // Le detail, tel que les amis le voient dans le feed : seulement les
+      // sessions partagees.
       supabase
-        .from("practice_sessions")
-        .select("duration_minutes, practiced_at")
+        .from("activities")
+        .select("id, created_at, metadata")
         .eq("user_id", userId)
-        .order("practiced_at", { ascending: false }),
-      supabase
-        .from("practice_sessions")
-        .select(`*, song:songs(*)`)
-        .eq("user_id", userId)
-        .order("practiced_at", { ascending: false })
+        .eq("type", "session_completed")
+        .order("created_at", { ascending: false })
         .limit(5),
     ]);
 
@@ -377,15 +379,16 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
       return { ...pl, songs, song_count: songs.length, playlist_songs: undefined };
     }) as PlaylistWithSongs[];
 
-    // Map recent sessions
-    recentSessions = (recentSessionsData.data || []).map((s: any) => ({
-      ...s,
-      song: Array.isArray(s.song) ? s.song[0] : s.song,
-    })) as PracticeSessionWithSong[];
+    recentSessions = (recentSessionsData.data || []).map((activity) => ({
+      ...(activity.metadata as SessionActivityMetadata),
+      id: activity.id as string,
+      created_at: activity.created_at as string,
+    }));
 
     // Compute practice stats (streak + totals)
-    const sessions = sessionsData.data || [];
-    const totalSessions = sessions.length;
+    const sessions = (sessionsData.data || []) as { practiced_at: string; duration_minutes: number; session_key: string }[];
+    // Une session a plusieurs morceaux a une ligne par morceau : on compte les sessions.
+    const totalSessions = new Set(sessions.map((s) => s.session_key)).size;
     const totalMinutes = sessions.reduce((sum: number, s: any) => sum + (s.duration_minutes || 0), 0);
 
     const startOfWeek = new Date();

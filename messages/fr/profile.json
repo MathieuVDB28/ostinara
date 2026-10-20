@@ -81,7 +81,9 @@
     "freeSession": "Session libre",
     "statusAt": "{status} chez {name}",
     "seeTab": "Voir sa tablature",
-    "badges": "Badges · {count}"
+    "badges": "Badges · {count}",
+    "songAndOthers": "{title} {count, plural, one {et 1 autre} other {et # autres}}",
+    "exercisesCount": "{count, plural, one {# exercice} other {# exercices}}"
   },
   "favorites": {
     "selectSong": "Sélectionner un morceau",

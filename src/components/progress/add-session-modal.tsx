@@ -11,6 +11,7 @@ import { useOffline } from "@/components/offline/offline-provider";
 import { updateSong } from "@/lib/actions/songs";
 import { getShareSessionsDefault } from "@/lib/actions/practice";
 import { songTargetBpm } from "@/lib/song-progress";
+import { EXERCISE_CATEGORIES } from "@/lib/instruments";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
@@ -31,6 +32,7 @@ import type {
   EnergyLevel,
   SongSection,
   ExerciseWithProgress,
+  ExerciseCategory,
 } from "@/types";
 
 /** Un morceau de la session, tel qu'on l'edite dans la modale. */
@@ -244,6 +246,9 @@ export function AddSessionModal({
   const [songSearchQuery, setSongSearchQuery] = useState("");
   const [showExerciseSearch, setShowExerciseSearch] = useState(false);
   const [exerciseSearchQuery, setExerciseSearchQuery] = useState("");
+  // Exo libre : un nom, une categorie, sans fiche (comme l'exo express de la file).
+  const [freeExerciseName, setFreeExerciseName] = useState("");
+  const [freeExerciseCategory, setFreeExerciseCategory] = useState<ExerciseCategory | "">("");
 
   // Reset au changement de mode ou props
   useEffect(() => {
@@ -324,6 +329,20 @@ export function AddSessionModal({
 
   const updateExerciseEntry = (index: number, patch: Partial<ExerciseEntry>) => {
     setExerciseEntries((current) => current.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
+  };
+
+  const addFreeExercise = () => {
+    const name = freeExerciseName.trim();
+    if (!name) return;
+    const picked: SessionExercise = { id: null, name, category: freeExerciseCategory || null };
+    setExerciseEntries((current) =>
+      current.some((entry) => exerciseKeyOf(entry.exercise) === exerciseKeyOf(picked))
+        ? current
+        : [...current, { exercise: picked, minutes: "", bpm: "" }]
+    );
+    setFreeExerciseName("");
+    setFreeExerciseCategory("");
+    setShowExerciseSearch(false);
   };
 
   const addExercise = (exercise: ExerciseWithProgress) => {
@@ -949,6 +968,47 @@ export function AddSessionModal({
                   <p className="py-4 text-center text-sm text-muted-foreground">{t("noExerciseFound")}</p>
                 )}
               </div>
+
+              {/* Exo libre : ce qu'on a travaille sans fiche */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addFreeExercise();
+                }}
+                className="mt-4 rounded-lg border border-dashed border-border p-3"
+              >
+                <p className="mb-2 text-xs font-medium text-muted-foreground">{t("freeExercise")}</p>
+                <input
+                  type="text"
+                  value={freeExerciseName}
+                  onChange={(e) => setFreeExerciseName(e.target.value)}
+                  placeholder={t("freeExercisePlaceholder")}
+                  maxLength={80}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
+                />
+                <div className="mt-2 flex gap-2">
+                  <select
+                    value={freeExerciseCategory}
+                    onChange={(e) => setFreeExerciseCategory(e.target.value as ExerciseCategory | "")}
+                    aria-label={t("freeExerciseCategory")}
+                    className="min-w-0 flex-1 rounded-lg border border-input bg-background px-2 py-2 text-sm focus:border-primary"
+                  >
+                    <option value="">{t("freeExerciseCategory")}</option>
+                    {EXERCISE_CATEGORIES[instrument].map((category) => (
+                      <option key={category} value={category}>
+                        {te(`exerciseCategory.${category}`)}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="submit"
+                    disabled={!freeExerciseName.trim()}
+                    className="shrink-0 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                  >
+                    {tc("add")}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

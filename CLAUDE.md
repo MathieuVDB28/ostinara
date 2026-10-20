@@ -822,6 +822,9 @@ shift_setlist_items(p_setlist_id UUID, p_from_position INTEGER, p_shift_amount I
 reorder_setlist_items(p_setlist_id UUID)
 move_setlist_item(p_setlist_id UUID, p_item_id UUID, p_old_position INTEGER, p_new_position INTEGER)
 
+-- Profil : date et duree des sessions (chiffres de pratique d'un ami ou d'un profil public ; le detail vient des activites session_completed)
+get_profile_practice_days(p_user_id UUID) → RETURNS TABLE (practiced_at, duration_minutes, session_key)
+
 -- Leaderboard
 get_practice_leaderboard(p_user_id UUID, p_period TEXT, p_limit INTEGER DEFAULT 10)
   → RETURNS TABLE (user_id, username, display_name, avatar_url, total_minutes, sessions_count, rank)

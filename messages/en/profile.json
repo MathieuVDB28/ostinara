@@ -81,7 +81,9 @@
     "freeSession": "Free session",
     "statusAt": "{status} for {name}",
     "seeTab": "See their tab",
-    "badges": "Badges · {count}"
+    "badges": "Badges · {count}",
+    "songAndOthers": "{title} {count, plural, one {and 1 more} other {and # more}}",
+    "exercisesCount": "{count, plural, one {# exercise} other {# exercises}}"
   },
   "favorites": {
     "selectSong": "Pick a song",

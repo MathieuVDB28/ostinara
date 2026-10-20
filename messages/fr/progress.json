@@ -169,6 +169,9 @@
     "addExercise": "Ajouter un exercice",
     "searchExercise": "Rechercher un exercice…",
     "noExerciseFound": "Aucun exercice trouvé",
-    "expressExercise": "Exo express"
+    "expressExercise": "Exo libre",
+    "freeExercise": "Ou un exo libre",
+    "freeExercisePlaceholder": "Nom de l'exo (ex. : pentatonique en triolets)",
+    "freeExerciseCategory": "Catégorie"
   }
 }

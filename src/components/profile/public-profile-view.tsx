@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import { formatDuration } from "@/components/progress/stats-summary";
-import { ChevronLeft, ExternalLink, Heart, Lock, X } from "lucide-react";
-import type { CoverWithSong, Instrument, PracticeSessionWithSong, PublicProfile, SessionMood, Song } from "@/types";
+import { ChevronLeft, Dumbbell, ExternalLink, Heart, Lock, X } from "lucide-react";
+import type { CoverWithSong, Instrument, ProfileSession, PublicProfile, SessionMood, Song } from "@/types";
 import { ProfileIdentity } from "./profile-identity";
 import { ProfileShowcase } from "./profile-showcase";
 import { FriendshipButton } from "@/components/friends/friendship-button";
@@ -318,27 +318,53 @@ function ActivityTab({ data }: { data: PublicProfile }) {
   );
 }
 
-function SessionRow({ session }: { session: PracticeSessionWithSong }) {
+/**
+ * Une session partagee : ce qu'elle a travaille (le morceau le plus joue,
+ * sinon les exercices), sa duree, son humeur et la note du musicien.
+ */
+function SessionRow({ session }: { session: ProfileSession }) {
   const t = useTranslations("profile.public");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
   const intlLocale = useIntlLocale();
+  const songs = Array.isArray(session.songs) ? session.songs : [];
+  const exercises = Array.isArray(session.exercises) ? session.exercises : [];
+  const lead = songs[0] ?? null;
+
+  const title = lead
+    ? songs.length > 1
+      ? t("songAndOthers", { title: lead.title, count: songs.length - 1 })
+      : lead.title
+    : exercises.length > 0
+      ? exercises.map((exercise) => exercise.name).join(", ")
+      : t("freeSession");
   const meta = [
     formatDuration(session.duration_minutes, tc),
-    session.bpm_achieved ? `${session.bpm_achieved} BPM` : null,
+    lead?.bpm ? `${lead.bpm} BPM` : null,
+    lead && exercises.length > 0 ? t("exercisesCount", { count: exercises.length }) : null,
     formatDate(session.practiced_at, intlLocale),
   ].filter(Boolean);
+  const mood = session.mood && session.mood in MOOD_EMOJI ? session.mood : null;
 
   return (
-    <li className="flex items-center gap-3 py-2.5">
-      <Cover src={session.song?.cover_url} className="h-10 w-10 rounded-[4px]" />
+    <li className="flex items-start gap-3 py-2.5">
+      {lead || exercises.length === 0 ? (
+        <Cover src={lead?.cover_url} className="h-10 w-10 rounded-[4px]" />
+      ) : (
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[4px] bg-secondary text-muted-foreground">
+          <Dumbbell className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
+        </span>
+      )}
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{session.song?.title || t("freeSession")}</p>
+        <p className="truncate text-sm font-medium">{title}</p>
         <p className="truncate text-xs text-muted-foreground">{meta.join(" · ")}</p>
+        {session.notes && (
+          <p className="mt-1 line-clamp-2 font-serif text-[13.5px] italic text-foreground/80">{session.notes}</p>
+        )}
       </div>
-      {session.mood && (
-        <span className="text-lg" aria-label={te(`mood.${session.mood}`)}>
-          {MOOD_EMOJI[session.mood]}
+      {mood && (
+        <span className="text-lg" aria-label={te(`mood.${mood}`)}>
+          {MOOD_EMOJI[mood]}
         </span>
       )}
     </li>

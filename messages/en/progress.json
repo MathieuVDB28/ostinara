@@ -169,6 +169,9 @@
     "addExercise": "Add an exercise",
     "searchExercise": "Search an exercise…",
     "noExerciseFound": "No exercise found",
-    "expressExercise": "Quick exercise"
+    "expressExercise": "Free exercise",
+    "freeExercise": "Or a free exercise",
+    "freeExercisePlaceholder": "Exercise name (e.g. pentatonic in triplets)",
+    "freeExerciseCategory": "Category"
   }
 }
