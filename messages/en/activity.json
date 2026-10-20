@@ -76,6 +76,7 @@
     "goal": "Goal",
     "goalReached": "Reached",
     "readNote": "Read the note",
-    "moodLabel": "Mood: {mood}"
+    "moodLabel": "Mood: {mood}",
+    "exercise": "Exercise"
   }
 }

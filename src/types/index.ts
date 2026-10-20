@@ -770,6 +770,30 @@ export interface PracticeSession {
 
 export interface PracticeSessionWithSong extends PracticeSession {
   song: Song | null;
+  /** Les exercices joues, rattaches a la ligne « hors morceau » de la session. */
+  exercises?: PracticeSessionExercise[];
+}
+
+/** Un exercice d'une session : une fiche, ou un exo express (nom seul). */
+export interface PracticeSessionExercise {
+  id: string;
+  practice_session_id: string;
+  exercise_id: string | null;
+  exercise_name: string | null;
+  exercise_category: ExerciseCategory | null;
+  duration_minutes: number;
+  bpm_achieved: number | null;
+  created_at: string;
+}
+
+/** Un exercice a enregistrer avec la session. */
+export interface PracticeSessionExerciseEntry {
+  /** Absent pour un exo express. */
+  exercise_id?: string | null;
+  name: string;
+  category?: ExerciseCategory | null;
+  duration_minutes: number;
+  bpm_achieved?: number;
 }
 
 /** Un morceau d'une session a plusieurs morceaux, avec son temps et son tempo. */
@@ -799,6 +823,12 @@ export interface CreatePracticeSessionInput {
   goals_achieved?: boolean;
   notes?: string;
   /**
+   * Les exercices joues. Leur temps s'ajoute a la ligne sans morceau de la
+   * session (creee au besoin) : avec des exercices, passer `songs` (meme
+   * vide) plutot que `song_id` / `duration_minutes`.
+   */
+  exercises?: PracticeSessionExerciseEntry[];
+  /**
    * Partager la session avec ses amis (feed + notification). Absent : le
    * reglage du profil (`profile_private.share_sessions`).
    */
@@ -825,6 +855,14 @@ export interface SessionActivityMetadata {
     title: string;
     artist: string;
     cover_url: string | null;
+    minutes: number;
+    bpm: number | null;
+  }[];
+  /** Absent sur les activites d'avant les exercices. */
+  exercises?: {
+    id: string | null;
+    name: string;
+    category: ExerciseCategory | null;
     minutes: number;
     bpm: number | null;
   }[];
@@ -1340,15 +1378,6 @@ export interface ExerciseWithProgress extends Exercise {
   user_progress?: UserExercise;
   creator_name?: string;
   is_from_friend?: boolean;
-}
-
-export interface PracticeSessionExercise {
-  id: string;
-  practice_session_id: string;
-  exercise_id: string;
-  duration_minutes: number;
-  bpm_achieved?: number;
-  created_at: string;
 }
 
 export interface CreateUserExerciseProgressInput {

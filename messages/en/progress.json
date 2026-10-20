@@ -129,7 +129,7 @@
     "irreversible": "This can't be undone."
   },
   "add": {
-    "minutesPerSong": "Enter the minutes spent on each song",
+    "minutesPerSong": "Enter the minutes spent on each song and exercise",
     "wellPlayed": "Nice work",
     "addTitle": "Add a session",
     "sessionOf": "Session on {date}",
@@ -160,10 +160,15 @@
     "statusOf": "Status of {title}",
     "tempoComputed": "Progress is based on your best tempo held.",
     "progressOf": "Progress of {title}",
-    "notEnoughMinutes": "The total time doesn't leave a minute for each song without a duration.",
-    "splitHint": "Songs without a duration share the remaining time.",
+    "notEnoughMinutes": "The total time doesn't leave a minute for each song or exercise without a duration.",
+    "splitHint": "Songs and exercises without a duration share the remaining time.",
     "autoMinutes": "auto",
     "shareWithFriends": "Share with my friends",
-    "shareHint": "They'll see it in their feed, notes included, and get a notification."
+    "shareHint": "They'll see it in their feed, notes included, and get a notification.",
+    "exercisesCount": "{count, plural, =0 {Exercises} one {Exercise} other {# exercises}}",
+    "addExercise": "Add an exercise",
+    "searchExercise": "Search an exercise…",
+    "noExerciseFound": "No exercise found",
+    "expressExercise": "Quick exercise"
   }
 }

@@ -76,6 +76,7 @@
     "goal": "Objectif",
     "goalReached": "Atteint",
     "readNote": "Lire la note",
-    "moodLabel": "Humeur : {mood}"
+    "moodLabel": "Humeur : {mood}",
+    "exercise": "Exercice"
   }
 }

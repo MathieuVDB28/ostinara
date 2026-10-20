@@ -129,7 +129,7 @@
     "irreversible": "Cette action est irréversible."
   },
   "add": {
-    "minutesPerSong": "Indique les minutes passées sur chaque morceau",
+    "minutesPerSong": "Indique les minutes passées sur chaque morceau et exercice",
     "wellPlayed": "Bien joué",
     "addTitle": "Ajouter une session",
     "sessionOf": "Session du {date}",
@@ -160,10 +160,15 @@
     "statusOf": "Statut de {title}",
     "tempoComputed": "Progression calculée d'après ton meilleur tempo tenu.",
     "progressOf": "Progression de {title}",
-    "notEnoughMinutes": "Le temps total ne laisse pas une minute à chaque morceau sans durée.",
-    "splitHint": "Les morceaux sans durée se partagent le temps restant.",
+    "notEnoughMinutes": "Le temps total ne laisse pas une minute à chaque morceau ou exercice sans durée.",
+    "splitHint": "Les morceaux et exercices sans durée se partagent le temps restant.",
     "autoMinutes": "auto",
     "shareWithFriends": "Partager avec mes amis",
-    "shareHint": "Ils la verront dans leur feed, notes comprises, et recevront une notification."
+    "shareHint": "Ils la verront dans leur feed, notes comprises, et recevront une notification.",
+    "exercisesCount": "{count, plural, =0 {Exercices} one {Exercice} other {# exercices}}",
+    "addExercise": "Ajouter un exercice",
+    "searchExercise": "Rechercher un exercice…",
+    "noExerciseFound": "Aucun exercice trouvé",
+    "expressExercise": "Exo express"
   }
 }

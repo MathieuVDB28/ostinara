@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
-import { ChevronDown, CloudOff, Plus, X } from "lucide-react";
+import { ChevronDown, CloudOff, Dumbbell, Plus, X } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { useOffline } from "@/components/offline/offline-provider";
 import { updateSong } from "@/lib/actions/songs";
@@ -14,11 +14,24 @@ import { songTargetBpm } from "@/lib/song-progress";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
-import type { SessionSongTime } from "@/components/providers/practice-session-provider";
+import {
+  exerciseKeyOf,
+  type SessionExercise,
+  type SessionExerciseTime,
+  type SessionSongTime,
+} from "@/components/providers/practice-session-provider";
 import { MoodSelector } from "./mood-selector";
 import { SectionsSelector } from "./sections-selector";
 import { EnergySelector } from "./energy-selector";
-import type { Instrument, Song, SongStatus, SessionMood, EnergyLevel, SongSection } from "@/types";
+import type {
+  Instrument,
+  Song,
+  SongStatus,
+  SessionMood,
+  EnergyLevel,
+  SongSection,
+  ExerciseWithProgress,
+} from "@/types";
 
 /** Un morceau de la session, tel qu'on l'edite dans la modale. */
 interface Entry {
@@ -32,17 +45,25 @@ interface Entry {
   percent: number | null;
 }
 
+/** Un exercice de la session, tel qu'on l'edite dans la modale. */
+interface ExerciseEntry {
+  exercise: SessionExercise;
+  minutes: number | "";
+  bpm: string;
+}
+
 function initialEntries(
   timerSongTimes: SessionSongTime[] | undefined,
   timerSong: Song | null | undefined,
   timerDuration: number | undefined,
   timerBpm: number | undefined,
-  initialSongIds?: string[]
+  initialSongIds?: string[],
+  hasExercises = false
 ): Entry[] {
   if (timerSongTimes && timerSongTimes.length > 0) {
     // Le temps sans morceau ne merite une ligne que s'il y a aussi des
-    // morceaux : seul, c'est simplement une session libre.
-    const rows = timerSongTimes.some((row) => row.songId)
+    // morceaux ou des exercices : seul, c'est simplement une session libre.
+    const rows = hasExercises || timerSongTimes.some((row) => row.songId)
       ? timerSongTimes
       : [];
     return rows.map((row) => ({
@@ -76,21 +97,42 @@ function initialEntries(
   return [];
 }
 
+function initialExerciseEntries(
+  timerExerciseTimes: SessionExerciseTime[] | undefined,
+  initialExercises: SessionExercise[] | undefined
+): ExerciseEntry[] {
+  if (timerExerciseTimes && timerExerciseTimes.length > 0) {
+    return timerExerciseTimes.map((row) => ({
+      exercise: row.exercise,
+      minutes: row.minutes,
+      bpm: row.bpm ? String(row.bpm) : "",
+    }));
+  }
+  const seen = new Set<string>();
+  return (initialExercises ?? []).flatMap((exercise) => {
+    const key = exerciseKeyOf(exercise);
+    if (seen.has(key)) return [];
+    seen.add(key);
+    return [{ exercise, minutes: "" as const, bpm: "" }];
+  });
+}
+
 /**
  * Le temps total d'une session saisie apres coup, reparti entre les
- * morceaux dont on n'a pas donne la duree : a parts egales, la minute qui
- * reste aux premiers. Null si le total ne laisse pas une minute a chacun.
+ * morceaux et exercices dont on n'a pas donne la duree : a parts egales,
+ * la minute qui reste aux premiers. Null si le total ne laisse pas une
+ * minute a chacun.
  */
-function splitRemaining(entries: Entry[], total: number): Entry[] | null {
-  const blanks = entries.filter((entry) => !entry.minutes).length;
-  const remaining = total - entries.reduce((sum, entry) => sum + (Number(entry.minutes) || 0), 0);
+function splitRemaining(minutes: (number | "")[], total: number): number[] | null {
+  const blanks = minutes.filter((value) => !value).length;
+  const remaining = total - minutes.reduce<number>((sum, value) => sum + (Number(value) || 0), 0);
   if (remaining < blanks) return null;
   let index = 0;
-  return entries.map((entry) => {
-    if (entry.minutes) return entry;
-    const minutes = Math.floor(remaining / blanks) + (index < remaining % blanks ? 1 : 0);
+  return minutes.map((value) => {
+    if (value) return Number(value);
+    const share = Math.floor(remaining / blanks) + (index < remaining % blanks ? 1 : 0);
     index += 1;
-    return { ...entry, minutes };
+    return share;
   });
 }
 
@@ -101,6 +143,8 @@ interface AddSessionModalProps {
   onClose: () => void;
   onSuccess: () => void;
   songs: Song[];
+  /** Les exercices qu'on peut ajouter a la session. */
+  exercises?: ExerciseWithProgress[];
   // Props pour le mode timer
   timerDuration?: number;
   timerSong?: Song | null;
@@ -108,8 +152,12 @@ interface AddSessionModalProps {
   timerBpm?: number;
   /** Les morceaux joues pendant le chrono, avec leur temps. */
   timerSongTimes?: SessionSongTime[];
+  /** Les exercices joues pendant le chrono, avec leur temps. */
+  timerExerciseTimes?: SessionExerciseTime[];
   /** Saisie manuelle : les morceaux deja choisis (la session montee dans Jouer). */
   initialSongIds?: string[];
+  /** Saisie manuelle : les exercices de la session montee. */
+  initialExercises?: SessionExercise[];
   mode: "timer" | "manual";
 }
 
@@ -118,16 +166,20 @@ export function AddSessionModal({
   onClose,
   onSuccess,
   songs,
+  exercises = [],
   timerDuration,
   timerSong,
   timerBpm,
   timerSongTimes,
+  timerExerciseTimes,
   initialSongIds,
+  initialExercises,
   mode,
 }: AddSessionModalProps) {
   const t = useTranslations("progress.add");
   const tf = useTranslations("progress.form");
   const tc = useTranslations("common");
+  const te = useTranslations("enums");
   const intlLocale = useIntlLocale();
   const router = useRouter();
   const nextSteps = useNextSteps();
@@ -149,8 +201,18 @@ export function AddSessionModal({
   const [instrument, setInstrument] = useState<Instrument>(myInstruments.primary);
 
   // Champs du formulaire
+  const [exerciseEntries, setExerciseEntries] = useState<ExerciseEntry[]>(() =>
+    initialExerciseEntries(timerExerciseTimes, initialExercises)
+  );
   const [entries, setEntries] = useState<Entry[]>(() =>
-    initialEntries(timerSongTimes, timerSong, timerDuration, timerBpm, initialSongIds)
+    initialEntries(
+      timerSongTimes,
+      timerSong,
+      timerDuration,
+      timerBpm,
+      initialSongIds,
+      Boolean(timerExerciseTimes?.length || initialExercises?.length)
+    )
   );
   const [durationMinutes, setDurationMinutes] = useState<number | "">(timerDuration || 30);
   const [practicedAt, setPracticedAt] = useState(
@@ -180,11 +242,23 @@ export function AddSessionModal({
   // Recherche de morceau
   const [showSongSearch, setShowSongSearch] = useState(false);
   const [songSearchQuery, setSongSearchQuery] = useState("");
+  const [showExerciseSearch, setShowExerciseSearch] = useState(false);
+  const [exerciseSearchQuery, setExerciseSearchQuery] = useState("");
 
   // Reset au changement de mode ou props
   useEffect(() => {
     if (isOpen) {
-      setEntries(initialEntries(timerSongTimes, timerSong, timerDuration, timerBpm, initialSongIds));
+      setExerciseEntries(initialExerciseEntries(timerExerciseTimes, initialExercises));
+      setEntries(
+        initialEntries(
+          timerSongTimes,
+          timerSong,
+          timerDuration,
+          timerBpm,
+          initialSongIds,
+          Boolean(timerExerciseTimes?.length || initialExercises?.length)
+        )
+      );
       setDurationMinutes(timerDuration || 30);
       setPracticedAt(new Date().toISOString().slice(0, 16));
       setBpmAchieved(timerBpm ? String(timerBpm) : "");
@@ -200,7 +274,7 @@ export function AddSessionModal({
       setShowGoals(false);
       setShare(null);
     }
-  }, [isOpen, timerDuration, timerSong, timerBpm, timerSongTimes, initialSongIds]);
+  }, [isOpen, timerDuration, timerSong, timerBpm, timerSongTimes, initialSongIds, timerExerciseTimes, initialExercises]);
 
   useEffect(() => {
     if (!isOpen || !isOnline) return;
@@ -234,18 +308,32 @@ export function AddSessionModal({
     };
   }, [isOpen, handleClose]);
 
-  // Plusieurs morceaux : la duree est la somme des leurs. Un seul ou
-  // aucun : la duree du chrono, ou celle saisie.
-  const isMulti = entries.length > 1;
+  // Plusieurs morceaux ou exercices : la duree est la somme des leurs. Un
+  // seul ou aucun : la duree du chrono, ou celle saisie.
+  const allMinutes = [...entries.map((entry) => entry.minutes), ...exerciseEntries.map((entry) => entry.minutes)];
+  const isMulti = allMinutes.length > 1;
   /*
    * Apres coup, on se souvient du temps passe, rarement de celui de chaque
-   * morceau : en saisie manuelle, on donne le total et les morceaux sans
-   * duree se partagent ce qui reste.
+   * morceau : en saisie manuelle, on donne le total et ce qui n'a pas de
+   * duree se partage ce qui reste.
    */
-  const splitsTotal = mode === "manual" && isMulti && entries.some((entry) => !entry.minutes);
+  const splitsTotal = mode === "manual" && isMulti && allMinutes.some((value) => !value);
   const totalMinutes: number | "" = isMulti && !splitsTotal
-    ? entries.reduce((sum, entry) => sum + (Number(entry.minutes) || 0), 0)
+    ? allMinutes.reduce<number>((sum, value) => sum + (Number(value) || 0), 0)
     : durationMinutes;
+
+  const updateExerciseEntry = (index: number, patch: Partial<ExerciseEntry>) => {
+    setExerciseEntries((current) => current.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
+  };
+
+  const addExercise = (exercise: ExerciseWithProgress) => {
+    const picked: SessionExercise = { id: exercise.id, name: exercise.name, category: exercise.category };
+    setExerciseEntries((current) =>
+      current.some((entry) => exerciseKeyOf(entry.exercise) === exercise.id)
+        ? current
+        : [...current, { exercise: picked, minutes: "", bpm: "" }]
+    );
+  };
 
   const updateEntry = (index: number, patch: Partial<Entry>) => {
     setEntries((current) => current.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
@@ -254,8 +342,11 @@ export function AddSessionModal({
   const addSong = (song: Song) => {
     setEntries((current) => {
       if (current.some((entry) => entry.songId === song.id)) return current;
-      // Le premier morceau ajoute a une session libre la remplace.
-      const base = current.filter((entry) => entry.songId !== null || current.length > 1);
+      // Le premier morceau ajoute a une session libre la remplace (sauf si
+      // des exercices s'y rattachent : c'est alors du temps a part).
+      const base = current.filter(
+        (entry) => entry.songId !== null || current.length > 1 || exerciseEntries.length > 0
+      );
       // En saisie manuelle, le morceau prend sa part du total tant qu'on ne
       // lui donne pas de duree.
       const minutes = mode === "timer" && base.length === 0 ? durationMinutes : "";
@@ -268,25 +359,45 @@ export function AddSessionModal({
       setError(tf("durationMin"));
       return;
     }
-    const sessionEntries = splitsTotal ? splitRemaining(entries, Number(totalMinutes)) : entries;
-    if (!sessionEntries) {
+    // Un seul element : il prend toute la duree. Plusieurs : chacun la
+    // sienne, ou sa part du total.
+    const minutes = !isMulti
+      ? allMinutes.map(() => Number(totalMinutes))
+      : splitsTotal
+        ? splitRemaining(allMinutes, Number(totalMinutes))
+        : allMinutes.map((value) => Number(value) || 0);
+    if (!minutes) {
       setError(t("notEnoughMinutes"));
       return;
     }
-    if (isMulti && sessionEntries.some((entry) => !entry.minutes || Number(entry.minutes) < 1)) {
+    if (isMulti && minutes.some((value) => value < 1)) {
       setError(t("minutesPerSong"));
       return;
     }
+    const songMinutes = minutes.slice(0, entries.length);
+    const exerciseMinutes = minutes.slice(entries.length);
+    const hasExercises = exerciseEntries.length > 0;
 
     setLoading(true);
     setError(null);
 
-    const single = entries.length === 1 ? entries[0] : null;
+    const single = entries.length === 1 && !hasExercises ? entries[0] : null;
     const result = await saveSession({
-      songs: isMulti
-        ? sessionEntries.map((entry) => ({
+      // Avec des exercices, toujours la liste des morceaux (meme vide) :
+      // le temps des exercices s'ajoute a part, cote serveur.
+      songs: isMulti || hasExercises
+        ? entries.map((entry, index) => ({
             song_id: entry.songId,
-            duration_minutes: Number(entry.minutes),
+            duration_minutes: songMinutes[index],
+            bpm_achieved: entry.bpm ? parseInt(entry.bpm) : undefined,
+          }))
+        : undefined,
+      exercises: hasExercises
+        ? exerciseEntries.map((entry, index) => ({
+            exercise_id: entry.exercise.id,
+            name: entry.exercise.name,
+            category: entry.exercise.category ?? null,
+            duration_minutes: exerciseMinutes[index],
             bpm_achieved: entry.bpm ? parseInt(entry.bpm) : undefined,
           }))
         : undefined,
@@ -351,6 +462,10 @@ export function AddSessionModal({
       setError(result.error || tc("genericError"));
     }
   };
+
+  const filteredExercises = exercises.filter((exercise) =>
+    exercise.name.toLowerCase().includes(exerciseSearchQuery.toLowerCase())
+  );
 
   const filteredSongs = songs.filter(
     (song) =>
@@ -481,6 +596,38 @@ export function AddSessionModal({
             </button>
           </div>
 
+          {/*
+            Les exercices : ceux du chrono ou de la session montee, avec
+            leur temps et leur tempo. Une session peut n'etre que ca.
+          */}
+          <div>
+            <label className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              {t("exercisesCount", { count: exerciseEntries.length })}
+            </label>
+            {exerciseEntries.length > 0 && (
+              <ul className="border-t border-border">
+                {exerciseEntries.map((entry, index) => (
+                  <ExerciseRow
+                    key={exerciseKeyOf(entry.exercise)}
+                    entry={entry}
+                    showMinutes={isMulti}
+                    minutesOptional={mode === "manual"}
+                    onChange={(patch) => updateExerciseEntry(index, patch)}
+                    onRemove={() => setExerciseEntries((current) => current.filter((_, i) => i !== index))}
+                  />
+                ))}
+              </ul>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowExerciseSearch(true)}
+              className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border text-sm font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              {t("addExercise")}
+            </button>
+          </div>
+
           {/* Durée et Date : le chrono les a deja, on ne les montre qu'en saisie manuelle */}
           <div className={`grid grid-cols-2 gap-4 ${mode === "timer" ? "hidden" : ""}`}>
             <div>
@@ -536,7 +683,7 @@ export function AddSessionModal({
             {showPerformance && (
               <div className="space-y-4 pb-4">
                 {/* Avec un morceau, le tempo se note sur sa ligne. */}
-                {entries.length === 0 && <div>
+                {entries.length === 0 && exerciseEntries.length === 0 && <div>
                   <label className="mb-2 block text-sm font-medium">{tf("bpmReached")}</label>
                   <input
                     type="number"
@@ -744,8 +891,144 @@ export function AddSessionModal({
             </div>
           </div>
         )}
+
+        {/* Modal de recherche d'exercice */}
+        {showExerciseSearch && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              onClick={() => setShowExerciseSearch(false)}
+            />
+            <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-md">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-bold">{t("addExercise")}</h3>
+                <button
+                  onClick={() => setShowExerciseSearch(false)}
+                  aria-label={tc("close")}
+                  className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
+                >
+                  <X className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+                </button>
+              </div>
+
+              <input
+                type="text"
+                placeholder={t("searchExercise")}
+                value={exerciseSearchQuery}
+                onChange={(e) => setExerciseSearchQuery(e.target.value)}
+                className="mb-4 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
+              />
+
+              <div className="max-h-64 space-y-1 overflow-y-auto">
+                {filteredExercises.map((exercise) => (
+                  <button
+                    key={exercise.id}
+                    onClick={() => {
+                      addExercise(exercise);
+                      setShowExerciseSearch(false);
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors ${
+                      exerciseEntries.some((entry) => entry.exercise.id === exercise.id)
+                        ? "border border-primary bg-primary/10"
+                        : "hover:bg-accent"
+                    }`}
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                      <Dumbbell className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">{exercise.name}</span>
+                      <span className="block truncate text-sm text-muted-foreground">
+                        {te(`exerciseCategory.${exercise.category}`)}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+
+                {filteredExercises.length === 0 && (
+                  <p className="py-4 text-center text-sm text-muted-foreground">{t("noExerciseFound")}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+/** Une ligne d'exercice : son temps et son tempo. */
+function ExerciseRow({
+  entry,
+  showMinutes,
+  minutesOptional,
+  onChange,
+  onRemove,
+}: {
+  entry: ExerciseEntry;
+  showMinutes: boolean;
+  minutesOptional: boolean;
+  onChange: (patch: Partial<ExerciseEntry>) => void;
+  onRemove: () => void;
+}) {
+  const t = useTranslations("progress.add");
+  const te = useTranslations("enums");
+  const category = entry.exercise.category;
+
+  return (
+    <li className="space-y-3 border-b border-border py-3">
+      <div className="flex items-center gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] bg-secondary text-muted-foreground">
+          <Dumbbell className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold">{entry.exercise.name}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {category ? te(`exerciseCategory.${category}`) : t("expressExercise")}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={t("remove", { name: entry.exercise.name })}
+          className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+
+      <div className="flex gap-3">
+        {showMinutes && (
+          <label className="flex flex-1 items-center gap-2 text-xs text-muted-foreground">
+            <input
+              type="number"
+              inputMode="numeric"
+              min="1"
+              max="480"
+              value={entry.minutes}
+              placeholder={minutesOptional ? t("autoMinutes") : undefined}
+              onChange={(e) => onChange({ minutes: e.target.value === "" ? "" : parseInt(e.target.value) || 0 })}
+              onFocus={(e) => e.target.select()}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
+            />
+            {t("min")}
+          </label>
+        )}
+        <label className="flex flex-1 items-center gap-2 text-xs text-muted-foreground">
+          <input
+            type="number"
+            inputMode="numeric"
+            min="20"
+            max="300"
+            placeholder={t("bpmHeld")}
+            value={entry.bpm}
+            onChange={(e) => onChange({ bpm: e.target.value })}
+            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
+          />
+          {t("bpm")}
+        </label>
+      </div>
+    </li>
   );
 }
 

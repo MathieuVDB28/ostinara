@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, History, Timer } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { BpmTargetIndicator } from "@/components/practice/song-practice/bpm-target-indicator";
 import { SongTabPanel } from "@/components/practice/song-practice/song-tab-panel";
-import { usePracticeSession } from "@/components/providers/practice-session-provider";
+import { usePracticeSession, type SessionExercise } from "@/components/providers/practice-session-provider";
 import type { SaveSessionItemInput } from "@/lib/actions/setlists";
 import type {
   Song,
@@ -51,6 +51,18 @@ interface PlayStepperProps {
   userPlan: UserPlan;
   /** Le deroule en version « a enregistrer » : propose routine/setlist en fin de session. */
   sessionItems?: SaveSessionItemInput[];
+}
+
+/** L'exercice d'une etape, tel que le chrono le compte. */
+function sessionExercise(step: PlayStep): SessionExercise | null {
+  if (step.kind !== "exercise") return null;
+  const name = step.exercise?.name ?? step.exerciseName ?? "";
+  if (!step.exercise && !name) return null;
+  return {
+    id: step.exercise?.id ?? null,
+    name,
+    category: step.exercise?.category ?? step.exerciseCategory ?? null,
+  };
 }
 
 function sessionSong(song: Song | null) {
@@ -120,7 +132,7 @@ export function PlayStepper({
           step.song ? sessionSong(step.song) : null
         );
       } else {
-        practiceSession.setSongId(null, null);
+        practiceSession.setExercise(sessionExercise(step));
       }
       const bpm = bpmFor(step);
       if (bpm !== null) practiceSession.setBpm(bpm);
@@ -141,6 +153,7 @@ export function PlayStepper({
       exerciseId: current.kind === "exercise" ? current.exercise?.id ?? null : null,
       bpm: bpmFor(current) ?? currentBpm,
       song: current.kind === "song" ? sessionSong(current.song) : null,
+      exercise: sessionExercise(current),
       focus: false,
       programItems: sessionItems,
     });
@@ -149,7 +162,11 @@ export function PlayStepper({
   // Deja jouee : la session montee part dans la modale, morceaux compris.
   const handleAlreadyPlayed = () => {
     practiceSession.openPastSession(
-      steps.flatMap((step) => (step.kind === "song" && step.song ? [step.song.id] : []))
+      steps.flatMap((step) => (step.kind === "song" && step.song ? [step.song.id] : [])),
+      steps.flatMap((step) => {
+        const exercise = sessionExercise(step);
+        return exercise ? [exercise] : [];
+      })
     );
   };
 

@@ -25,6 +25,7 @@ import type {
   SongPracticeDistribution,
   SessionMood,
   SessionActivityMetadata,
+  PracticeSessionExerciseEntry,
   Instrument,
 } from "@/types";
 import { syncBadges } from "@/lib/badges/sync";
@@ -52,7 +53,8 @@ export async function getPracticeSessions(
     .from("practice_sessions")
     .select(`
       *,
-      song:songs(*)
+      song:songs(*),
+      exercises:practice_session_exercises(*)
     `)
     .eq("user_id", user.id)
     .order("practiced_at", { ascending: false });
@@ -129,7 +131,8 @@ export async function getLastPracticeSession(): Promise<PracticeSessionWithSong 
     .from("practice_sessions")
     .select(`
       *,
-      song:songs(*)
+      song:songs(*),
+      exercises:practice_session_exercises(*)
     `)
     .eq("user_id", user.id)
     .order("practiced_at", { ascending: false })
@@ -158,7 +161,8 @@ export async function getPracticeSession(
     .from("practice_sessions")
     .select(`
       *,
-      song:songs(*)
+      song:songs(*),
+      exercises:practice_session_exercises(*)
     `)
     .eq("id", id)
     .eq("user_id", user.id)
@@ -201,10 +205,34 @@ export async function createPracticeSession(
    * Plusieurs morceaux : une ligne par morceau, reliees par un groupe.
    * Un seul : la ligne habituelle, sans groupe.
    */
-  const entries =
-    input.songs && input.songs.length > 0
+  // Un tempo hors des bornes de la base (20-300) ferait echouer tout
+  // l'enregistrement des exercices : on le laisse de cote.
+  const exercises = (input.exercises ?? [])
+    .filter((exercise) => exercise.duration_minutes > 0 && (exercise.exercise_id || exercise.name.trim()))
+    .map((exercise) => ({
+      ...exercise,
+      bpm_achieved:
+        exercise.bpm_achieved && exercise.bpm_achieved >= 20 && exercise.bpm_achieved <= 300
+          ? exercise.bpm_achieved
+          : undefined,
+    }));
+  const entries = (
+    input.songs && (input.songs.length > 0 || exercises.length > 0)
       ? input.songs.filter((entry) => entry.duration_minutes > 0)
-      : [{ song_id: input.song_id || null, duration_minutes: input.duration_minutes, bpm_achieved: input.bpm_achieved }];
+      : [{ song_id: input.song_id || null, duration_minutes: input.duration_minutes, bpm_achieved: input.bpm_achieved }]
+  ).map((entry) => ({ ...entry }));
+
+  /*
+   * Le temps des exercices vit dans la ligne sans morceau : les totaux, la
+   * serie et le calendrier le comptent comme avant. Les exercices s'y
+   * rattachent ensuite, un par ligne de practice_session_exercises.
+   */
+  const exerciseMinutes = exercises.reduce((sum, exercise) => sum + exercise.duration_minutes, 0);
+  if (exerciseMinutes > 0) {
+    const free = entries.find((entry) => !entry.song_id);
+    if (free) free.duration_minutes += exerciseMinutes;
+    else entries.push({ song_id: null, duration_minutes: exerciseMinutes, bpm_achieved: undefined });
+  }
 
   if (entries.length === 0) {
     return { success: false, error: await tErr("durationMin") };
@@ -230,11 +258,30 @@ export async function createPracticeSession(
     return { success: false, error: await tErr("sessionSaveFailed") };
   }
 
+  const rows = data as PracticeSession[];
+  const freeRow = rows.find((row) => !row.song_id);
+  if (freeRow && exercises.length > 0) {
+    const { error: exercisesError } = await supabase.from("practice_session_exercises").insert(
+      exercises.map((exercise) => ({
+        practice_session_id: freeRow.id,
+        exercise_id: exercise.exercise_id || null,
+        exercise_name: exercise.name.trim() || null,
+        exercise_category: exercise.category || null,
+        duration_minutes: exercise.duration_minutes,
+        bpm_achieved: exercise.bpm_achieved || null,
+      }))
+    );
+    // La session est la, son temps aussi : on ne la perd pas pour le
+    // detail des exercices.
+    if (exercisesError) console.error("Error recording session exercises:", exercisesError);
+    await recordExercisesProgress(supabase, user.id, exercises);
+  }
+
   // Les amis voient la session dans leur feed, et en sont notifies. La
   // case de la modale decide ; sans elle, le reglage du profil.
   const share = input.share ?? (await getShareSessionsDefault());
   if (share) {
-    await publishSessionActivity(supabase, groupId ?? data[0].id, data as PracticeSession[]);
+    await publishSessionActivity(supabase, groupId ?? rows[0].id, rows);
   }
 
   // Mettre à jour la progression des challenges actifs, une fois pour
@@ -290,6 +337,11 @@ async function sessionActivityMetadata(
     ? await supabase.from("songs").select("id, title, artist, cover_url").in("id", songIds)
     : { data: [] };
   const songsById = new Map((songs ?? []).map((song) => [song.id, song]));
+  const { data: exercises } = await supabase
+    .from("practice_session_exercises")
+    .select("exercise_id, exercise_name, exercise_category, duration_minutes, bpm_achieved")
+    .in("practice_session_id", rows.map((row) => row.id))
+    .order("created_at");
 
   return {
     instrument: (first.instrument ?? (await getMyPrimaryInstrument())) as Instrument,
@@ -316,7 +368,62 @@ async function sessionActivityMetadata(
           bpm: row.bpm_achieved,
         };
       }),
+    exercises: (exercises ?? []).map((exercise) => ({
+      id: exercise.exercise_id,
+      name: exercise.exercise_name ?? "",
+      category: exercise.exercise_category,
+      minutes: exercise.duration_minutes,
+      bpm: exercise.bpm_achieved,
+    })),
   };
+}
+
+/**
+ * La progression de chaque exercice joue (fiche seulement : un exo express
+ * n'a rien a faire progresser). Le temps et le nombre de sessions avancent
+ * toujours ; le tempo, seulement s'il a ete note.
+ */
+async function recordExercisesProgress(
+  supabase: SupabaseClient,
+  userId: string,
+  exercises: PracticeSessionExerciseEntry[]
+): Promise<void> {
+  const byId = new Map<string, { minutes: number; bpm: number | null }>();
+  for (const exercise of exercises) {
+    if (!exercise.exercise_id) continue;
+    const current = byId.get(exercise.exercise_id) ?? { minutes: 0, bpm: null };
+    current.minutes += exercise.duration_minutes;
+    if (exercise.bpm_achieved) current.bpm = Math.max(current.bpm ?? 0, exercise.bpm_achieved);
+    byId.set(exercise.exercise_id, current);
+  }
+  if (byId.size === 0) return;
+
+  const { data: existing } = await supabase
+    .from("user_exercises")
+    .select("*")
+    .eq("user_id", userId)
+    .in("exercise_id", [...byId.keys()]);
+  const existingById = new Map((existing ?? []).map((row) => [row.exercise_id as string, row]));
+  const now = new Date().toISOString();
+
+  const { error } = await supabase.from("user_exercises").upsert(
+    [...byId].map(([exerciseId, played]) => {
+      const row = existingById.get(exerciseId);
+      return {
+        user_id: userId,
+        exercise_id: exerciseId,
+        // Sans tempo note, on garde le dernier connu (60 par defaut en base).
+        current_bpm: played.bpm ?? row?.current_bpm ?? 60,
+        best_bpm: Math.max(row?.best_bpm ?? 0, played.bpm ?? row?.best_bpm ?? 60),
+        total_practice_minutes: (row?.total_practice_minutes ?? 0) + played.minutes,
+        sessions_count: (row?.sessions_count ?? 0) + 1,
+        last_practiced_at: now,
+      };
+    }),
+    { onConflict: "user_id,exercise_id" }
+  );
+
+  if (error) console.error("Error updating exercise progress:", error);
 }
 
 /**

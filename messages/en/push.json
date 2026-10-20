@@ -167,10 +167,10 @@
   },
   "sessionCompleted": {
     "title": "Session done",
-    "body": "{name} just played {minutes} min{instrument, select, guitar { of guitar} bass { of bass} drums { of drums} keys { of keys} other {}}{song, select, none {} other {: “{song}”{others, plural, =0 {} one { and 1 other song} other { and # other songs}}}}"
+    "body": "{name} just played {minutes} min{instrument, select, guitar { of guitar} bass { of bass} drums { of drums} keys { of keys} other {}}{song, select, none {{exercises, plural, =0 {} one {: 1 exercise} other {: # exercises}}} other {: “{song}”{others, plural, =0 {} one { and 1 other song} other { and # other songs}}{exercises, plural, =0 {} one {, 1 exercise} other {, # exercises}}}}"
   },
   "sessionLogged": {
     "title": "Session logged",
-    "body": "{name} logged a {minutes}-min{instrument, select, guitar { guitar} bass { bass} drums { drums} keys { keys} other {}} session{song, select, none {} other {: “{song}”{others, plural, =0 {} one { and 1 other song} other { and # other songs}}}}"
+    "body": "{name} logged a {minutes}-min{instrument, select, guitar { guitar} bass { bass} drums { drums} keys { keys} other {}} session{song, select, none {{exercises, plural, =0 {} one {: 1 exercise} other {: # exercises}}} other {: “{song}”{others, plural, =0 {} one { and 1 other song} other { and # other songs}}{exercises, plural, =0 {} one {, 1 exercise} other {, # exercises}}}}"
   }
 }

@@ -151,6 +151,7 @@ function getNotificationForActivity(
       const practicedAt = Date.parse(m("practiced_at"));
       const past = Number.isFinite(practicedAt) && Date.now() - practicedAt > SESSION_PAST_AFTER_MS;
       const songs = Array.isArray(metadata?.songs) ? (metadata.songs as { title?: string }[]) : [];
+      const exercises = Array.isArray(metadata?.exercises) ? metadata.exercises.length : 0;
       return build("session_completed", "/commu", (t, name) => ({
         title: past ? t("sessionLogged.title") : t("sessionCompleted.title"),
         body: t(past ? "sessionLogged.body" : "sessionCompleted.body", {
@@ -159,6 +160,7 @@ function getNotificationForActivity(
           instrument: instrumentArg(metadata?.instrument),
           song: songs[0]?.title || "none",
           others: Math.max(0, songs.length - 1),
+          exercises,
         }),
       }));
     }

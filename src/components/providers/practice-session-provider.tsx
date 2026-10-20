@@ -13,12 +13,12 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getSongs } from "@/lib/actions/songs";
-import { updateUserExerciseProgress } from "@/lib/actions/exercises";
+import { getExercises } from "@/lib/actions/exercises";
 import { AddSessionModal } from "@/components/progress/add-session-modal";
 import { SessionSavePrompt } from "@/components/play/session-save-prompt";
 import { Maximize2, Minimize2, Pause, Play } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
-import type { Song } from "@/types";
+import type { ExerciseCategory, ExerciseWithProgress, Song } from "@/types";
 import type { SaveSessionItemInput } from "@/lib/actions/setlists";
 
 /**
@@ -56,10 +56,15 @@ interface StoredSession {
   song?: SessionSong | null;
   /**
    * Le temps passe sur chaque morceau, en ms, dans l'ordre ou on les a
-   * ouverts. Cle "" pour le temps joue sans morceau. Le morceau courant
-   * n'y est credite qu'au changement de morceau ou a l'arret.
+   * ouverts. Cle "" pour le temps joue sans morceau ni exercice, « ex:… »
+   * pour un exercice. Le morceau courant n'y est credite qu'au changement
+   * de morceau ou a l'arret.
    */
   songTimes?: Record<string, number>;
+  /** L'exercice en cours (sa cle, cf. exerciseKeyOf), null sinon. */
+  exerciseKey?: string | null;
+  /** Les exercices ouverts pendant la session, par cle. */
+  exerciseInfo?: Record<string, SessionExercise>;
   /** Le temps ecoule au moment ou le morceau courant a ete ouvert. */
   songStartMs?: number;
   /** Le dernier tempo regle sur chaque morceau. */
@@ -79,13 +84,41 @@ export interface SessionSongTime {
   bpm: number | null;
 }
 
+/** Un exercice de la session : une fiche, ou un exo express (nom seul). */
+export interface SessionExercise {
+  id: string | null;
+  name: string;
+  category?: ExerciseCategory | null;
+}
+
+/** Une ligne d'exercice de fin de session. */
+export interface SessionExerciseTime {
+  exercise: SessionExercise;
+  minutes: number;
+  bpm: number | null;
+}
+
+/** La cle d'un exercice : sa fiche, ou son nom pour un exo express. */
+export function exerciseKeyOf(exercise: SessionExercise): string {
+  return exercise.id ?? `express:${exercise.name}`;
+}
+
+const EXERCISE_PREFIX = "ex:";
+
+/** La cle de temps de ce qu'on joue : le morceau, l'exercice, ou "". */
+function timeKeyOf(session: StoredSession): string {
+  if (session.songId) return session.songId;
+  if (session.exerciseKey) return EXERCISE_PREFIX + session.exerciseKey;
+  return "";
+}
+
 /** En dessous, on a ouvert le morceau sans le jouer. */
 const MIN_SONG_MS = 30_000;
 
 /** Credite le temps du morceau courant, jusqu'a maintenant. */
 function creditCurrentSong(session: StoredSession): Pick<StoredSession, "songTimes" | "songStartMs"> {
   const elapsed = elapsedOf(session);
-  const key = session.songId ?? "";
+  const key = timeKeyOf(session);
   const times = { ...(session.songTimes ?? {}) };
   times[key] = (times[key] ?? 0) + Math.max(0, elapsed - (session.songStartMs ?? 0));
   return { songTimes: times, songStartMs: elapsed };
@@ -96,10 +129,16 @@ function creditCurrentSong(session: StoredSession): Pick<StoredSession, "songTim
  * de 30 s n'a pas ete joue ; le temps sans morceau n'apparait que s'il
  * pese au moins une minute ou s'il n'y a rien d'autre.
  */
-function sessionSongTimes(session: StoredSession, bpms: Record<string, number>): SessionSongTime[] {
+function sessionSongTimes(
+  session: StoredSession,
+  bpms: Record<string, number>,
+  hasExercises: boolean
+): SessionSongTime[] {
   const { songTimes = {} } = creditCurrentSong(session);
   const entries = Object.entries(songTimes);
-  const played = entries.filter(([key, ms]) => key !== "" && ms >= MIN_SONG_MS);
+  const played = entries.filter(
+    ([key, ms]) => key !== "" && !key.startsWith(EXERCISE_PREFIX) && ms >= MIN_SONG_MS
+  );
   const free = songTimes[""] ?? 0;
 
   const rows: SessionSongTime[] = played.map(([key, ms]) => ({
@@ -108,15 +147,28 @@ function sessionSongTimes(session: StoredSession, bpms: Record<string, number>):
     bpm: bpms[key] ?? null,
   }));
 
-  if (rows.length === 0 || free >= 60_000) {
+  // Rien de joue nommement : toute la session est du jeu libre.
+  const nothingNamed = rows.length === 0 && !hasExercises;
+  if (nothingNamed || free >= 60_000) {
     rows.push({
       songId: null,
-      minutes: Math.max(1, Math.round((rows.length === 0 ? elapsedOf(session) : free) / 60000)),
-      bpm: rows.length === 0 ? session.bpm : null,
+      minutes: Math.max(1, Math.round((nothingNamed ? elapsedOf(session) : free) / 60000)),
+      bpm: nothingNamed ? session.bpm : null,
     });
   }
 
   return rows;
+}
+
+/** Les exercices de la session, avec leurs minutes (30 s au moins). */
+function sessionExerciseTimes(session: StoredSession, bpms: Record<string, number>): SessionExerciseTime[] {
+  const { songTimes = {} } = creditCurrentSong(session);
+  return Object.entries(songTimes).flatMap(([key, ms]) => {
+    if (!key.startsWith(EXERCISE_PREFIX) || ms < MIN_SONG_MS) return [];
+    const exercise = session.exerciseInfo?.[key.slice(EXERCISE_PREFIX.length)];
+    if (!exercise) return [];
+    return [{ exercise, minutes: Math.max(1, Math.round(ms / 60000)), bpm: bpms[key] ?? null }];
+  });
 }
 
 /** Le strict necessaire pour nommer le morceau travaille. */
@@ -215,6 +267,8 @@ export interface StartOptions {
   exerciseId?: string | null;
   bpm?: number | null;
   song?: SessionSong | null;
+  /** L'exercice qu'on commence par travailler (au lieu d'un morceau). */
+  exercise?: SessionExercise | null;
   /** Ouvre la session en plein ecran (depuis « Jouer »). */
   focus?: boolean;
   /** Les elements du deroule, pour proposer de l'enregistrer en fin de session. */
@@ -238,6 +292,8 @@ interface PracticeSessionValue {
   cancel: () => void;
   song: SessionSong | null;
   setSongId: (songId: string | null, song?: SessionSong | null) => void;
+  /** Passe a un exercice : son temps est compte a part, comme un morceau. */
+  setExercise: (exercise: SessionExercise | null) => void;
   setBpm: (bpm: number | null) => void;
   /** Le mode plein ecran : chrono en grand, sans la barre d'onglets. */
   isFocused: boolean;
@@ -249,7 +305,7 @@ interface PracticeSessionValue {
    * Une session deja jouee, montee comme une session a jouer : la modale
    * s'ouvre avec ses morceaux, il ne reste qu'a dire combien de temps.
    */
-  openPastSession: (songIds: string[]) => void;
+  openPastSession: (songIds: string[], exercises?: SessionExercise[]) => void;
 }
 
 const PracticeSessionContext = createContext<PracticeSessionValue | null>(null);
@@ -272,10 +328,13 @@ interface PendingEntry {
   bpm?: number | null;
   /** Les morceaux joues pendant le chrono, avec leur temps. */
   songTimes?: SessionSongTime[];
+  /** Les exercices joues pendant le chrono, avec leur temps. */
+  exerciseTimes?: SessionExerciseTime[];
   /** Le deroule joue, s'il y en avait un : propose routine/setlist en sortie. */
   programItems?: SaveSessionItemInput[];
-  /** Saisie apres coup d'une session montee : ses morceaux. */
+  /** Saisie apres coup d'une session montee : ses morceaux et ses exercices. */
   songIds?: string[];
+  exercises?: SessionExercise[];
 }
 
 export function PracticeSessionProvider({ children }: { children: ReactNode }) {
@@ -286,6 +345,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
   const [tick, setTick] = useState(0);
   const [pending, setPending] = useState<PendingEntry | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
+  const [exerciseCatalog, setExerciseCatalog] = useState<ExerciseWithProgress[]>([]);
   const [focused, setFocused] = useState(false);
   // En fin de session issue d'un deroule : proposer d'en faire une routine/setlist.
   const [savePrompt, setSavePrompt] = useState<SaveSessionItemInput[] | null>(null);
@@ -317,13 +377,27 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
     }
   }, [songs.length]);
 
+  // De meme pour les exercices qu'on peut ajouter a la session.
+  const loadExercises = useCallback(async () => {
+    if (exerciseCatalog.length > 0) return;
+    try {
+      setExerciseCatalog(await getExercises());
+    } catch {
+      setExerciseCatalog([]);
+    }
+  }, [exerciseCatalog.length]);
+
   const start = useCallback((options?: StartOptions) => {
+    const exercise = options?.songId ? null : options?.exercise ?? null;
+    const exerciseKey = exercise ? exerciseKeyOf(exercise) : null;
     setSession(() => ({
       status: "running",
       startedAt: Date.now(),
       accumulatedMs: 0,
       songId: options?.songId ?? null,
       exerciseId: options?.exerciseId ?? null,
+      exerciseKey,
+      exerciseInfo: exercise && exerciseKey ? { [exerciseKey]: exercise } : {},
       bpm: options?.bpm ?? null,
       song: options?.song ?? null,
       songTimes: {},
@@ -366,25 +440,29 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
     const durationMinutes = Math.max(1, Math.round(elapsedOf(current) / 60000));
 
     const bpms = { ...(current.songBpms ?? {}) };
-    if (current.songId && current.bpm) bpms[current.songId] = current.bpm;
+    const key = timeKeyOf(current);
+    if (key && current.bpm) bpms[key] = current.bpm;
+    const exerciseTimes = sessionExerciseTimes(current, bpms);
 
     setSession(() => IDLE);
     setFocused(false);
     void loadSongs();
+    void loadExercises();
     setPending({
       mode: "timer",
       durationMinutes,
       songId: current.songId,
       exerciseId: current.exerciseId,
       bpm: current.bpm,
-      songTimes: sessionSongTimes(current, bpms),
+      songTimes: sessionSongTimes(current, bpms, exerciseTimes.length > 0),
+      exerciseTimes,
       // On ne propose d'enregistrer qu'un vrai deroule (au moins deux elements).
       programItems:
         current.programItems && current.programItems.length >= 2
           ? current.programItems
           : undefined,
     });
-  }, [loadSongs]);
+  }, [loadSongs, loadExercises]);
 
   const cancel = useCallback(() => {
     setSession(() => IDLE);
@@ -398,17 +476,43 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
    */
   const setSongId = useCallback((songId: string | null, song?: SessionSong | null) => {
     setSession((current) => {
-      if (songId === current.songId) {
+      if (songId === current.songId && !current.exerciseKey) {
         return { ...current, song: song === undefined ? current.song : song };
       }
       const bpms = { ...(current.songBpms ?? {}) };
-      if (current.songId && current.bpm) bpms[current.songId] = current.bpm;
+      const key = timeKeyOf(current);
+      if (key && current.bpm) bpms[key] = current.bpm;
       return {
         ...current,
         ...creditCurrentSong(current),
         songBpms: bpms,
         songId,
+        exerciseKey: null,
         song: song === undefined ? current.song : song,
+      };
+    });
+  }, []);
+
+  const setExercise = useCallback((exercise: SessionExercise | null) => {
+    setSession((current) => {
+      const exerciseKey = exercise ? exerciseKeyOf(exercise) : null;
+      if (current.status === "idle") return current;
+      if (exerciseKey === (current.exerciseKey ?? null) && current.songId === null) return current;
+      const bpms = { ...(current.songBpms ?? {}) };
+      const key = timeKeyOf(current);
+      if (key && current.bpm) bpms[key] = current.bpm;
+      return {
+        ...current,
+        ...creditCurrentSong(current),
+        songBpms: bpms,
+        songId: null,
+        song: null,
+        exerciseId: exercise?.id ?? null,
+        exerciseKey,
+        exerciseInfo:
+          exercise && exerciseKey
+            ? { ...(current.exerciseInfo ?? {}), [exerciseKey]: exercise }
+            : current.exerciseInfo,
       };
     });
   }, []);
@@ -422,13 +526,15 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
 
   const openManualEntry = useCallback(() => {
     void loadSongs();
+    void loadExercises();
     setPending({ mode: "manual" });
-  }, [loadSongs]);
+  }, [loadSongs, loadExercises]);
 
-  const openPastSession = useCallback((songIds: string[]) => {
+  const openPastSession = useCallback((songIds: string[], exercises?: SessionExercise[]) => {
     void loadSongs();
-    setPending({ mode: "manual", songIds });
-  }, [loadSongs]);
+    void loadExercises();
+    setPending({ mode: "manual", songIds, exercises });
+  }, [loadSongs, loadExercises]);
 
   const value = useMemo<PracticeSessionValue>(
     () => ({
@@ -446,6 +552,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       stop,
       cancel,
       setSongId,
+      setExercise,
       setBpm,
       isFocused: focused && session.status !== "idle",
       openFocus,
@@ -469,6 +576,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       stop,
       cancel,
       setSongId,
+      setExercise,
       setBpm,
       openManualEntry,
       openPastSession,
@@ -497,11 +605,14 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
           isOpen
           mode={pending.mode}
           songs={songs}
+          exercises={exerciseCatalog}
           timerDuration={pending.durationMinutes}
           timerSong={pendingSong}
           timerBpm={pending.bpm ?? undefined}
           timerSongTimes={pending.songTimes}
           initialSongIds={pending.songIds}
+          timerExerciseTimes={pending.exerciseTimes}
+          initialExercises={pending.exercises}
           onClose={() => {
             // Fermer sans enregistrer n'ecrit pas la session, mais on
             // propose quand meme d'en garder le deroule (routine/setlist).
@@ -510,20 +621,9 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
             if (program && program.length >= 2) setSavePrompt(program);
           }}
           onSuccess={() => {
-            // La progression de l'exercice suit l'enregistrement de la
-            // session, pas le clic sur "Terminer" : abandonner la modale
-            // ne doit pas laisser une trace a moitie ecrite.
+            // La progression des exercices s'ecrit avec la session, cote
+            // serveur : abandonner la modale ne laisse rien a moitie ecrit.
             const entry = pending;
-            // Sans tempo, une progression d'exercice ne dit rien : la
-            // progression d'un exercice, c'est le tempo atteint.
-            if (entry.exerciseId && entry.durationMinutes && entry.bpm) {
-              void updateUserExerciseProgress({
-                exercise_id: entry.exerciseId,
-                current_bpm: entry.bpm,
-                duration_minutes: entry.durationMinutes,
-                bpm_achieved: entry.bpm,
-              });
-            }
             setPending(null);
             if (entry.programItems && entry.programItems.length >= 2) {
               setSavePrompt(entry.programItems);

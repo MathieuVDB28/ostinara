@@ -8,6 +8,7 @@ import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
 import { WeeklyPlanCard } from "@/components/plan/weekly-plan-card";
 import { songTempoProgress } from "@/lib/song-progress";
+import { sessionExercisesLabel } from "@/lib/session-exercises";
 import { PracticeCalendar } from "./practice-calendar";
 import type {
   HeatmapData,
@@ -198,7 +199,7 @@ export function CarnetView({
                 <Cover src={session.song?.cover_url} className="h-11 w-11 rounded-[3px]" />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">
-                    {session.song?.title ?? t("freeSession")}
+                    {session.song?.title ?? sessionExercisesLabel(session) ?? t("freeSession")}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {formatWhen(session.practiced_at, tc, intlLocale)}

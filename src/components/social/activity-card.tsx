@@ -10,6 +10,7 @@ import {
   Bookmark,
   Check,
   CirclePlus,
+  Dumbbell,
   GraduationCap,
   Guitar,
   Heart,
@@ -458,6 +459,8 @@ function SessionBlock({
   const minutes = session.duration_minutes % 60;
   const mood = session.mood && session.mood in MOOD_EMOJI ? (session.mood as SessionMood) : null;
   const songs = Array.isArray(session.songs) ? session.songs : [];
+  const exercises = Array.isArray(session.exercises) ? session.exercises : [];
+  const itemCount = songs.length + exercises.length;
   const sections = Array.isArray(session.sections_worked) ? session.sections_worked : [];
 
   return (
@@ -501,12 +504,42 @@ function SessionBlock({
                 <p className="truncate text-sm font-semibold">{song.title}</p>
                 <p className="truncate text-xs text-muted-foreground">
                   {song.artist}
-                  {songs.length > 1 ? ` · ${t("songMinutes", { minutes: song.minutes })}` : ""}
+                  {itemCount > 1 ? ` · ${t("songMinutes", { minutes: song.minutes })}` : ""}
                 </p>
               </div>
               {song.bpm ? (
                 <span className="tabular font-display text-lg font-bold leading-none">
                   {song.bpm}
+                  <small className="text-xs font-semibold text-muted-foreground"> {t("bpm")}</small>
+                </span>
+              ) : (
+                <span aria-hidden="true" />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {exercises.length > 0 && (
+        <ul>
+          {exercises.map((exercise, index) => (
+            <li
+              key={`${exercise.id ?? exercise.name}-${index}`}
+              className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-2.5"
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-[3px] bg-secondary text-muted-foreground">
+                <Dumbbell className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{exercise.name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {exercise.category ? te(`exerciseCategory.${exercise.category}`) : t("exercise")}
+                  {itemCount > 1 ? ` · ${t("songMinutes", { minutes: exercise.minutes })}` : ""}
+                </p>
+              </div>
+              {exercise.bpm ? (
+                <span className="tabular font-display text-lg font-bold leading-none">
+                  {exercise.bpm}
                   <small className="text-xs font-semibold text-muted-foreground"> {t("bpm")}</small>
                 </span>
               ) : (

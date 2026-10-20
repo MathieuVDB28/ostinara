@@ -17,7 +17,10 @@ import { ResumeCard } from "./resume-card";
 import { CarnetView } from "./carnet-view";
 import { PlaySetlistPanel } from "./play-setlist-panel";
 import { PlayQueuePanel, STORAGE_KEY } from "./play-queue-panel";
-import { usePracticeSession } from "@/components/providers/practice-session-provider";
+import {
+  usePracticeSession,
+  type SessionExercise,
+} from "@/components/providers/practice-session-provider";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { updateSong } from "@/lib/actions/songs";
 import { deleteRoutine } from "@/lib/actions/routines";
@@ -54,6 +57,11 @@ const TABS: PlayTab[] = [
   // Dérouler une setlist enregistrée.
   "setlist",
 ];
+
+/** L'exercice tel que le chrono le compte. */
+function sessionExercise(exercise: ExerciseWithProgress): SessionExercise {
+  return { id: exercise.id, name: exercise.name, category: exercise.category };
+}
 
 /** Ce que la session plein ecran affiche du morceau. */
 function sessionSong(song: Song | null) {
@@ -282,9 +290,11 @@ export function PlayView({
     // Depuis le Carnet, la session porte le morceau ouvert dans
     // « Morceau » : c'est celui qu'on va jouer.
     const song = activeTab === "exercises" ? null : selectedSong;
+    const exercise = activeTab === "exercises" ? selectedExercise : null;
     practiceSession.start({
       songId: song?.id ?? null,
-      exerciseId: activeTab === "exercises" ? selectedExercise?.id ?? null : null,
+      exerciseId: exercise?.id ?? null,
+      exercise: exercise ? sessionExercise(exercise) : null,
       bpm: currentBpm,
       song: sessionSong(song),
       focus: true,
@@ -297,8 +307,13 @@ export function PlayView({
       setCurrentBpm(bpm);
       setExerciseModalOpen(false);
       setActiveTab("exercises");
+      // Le chrono deja lance compte desormais cet exercice.
+      if (practiceSession.isActive) {
+        practiceSession.setExercise(sessionExercise(exercise));
+        practiceSession.setBpm(bpm);
+      }
     },
-    []
+    [practiceSession]
   );
 
   const handleUpdateTargetBpm = useCallback(

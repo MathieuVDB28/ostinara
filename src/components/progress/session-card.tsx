@@ -5,6 +5,7 @@ import { useIntlLocale } from "@/i18n/intl-locale";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { formatDuration as formatMinutesShared } from "./stats-summary";
 import { instrumentLabel } from "@/lib/instruments";
+import { sessionExercisesLabel } from "@/lib/session-exercises";
 import type { Instrument } from "@/types";
 import { CircleCheck } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
@@ -74,7 +75,7 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
 
       <span className="min-w-0">
         <span className="block truncate text-sm font-semibold">
-          {session.song?.title || t("free")}
+          {session.song?.title || sessionExercisesLabel(session) || t("free")}
           {session.song?.artist && (
             <span className="font-normal text-muted-foreground"> · {session.song.artist}</span>
           )}
@@ -211,7 +212,7 @@ export function GroupSessionCard({
               className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 py-1.5 pl-3 text-left transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className="min-w-0 truncate text-[13px]">
-                <span className="font-semibold">{session.song?.title || t("noSong")}</span>
+                <span className="font-semibold">{session.song?.title || sessionExercisesLabel(session) || t("noSong")}</span>
                 {session.bpm_achieved ? (
                   <span className="tabular text-muted-foreground"> · {session.bpm_achieved} bpm</span>
                 ) : null}

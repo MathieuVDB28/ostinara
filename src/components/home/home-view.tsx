@@ -530,9 +530,13 @@ function activitySubject(activity: ActivityWithDetails): { title: string; cover?
     return { title: String(activity.metadata.title) };
   }
   if (activity.type === "session_completed" && Array.isArray(activity.metadata?.songs)) {
-    // La session : son morceau le plus travaille, ou rien si c'etait du jeu libre.
+    // La session : son morceau le plus travaille, sinon son premier exercice.
     const song = (activity.metadata.songs as { title?: string; cover_url?: string | null }[])[0];
     if (song?.title) return { title: song.title, cover: song.cover_url ?? null };
+    const exercise = Array.isArray(activity.metadata.exercises)
+      ? (activity.metadata.exercises as { name?: string }[])[0]
+      : undefined;
+    if (exercise?.name) return { title: exercise.name };
     return null;
   }
   if (activity.albumReview) {
