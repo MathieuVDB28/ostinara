@@ -204,6 +204,8 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - **2 onglets** : Journal / Statistiques
 - **Journal** : historique des sessions avec filtres, timer integre
 - **Sessions** : duree, BPM atteint, humeur (5 niveaux emoji), energie (3 niveaux), sections travaillees, objectifs, notes
+- **Session passee** : « Deja jouee ? » sous le deroule de Jouer (Session / Setlist) ouvre la modale de fin avec les morceaux ; « Ajouter une session passee » dans le Carnet l'ouvre vide (`openPastSession` / `openManualEntry` du `PracticeSessionProvider`). En saisie manuelle, les morceaux sans duree se partagent le temps total.
+- **Partage** : une session enregistree (chrono ou apres coup) cree l'activite `session_completed` (instantane dans `metadata` : duree, instrument, morceaux + BPM, humeur, sections, objectif, notes ; `reference_id` = `session_group_id` ou id de la ligne) et notifie les amis a chaque session. Case « Partager avec mes amis » dans la modale (defaut : `profile_private.share_sessions`, Profil > Reglages). Corriger ou supprimer la session met a jour ou retire l'activite (migration `20261106_session_activity`).
 - **Statistiques** :
   - Heatmap calendrier (365 jours)
   - Graphique progression BPM par morceau
@@ -793,6 +795,7 @@ profile_private (
   subscription_status text, subscription_period_end timestamptz,
   locale text,                  -- 'fr' | 'en' : push, emails, crons
   practice_reminders boolean,   -- rappels de pratique
+  share_sessions boolean,       -- partager ses sessions avec ses amis (defaut de la case en fin de session)
   badges_synced_at timestamptz
 )
 ```
@@ -841,7 +844,7 @@ get_practice_leaderboard(p_user_id UUID, p_period TEXT, p_limit INTEGER DEFAULT 
 | gear_type | guitar, bass, amp, effect, drums, cymbals, keyboard, accessory, recording, other |
 | exercise_difficulty | beginner, intermediate, advanced, expert |
 | friendship_status | pending, accepted, blocked |
-| activity_type | song_added, song_mastered, cover_posted, friend_added, song_wishlisted, setlist_created, band_created, band_joined, challenge_created, challenge_accepted, challenge_completed, challenge_won, album_reviewed, exercise_shared |
+| activity_type | song_added, song_learning, song_mastered, cover_posted, friend_added, song_wishlisted, setlist_created, band_created, band_joined, challenge_created, challenge_accepted, challenge_completed, challenge_won, album_reviewed, album_wishlisted, exercise_shared, gear_added, badge_unlocked, session_completed |
 | band_member_role | owner, admin, member |
 | band_invitation_status | pending, accepted, declined |
 | challenge_type | practice_time, streak, song_mastery |

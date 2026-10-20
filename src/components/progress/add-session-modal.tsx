@@ -9,6 +9,7 @@ import { ChevronDown, CloudOff, Plus, X } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { useOffline } from "@/components/offline/offline-provider";
 import { updateSong } from "@/lib/actions/songs";
+import { getShareSessionsDefault } from "@/lib/actions/practice";
 import { songTargetBpm } from "@/lib/song-progress";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
@@ -35,7 +36,8 @@ function initialEntries(
   timerSongTimes: SessionSongTime[] | undefined,
   timerSong: Song | null | undefined,
   timerDuration: number | undefined,
-  timerBpm: number | undefined
+  timerBpm: number | undefined,
+  initialSongIds?: string[]
 ): Entry[] {
   if (timerSongTimes && timerSongTimes.length > 0) {
     // Le temps sans morceau ne merite une ligne que s'il y a aussi des
@@ -60,7 +62,36 @@ function initialEntries(
       percent: null,
     }];
   }
+  // Une session passee montee comme une session a jouer : ses morceaux,
+  // sans temps — on donne le total, il se repartit.
+  if (initialSongIds && initialSongIds.length > 0) {
+    return [...new Set(initialSongIds)].map((songId) => ({
+      songId,
+      minutes: "",
+      bpm: "",
+      status: null,
+      percent: null,
+    }));
+  }
   return [];
+}
+
+/**
+ * Le temps total d'une session saisie apres coup, reparti entre les
+ * morceaux dont on n'a pas donne la duree : a parts egales, la minute qui
+ * reste aux premiers. Null si le total ne laisse pas une minute a chacun.
+ */
+function splitRemaining(entries: Entry[], total: number): Entry[] | null {
+  const blanks = entries.filter((entry) => !entry.minutes).length;
+  const remaining = total - entries.reduce((sum, entry) => sum + (Number(entry.minutes) || 0), 0);
+  if (remaining < blanks) return null;
+  let index = 0;
+  return entries.map((entry) => {
+    if (entry.minutes) return entry;
+    const minutes = Math.floor(remaining / blanks) + (index < remaining % blanks ? 1 : 0);
+    index += 1;
+    return { ...entry, minutes };
+  });
 }
 
 const STATUS_OPTIONS: SongStatus[] = ["want_to_learn", "learning", "mastered"];
@@ -77,6 +108,8 @@ interface AddSessionModalProps {
   timerBpm?: number;
   /** Les morceaux joues pendant le chrono, avec leur temps. */
   timerSongTimes?: SessionSongTime[];
+  /** Saisie manuelle : les morceaux deja choisis (la session montee dans Jouer). */
+  initialSongIds?: string[];
   mode: "timer" | "manual";
 }
 
@@ -89,6 +122,7 @@ export function AddSessionModal({
   timerSong,
   timerBpm,
   timerSongTimes,
+  initialSongIds,
   mode,
 }: AddSessionModalProps) {
   const t = useTranslations("progress.add");
@@ -116,7 +150,7 @@ export function AddSessionModal({
 
   // Champs du formulaire
   const [entries, setEntries] = useState<Entry[]>(() =>
-    initialEntries(timerSongTimes, timerSong, timerDuration, timerBpm)
+    initialEntries(timerSongTimes, timerSong, timerDuration, timerBpm, initialSongIds)
   );
   const [durationMinutes, setDurationMinutes] = useState<number | "">(timerDuration || 30);
   const [practicedAt, setPracticedAt] = useState(
@@ -131,6 +165,12 @@ export function AddSessionModal({
   const [sessionGoals, setSessionGoals] = useState("");
   const [goalsAchieved, setGoalsAchieved] = useState(false);
   const [notes, setNotes] = useState("");
+  /*
+   * Partager avec les amis : le reglage du profil, lu a l'ouverture. Null
+   * tant qu'il n'est pas arrive (ou hors ligne) et qu'on n'a pas touche a
+   * la case : le serveur appliquera le reglage lui-meme.
+   */
+  const [share, setShare] = useState<boolean | null>(null);
 
   // Sections collapsibles
   const [showPerformance, setShowPerformance] = useState(false);
@@ -144,7 +184,7 @@ export function AddSessionModal({
   // Reset au changement de mode ou props
   useEffect(() => {
     if (isOpen) {
-      setEntries(initialEntries(timerSongTimes, timerSong, timerDuration, timerBpm));
+      setEntries(initialEntries(timerSongTimes, timerSong, timerDuration, timerBpm, initialSongIds));
       setDurationMinutes(timerDuration || 30);
       setPracticedAt(new Date().toISOString().slice(0, 16));
       setBpmAchieved(timerBpm ? String(timerBpm) : "");
@@ -158,8 +198,22 @@ export function AddSessionModal({
       setShowPerformance(false);
       setShowFeeling(false);
       setShowGoals(false);
+      setShare(null);
     }
-  }, [isOpen, timerDuration, timerSong, timerBpm, timerSongTimes]);
+  }, [isOpen, timerDuration, timerSong, timerBpm, timerSongTimes, initialSongIds]);
+
+  useEffect(() => {
+    if (!isOpen || !isOnline) return;
+    let cancelled = false;
+    getShareSessionsDefault()
+      .then((value) => {
+        if (!cancelled) setShare((current) => current ?? value);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, isOnline]);
 
   const handleClose = useCallback(() => {
     onClose();
@@ -183,7 +237,13 @@ export function AddSessionModal({
   // Plusieurs morceaux : la duree est la somme des leurs. Un seul ou
   // aucun : la duree du chrono, ou celle saisie.
   const isMulti = entries.length > 1;
-  const totalMinutes: number | "" = isMulti
+  /*
+   * Apres coup, on se souvient du temps passe, rarement de celui de chaque
+   * morceau : en saisie manuelle, on donne le total et les morceaux sans
+   * duree se partagent ce qui reste.
+   */
+  const splitsTotal = mode === "manual" && isMulti && entries.some((entry) => !entry.minutes);
+  const totalMinutes: number | "" = isMulti && !splitsTotal
     ? entries.reduce((sum, entry) => sum + (Number(entry.minutes) || 0), 0)
     : durationMinutes;
 
@@ -196,7 +256,10 @@ export function AddSessionModal({
       if (current.some((entry) => entry.songId === song.id)) return current;
       // Le premier morceau ajoute a une session libre la remplace.
       const base = current.filter((entry) => entry.songId !== null || current.length > 1);
-      return [...base, { songId: song.id, minutes: base.length === 0 ? durationMinutes : "", bpm: "", status: null, percent: null }];
+      // En saisie manuelle, le morceau prend sa part du total tant qu'on ne
+      // lui donne pas de duree.
+      const minutes = mode === "timer" && base.length === 0 ? durationMinutes : "";
+      return [...base, { songId: song.id, minutes, bpm: "", status: null, percent: null }];
     });
   };
 
@@ -205,7 +268,12 @@ export function AddSessionModal({
       setError(tf("durationMin"));
       return;
     }
-    if (isMulti && entries.some((entry) => !entry.minutes || Number(entry.minutes) < 1)) {
+    const sessionEntries = splitsTotal ? splitRemaining(entries, Number(totalMinutes)) : entries;
+    if (!sessionEntries) {
+      setError(t("notEnoughMinutes"));
+      return;
+    }
+    if (isMulti && sessionEntries.some((entry) => !entry.minutes || Number(entry.minutes) < 1)) {
       setError(t("minutesPerSong"));
       return;
     }
@@ -216,7 +284,7 @@ export function AddSessionModal({
     const single = entries.length === 1 ? entries[0] : null;
     const result = await saveSession({
       songs: isMulti
-        ? entries.map((entry) => ({
+        ? sessionEntries.map((entry) => ({
             song_id: entry.songId,
             duration_minutes: Number(entry.minutes),
             bpm_achieved: entry.bpm ? parseInt(entry.bpm) : undefined,
@@ -233,6 +301,7 @@ export function AddSessionModal({
       session_goals: sessionGoals || undefined,
       goals_achieved: goalsAchieved,
       notes: notes || undefined,
+      share: share ?? undefined,
     });
 
     if (result.success && !result.queued) {
@@ -394,6 +463,7 @@ export function AddSessionModal({
                     song={entry.songId ? songs.find((song) => song.id === entry.songId) ?? null : null}
                     instrument={instrument}
                     showMinutes={isMulti}
+                    minutesOptional={mode === "manual"}
                     canEditSong={isOnline}
                     onChange={(patch) => updateEntry(index, patch)}
                     onRemove={() => setEntries((current) => current.filter((_, i) => i !== index))}
@@ -424,8 +494,8 @@ export function AddSessionModal({
                 onChange={(e) => setDurationMinutes(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary disabled:opacity-60"
-                // Plusieurs morceaux : la duree est leur somme.
-                disabled={mode === "timer" || isMulti}
+                // Plusieurs morceaux tous chronometres : la duree est leur somme.
+                disabled={mode === "timer" || (isMulti && !splitsTotal)}
               />
             </div>
             <div>
@@ -438,6 +508,9 @@ export function AddSessionModal({
                 disabled={mode === "timer"}
               />
             </div>
+            {splitsTotal && (
+              <p className="col-span-2 -mt-2 text-xs text-muted-foreground">{t("splitHint")}</p>
+            )}
           </div>
 
           {/* Humeur */}
@@ -556,6 +629,20 @@ export function AddSessionModal({
               className="w-full resize-none rounded-xl border border-border bg-card px-3 py-2.5 font-serif text-[15px] italic leading-relaxed focus:border-primary focus:outline-none"
             />
           </div>
+
+          {/* Partager : la session arrive dans le feed des amis, avec une notification */}
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border px-4 py-3">
+            <input
+              type="checkbox"
+              checked={share ?? true}
+              onChange={(e) => setShare(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-input text-primary focus:ring-primary"
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold">{t("shareWithFriends")}</span>
+              <span className="block text-xs text-muted-foreground">{t("shareHint")}</span>
+            </span>
+          </label>
 
           {/* Bouton de validation */}
           <button
@@ -682,6 +769,7 @@ function EntryRow({
   entry,
   song,
   showMinutes,
+  minutesOptional,
   canEditSong,
   instrument,
   onChange,
@@ -692,6 +780,8 @@ function EntryRow({
   /** L'instrument de la session : on lit et on regle cette partie du morceau. */
   instrument: Instrument;
   showMinutes: boolean;
+  /** Saisie manuelle : sans duree, le morceau prend sa part du total. */
+  minutesOptional: boolean;
   /** Hors ligne, statut et progression ne partiraient pas : on les cache. */
   canEditSong: boolean;
   onChange: (patch: Partial<Entry>) => void;
@@ -731,6 +821,7 @@ function EntryRow({
               min="1"
               max="480"
               value={entry.minutes}
+              placeholder={minutesOptional ? t("autoMinutes") : undefined}
               onChange={(e) => onChange({ minutes: e.target.value === "" ? "" : parseInt(e.target.value) || 0 })}
               onFocus={(e) => e.target.select()}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"

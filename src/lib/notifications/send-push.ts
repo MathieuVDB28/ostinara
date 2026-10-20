@@ -80,6 +80,7 @@ export type NotificationType =
   | 'gear_added'
   | 'song_learning'
   | 'badge_unlocked'
+  | 'session_completed'
   | 'staff_application'
   | 'staff_application_reviewed'
   | 'blog_comment'

@@ -32,7 +32,10 @@
     "title": "Notifications",
     "reminders": "Practice reminders",
     "remindersOn": "Neglected song, break, streak, weekly plan — at most one a day",
-    "saveFailed": "Couldn't save the setting. Try again."
+    "saveFailed": "Couldn't save the setting. Try again.",
+    "shareSessions": "Share my sessions",
+    "shareSessionsOn": "Your friends see your sessions in their feed and get a notification",
+    "shareSessionsOff": "Your sessions stay private unless you tick the box when you save one"
   },
   "privateAccount": "Private account",
   "showcase": {

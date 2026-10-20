@@ -516,14 +516,19 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ succes
     return { success: false, error: await tErr("bioLength") };
   }
 
-  // Les rappels vivent dans profile_private ; le reste dans profiles
-  const { practice_reminders, ...publicFields } = input;
+  // Les rappels et le partage des sessions vivent dans profile_private ;
+  // le reste dans profiles
+  const { practice_reminders, share_sessions, ...publicFields } = input;
+  const privateFields = {
+    ...(practice_reminders !== undefined ? { practice_reminders } : {}),
+    ...(share_sessions !== undefined ? { share_sessions } : {}),
+  };
   const [{ error }, { error: privateError }] = await Promise.all([
     Object.keys(publicFields).length > 0
       ? supabase.from("profiles").update(publicFields).eq("id", user.id)
       : Promise.resolve({ error: null }),
-    practice_reminders !== undefined
-      ? supabase.from("profile_private").update({ practice_reminders }).eq("user_id", user.id)
+    Object.keys(privateFields).length > 0
+      ? supabase.from("profile_private").update(privateFields).eq("user_id", user.id)
       : Promise.resolve({ error: null }),
   ]);
 

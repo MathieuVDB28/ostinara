@@ -6,7 +6,8 @@
     "nothing": "Nothing to play yet.",
     "previous": "Previous",
     "start": "Start session",
-    "next": "Next"
+    "next": "Next",
+    "alreadyPlayed": "Already played it? Log it without the timer"
   },
   "resume": {
     "lastSession": "Last session {when}",
@@ -65,7 +66,8 @@
     "pending": "{count, plural, one {# item waiting} other {# items waiting}}",
     "routineCounts": "{songs, plural, one {# song} other {# songs}} · {exercises, plural, one {# exercise} other {# exercises}}",
     "deleteRoutine": "Delete the routine {name}",
-    "noRoutine": "No routines yet. Put together a session in the Session tab and save it."
+    "noRoutine": "No routines yet. Put together a session in the Session tab and save it.",
+    "addPastSession": "Log a past session"
   },
   "queue": {
     "deletedSong": "Deleted song",

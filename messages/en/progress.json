@@ -159,6 +159,11 @@
     "bpm": "bpm",
     "statusOf": "Status of {title}",
     "tempoComputed": "Progress is based on your best tempo held.",
-    "progressOf": "Progress of {title}"
+    "progressOf": "Progress of {title}",
+    "notEnoughMinutes": "The total time doesn't leave a minute for each song without a duration.",
+    "splitHint": "Songs without a duration share the remaining time.",
+    "autoMinutes": "auto",
+    "shareWithFriends": "Share with my friends",
+    "shareHint": "They'll see it in their feed, notes included, and get a notification."
   }
 }

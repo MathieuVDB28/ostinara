@@ -32,7 +32,10 @@
     "title": "Notifications",
     "reminders": "Rappels de pratique",
     "remindersOn": "Morceau délaissé, pause, série, plan de la semaine — un par jour au plus",
-    "saveFailed": "Le réglage n'a pas pu être enregistré. Réessaie."
+    "saveFailed": "Le réglage n'a pas pu être enregistré. Réessaie.",
+    "shareSessions": "Partager mes sessions",
+    "shareSessionsOn": "Tes amis voient tes sessions dans le feed et reçoivent une notification",
+    "shareSessionsOff": "Tes sessions restent pour toi, sauf si tu coches la case en fin de session"
   },
   "privateAccount": "Compte privé",
   "showcase": {

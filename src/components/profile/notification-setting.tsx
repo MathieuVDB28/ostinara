@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlarmClock, Bell, BellOff } from "lucide-react";
+import { AlarmClock, Bell, BellOff, Users, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePushNotifications } from "@/lib/hooks/use-push-notifications";
 import { updateProfile } from "@/lib/actions/profile";
@@ -91,11 +91,26 @@ export function NotificationSetting() {
 }
 
 /**
- * Les rappels de pratique, a part des notifications d'amis : on peut ne
- * plus vouloir se faire relancer sur un morceau sans perdre les demandes
- * d'amis. Le reglage vit sur le profil, lu par le cron des rappels.
+ * Un reglage du profil prive, en interrupteur : ecrit tout de suite, revient
+ * en arriere si l'enregistrement echoue.
  */
-export function PracticeRemindersSetting({ initialOn }: { initialOn: boolean }) {
+function ProfileToggle({
+  id,
+  icon: Icon,
+  label,
+  onDescription,
+  offDescription,
+  initialOn,
+  save,
+}: {
+  id: string;
+  icon: LucideIcon;
+  label: string;
+  onDescription: string;
+  offDescription: string;
+  initialOn: boolean;
+  save: (on: boolean) => Promise<{ success: boolean }>;
+}) {
   const t = useTranslations("profile.notifications");
   const [on, setOn] = useState(initialOn);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +121,7 @@ export function PracticeRemindersSetting({ initialOn }: { initialOn: boolean }) 
     setOn(next);
     setError(null);
     startTransition(async () => {
-      const result = await updateProfile({ practice_reminders: next });
+      const result = await save(next);
       if (!result.success) {
         setOn(!next);
         setError(t("saveFailed"));
@@ -117,16 +132,16 @@ export function PracticeRemindersSetting({ initialOn }: { initialOn: boolean }) 
   return (
     <div className="py-3">
       <div className="flex min-h-[44px] items-center gap-4">
-        <AlarmClock className="h-[22px] w-[22px] shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
+        <Icon className="h-[22px] w-[22px] shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
         <span className="min-w-0 flex-1">
-          <span id="reminders-label" className="block text-sm font-medium">
-            {t("reminders")}
+          <span id={id} className="block text-sm font-medium">
+            {label}
           </span>
           <span className="block text-xs text-muted-foreground">
-            {on ? t("remindersOn") : t("off")}
+            {on ? onDescription : offDescription}
           </span>
         </span>
-        <Switch on={on} labelledBy="reminders-label" disabled={pending} onClick={toggle} />
+        <Switch on={on} labelledBy={id} disabled={pending} onClick={toggle} />
       </div>
       {error && (
         <p role="status" className="mt-2 text-xs text-destructive">
@@ -134,5 +149,45 @@ export function PracticeRemindersSetting({ initialOn }: { initialOn: boolean }) 
         </p>
       )}
     </div>
+  );
+}
+
+/**
+ * Les rappels de pratique, a part des notifications d'amis : on peut ne
+ * plus vouloir se faire relancer sur un morceau sans perdre les demandes
+ * d'amis. Le reglage vit sur le profil, lu par le cron des rappels.
+ */
+export function PracticeRemindersSetting({ initialOn }: { initialOn: boolean }) {
+  const t = useTranslations("profile.notifications");
+  return (
+    <ProfileToggle
+      id="reminders-label"
+      icon={AlarmClock}
+      label={t("reminders")}
+      onDescription={t("remindersOn")}
+      offDescription={t("off")}
+      initialOn={initialOn}
+      save={(on) => updateProfile({ practice_reminders: on })}
+    />
+  );
+}
+
+/**
+ * Le partage des sessions avec les amis : le choix par defaut de la case
+ * « Partager avec mes amis » en fin de session. Chaque session peut encore
+ * faire autrement.
+ */
+export function ShareSessionsSetting({ initialOn }: { initialOn: boolean }) {
+  const t = useTranslations("profile.notifications");
+  return (
+    <ProfileToggle
+      id="share-sessions-label"
+      icon={Users}
+      label={t("shareSessions")}
+      onDescription={t("shareSessionsOn")}
+      offDescription={t("shareSessionsOff")}
+      initialOn={initialOn}
+      save={(on) => updateProfile({ share_sessions: on })}
+    />
   );
 }

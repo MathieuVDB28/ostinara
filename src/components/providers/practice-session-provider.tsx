@@ -245,6 +245,11 @@ interface PracticeSessionValue {
   closeFocus: () => void;
   /** Ouvre la modale vide, pour une saisie manuelle. */
   openManualEntry: () => void;
+  /**
+   * Une session deja jouee, montee comme une session a jouer : la modale
+   * s'ouvre avec ses morceaux, il ne reste qu'a dire combien de temps.
+   */
+  openPastSession: (songIds: string[]) => void;
 }
 
 const PracticeSessionContext = createContext<PracticeSessionValue | null>(null);
@@ -269,6 +274,8 @@ interface PendingEntry {
   songTimes?: SessionSongTime[];
   /** Le deroule joue, s'il y en avait un : propose routine/setlist en sortie. */
   programItems?: SaveSessionItemInput[];
+  /** Saisie apres coup d'une session montee : ses morceaux. */
+  songIds?: string[];
 }
 
 export function PracticeSessionProvider({ children }: { children: ReactNode }) {
@@ -418,6 +425,11 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
     setPending({ mode: "manual" });
   }, [loadSongs]);
 
+  const openPastSession = useCallback((songIds: string[]) => {
+    void loadSongs();
+    setPending({ mode: "manual", songIds });
+  }, [loadSongs]);
+
   const value = useMemo<PracticeSessionValue>(
     () => ({
       status: session.status,
@@ -439,6 +451,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       openFocus,
       closeFocus,
       openManualEntry,
+      openPastSession,
     }),
     [
       session.status,
@@ -458,6 +471,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       setSongId,
       setBpm,
       openManualEntry,
+      openPastSession,
     ]
   );
 
@@ -487,6 +501,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
           timerSong={pendingSong}
           timerBpm={pending.bpm ?? undefined}
           timerSongTimes={pending.songTimes}
+          initialSongIds={pending.songIds}
           onClose={() => {
             // Fermer sans enregistrer n'ecrit pas la session, mais on
             // propose quand meme d'en garder le deroule (routine/setlist).

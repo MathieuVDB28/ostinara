@@ -18,6 +18,9 @@ const moods: MoodOption[] = [
   { value: "on_fire", emoji: "🔥", color: "text-primary" },
 ];
 
+/** L'emoji d'une humeur, pour la montrer ailleurs que dans le selecteur. */
+export const MOOD_EMOJI = Object.fromEntries(moods.map((mood) => [mood.value, mood.emoji])) as Record<SessionMood, string>;
+
 interface MoodSelectorProps {
   value: SessionMood | null;
   onChange: (mood: SessionMood | null) => void;

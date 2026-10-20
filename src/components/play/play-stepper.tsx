@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Timer } from "lucide-react";
+import { ChevronLeft, ChevronRight, History, Timer } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { BpmTargetIndicator } from "@/components/practice/song-practice/bpm-target-indicator";
 import { SongTabPanel } from "@/components/practice/song-practice/song-tab-panel";
@@ -146,6 +146,13 @@ export function PlayStepper({
     });
   };
 
+  // Deja jouee : la session montee part dans la modale, morceaux compris.
+  const handleAlreadyPlayed = () => {
+    practiceSession.openPastSession(
+      steps.flatMap((step) => (step.kind === "song" && step.song ? [step.song.id] : []))
+    );
+  };
+
   return (
     <div className="space-y-5">
       {/* En-tete : titre + position (+ retour) */}
@@ -276,6 +283,17 @@ export function PlayStepper({
             <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
           </button>
         </div>
+      )}
+
+      {steps.length > 0 && !practiceSession.isActive && (
+        <button
+          type="button"
+          onClick={handleAlreadyPlayed}
+          className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <History className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+          {t("alreadyPlayed")}
+        </button>
       )}
     </div>
   );

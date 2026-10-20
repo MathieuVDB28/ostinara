@@ -164,5 +164,13 @@
   "forumMention": {
     "title": "On parle de toi",
     "body": "{name} t'a mentionné dans « {title} »"
+  },
+  "sessionCompleted": {
+    "title": "Session terminée",
+    "body": "{name} vient de jouer {minutes} min{instrument, select, guitar { de guitare} bass { de basse} drums { de batterie} keys { de clavier} other {}}{song, select, none {} other { : « {song} »{others, plural, =0 {} one { et 1 autre morceau} other { et # autres morceaux}}}}"
+  },
+  "sessionLogged": {
+    "title": "Session ajoutée",
+    "body": "{name} a ajouté une session de {minutes} min{instrument, select, guitar { de guitare} bass { de basse} drums { de batterie} keys { de clavier} other {}}{song, select, none {} other { : « {song} »{others, plural, =0 {} one { et 1 autre morceau} other { et # autres morceaux}}}}"
   }
 }

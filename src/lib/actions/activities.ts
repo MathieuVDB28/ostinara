@@ -31,6 +31,9 @@ function formatStars(rating: unknown, intlLocale: string): string {
   return `${(value / 2).toLocaleString(intlLocale, { maximumFractionDigits: 1 })}/5 ★`;
 }
 
+/** Au-dela, une session enregistree est une session « ajoutee », pas « terminee ». */
+const SESSION_PAST_AFTER_MS = 3 * 60 * 60 * 1000;
+
 /** L'instrument d'une activite, pour le `select` ICU des messages push. */
 function instrumentArg(value: unknown): string {
   return typeof value === "string" && (INSTRUMENT_VALUES as string[]).includes(value) ? value : "other";
@@ -143,6 +146,22 @@ function getNotificationForActivity(
         title: t("exerciseShared.title"),
         body: t("exerciseShared.body", { name, exercise: m("exercise_name") }),
       }));
+    case "session_completed": {
+      // Une session ajoutee apres coup ne se dit pas « vient de jouer ».
+      const practicedAt = Date.parse(m("practiced_at"));
+      const past = Number.isFinite(practicedAt) && Date.now() - practicedAt > SESSION_PAST_AFTER_MS;
+      const songs = Array.isArray(metadata?.songs) ? (metadata.songs as { title?: string }[]) : [];
+      return build("session_completed", "/commu", (t, name) => ({
+        title: past ? t("sessionLogged.title") : t("sessionCompleted.title"),
+        body: t(past ? "sessionLogged.body" : "sessionCompleted.body", {
+          name,
+          minutes: Number(metadata?.duration_minutes) || 0,
+          instrument: instrumentArg(metadata?.instrument),
+          song: songs[0]?.title || "none",
+          others: Math.max(0, songs.length - 1),
+        }),
+      }));
+    }
     case "gear_added":
       return build("gear_added", "/feed", (t, name) => ({
         title: t("gearAdded.title"),

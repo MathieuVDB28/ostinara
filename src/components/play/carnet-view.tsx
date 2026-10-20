@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, RotateCcw, X } from "lucide-react";
+import { History, Play, RotateCcw, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import type { CommonT } from "@/i18n/types";
@@ -30,6 +30,8 @@ interface CarnetViewProps {
   focusBestBpm: number | null;
   isPracticing: boolean;
   onStartSession: () => void;
+  /** Ajouter une session jouee sans chrono (hier, en repete, chez un ami…). */
+  onAddPastSession: () => void;
   onWorkOnSong: (songId: string) => void;
   /** Les routines a relancer en un clic. */
   routines: RoutineWithItems[];
@@ -72,6 +74,7 @@ export function CarnetView({
   focusBestBpm,
   isPracticing,
   onStartSession,
+  onAddPastSession,
   onWorkOnSong,
   routines,
   onPlayRoutine,
@@ -165,6 +168,15 @@ export function CarnetView({
             </button>
           </section>
         )}
+
+        <button
+          type="button"
+          onClick={onAddPastSession}
+          className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <History className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+          {t("addPastSession")}
+        </button>
       </div>
 
 

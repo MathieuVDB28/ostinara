@@ -6,7 +6,8 @@
     "nothing": "Rien à jouer pour l'instant.",
     "previous": "Précédent",
     "start": "Démarrer la session",
-    "next": "Suivant"
+    "next": "Suivant",
+    "alreadyPlayed": "Déjà jouée ? Ajoute-la sans chrono"
   },
   "resume": {
     "lastSession": "Dernière session {when}",
@@ -65,7 +66,8 @@
     "pending": "{count, plural, one {# élément en attente} other {# éléments en attente}}",
     "routineCounts": "{songs, plural, one {# morceau} other {# morceaux}} · {exercises, plural, one {# exo} other {# exos}}",
     "deleteRoutine": "Supprimer la routine {name}",
-    "noRoutine": "Aucune routine. Monte une session dans l'onglet Session et enregistre-la."
+    "noRoutine": "Aucune routine. Monte une session dans l'onglet Session et enregistre-la.",
+    "addPastSession": "Ajouter une session passée"
   },
   "queue": {
     "deletedSong": "Morceau supprimé",

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useState } from "react";
 import {
   Bookmark,
+  Check,
   CirclePlus,
   GraduationCap,
   Guitar,
@@ -25,7 +26,8 @@ import { BadgeMedal } from "@/components/badges/badge-medal";
 import { badgeGoal, badgeLabel } from "@/lib/badges/catalog";
 import { profileHref } from "@/lib/navigation";
 import { activityMessage, formatActivityDate } from "@/lib/activity-messages";
-import type { ActivityWithDetails, GearType, Instrument } from "@/types";
+import { MOOD_EMOJI } from "@/components/progress/mood-selector";
+import type { ActivityWithDetails, GearType, Instrument, SessionActivityMetadata, SessionMood } from "@/types";
 import { ActivityReactions } from "./activity-reactions";
 import { ActivityComments } from "./activity-comments";
 import { FeedBridge } from "./feed-bridge";
@@ -392,6 +394,14 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
         </div>
       )}
 
+      {activity.type === "session_completed" && typeof meta.duration_minutes === "number" && (
+        <SessionBlock
+          session={meta as unknown as SessionActivityMetadata}
+          createdAt={activity.created_at}
+          name={name}
+        />
+      )}
+
       {/* Réactions et commentaires */}
       <div className="mt-3 flex flex-col gap-2.5 px-4 sm:px-0">
         {!isOwn && <FeedBridge activity={activity} friendName={name} />}
@@ -407,5 +417,148 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
         />
       </div>
     </article>
+  );
+}
+
+/** Au-dela, la session a ete ajoutee apres coup : on dit quand elle a eu lieu. */
+const SESSION_PAST_AFTER_MS = 3 * 60 * 60 * 1000;
+
+/**
+ * Une session jouee, telle que les amis la voient : la duree en grand
+ * (style Atelier, docs/refonte-ui.md), l'humeur, les morceaux avec leur
+ * tempo, et la note du musicien en serif — c'est sa voix.
+ */
+function SessionBlock({
+  session,
+  createdAt,
+  name,
+}: {
+  session: SessionActivityMetadata;
+  createdAt: string;
+  name: string;
+}) {
+  const t = useTranslations("activity.sessionCard");
+  const ta = useTranslations("activity");
+  const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
+  const [noteOpen, setNoteOpen] = useState(false);
+
+  const phrase = instrumentPhrase(session.instrument, te);
+  const instrument = phrase ? ` ${phrase}` : "";
+  const practicedAt = Date.parse(session.practiced_at);
+  const past = Number.isFinite(practicedAt) && Date.parse(createdAt) - practicedAt > SESSION_PAST_AFTER_MS;
+  const eyebrow = past
+    ? t("sessionOn", {
+        date: new Date(practicedAt).toLocaleDateString(intlLocale, { weekday: "long", day: "numeric", month: "short" }),
+        instrument,
+      })
+    : t("session", { instrument });
+
+  const hours = Math.floor(session.duration_minutes / 60);
+  const minutes = session.duration_minutes % 60;
+  const mood = session.mood && session.mood in MOOD_EMOJI ? (session.mood as SessionMood) : null;
+  const songs = Array.isArray(session.songs) ? session.songs : [];
+  const sections = Array.isArray(session.sections_worked) ? session.sections_worked : [];
+
+  return (
+    <div className="px-4 sm:px-0">
+      <div className="flex items-end gap-4 border-y border-border py-3">
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            {eyebrow}
+          </p>
+          <p className="tabular font-display text-5xl font-extrabold leading-none">
+            {hours > 0 && (
+              <>
+                {hours}
+                <small className="text-[0.45em] text-muted-foreground"> {t("hours")} </small>
+              </>
+            )}
+            {(hours === 0 || minutes > 0) && (
+              <>
+                {hours > 0 ? String(minutes).padStart(2, "0") : minutes}
+                <small className="text-[0.45em] text-muted-foreground"> {t("minutes")}</small>
+              </>
+            )}
+          </p>
+        </div>
+        {mood && (
+          <span role="img" aria-label={t("moodLabel", { mood: te(`mood.${mood}`) })} className="text-4xl leading-none">
+            {MOOD_EMOJI[mood]}
+          </span>
+        )}
+      </div>
+
+      {songs.length > 0 && (
+        <ul>
+          {songs.map((song) => (
+            <li
+              key={song.id}
+              className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-2.5"
+            >
+              <Cover src={song.cover_url} className="h-11 w-11 rounded-[3px]" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{song.title}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {song.artist}
+                  {songs.length > 1 ? ` · ${t("songMinutes", { minutes: song.minutes })}` : ""}
+                </p>
+              </div>
+              {song.bpm ? (
+                <span className="tabular font-display text-lg font-bold leading-none">
+                  {song.bpm}
+                  <small className="text-xs font-semibold text-muted-foreground"> {t("bpm")}</small>
+                </span>
+              ) : (
+                <span aria-hidden="true" />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {(sections.length > 0 || session.session_goals) && (
+        <dl className="mt-3 space-y-1 text-[13px]">
+          {sections.length > 0 && (
+            <div className="flex gap-2">
+              <dt className="shrink-0 text-muted-foreground">{t("sections")}</dt>
+              <dd className="min-w-0 font-semibold">{sections.map((section) => te(`section.${section}`)).join(" · ")}</dd>
+            </div>
+          )}
+          {session.session_goals && (
+            <div className="flex gap-2">
+              <dt className="shrink-0 text-muted-foreground">{t("goal")}</dt>
+              <dd className="min-w-0 font-semibold">
+                {session.session_goals}
+                {session.goals_achieved && (
+                  <span className="ml-1.5 inline-flex items-center gap-0.5 text-xs text-success">
+                    <Check className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
+                    {t("goalReached")}
+                  </span>
+                )}
+              </dd>
+            </div>
+          )}
+        </dl>
+      )}
+
+      {session.notes && (
+        <div className="pt-3">
+          <p className={`font-serif text-[15px] italic leading-relaxed ${noteOpen ? "" : "line-clamp-2"}`}>
+            <span className="mr-1 font-sans text-[13px] font-bold not-italic">{name}</span>
+            {session.notes}
+          </p>
+          {session.notes.length > 140 && (
+            <button
+              type="button"
+              onClick={() => setNoteOpen((open) => !open)}
+              className="mt-1 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
+              {noteOpen ? ta("collapse") : t("readNote")}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

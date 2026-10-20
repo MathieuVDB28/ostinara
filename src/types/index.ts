@@ -333,6 +333,8 @@ export interface ProfilePrivate {
   locale?: 'fr' | 'en';
   /** Rappels de pratique (morceau delaisse, pause, serie, plan). Vrai par defaut. */
   practice_reminders?: boolean;
+  /** Partager ses sessions avec ses amis (feed + notification). Vrai par defaut. */
+  share_sessions?: boolean;
 }
 
 // Equipe editoriale : admin (nomme les autres) ou editor (blog + moderation)
@@ -557,6 +559,7 @@ export interface UpdateProfileInput {
   is_private?: boolean;
   avatar_url?: string;
   practice_reminders?: boolean;
+  share_sessions?: boolean;
 }
 
 // Inputs pour gestion des favoris
@@ -651,7 +654,7 @@ export interface FriendRequest {
 }
 
 // Types pour les activités
-export type ActivityType = 'song_added' | 'song_learning' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won' | 'album_reviewed' | 'exercise_shared' | 'gear_added' | 'album_wishlisted' | 'badge_unlocked';
+export type ActivityType = 'song_added' | 'song_learning' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won' | 'album_reviewed' | 'exercise_shared' | 'gear_added' | 'album_wishlisted' | 'badge_unlocked' | 'session_completed';
 
 export interface Activity {
   id: string;
@@ -795,6 +798,36 @@ export interface CreatePracticeSessionInput {
   session_goals?: string;
   goals_achieved?: boolean;
   notes?: string;
+  /**
+   * Partager la session avec ses amis (feed + notification). Absent : le
+   * reglage du profil (`profile_private.share_sessions`).
+   */
+  share?: boolean;
+}
+
+/**
+ * Ce que l'activite `session_completed` garde de la session : un
+ * instantane, pour que le feed n'ait pas a relire les sessions (privees)
+ * ni les morceaux (qui peuvent disparaitre).
+ */
+export interface SessionActivityMetadata {
+  instrument: Instrument;
+  duration_minutes: number;
+  practiced_at: string;
+  mood: SessionMood | null;
+  energy_level: EnergyLevel | null;
+  sections_worked: SongSection[];
+  session_goals: string | null;
+  goals_achieved: boolean;
+  notes: string | null;
+  songs: {
+    id: string;
+    title: string;
+    artist: string;
+    cover_url: string | null;
+    minutes: number;
+    bpm: number | null;
+  }[];
 }
 
 export interface UpdatePracticeSessionInput {

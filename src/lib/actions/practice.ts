@@ -4,6 +4,7 @@ import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { updateChallengeProgress } from "./challenges";
+import { createActivity } from "./activities";
 import { derivedProgressPercent } from "@/lib/song-progress";
 import { getMyPrimaryInstrument } from "@/lib/instruments-server";
 import type {
@@ -23,6 +24,7 @@ import type {
   MoodDistribution,
   SongPracticeDistribution,
   SessionMood,
+  SessionActivityMetadata,
   Instrument,
 } from "@/types";
 import { syncBadges } from "@/lib/badges/sync";
@@ -228,6 +230,13 @@ export async function createPracticeSession(
     return { success: false, error: await tErr("sessionSaveFailed") };
   }
 
+  // Les amis voient la session dans leur feed, et en sont notifies. La
+  // case de la modale decide ; sans elle, le reglage du profil.
+  const share = input.share ?? (await getShareSessionsDefault());
+  if (share) {
+    await publishSessionActivity(supabase, groupId ?? data[0].id, data as PracticeSession[]);
+  }
+
   // Mettre à jour la progression des challenges actifs, une fois pour
   // toute la session.
   const totalMinutes = entries.reduce((sum, entry) => sum + entry.duration_minutes, 0);
@@ -244,6 +253,124 @@ export async function createPracticeSession(
   // Un morceau, une session, un album… peuvent debloquer un badge.
   await syncBadges();
   return { success: true, session: data[0] as PracticeSession };
+}
+
+/**
+ * Le choix par defaut de la case « Partager avec mes amis » : le reglage
+ * du profil (Profil > Reglages), vrai tant qu'on n'y a pas touche.
+ */
+export async function getShareSessionsDefault(): Promise<boolean> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+  if (!user) return true;
+
+  const { data } = await supabase
+    .from("profile_private")
+    .select("share_sessions")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  return data?.share_sessions !== false;
+}
+
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * Ce que les amis voient d'une session : un instantane de ses lignes et
+ * de ses morceaux. Les sessions sont privees (RLS) : le feed ne peut pas
+ * les relire, il lit l'activite.
+ */
+async function sessionActivityMetadata(
+  supabase: SupabaseClient,
+  rows: PracticeSession[]
+): Promise<SessionActivityMetadata> {
+  const first = rows[0];
+  const songIds = [...new Set(rows.map((row) => row.song_id).filter((id): id is string => Boolean(id)))];
+  const { data: songs } = songIds.length
+    ? await supabase.from("songs").select("id, title, artist, cover_url").in("id", songIds)
+    : { data: [] };
+  const songsById = new Map((songs ?? []).map((song) => [song.id, song]));
+
+  return {
+    instrument: (first.instrument ?? (await getMyPrimaryInstrument())) as Instrument,
+    duration_minutes: rows.reduce((sum, row) => sum + row.duration_minutes, 0),
+    practiced_at: first.practiced_at,
+    mood: first.mood,
+    energy_level: first.energy_level,
+    sections_worked: first.sections_worked ?? [],
+    session_goals: first.session_goals,
+    goals_achieved: first.goals_achieved,
+    notes: first.notes,
+    // Le morceau le plus travaille d'abord : c'est lui que la notification nomme.
+    songs: rows
+      .filter((row) => row.song_id && songsById.has(row.song_id))
+      .sort((a, b) => b.duration_minutes - a.duration_minutes)
+      .map((row) => {
+        const song = songsById.get(row.song_id!)!;
+        return {
+          id: song.id,
+          title: song.title,
+          artist: song.artist,
+          cover_url: song.cover_url ?? null,
+          minutes: row.duration_minutes,
+          bpm: row.bpm_achieved,
+        };
+      }),
+  };
+}
+
+/**
+ * L'activite d'une session. `key` est le groupe de la session s'il y en a
+ * un (plusieurs morceaux), sinon l'id de sa ligne.
+ */
+async function publishSessionActivity(
+  supabase: SupabaseClient,
+  key: string,
+  rows: PracticeSession[]
+): Promise<void> {
+  const metadata = await sessionActivityMetadata(supabase, rows);
+  await createActivity({
+    type: "session_completed",
+    reference_id: key,
+    metadata: metadata as unknown as Record<string, unknown>,
+  });
+}
+
+/**
+ * Apres une correction ou une suppression : l'activite reprend les chiffres
+ * de la session, ou disparait avec elle. Ne notifie personne une seconde
+ * fois, et ne cree rien pour une session qui n'etait pas partagee.
+ */
+async function refreshSessionActivity(
+  supabase: SupabaseClient,
+  userId: string,
+  key: string
+): Promise<void> {
+  const { data: rows } = await supabase
+    .from("practice_sessions")
+    .select("*")
+    .eq("user_id", userId)
+    .or(`id.eq.${key},session_group_id.eq.${key}`);
+
+  if (!rows || rows.length === 0) {
+    await supabase
+      .from("activities")
+      .delete()
+      .eq("user_id", userId)
+      .eq("type", "session_completed")
+      .eq("reference_id", key);
+    return;
+  }
+
+  const metadata = await sessionActivityMetadata(supabase, rows as PracticeSession[]);
+  const { error } = await supabase
+    .from("activities")
+    .update({ metadata })
+    .eq("user_id", userId)
+    .eq("type", "session_completed")
+    .eq("reference_id", key);
+
+  if (error) console.error("Error refreshing session activity:", error);
 }
 
 /**
@@ -373,13 +500,16 @@ export async function updatePracticeSession(
     })
     .eq("id", id)
     .eq("user_id", user.id)
-    .select("instrument")
+    .select("instrument, session_group_id")
     .single();
 
   if (error) {
     console.error("Error updating practice session:", error);
     return { success: false, error: await tErr("updateFailed") };
   }
+
+  // Les amis voient la session corrigee, pas l'ancienne.
+  await refreshSessionActivity(supabase, user.id, updated?.session_group_id ?? id);
 
   // Corriger un tempo a la baisse doit corriger la progression du morceau,
   // sur l'instrument de la session.
@@ -403,16 +533,22 @@ export async function deletePracticeSession(
     return { success: false, error: await tErr("notAuthenticated") };
   }
 
-  const { error } = await supabase
+  const { data: deleted, error } = await supabase
     .from("practice_sessions")
     .delete()
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("session_group_id")
+    .maybeSingle();
 
   if (error) {
     console.error("Error deleting practice session:", error);
     return { success: false, error: await tErr("deleteFailed") };
   }
+
+  // Une session effacee quitte le feed ; une ligne d'une session a
+  // plusieurs morceaux en sort seule.
+  await refreshSessionActivity(supabase, user.id, deleted?.session_group_id ?? id);
 
   revalidatePath("/progress");
   revalidatePath("/library");

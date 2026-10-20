@@ -164,5 +164,13 @@
   "forumMention": {
     "title": "You were mentioned",
     "body": "{name} mentioned you in “{title}”"
+  },
+  "sessionCompleted": {
+    "title": "Session done",
+    "body": "{name} just played {minutes} min{instrument, select, guitar { of guitar} bass { of bass} drums { of drums} keys { of keys} other {}}{song, select, none {} other {: “{song}”{others, plural, =0 {} one { and 1 other song} other { and # other songs}}}}"
+  },
+  "sessionLogged": {
+    "title": "Session logged",
+    "body": "{name} logged a {minutes}-min{instrument, select, guitar { guitar} bass { bass} drums { drums} keys { keys} other {}} session{song, select, none {} other {: “{song}”{others, plural, =0 {} one { and 1 other song} other { and # other songs}}}}"
   }
 }

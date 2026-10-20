@@ -16,7 +16,8 @@
     "album_reviewed": "a écouté un album",
     "album_wishlisted": "veut écouter un album",
     "gear_added": "a ajouté du matos à sa collection",
-    "badge_unlocked": "a débloqué un badge"
+    "badge_unlocked": "a débloqué un badge",
+    "session_completed": "a joué une session"
   },
   "typesSelf": {
     "song_added": "a ajouté un nouveau morceau",
@@ -35,7 +36,8 @@
     "album_reviewed": "a écouté un album",
     "album_wishlisted": "veut écouter un album",
     "gear_added": "a ajouté du matos à sa collection",
-    "badge_unlocked": "a débloqué un badge"
+    "badge_unlocked": "a débloqué un badge",
+    "session_completed": "a joué une session"
   },
   "you": "Toi",
   "myProfile": "Mon profil",
@@ -62,5 +64,18 @@
   "gear": "Matériel",
   "against": "Contre {name}",
   "challengeFallback": "Défi",
-  "rating": "{rating} / 5"
+  "rating": "{rating} / 5",
+  "sessionCard": {
+    "session": "Session{instrument}",
+    "sessionOn": "Session du {date}{instrument}",
+    "minutes": "min",
+    "hours": "h",
+    "bpm": "BPM",
+    "songMinutes": "{minutes} min",
+    "sections": "Sections",
+    "goal": "Objectif",
+    "goalReached": "Atteint",
+    "readNote": "Lire la note",
+    "moodLabel": "Humeur : {mood}"
+  }
 }

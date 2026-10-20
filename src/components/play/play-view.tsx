@@ -458,6 +458,7 @@ export function PlayView({
           focusBestBpm={focusBestBpm}
           isPracticing={isPracticing}
           onStartSession={startSession}
+          onAddPastSession={() => practiceSession.openManualEntry()}
           onWorkOnSong={handleWorkOnSong}
           routines={routines}
           onPlayRoutine={handlePlayRoutine}
