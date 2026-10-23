@@ -11,6 +11,7 @@ import {
 import { usePathname, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useQueryInUrl } from "@/lib/hooks/use-query-in-url";
 
 interface BiblioSearchValue {
   query: string;
@@ -34,9 +35,11 @@ export function BiblioSearchProvider({ children }: { children: ReactNode }) {
    * `?q=` amorce le champ. Les albums n'ont pas de fiche propre : un
    * resultat de la recherche globale atterrit donc sur le segment Albums
    * deja filtre sur son nom. L'amorce ne vaut qu'au montage — ensuite,
-   * c'est le champ qui mene, pas l'URL.
+   * c'est le champ qui mene, et l'URL le suit : « Retour » depuis un
+   * album ou un artiste retrouve la recherche.
    */
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  useQueryInUrl(query);
   const value = useMemo(() => ({ query, setQuery }), [query]);
 
   return (

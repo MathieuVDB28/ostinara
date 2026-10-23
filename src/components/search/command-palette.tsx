@@ -54,14 +54,28 @@ const QUICK_LINKS = [
   { href: "/profil", label: "nav.progress", icon: "bar_chart" },
 ] as const;
 
+/**
+ * La recherche en cours, gardee dans l'entree d'historique de la page d'ou
+ * l'on ouvre un resultat. « Retour » y ramene : la palette se rouvre avec
+ * sa recherche au lieu de laisser la page nue. Next recopie son propre
+ * etat dans ce que l'on passe a `replaceState`.
+ */
+const HISTORY_KEY = "paletteQuery";
+
+function rememberQuery(query: string | null) {
+  window.history.replaceState(query ? { [HISTORY_KEY]: query } : null, "");
+}
+
 export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [initialQuery, setInitialQuery] = useState("");
   // Le focus revient d'ou il vient : fermer la palette ne doit pas renvoyer
   // au debut de la page.
   const opener = useRef<HTMLElement | null>(null);
 
   const open = useCallback(() => {
     opener.current = document.activeElement as HTMLElement | null;
+    setInitialQuery("");
     setIsOpen(true);
   }, []);
 
@@ -71,34 +85,71 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
     opener.current = null;
   }, []);
 
+  // Fermee sans rien choisir : la recherche est abandonnee, un prochain
+  // retour sur cette page ne doit pas la ressortir.
+  const dismiss = useCallback(() => {
+    rememberQuery(null);
+    close();
+  }, [close]);
+
+  useEffect(() => {
+    function onPopState(event: PopStateEvent) {
+      const query = (event.state as Record<string, unknown> | null)?.[HISTORY_KEY];
+      if (typeof query !== "string" || !query) return;
+      opener.current = null;
+      setInitialQuery(query);
+      setIsOpen(true);
+    }
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key.toLowerCase() !== "k") return;
       if (!event.metaKey && !event.ctrlKey) return;
       event.preventDefault();
       // Une bascule : le meme raccourci ouvre et referme.
-      if (isOpen) close();
+      if (isOpen) dismiss();
       else open();
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [close, isOpen, open]);
+  }, [dismiss, isOpen, open]);
 
   const value = useMemo(() => ({ open, isOpen }), [open, isOpen]);
 
   return (
     <CommandPaletteContext.Provider value={value}>
       {children}
-      {isOpen && <CommandPalette onClose={close} />}
+      {isOpen && (
+        <CommandPalette
+          key={initialQuery}
+          initialQuery={initialQuery}
+          onNavigate={close}
+          onDismiss={dismiss}
+        />
+      )}
     </CommandPaletteContext.Provider>
   );
 }
 
-function CommandPalette({ onClose }: { onClose: () => void }) {
+function CommandPalette({
+  initialQuery,
+  onNavigate,
+  onDismiss,
+}: {
+  initialQuery: string;
+  /** Un resultat choisi : la palette se ferme, la page change. */
+  onNavigate: () => void;
+  /** Echap ou clic a cote : rien n'a ete choisi. */
+  onDismiss: () => void;
+}) {
   const t = useTranslations();
   const router = useRouter();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -117,7 +168,15 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     inputRef.current?.focus();
+    inputRef.current?.select();
   }, []);
+
+  // Avant de quitter la page : la recherche reste dans son entree
+  // d'historique, pour la retrouver au retour.
+  const select = useCallback(() => {
+    rememberQuery(query.trim() ? query : null);
+    onNavigate();
+  }, [onNavigate, query]);
 
   // Le corps ne defile pas derriere la palette.
   useEffect(() => {
@@ -138,7 +197,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose();
+        onDismiss();
         return;
       }
 
@@ -154,11 +213,11 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
         event.preventDefault();
         const target = flat[activeIndex];
         if (!target) return;
+        select();
         router.push(target.href);
-        onClose();
       }
     },
-    [activeIndex, flat, onClose, router]
+    [activeIndex, flat, onDismiss, router, select]
   );
 
   return (
@@ -167,7 +226,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
         type="button"
         tabIndex={-1}
         aria-hidden="true"
-        onClick={onClose}
+        onClick={onDismiss}
         className="absolute inset-0 cursor-default bg-foreground/40 backdrop-blur-[2px]"
       />
 
@@ -211,7 +270,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
             isSearching={isSearching}
             activeIndex={activeIndex}
             idPrefix="palette-result"
-            onSelect={onClose}
+            onSelect={select}
             placeholder={
               <div>
                 <h2 className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -222,7 +281,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        onClick={onClose}
+                        onClick={select}
                         className="flex min-h-[44px] items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors hover:bg-accent"
                       >
                         <Icon name={link.icon} className="h-5 w-5 text-muted-foreground" />
