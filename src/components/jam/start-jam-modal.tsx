@@ -22,14 +22,19 @@ export function StartJamModal({ isOpen, onClose, band }: StartJamModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [bandSetlists, setBandSetlists] = useState<SetlistWithDetails[]>([]);
 
-  // Load band setlists when modal opens
+  // A chaque ouverture, les setlists se rechargent : on repasse en
+  // chargement pendant le rendu, l'effet ne fait que recevoir la reponse.
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setLoadingSetlists(true);
+  }
+
   useEffect(() => {
-    if (isOpen) {
-      setLoadingSetlists(true);
-      getBandSetlistsForJam(band.id)
-        .then(setBandSetlists)
-        .finally(() => setLoadingSetlists(false));
-    }
+    if (!isOpen) return;
+    getBandSetlistsForJam(band.id)
+      .then(setBandSetlists)
+      .finally(() => setLoadingSetlists(false));
   }, [isOpen, band.id]);
 
   if (!isOpen) return null;

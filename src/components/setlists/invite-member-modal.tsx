@@ -29,15 +29,17 @@ export function InviteMemberModal({
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Reset state when modal opens/closes
-  useEffect(() => {
+  // Reset state when modal opens, pendant le rendu.
+  const [wasOpen, setWasOpen] = useState(false);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
     if (isOpen) {
       setQuery("");
       setResults([]);
       setError(null);
       setSuccessMessage(null);
     }
-  }, [isOpen]);
+  }
 
   // Handle escape key
   useEffect(() => {
@@ -62,12 +64,10 @@ export function InviteMemberModal({
     };
   }, [isOpen]);
 
-  // Search users with debounce
+  // Search users with debounce. Requete trop courte : rien a montrer
+  // (cf. `shownResults`), sans effacer dans l'effet.
   useEffect(() => {
-    if (query.length < 2) {
-      setResults([]);
-      return;
-    }
+    if (query.length < 2) return;
 
     const timer = setTimeout(async () => {
       setSearching(true);
@@ -78,6 +78,8 @@ export function InviteMemberModal({
 
     return () => clearTimeout(timer);
   }, [query, bandId]);
+
+  const shownResults = query.length < 2 ? [] : results;
 
   if (!isOpen) return null;
 
@@ -183,7 +185,7 @@ export function InviteMemberModal({
             </div>
           )}
 
-          {!searching && query.length >= 2 && results.length === 0 && (
+          {!searching && query.length >= 2 && shownResults.length === 0 && (
             <div className="py-8 text-center text-muted-foreground">
               {t("none")}
             </div>
@@ -195,7 +197,7 @@ export function InviteMemberModal({
             </div>
           )}
 
-          {results.map((user) => (
+          {shownResults.map((user) => (
             <div
               key={user.id}
               className="flex items-center gap-3 rounded-lg border border-border p-3"

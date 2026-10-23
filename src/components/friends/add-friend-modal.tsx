@@ -22,12 +22,10 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Debounced search
+  // Debounced search. Champ vide : rien a montrer, sans effacer les
+  // resultats dans l'effet (cf. `shownResults`).
   useEffect(() => {
-    if (!query.trim()) {
-      setResults([]);
-      return;
-    }
+    if (!query.trim()) return;
 
     const timer = setTimeout(async () => {
       setLoading(true);
@@ -38,6 +36,8 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
 
     return () => clearTimeout(timer);
   }, [query]);
+
+  const shownResults = query.trim() ? results : [];
 
   const handleSendRequest = async (userId: string, username: string) => {
     setSending(userId);
@@ -164,7 +164,7 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
 
         {/* Results */}
         <div className="max-h-80 space-y-2 overflow-y-auto">
-          {results.map((user) => {
+          {shownResults.map((user) => {
             const status = getStatusLabel(user.friendshipStatus);
             return (
               <div
@@ -212,7 +212,7 @@ export function AddFriendModal({ isOpen, onClose, onSuccess }: AddFriendModalPro
             );
           })}
 
-          {query && !loading && results.length === 0 && (
+          {query && !loading && shownResults.length === 0 && (
             <div className="py-8 text-center text-muted-foreground">
               {t("none")}
             </div>

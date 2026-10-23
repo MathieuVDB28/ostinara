@@ -28,8 +28,10 @@ export function CreateSetlistModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset form when modal opens
-  useEffect(() => {
+  // Reset form when modal opens, pendant le rendu.
+  const [wasOpen, setWasOpen] = useState(false);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
     if (isOpen) {
       setName("");
       setDescription("");
@@ -38,7 +40,7 @@ export function CreateSetlistModal({
       setBandId("");
       setError(null);
     }
-  }, [isOpen]);
+  }
 
   // Handle escape key
   useEffect(() => {

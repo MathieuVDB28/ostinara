@@ -51,10 +51,16 @@ export function JamTabsViewer({
     0
   );
 
-  // Reset when song changes
-  useEffect(() => {
+  // Nouveau morceau : on repart de la premiere section. L'etat se remet a
+  // zero pendant le rendu ; l'effet ne garde que les refs et l'animation.
+  const [shownItemId, setShownItemId] = useState(currentItem?.id);
+  if (currentItem?.id !== shownItemId) {
+    setShownItemId(currentItem?.id);
     setCurrentSectionIndex(0);
     setSectionProgress(0);
+  }
+
+  useEffect(() => {
     sectionStartTimeRef.current = null;
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);

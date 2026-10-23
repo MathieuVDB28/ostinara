@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { Friend, Song, ChallengeType } from "@/types";
@@ -58,8 +58,11 @@ export function CreateChallengeModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset form when modal opens
-  useEffect(() => {
+  // Formulaire vierge a chaque ouverture : ajuste pendant le rendu, pas
+  // dans un effet qui afficherait d'abord l'ancien formulaire.
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
     if (isOpen) {
       setSelectedFriend("");
       setChallengeType("practice_time");
@@ -67,7 +70,7 @@ export function CreateChallengeModal({
       setSelectedSong("");
       setError(null);
     }
-  }, [isOpen]);
+  }
 
   // Filter songs to only show non-mastered ones for song_mastery
   const availableSongs = songs.filter((s) => s.status !== "mastered");

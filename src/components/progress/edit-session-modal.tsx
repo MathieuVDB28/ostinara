@@ -11,6 +11,7 @@ import { MoodSelector, getMoodEmoji } from "./mood-selector";
 import { SectionsSelector, getSectionsLabels } from "./sections-selector";
 import { EnergySelector, getEnergyLabel } from "./energy-selector";
 import type { PracticeSessionWithSong, Song, SessionMood, EnergyLevel, SongSection } from "@/types";
+import { useDepsChanged } from "@/lib/hooks/use-deps-changed";
 
 interface EditSessionModalProps {
   session: PracticeSessionWithSong | null;
@@ -57,26 +58,25 @@ export function EditSessionModal({
   // Confirmation de suppression
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Charger les données de la session
-  useEffect(() => {
-    if (session && isOpen) {
-      setSelectedSong(session.song);
-      setDurationMinutes(session.duration_minutes);
-      setPracticedAt(
-        new Date(session.practiced_at).toISOString().slice(0, 16)
-      );
-      setBpmAchieved(session.bpm_achieved?.toString() || "");
-      setMood(session.mood);
-      setEnergyLevel(session.energy_level);
-      setSectionsWorked(session.sections_worked || []);
-      setSessionGoals(session.session_goals || "");
-      setGoalsAchieved(session.goals_achieved);
-      setNotes(session.notes || "");
-      setError(null);
-      setIsEditing(false);
-      setShowDeleteConfirm(false);
-    }
-  }, [session, isOpen]);
+  // Charger les données de la session, pendant le rendu.
+  const reset = useDepsChanged([session, isOpen]);
+  if (reset && session && isOpen) {
+    setSelectedSong(session.song);
+    setDurationMinutes(session.duration_minutes);
+    setPracticedAt(
+      new Date(session.practiced_at).toISOString().slice(0, 16)
+    );
+    setBpmAchieved(session.bpm_achieved?.toString() || "");
+    setMood(session.mood);
+    setEnergyLevel(session.energy_level);
+    setSectionsWorked(session.sections_worked || []);
+    setSessionGoals(session.session_goals || "");
+    setGoalsAchieved(session.goals_achieved);
+    setNotes(session.notes || "");
+    setError(null);
+    setIsEditing(false);
+    setShowDeleteConfirm(false);
+  }
 
   const handleClose = useCallback(() => {
     onClose();

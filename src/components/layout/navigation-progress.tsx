@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 export function NavigationProgress() {
   const pathname = usePathname();
   const [loading, setLoading] = useState(false);
-  const prevPathname = useRef(pathname);
+  const [prevPathname, setPrevPathname] = useState(pathname);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   // Detect navigation start via link/button clicks
@@ -32,13 +32,15 @@ export function NavigationProgress() {
     return () => document.removeEventListener("click", handleClick, true);
   }, [pathname]);
 
-  // Hide when navigation completes
+  // Hide when navigation completes : l'etat change pendant le rendu,
+  // l'effet ne fait que couper le minuteur de secours.
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setLoading(false);
+  }
+
   useEffect(() => {
-    if (pathname !== prevPathname.current) {
-      prevPathname.current = pathname;
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      setLoading(false);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, [pathname]);
 
   if (!loading) return null;

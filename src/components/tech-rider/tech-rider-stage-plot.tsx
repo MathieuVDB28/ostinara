@@ -34,6 +34,13 @@ const ELEMENT_SHAPES: Record<TechRiderStageElement["type"], string> = {
   custom: "h-6 w-6 rounded",
 };
 
+/** Un point pres du centre de la scene, pour qu'un nouvel element ne
+ *  recouvre pas exactement le precedent. Hors du composant : appele au
+ *  clic, jamais pendant le rendu. */
+function nearCenter(): number {
+  return 40 + Math.random() * 20;
+}
+
 export function TechRiderStagePlot({
   musicians,
   stageElements,
@@ -112,8 +119,8 @@ export function TechRiderStagePlot({
       id: crypto.randomUUID(),
       type,
       label: elementLabel(type),
-      x: 40 + Math.random() * 20,
-      y: 40 + Math.random() * 20,
+      x: nearCenter(),
+      y: nearCenter(),
     };
     onAddElement(element);
     setSelected(element.id);

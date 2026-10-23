@@ -34,6 +34,7 @@ import type {
   ExerciseWithProgress,
   ExerciseCategory,
 } from "@/types";
+import { useDepsChanged } from "@/lib/hooks/use-deps-changed";
 
 /** Un morceau de la session, tel qu'on l'edite dans la modale. */
 interface Entry {
@@ -250,36 +251,35 @@ export function AddSessionModal({
   const [freeExerciseName, setFreeExerciseName] = useState("");
   const [freeExerciseCategory, setFreeExerciseCategory] = useState<ExerciseCategory | "">("");
 
-  // Reset au changement de mode ou props
-  useEffect(() => {
-    if (isOpen) {
-      setExerciseEntries(initialExerciseEntries(timerExerciseTimes, initialExercises));
-      setEntries(
-        initialEntries(
-          timerSongTimes,
-          timerSong,
-          timerDuration,
-          timerBpm,
-          initialSongIds,
-          Boolean(timerExerciseTimes?.length || initialExercises?.length)
-        )
-      );
-      setDurationMinutes(timerDuration || 30);
-      setPracticedAt(new Date().toISOString().slice(0, 16));
-      setBpmAchieved(timerBpm ? String(timerBpm) : "");
-      setMood(null);
-      setEnergyLevel(null);
-      setSectionsWorked([]);
-      setSessionGoals("");
-      setGoalsAchieved(false);
-      setNotes("");
-      setError(null);
-      setShowPerformance(false);
-      setShowFeeling(false);
-      setShowGoals(false);
-      setShare(null);
-    }
-  }, [isOpen, timerDuration, timerSong, timerBpm, timerSongTimes, initialSongIds, timerExerciseTimes, initialExercises]);
+  // Reset au changement de mode ou props, pendant le rendu.
+  const reset = useDepsChanged([isOpen, timerDuration, timerSong, timerBpm, timerSongTimes, initialSongIds, timerExerciseTimes, initialExercises]);
+  if (reset && isOpen) {
+    setExerciseEntries(initialExerciseEntries(timerExerciseTimes, initialExercises));
+    setEntries(
+      initialEntries(
+        timerSongTimes,
+        timerSong,
+        timerDuration,
+        timerBpm,
+        initialSongIds,
+        Boolean(timerExerciseTimes?.length || initialExercises?.length)
+      )
+    );
+    setDurationMinutes(timerDuration || 30);
+    setPracticedAt(new Date().toISOString().slice(0, 16));
+    setBpmAchieved(timerBpm ? String(timerBpm) : "");
+    setMood(null);
+    setEnergyLevel(null);
+    setSectionsWorked([]);
+    setSessionGoals("");
+    setGoalsAchieved(false);
+    setNotes("");
+    setError(null);
+    setShowPerformance(false);
+    setShowFeeling(false);
+    setShowGoals(false);
+    setShare(null);
+  }
 
   useEffect(() => {
     if (!isOpen || !isOnline) return;

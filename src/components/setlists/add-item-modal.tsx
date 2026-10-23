@@ -52,6 +52,7 @@ export function AddItemModal({
   // Onglet Exercice
   const [exercises, setExercises] = useState<ExerciseWithProgress[]>([]);
   const [loadingExercises, setLoadingExercises] = useState(false);
+  const [exercisesRequested, setExercisesRequested] = useState(false);
   const [exerciseQuery, setExerciseQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<ExerciseCategory | null>(
     null
@@ -64,8 +65,10 @@ export function AddItemModal({
   const [expressDuration, setExpressDuration] = useState(0);
   const [expressBpm, setExpressBpm] = useState(0);
 
-  // Reset state when modal opens
-  useEffect(() => {
+  // Reset state when modal opens, pendant le rendu.
+  const [wasOpen, setWasOpen] = useState(false);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
     if (isOpen) {
       setTab("song");
       setQuery("");
@@ -80,20 +83,36 @@ export function AddItemModal({
       setExpressDuration(0);
       setExpressBpm(0);
       setError(null);
+      // Un echec precedent se retente a la reouverture.
+      if (exercises.length === 0) setExercisesRequested(false);
     }
-  }, [isOpen]);
+  }
 
-  // Charger la bibliotheque d'exercices a la premiere ouverture de l'onglet
-  useEffect(() => {
-    if (!isOpen || tab !== "exercise" || exercises.length > 0 || loadingExercises) {
-      return;
-    }
+  // Charger la bibliotheque d'exercices a la premiere ouverture de l'onglet :
+  // la demande part pendant le rendu, l'effet ne fait que la servir. (Un
+  // echec ne relance plus la lecture en boucle.)
+  if (isOpen && tab === "exercise" && exercises.length === 0 && !exercisesRequested) {
+    setExercisesRequested(true);
     setLoadingExercises(true);
+  }
+
+  useEffect(() => {
+    if (!exercisesRequested || !loadingExercises) return;
+    let cancelled = false;
     getExercises()
-      .then(setExercises)
-      .catch(() => setError(t("loadExercisesFailed")))
-      .finally(() => setLoadingExercises(false));
-  }, [isOpen, tab, exercises.length, loadingExercises, t]);
+      .then((list) => {
+        if (!cancelled) setExercises(list);
+      })
+      .catch(() => {
+        if (!cancelled) setError(t("loadExercisesFailed"));
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingExercises(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [exercisesRequested, loadingExercises, t]);
 
   // Handle escape key
   useEffect(() => {
@@ -118,12 +137,12 @@ export function AddItemModal({
     };
   }, [isOpen]);
 
-  // Recherche dans le catalogue (Deezer)
+  const shownCatalogResults = catalogQuery.length < 2 ? [] : catalogResults;
+
+  // Recherche dans le catalogue (Deezer). Requete trop courte : rien a
+  // montrer (cf. `shownCatalogResults`), sans effacer dans l'effet.
   useEffect(() => {
-    if (catalogQuery.length < 2) {
-      setCatalogResults([]);
-      return;
-    }
+    if (catalogQuery.length < 2) return;
 
     const timer = setTimeout(async () => {
       setSearchingCatalog(true);
@@ -543,7 +562,7 @@ export function AddItemModal({
                       {t("searching")}
                     </p>
                   )}
-                  {catalogResults.map((song, i) => (
+                  {shownCatalogResults.map((song, i) => (
                     <button
                       key={i}
                       onClick={() => handleAddCatalogSong(song)}

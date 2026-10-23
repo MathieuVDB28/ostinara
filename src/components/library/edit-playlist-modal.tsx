@@ -23,13 +23,17 @@ export function EditPlaylistModal({ playlist, isOpen, onClose, onSuccess }: Edit
   const [removingSongId, setRemovingSongId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Une autre playlist : le formulaire repart de ses valeurs. Part de null
+  // pour qu'une playlist passee des le montage le remplisse aussi.
+  const [shownPlaylist, setShownPlaylist] = useState<typeof playlist>(null);
+  if (playlist !== shownPlaylist) {
+    setShownPlaylist(playlist);
     if (playlist) {
       setName(playlist.name);
       setDescription(playlist.description || "");
       setError(null);
     }
-  }, [playlist]);
+  }
 
   const handleClose = useCallback(() => {
     setError(null);

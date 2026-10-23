@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { UserPlus } from "lucide-react";
@@ -33,10 +33,15 @@ export function FriendsView({
   const [activeTab, setActiveTab] = useState<Tab>("friends");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  useEffect(() => {
+  // Apres un router.refresh(), les listes du serveur remplacent les locales.
+  const [serverFriends, setServerFriends] = useState(initialFriends);
+  const [serverRequests, setServerRequests] = useState(initialRequests);
+  if (initialFriends !== serverFriends || initialRequests !== serverRequests) {
+    setServerFriends(initialFriends);
+    setServerRequests(initialRequests);
     setFriends(initialFriends);
     setRequests(initialRequests);
-  }, [initialFriends, initialRequests]);
+  }
 
   const handleRefresh = () => {
     router.refresh();

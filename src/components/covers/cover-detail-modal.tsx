@@ -27,22 +27,20 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasChanges, setHasChanges] = useState(false);
 
-  useEffect(() => {
+  // Une autre cover : le formulaire repart de ses valeurs.
+  // Part de null : une cover passee des le montage remplit aussi le formulaire.
+  const [shownCover, setShownCover] = useState<typeof cover>(null);
+  if (cover !== shownCover) {
+    setShownCover(cover);
     if (cover) {
       setVisibility(cover.visibility);
       setDescription(cover.description || "");
-      setHasChanges(false);
     }
-  }, [cover]);
+  }
 
-  useEffect(() => {
-    if (cover) {
-      const changed = visibility !== cover.visibility || description !== (cover.description || "");
-      setHasChanges(changed);
-    }
-  }, [visibility, description, cover]);
+  const hasChanges =
+    !!cover && (visibility !== cover.visibility || description !== (cover.description || ""));
 
   const handleSave = async () => {
     if (!cover) return;

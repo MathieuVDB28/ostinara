@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useSyncExternalStore } from "react";
 import { AudioLines, Gauge, Timer } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -111,6 +111,22 @@ function formatDuration(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function subscribeToStorage(onChange: () => void) {
+  window.addEventListener("storage", onChange);
+  return () => window.removeEventListener("storage", onChange);
+}
+
+/** Combien de morceaux dans la derniere file de session retenue. */
+function readLastSessionCount(): number {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
 export function PlayView({
   songs,
   exercises,
@@ -205,17 +221,9 @@ export function PlayView({
     token: number;
   } | null>(null);
   // La derniere session montee (retenue en localStorage), pour « Reprendre ».
-  const [lastSessionCount, setLastSessionCount] = useState(0);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const arr = raw ? JSON.parse(raw) : [];
-      setLastSessionCount(Array.isArray(arr) ? arr.length : 0);
-    } catch {
-      setLastSessionCount(0);
-    }
-  }, [activeTab]);
+  // Relue a chaque rendu (un changement d'onglet suffit a la rafraichir),
+  // et a chaque ecriture depuis un autre onglet du navigateur.
+  const lastSessionCount = useSyncExternalStore(subscribeToStorage, readLastSessionCount, () => 0);
 
   const handlePlayRoutine = useCallback((routine: RoutineWithItems) => {
     setRoutineLoad({ routine, token: Date.now() });

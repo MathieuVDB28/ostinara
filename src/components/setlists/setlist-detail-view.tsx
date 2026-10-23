@@ -3,7 +3,7 @@
 import { Icon } from "@/components/ui/icon";
 import dynamic from "next/dynamic";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
@@ -122,15 +122,17 @@ export function SetlistDetailView({
   const [saving, setSaving] = useState(false);
   const [launchingJam, setLaunchingJam] = useState(false);
 
-  // Sync with server data
-  useEffect(() => {
+  // Sync with server data (apres un router.refresh), pendant le rendu.
+  const [serverSetlist, setServerSetlist] = useState(initialSetlist);
+  if (initialSetlist !== serverSetlist) {
+    setServerSetlist(initialSetlist);
     setSetlist(initialSetlist);
     setItems(initialSetlist.items);
     setName(initialSetlist.name);
     setDescription(initialSetlist.description || "");
     setConcertDate(initialSetlist.concert_date || "");
     setVenue(initialSetlist.venue || "");
-  }, [initialSetlist]);
+  }
 
   // DnD sensors
   const sensors = useSensors(

@@ -136,8 +136,11 @@ export function EditSongModal({
   const [tabsUrl, setTabsUrl] = useState("");
   const [notes, setNotes] = useState("");
 
-  // Sync form with song
-  useEffect(() => {
+  // Sync form with song, pendant le rendu. Part de null pour qu'un morceau
+  // passe des le montage remplisse aussi le formulaire.
+  const [shownSong, setShownSong] = useState<typeof song>(null);
+  if (song !== shownSong) {
+    setShownSong(song);
     if (song) {
       setTitle(song.title);
       setArtist(song.artist);
@@ -155,7 +158,7 @@ export function EditSongModal({
       setNotes(song.notes || "");
       setActiveTab("details");
     }
-  }, [song]);
+  }
 
   /*
    * La courbe de tempo du morceau.
@@ -175,17 +178,23 @@ export function EditSongModal({
     };
   }, [song, isOpen, myInstruments.isMulti, tempoInstrument]);
 
-  // Load covers for the song
+  // Load covers for the song : en chargement des l'ouverture (pendant le
+  // rendu), l'effet ne fait que recevoir la reponse.
+  const coversFor = song && isOpen ? song : null;
+  const [loadingCoversFor, setLoadingCoversFor] = useState<typeof song>(null);
+  if (coversFor !== loadingCoversFor) {
+    setLoadingCoversFor(coversFor);
+    if (coversFor) setLoadingCovers(true);
+  }
+
   useEffect(() => {
-    if (song && isOpen) {
-      setLoadingCovers(true);
-      Promise.all([getCoversBySong(song.id), canUploadCover()])
-        .then(([coversData, uploadStatus]) => {
-          setCovers(coversData);
-          setCanUpload(uploadStatus);
-        })
-        .finally(() => setLoadingCovers(false));
-    }
+    if (!song || !isOpen) return;
+    Promise.all([getCoversBySong(song.id), canUploadCover()])
+      .then(([coversData, uploadStatus]) => {
+        setCovers(coversData);
+        setCanUpload(uploadStatus);
+      })
+      .finally(() => setLoadingCovers(false));
   }, [song, isOpen]);
 
   const loadCovers = async () => {

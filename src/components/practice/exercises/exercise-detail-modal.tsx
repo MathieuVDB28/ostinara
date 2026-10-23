@@ -55,11 +55,12 @@ export function ExerciseDetailModal({
     };
   }, [isOpen, onClose]);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setConfirmDelete(false);
-    }
-  }, [isOpen]);
+  // Refermee : la confirmation de suppression ne survit pas.
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (!isOpen) setConfirmDelete(false);
+  }
 
   if (!isOpen) return null;
 

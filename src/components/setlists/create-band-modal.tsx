@@ -22,14 +22,16 @@ export function CreateBandModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset form when modal opens
-  useEffect(() => {
+  // Reset form when modal opens, pendant le rendu.
+  const [wasOpen, setWasOpen] = useState(false);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
     if (isOpen) {
       setName("");
       setDescription("");
       setError(null);
     }
-  }, [isOpen]);
+  }
 
   // Handle escape key
   useEffect(() => {

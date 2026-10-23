@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createRehearsal } from "@/lib/actions/rehearsals";
 import { useTranslations } from "next-intl";
 import type { BandWithMembers, Setlist, RecurrenceType } from "@/types";
+import { useDepsChanged } from "@/lib/hooks/use-deps-changed";
 
 interface CreateRehearsalModalProps {
   isOpen: boolean;
@@ -37,24 +38,23 @@ export function CreateRehearsalModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset form when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setTitle("");
-      setDescription("");
-      setDate("");
-      setTime("20:00");
-      setEndTime("22:00");
-      setLocation("");
-      setLocationUrl("");
-      setSetlistId("");
-      setRecurrence("none");
-      setRecurrenceEndDate("");
-      // Select all members by default
-      setSelectedMembers(band.members.map((m) => m.user_id));
-      setError(null);
-    }
-  }, [isOpen, band.members]);
+  // Reset form when modal opens, pendant le rendu.
+  const reset = useDepsChanged([isOpen, band.members]);
+  if (reset && isOpen) {
+    setTitle("");
+    setDescription("");
+    setDate("");
+    setTime("20:00");
+    setEndTime("22:00");
+    setLocation("");
+    setLocationUrl("");
+    setSetlistId("");
+    setRecurrence("none");
+    setRecurrenceEndDate("");
+    // Select all members by default
+    setSelectedMembers(band.members.map((m) => m.user_id));
+    setError(null);
+  }
 
   // Handle escape key
   useEffect(() => {

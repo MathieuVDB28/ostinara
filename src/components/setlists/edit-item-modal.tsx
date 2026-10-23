@@ -50,8 +50,11 @@ export function EditItemModal({
   // Detected sections from Songsterr analysis
   const [detectedSections, setDetectedSections] = useState<PlayedSection[]>([]);
 
-  // Initialize form when item changes
-  useEffect(() => {
+  // Initialize form when item changes, pendant le rendu. Part de null pour
+  // qu'un element passe des le montage remplisse aussi le formulaire.
+  const [shownItem, setShownItem] = useState<typeof item>(null);
+  if (item !== shownItem) {
+    setShownItem(item);
     if (item) {
       setNotes(item.notes || "");
       setTransitionSeconds(item.transition_seconds || 0);
@@ -70,7 +73,7 @@ export function EditItemModal({
       setNewSectionEnd(4);
       setDetectedSections([]);
     }
-  }, [item]);
+  }
 
   // Handle escape key
   useEffect(() => {

@@ -48,14 +48,39 @@ export function AddToPlaylistModal({ songId, isOpen, onClose, onSuccess }: AddTo
     setLoading(false);
   }, [songId, t]);
 
-  useEffect(() => {
-    if (isOpen && songId) {
-      loadData();
+  // Chaque ouverture (ou un autre morceau) repart d'un panneau propre, en
+  // chargement : ajuste pendant le rendu, l'effet ne fait que lire.
+  const openedFor = isOpen && songId ? songId : null;
+  const [shownFor, setShownFor] = useState<string | null>(null);
+  if (openedFor !== shownFor) {
+    setShownFor(openedFor);
+    if (openedFor) {
+      setLoading(true);
       setShowCreate(false);
       setNewName("");
       setError(null);
     }
-  }, [isOpen, songId, loadData]);
+  }
+
+  useEffect(() => {
+    if (!isOpen || !songId) return;
+    let cancelled = false;
+    Promise.all([getPlaylists(), getPlaylistsForSong(songId)])
+      .then(([allPlaylists, songPlaylists]) => {
+        if (cancelled) return;
+        setPlaylists(allPlaylists);
+        setSongPlaylistIds(new Set(songPlaylists.map((p) => p.id)));
+      })
+      .catch(() => {
+        if (!cancelled) setError(t("playlist.loadError"));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, songId, t]);
 
   const handleClose = useCallback(() => {
     setError(null);
