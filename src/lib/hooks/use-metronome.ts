@@ -213,32 +213,37 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     }
   }, []);
 
-  // Scheduler principal
+  // Scheduler principal : une boucle locale qui se rappelle elle-meme.
+  // (Le useCallback ne peut pas se citer dans son propre setTimeout : il
+  // serait lu avant d'etre declare.)
   const scheduler = useCallback(() => {
-    const ctx = audioContextRef.current;
-    if (!ctx || !isPlayingRef.current) return;
+    const tick = () => {
+      const ctx = audioContextRef.current;
+      if (!ctx || !isPlayingRef.current) return;
 
-    while (nextNoteTimeRef.current < ctx.currentTime + SCHEDULE_AHEAD) {
-      scheduleNote(
-        currentBeatRef.current,
-        currentSubdivisionRef.current,
-        nextNoteTimeRef.current
-      );
+      while (nextNoteTimeRef.current < ctx.currentTime + SCHEDULE_AHEAD) {
+        scheduleNote(
+          currentBeatRef.current,
+          currentSubdivisionRef.current,
+          nextNoteTimeRef.current
+        );
 
-      // Mettre à jour l'état pour l'UI (seulement sur beat principal)
-      if (currentSubdivisionRef.current === 0) {
-        const beatForUI = currentBeatRef.current + 1; // 1-indexed
-        setCurrentBeat(beatForUI);
+        // Mettre à jour l'état pour l'UI (seulement sur beat principal)
+        if (currentSubdivisionRef.current === 0) {
+          const beatForUI = currentBeatRef.current + 1; // 1-indexed
+          setCurrentBeat(beatForUI);
 
-        const isAccent = accentPatternRef.current[currentBeatRef.current] === 1;
-        onBeatRef.current?.(beatForUI, isAccent);
+          const isAccent = accentPatternRef.current[currentBeatRef.current] === 1;
+          onBeatRef.current?.(beatForUI, isAccent);
+        }
+        setCurrentSubdivision(currentSubdivisionRef.current);
+
+        nextNote();
       }
-      setCurrentSubdivision(currentSubdivisionRef.current);
 
-      nextNote();
-    }
-
-    timerIdRef.current = setTimeout(scheduler, LOOKAHEAD);
+      timerIdRef.current = setTimeout(tick, LOOKAHEAD);
+    };
+    tick();
   }, [scheduleNote, nextNote]);
 
   // Démarrer le métronome
