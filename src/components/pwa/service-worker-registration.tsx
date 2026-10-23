@@ -2,9 +2,16 @@
 
 import { useEffect } from 'react';
 
+/** Ce que next-pwa expose de workbox-window, et ce qu'on en utilise. */
+interface Workbox {
+  addEventListener(type: 'waiting' | 'controlling', listener: () => void): void;
+  messageSkipWaiting(): void;
+  register(): void;
+}
+
 declare global {
   interface Window {
-    workbox: any;
+    workbox?: Workbox;
   }
 }
 
@@ -16,7 +23,7 @@ export function ServiceWorkerRegistration() {
 
     // iOS detection
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+    const isStandalone = (window.navigator as Navigator & { standalone?: boolean }).standalone || window.matchMedia('(display-mode: standalone)').matches;
     console.log('📱 Device:', { isIOS, isStandalone });
 
     if (

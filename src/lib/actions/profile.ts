@@ -5,6 +5,7 @@ import { PROFILE_PRIVATE_SELECT, privateRow } from "@/lib/profile-private";
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import { one, type Joined } from "@/lib/supabase/joins";
 import { PROFILE_INSTRUMENTS_SELECT } from "@/lib/instruments";
 import type {
   UserProfile,
@@ -24,17 +25,6 @@ import type {
   AlbumReview,
   CoverWithSong,
 } from "@/types";
-
-/**
- * Une jointure Supabase (`song:songs(*)`) rend un objet ou un tableau
- * selon la relation, ou rien si la RLS masque la ligne : on la ramene a
- * un objet.
- */
-type Joined<T, K extends keyof T> = Omit<T, K> & { [P in K]: T[P] | T[P][] | null };
-
-function one<T>(value: T | T[] | null | undefined): T {
-  return (Array.isArray(value) ? value[0] : value) as T;
-}
 
 type PlaylistRow = Omit<PlaylistWithSongs, "songs" | "song_count"> & {
   playlist_songs: { position: number; song: Song | Song[] | null }[] | null;

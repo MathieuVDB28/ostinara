@@ -143,12 +143,12 @@ export async function sendPushNotification(
           notificationPayload
         );
         successCount++;
-      } catch (error: any) {
+      } catch (error) {
         console.error(`Failed to send notification to ${subscription.endpoint}:`, error);
         failedCount++;
 
         // If subscription is no longer valid (410 Gone), delete it
-        if (error.statusCode === 410) {
+        if (error instanceof webpush.WebPushError && error.statusCode === 410) {
           await supabaseAdmin
             .from('push_subscriptions')
             .delete()

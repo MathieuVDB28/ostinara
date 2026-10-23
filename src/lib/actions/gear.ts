@@ -8,6 +8,8 @@ import type {
   GearItem,
   CreateGearItemInput,
   UpdateGearItemInput,
+  GearSetup,
+  GearSetupItemWithGear,
   GearSetupWithItems,
   CreateGearSetupInput,
   UpdateGearSetupInput,
@@ -16,6 +18,7 @@ import type {
   SetFavoriteGearInput,
   CoverGear,
 } from "@/types";
+import { one, type Joined } from "@/lib/supabase/joins";
 
 const FREE_PLAN_GEAR_LIMIT = 5;
 const FREE_PLAN_SETUP_LIMIT = 1;
@@ -234,16 +237,13 @@ export async function getGearSetups(): Promise<GearSetupWithItems[]> {
   }
 
   // Mapper les items pour convertir la relation en format attendu
-  return (data || []).map((setup: any) => ({
+  type SetupRow = GearSetup & { gear_setup_items: Joined<GearSetupItemWithGear, "gear">[] | null };
+  return ((data || []) as SetupRow[]).map(({ gear_setup_items, ...setup }) => ({
     ...setup,
-    items: (setup.gear_setup_items || [])
-      .sort((a: any, b: any) => a.position - b.position)
-      .map((item: any) => ({
-        ...item,
-        gear: Array.isArray(item.gear) ? item.gear[0] : item.gear,
-      })),
-    gear_setup_items: undefined,
-  })) as GearSetupWithItems[];
+    items: [...(gear_setup_items || [])]
+      .sort((a, b) => a.position - b.position)
+      .map((item) => ({ ...item, gear: one(item.gear) })),
+  }));
 }
 
 export async function createGearSetup(input: CreateGearSetupInput): Promise<{
@@ -644,10 +644,10 @@ export async function getCoverGear(coverId: string): Promise<CoverGear[]> {
     return [];
   }
 
-  return (data || []).map((item: any) => ({
+  return ((data || []) as Joined<CoverGear, "gear">[]).map((item) => ({
     ...item,
-    gear: Array.isArray(item.gear) ? item.gear[0] : item.gear,
-  })) as CoverGear[];
+    gear: one(item.gear),
+  }));
 }
 
 export async function addGearToCover(
@@ -780,9 +780,9 @@ export async function getSongGear(songId: string): Promise<GearItem[]> {
     return [];
   }
 
-  return (data || [])
-    .map((item: any) => Array.isArray(item.gear) ? item.gear[0] : item.gear)
-    .filter(Boolean) as GearItem[];
+  return ((data || []) as { gear: GearItem | GearItem[] | null }[])
+    .map((item) => one(item.gear))
+    .filter((gear): gear is GearItem => Boolean(gear));
 }
 
 export async function addGearToSong(
