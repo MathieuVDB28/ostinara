@@ -5,8 +5,8 @@
  * for testing PWA on mobile devices
  */
 
-const { spawn } = require('child_process');
-const ngrok = require('ngrok');
+import { spawn } from 'node:child_process';
+import ngrok from 'ngrok';
 
 const PORT = 3000;
 
