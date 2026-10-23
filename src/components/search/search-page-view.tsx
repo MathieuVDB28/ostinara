@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { SearchResults } from "./search-results";
 import { useGlobalSearch } from "./use-global-search";
-import { useQueryInUrl } from "@/lib/hooks/use-query-in-url";
+import { useParamInUrl } from "@/lib/hooks/use-param-in-url";
 
 /**
  * L'onglet Recherche.
@@ -21,7 +21,7 @@ export function SearchPageView() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   // Dans l'adresse : « Retour » depuis un resultat retrouve la recherche.
-  useQueryInUrl(query);
+  useParamInUrl("q", query);
   const { groups, isSearching } = useGlobalSearch(query);
 
   return (

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import type { Translator } from "@/i18n/types";
@@ -10,6 +11,7 @@ import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { WeeklyAlbum, WeeklyAlbums } from "@/types";
+import { useParamInUrl } from "@/lib/hooks/use-param-in-url";
 
 interface WeeklyAlbumsViewProps {
   initial: WeeklyAlbums;
@@ -52,8 +54,13 @@ const normalize = (value: string) =>
 export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps) {
   const t = useTranslations("albums.weekly");
   const intlLocale = useIntlLocale();
+  const searchParams = useSearchParams();
   const [week, setWeek] = useState(initial);
-  const [sort, setSort] = useState<SortMode>("top");
+  const [sort, setSort] = useState<SortMode>(() => (searchParams.get("tri") === "ecoutes" ? "popular" : "top"));
+  // La semaine et le tri dans l'adresse : « Retour » depuis un album
+  // ramene sur la semaine parcourue (la page relit `?semaine=`).
+  useParamInUrl("semaine", week.week_offset > 0 ? String(week.week_offset) : "");
+  useParamInUrl("tri", sort === "popular" ? "ecoutes" : "");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 

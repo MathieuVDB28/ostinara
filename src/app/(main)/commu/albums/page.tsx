@@ -11,8 +11,14 @@ export async function generateMetadata() {
  * Les albums de la semaine, cote communaute. La meme vue est l'onglet
  * « Semaine » de « Biblio › Albums » : la-bas on note, ici on decouvre.
  */
-export default async function CommuAlbumsPage() {
-  const week = await getWeeklyAlbums();
+export default async function CommuAlbumsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ semaine?: string }>;
+}) {
+  // `?semaine=` : la semaine parcourue avant d'ouvrir un album.
+  const { semaine } = await searchParams;
+  const week = await getWeeklyAlbums(Number(semaine) || 0);
 
   if (!week) {
     return null;

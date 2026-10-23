@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { AlbumReview, AlbumWishlistItem, UserPlan, WeeklyAlbums } from "@/types";
 import { AlbumReviewCard } from "./album-review-card";
@@ -15,10 +16,33 @@ import Link from "next/link";
 import { Bookmark, Disc3, ListFilter, Plus, SearchX, Star } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { deezerUrl } from "@/lib/services/deezer";
+import { useParamInUrl } from "@/lib/hooks/use-param-in-url";
 
 type AlbumsTab = "reviews" | "wishlist" | "week" | "recommendations";
 
 const TABS: AlbumsTab[] = ["reviews", "wishlist", "week", "recommendations"];
+
+/**
+ * L'onglet dans l'adresse (`?onglet=`) : « Retour » depuis un album
+ * ramene sur l'onglet d'ou l'on venait. « Mes écoutés » est le defaut,
+ * sans parametre.
+ */
+const TAB_SLUGS: Record<AlbumsTab, string> = {
+  reviews: "",
+  wishlist: "a-ecouter",
+  week: "semaine",
+  recommendations: "recos",
+};
+
+function tabFromSlug(slug: string | null): AlbumsTab {
+  return TABS.find((tab) => slug && TAB_SLUGS[tab] === slug) ?? "reviews";
+}
+
+/** `?etoiles=1..5`, sinon pas de filtre. */
+function starsFromParam(value: string | null): number {
+  const stars = Number(value);
+  return Number.isInteger(stars) && stars >= 1 && stars <= 5 ? stars : 0;
+}
 
 const CHIP =
   "inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -39,14 +63,18 @@ export function AlbumsView({
   userPlan,
 }: AlbumsViewProps) {
   const t = useTranslations("albums.view");
+  const searchParams = useSearchParams();
   const [reviews, setReviews] = useState(initialReviews);
   const [wishlist, setWishlist] = useState(initialWishlist);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<AlbumsTab>("reviews");
+  const [activeTab, setActiveTab] = useState<AlbumsTab>(() => tabFromSlug(searchParams.get("onglet")));
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [reviewFromWishlist, setReviewFromWishlist] = useState<AlbumWishlistItem | null>(null);
-  const [starFilter, setStarFilter] = useState(0);
+  const [starFilter, setStarFilter] = useState(() => starsFromParam(searchParams.get("etoiles")));
+  useParamInUrl("onglet", TAB_SLUGS[activeTab]);
+  // Le filtre par etoiles ne vaut que pour « Mes écoutés ».
+  useParamInUrl("etoiles", activeTab === "reviews" && starFilter > 0 ? String(starFilter) : "");
   const { query: searchQuery, setQuery: setSearchQuery } = useBiblioSearch();
   const isPaid = userPlan !== "free";
 

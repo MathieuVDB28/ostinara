@@ -3,7 +3,12 @@ import { getAlbumWishlist } from "@/lib/actions/album-wishlist";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { AlbumsView } from "@/components/albums/albums-view";
 
-export default async function BiblioAlbumsPage() {
+export default async function BiblioAlbumsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ semaine?: string }>;
+}) {
+  const { semaine } = await searchParams;
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
 
@@ -16,7 +21,8 @@ export default async function BiblioAlbumsPage() {
   const [reviews, wishlist, weeklyAlbums] = await Promise.all([
     getUserAlbumReviews(),
     getAlbumWishlist(),
-    getWeeklyAlbums(),
+    // `?semaine=` : la semaine parcourue avant d'ouvrir un album.
+    getWeeklyAlbums(Number(semaine) || 0),
   ]);
 
   return (

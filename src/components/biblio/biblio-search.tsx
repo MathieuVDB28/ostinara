@@ -11,7 +11,7 @@ import {
 import { usePathname, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useQueryInUrl } from "@/lib/hooks/use-query-in-url";
+import { useParamInUrl } from "@/lib/hooks/use-param-in-url";
 
 interface BiblioSearchValue {
   query: string;
@@ -39,7 +39,7 @@ export function BiblioSearchProvider({ children }: { children: ReactNode }) {
    * album ou un artiste retrouve la recherche.
    */
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
-  useQueryInUrl(query);
+  useParamInUrl("q", query);
   const value = useMemo(() => ({ query, setQuery }), [query]);
 
   return (
