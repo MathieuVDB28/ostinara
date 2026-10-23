@@ -43,7 +43,8 @@
     "already": "{count, plural, one {Already in your library} other {All already in your library}}",
     "see": "View",
     "add": "{count, plural, one {Add to my library} other {Add all # to my library}}",
-    "partial": "{count, plural, one {# added} other {# added}}, then: "
+    "partial": "{count, plural, one {# added} other {# added}}, then: ",
+    "likedBy": "A favorite of {names}"
   },
   "artist": {
     "back": "Back",
@@ -155,7 +156,9 @@
     "tracksTitle": "Tracks",
     "tapFavorite": "Tap your favorite songs",
     "learnTracks": "Learn some tracks",
-    "yourFavorite": "{count, plural, one {Your favorite: } other {Your favorites: }}"
+    "yourFavorite": "{count, plural, one {Your favorite: } other {Your favorites: }}",
+    "friendsTitle": "Your friends · {count}",
+    "friendFavorite": "{count, plural, one {Favorite:} other {Favorites:}}"
   },
   "view": {
     "tabs": {

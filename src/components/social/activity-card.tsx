@@ -61,7 +61,7 @@ type ChallengeTypeKey = (typeof CHALLENGE_TYPES)[number];
 const isChallengeType = (value: unknown): value is ChallengeTypeKey =>
   (CHALLENGE_TYPES as readonly unknown[]).includes(value);
 
-function Avatar({
+export function Avatar({
   url,
   name,
   size = 32,

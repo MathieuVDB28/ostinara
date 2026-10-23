@@ -503,63 +503,11 @@ export async function getFeedActivities(
   });
   const songsInMyLibrary = new Set(await getLibraryMatches(friendSongs));
 
-  // Récupérer les réactions en batch pour toutes les activités
-  const activityIds = activities.map((a) => a.id);
-  const reactionsMap = new Map<string, ReactionSummary[]>();
-  const userReactionsMap = new Map<string, string[]>();
-
-  if (activityIds.length > 0) {
-    const { data: allReactions } = await supabase
-      .from("activity_reactions")
-      .select("activity_id, user_id, emoji")
-      .in("activity_id", activityIds);
-
-    if (allReactions) {
-      // Grouper par activity_id
-      const grouped = new Map<string, { emoji: string; user_id: string }[]>();
-      for (const r of allReactions) {
-        const list = grouped.get(r.activity_id) || [];
-        list.push({ emoji: r.emoji, user_id: r.user_id });
-        grouped.set(r.activity_id, list);
-      }
-
-      for (const [actId, reactions] of grouped) {
-        // Compter par emoji
-        const emojiCounts = new Map<string, { count: number; reacted: boolean }>();
-        const userEmojis: string[] = [];
-        for (const r of reactions) {
-          const existing = emojiCounts.get(r.emoji) || { count: 0, reacted: false };
-          existing.count++;
-          if (r.user_id === user.id) {
-            existing.reacted = true;
-            userEmojis.push(r.emoji);
-          }
-          emojiCounts.set(r.emoji, existing);
-        }
-        const summaries: ReactionSummary[] = [];
-        for (const [emoji, data] of emojiCounts) {
-          summaries.push({ emoji, count: data.count, reacted: data.reacted });
-        }
-        reactionsMap.set(actId, summaries);
-        userReactionsMap.set(actId, userEmojis);
-      }
-    }
-  }
-
-  // Récupérer le nombre de commentaires en batch
-  const commentCountMap = new Map<string, number>();
-  if (activityIds.length > 0) {
-    const { data: commentCounts } = await supabase
-      .from("activity_comments")
-      .select("activity_id")
-      .in("activity_id", activityIds);
-
-    if (commentCounts) {
-      for (const c of commentCounts) {
-        commentCountMap.set(c.activity_id, (commentCountMap.get(c.activity_id) || 0) + 1);
-      }
-    }
-  }
+  const { reactionsMap, userReactionsMap, commentCountMap } = await interactionsFor(
+    supabase,
+    user.id,
+    activities.map((a) => a.id)
+  );
 
   // Enrichir les activités avec les détails récupérés
   const enrichedActivities: ActivityWithDetails[] = activities.map((activity) => {
@@ -658,6 +606,71 @@ export async function getFeedActivities(
   });
 
   return enrichedActivities;
+}
+
+/** Les reactions et le nombre de commentaires d'une liste d'activites, en deux lectures. */
+async function interactionsFor(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  activityIds: string[]
+) {
+  const reactionsMap = new Map<string, ReactionSummary[]>();
+  const userReactionsMap = new Map<string, string[]>();
+
+  if (activityIds.length > 0) {
+    const { data: allReactions } = await supabase
+      .from("activity_reactions")
+      .select("activity_id, user_id, emoji")
+      .in("activity_id", activityIds);
+
+    if (allReactions) {
+      // Grouper par activity_id
+      const grouped = new Map<string, { emoji: string; user_id: string }[]>();
+      for (const r of allReactions) {
+        const list = grouped.get(r.activity_id) || [];
+        list.push({ emoji: r.emoji, user_id: r.user_id });
+        grouped.set(r.activity_id, list);
+      }
+
+      for (const [actId, reactions] of grouped) {
+        // Compter par emoji
+        const emojiCounts = new Map<string, { count: number; reacted: boolean }>();
+        const userEmojis: string[] = [];
+        for (const r of reactions) {
+          const existing = emojiCounts.get(r.emoji) || { count: 0, reacted: false };
+          existing.count++;
+          if (r.user_id === userId) {
+            existing.reacted = true;
+            userEmojis.push(r.emoji);
+          }
+          emojiCounts.set(r.emoji, existing);
+        }
+        const summaries: ReactionSummary[] = [];
+        for (const [emoji, data] of emojiCounts) {
+          summaries.push({ emoji, count: data.count, reacted: data.reacted });
+        }
+        reactionsMap.set(actId, summaries);
+        userReactionsMap.set(actId, userEmojis);
+      }
+    }
+  }
+
+  // Récupérer le nombre de commentaires en batch
+  const commentCountMap = new Map<string, number>();
+  if (activityIds.length > 0) {
+    const { data: commentCounts } = await supabase
+      .from("activity_comments")
+      .select("activity_id")
+      .in("activity_id", activityIds);
+
+    if (commentCounts) {
+      for (const c of commentCounts) {
+        commentCountMap.set(c.activity_id, (commentCountMap.get(c.activity_id) || 0) + 1);
+      }
+    }
+  }
+
+  return { reactionsMap, userReactionsMap, commentCountMap };
 }
 
 /** Ce qui identifie un album : son identifiant Deezer, et son titre et artiste (albums saisis a la main). */
@@ -906,6 +919,59 @@ export async function getFriendRecentActivities(
     ...activity,
     user: activity.user as Profile,
   }));
+}
+
+/** Combien de sessions un profil montre a la fois. */
+const PROFILE_SESSIONS_PAGE = 5;
+
+/**
+ * Les sessions partagees d'un musicien, pour son profil : les memes
+ * activites que le feed, avec leurs reactions et commentaires. `before`
+ * (la date de la derniere affichee) donne la page suivante.
+ *
+ * La RLS decide de ce qui se lit ; on en demande une de plus pour savoir
+ * s'il en reste.
+ */
+export async function getProfileSessions(
+  profileId: string,
+  before?: string
+): Promise<{ sessions: ActivityWithDetails[]; hasMore: boolean }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+  if (!user) return { sessions: [], hasMore: false };
+
+  let query = supabase
+    .from("activities")
+    .select("*, user:profiles!user_id(id, username, display_name, avatar_url, plan)")
+    .eq("user_id", profileId)
+    .eq("type", "session_completed")
+    .order("created_at", { ascending: false })
+    .limit(PROFILE_SESSIONS_PAGE + 1);
+  if (before) query = query.lt("created_at", before);
+
+  const { data: activities, error } = await query;
+  if (error || !activities) {
+    if (error) console.error("Error fetching profile sessions:", error);
+    return { sessions: [], hasMore: false };
+  }
+
+  const page = activities.slice(0, PROFILE_SESSIONS_PAGE);
+  const { reactionsMap, userReactionsMap, commentCountMap } = await interactionsFor(
+    supabase,
+    user.id,
+    page.map((a) => a.id)
+  );
+
+  return {
+    sessions: page.map((activity) => ({
+      ...activity,
+      user: activity.user as Profile,
+      reactions: reactionsMap.get(activity.id) || [],
+      commentCount: commentCountMap.get(activity.id) || 0,
+      currentUserReactions: userReactionsMap.get(activity.id) || [],
+    })),
+    hasMore: activities.length > PROFILE_SESSIONS_PAGE,
+  };
 }
 
 // === Récupérer les données d'interaction d'une cover (via son activité) ===

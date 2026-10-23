@@ -44,6 +44,7 @@
     "regenerate": "Régénérer le plan de la semaine",
     "done": "Semaine bouclée. Le prochain plan arrive lundi.",
     "progress": "Progression : {percent} %",
-    "work": "Travailler"
+    "work": "Travailler",
+    "reached": "Atteint d'après ton journal"
   }
 }

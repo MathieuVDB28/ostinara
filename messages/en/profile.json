@@ -78,12 +78,11 @@
     "sessions": "Sessions",
     "lastSessions": "Recent sessions",
     "recentCovers": "Recent covers",
-    "freeSession": "Free session",
     "statusAt": "{status} for {name}",
     "seeTab": "See their tab",
     "badges": "Badges · {count}",
-    "songAndOthers": "{title} {count, plural, one {and 1 more} other {and # more}}",
-    "exercisesCount": "{count, plural, one {# exercise} other {# exercises}}"
+    "moreSessions": "Show more sessions",
+    "loadingSessions": "Loading…"
   },
   "favorites": {
     "selectSong": "Pick a song",

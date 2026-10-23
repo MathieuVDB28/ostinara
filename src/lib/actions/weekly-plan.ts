@@ -389,14 +389,18 @@ export async function getWeeklyPlan(): Promise<WeeklyPlan | null> {
     weekCovers,
   };
 
+  const t = await getTranslations("weeklyPlan");
+
   const withProgress: WeeklyGoalWithProgress[] = (goals as WeeklyGoal[]).map(
     (goal) => {
       const current = measure(goal, measureInput);
       const target = goal.target_value ?? 1;
       const checked = goal.completed_at !== null;
+      const song = goal.song_id ? songsMap.get(goal.song_id) ?? null : null;
       return {
         ...goal,
-        song: goal.song_id ? songsMap.get(goal.song_id) ?? null : null,
+        detail: liveDetail(goal, current, song, t),
+        song,
         current,
         percent: percentOf(goal, current),
         done: checked || current >= target,
@@ -411,6 +415,22 @@ export async function getWeeklyPlan(): Promise<WeeklyPlan | null> {
     goals: withProgress,
     completedCount: withProgress.filter((goal) => goal.done).length,
   };
+}
+
+/**
+ * Le detail d'un objectif de tempo suit le journal : ecrit le lundi, il
+ * disait encore « Aucun tempo enregistre » une fois la cible depassee.
+ * Les autres details decrivent la semaine passee et restent tels quels.
+ */
+function liveDetail(
+  goal: WeeklyGoal,
+  current: number,
+  song: Song | null,
+  t: PlanT
+): string | null {
+  if (goal.kind !== "tempo" || current <= (goal.baseline_value ?? 0)) return goal.detail;
+  const target = (song && songTargetBpm(song)?.bpm) || goal.target_value;
+  return target ? t("goal.tempoBest", { best: current, target }) : goal.detail;
 }
 
 /** Les morceaux vises par les objectifs. Liste vide : aucune requete. */

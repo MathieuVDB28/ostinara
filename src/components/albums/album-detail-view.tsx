@@ -7,10 +7,11 @@ import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import { StarRating } from "@/components/ui/star-rating";
 import { updateAlbumReview, deleteAlbumReview } from "@/lib/actions/albums";
-import type { CatalogAlbumDetails, AlbumReview, AlbumCommunityStats, CatalogAlbumTrack, FavoriteTrack } from "@/types";
+import type { CatalogAlbumDetails, AlbumReview, AlbumReviewWithProfile, AlbumCommunityStats, CatalogAlbumTrack, FavoriteTrack } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { Cover } from "@/components/ui/cover";
-import { AddTracksToLibraryButton, FavoriteTrackPicker, toFavoriteTracks } from "./favorite-track-picker";
+import { AddTracksToLibraryButton, FavoriteTrackPicker, LikedBy, toFavoriteTracks } from "./favorite-track-picker";
+import { FriendsAlbumReviews } from "./friends-album-reviews";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { Plus } from "lucide-react";
 import { ListenLink } from "@/components/ui/listen-link";
@@ -19,6 +20,8 @@ interface Props {
   album: CatalogAlbumDetails;
   stats: AlbumCommunityStats | null;
   userReview: AlbumReview | null;
+  /** Les reviews de mes amis sur cet album. */
+  friendReviews: AlbumReviewWithProfile[];
   /** Identifiants Deezer des titres deja dans la biblio. */
   libraryTrackIds: string[];
   /** Wikipedia et Wikidata, rendus cote serveur en streaming. */
@@ -29,7 +32,7 @@ function starsFromDb(dbRating: number) {
   return dbRating / 2;
 }
 
-export function AlbumDetailView({ album, stats, userReview: initialReview, libraryTrackIds, encyclopedia }: Props) {
+export function AlbumDetailView({ album, stats, userReview: initialReview, friendReviews, libraryTrackIds, encyclopedia }: Props) {
   const t = useTranslations("albums.detail");
   const tr = useTranslations("albums.review");
   const tc = useTranslations("common");
@@ -49,6 +52,15 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, libra
   const mainArtist = album.artists[0];
   const year = album.release_date?.split("-")[0];
   const avgStars = stats ? stats.avg_rating / 2 : null;
+
+  // Pour chaque titre, les amis qui l'ont mis dans leurs preferes.
+  const likedBy: Record<string, string[]> = {};
+  for (const review of friendReviews) {
+    const name = review.user.display_name || review.user.username;
+    for (const track of review.favorite_tracks ?? []) {
+      if (track.deezer_id) (likedBy[track.deezer_id] ??= []).push(name);
+    }
+  }
 
   const handleUpdate = async () => {
     if (!userReview) return;
@@ -300,6 +312,8 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, libra
         )}
       </div>
 
+      <FriendsAlbumReviews reviews={friendReviews} />
+
       {encyclopedia}
 
       {/* Titres : le coeur marque le morceau prefere */}
@@ -365,13 +379,17 @@ export function AlbumDetailView({ album, stats, userReview: initialReview, libra
               tracks={tracks}
               value={favorites.flatMap((track) => (track.deezer_id ? [track.deezer_id] : []))}
               onChange={handleFavorites}
+              likedBy={likedBy}
             />
           ) : (
             <ol className="divide-y divide-border border-b border-border">
               {tracks.map((track) => (
                 <li key={track.id} className="grid min-h-[44px] grid-cols-[28px_minmax(0,1fr)] items-center gap-2 py-2">
                   <span className="tabular text-right font-mono text-xs text-muted-foreground">{track.track_number}</span>
-                  <span className="truncate text-sm">{track.name}</span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm">{track.name}</span>
+                    <LikedBy names={likedBy[track.id]} />
+                  </span>
                 </li>
               ))}
             </ol>

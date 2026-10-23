@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getAlbumDetails } from "@/lib/services/deezer";
 import {
   getAlbumCommunityStats,
+  getFriendsAlbumReviews,
   getUserAlbumReviewByDeezerId,
   resolveLegacyAlbumId,
 } from "@/lib/actions/albums";
@@ -25,10 +26,11 @@ export default async function AlbumDetailPage({ params }: Props) {
     redirect(`/albums/${deezerId}`);
   }
 
-  const [album, stats, userReview] = await Promise.all([
+  const [album, stats, userReview, friendReviews] = await Promise.all([
     getAlbumDetails(id),
     getAlbumCommunityStats(id),
     getUserAlbumReviewByDeezerId(id),
+    getFriendsAlbumReviews(id),
   ]);
 
   if (!album) notFound();
@@ -47,6 +49,7 @@ export default async function AlbumDetailPage({ params }: Props) {
       album={album}
       stats={stats}
       userReview={userReview}
+      friendReviews={friendReviews}
       libraryTrackIds={libraryTrackIds}
       encyclopedia={<AlbumEncyclopediaSection album={album} />}
     />

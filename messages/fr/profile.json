@@ -78,12 +78,11 @@
     "sessions": "Sessions",
     "lastSessions": "Dernières sessions",
     "recentCovers": "Covers récentes",
-    "freeSession": "Session libre",
     "statusAt": "{status} chez {name}",
     "seeTab": "Voir sa tablature",
     "badges": "Badges · {count}",
-    "songAndOthers": "{title} {count, plural, one {et 1 autre} other {et # autres}}",
-    "exercisesCount": "{count, plural, one {# exercice} other {# exercices}}"
+    "moreSessions": "Voir plus de sessions",
+    "loadingSessions": "Chargement…"
   },
   "favorites": {
     "selectSong": "Sélectionner un morceau",

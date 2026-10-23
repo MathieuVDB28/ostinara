@@ -213,23 +213,28 @@ function WeeklyGoalRow({
 
   const Icon = KIND_ICONS[goal.kind];
 
+  // Atteint d'apres le journal : la case se remplit seule et ne se decoche
+  // pas — decocher ne changerait rien a la mesure.
+  const reached = goal.current >= target;
+
   return (
     <li className="border-b border-border py-3">
       <div className="flex items-start gap-3">
         <button
           type="button"
           role="checkbox"
-          aria-checked={goal.checked}
-          disabled={disabled}
+          aria-checked={goal.done}
+          disabled={disabled || reached}
           onClick={onToggle}
+          title={reached ? t("card.reached") : undefined}
           className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            goal.checked
+            goal.done
               ? "border-foreground bg-foreground text-background"
               : "border-input hover:border-foreground"
-          }`}
+          } ${reached ? "cursor-default" : ""}`}
         >
-          {goal.checked && <Check className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />}
-          <span className="sr-only">{goal.title}</span>
+          {goal.done && <Check className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />}
+          <span className="sr-only">{reached ? `${goal.title} · ${t("card.reached")}` : goal.title}</span>
         </button>
 
         <div className="min-w-0 flex-1">

@@ -15,6 +15,7 @@ import {
 } from "@/lib/services/deezer";
 import type {
   AlbumReview,
+  AlbumReviewWithProfile,
   AlbumCommunityStats,
   WeeklyAlbum,
   WeeklyAlbums,
@@ -400,6 +401,45 @@ export async function getUserAlbumReviewByDeezerId(deezerId: string): Promise<Al
 
   if (error || !data) return null;
   return data as AlbumReview;
+}
+
+/**
+ * Ce que mes amis pensent d'un album : leur note, leurs morceaux preferes,
+ * leur avis. Le feed le montrait au moment de la review ; la page de
+ * l'album le garde.
+ */
+export async function getFriendsAlbumReviews(deezerId: string): Promise<AlbumReviewWithProfile[]> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+  if (!user) return [];
+
+  const { data: friendships } = await supabase
+    .from("friendships")
+    .select("requester_id, addressee_id")
+    .eq("status", "accepted")
+    .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+
+  const friendIds = (friendships ?? []).map((f) =>
+    f.requester_id === user.id ? f.addressee_id : f.requester_id
+  );
+  if (friendIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("album_reviews")
+    .select("*, user:profiles!user_id(id, username, display_name, avatar_url, plan)")
+    .eq("deezer_id", deezerId)
+    .in("user_id", friendIds)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching friends' album reviews:", error);
+    return [];
+  }
+
+  return (data ?? []).map((review) => ({
+    ...review,
+    user: (Array.isArray(review.user) ? review.user[0] : review.user) as AlbumReviewWithProfile["user"],
+  })) as AlbumReviewWithProfile[];
 }
 
 /**

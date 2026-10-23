@@ -534,7 +534,6 @@ export interface PublicProfile {
     minutesThisWeek: number;
   } | null;
   /** Les dernieres sessions partagees (activites `session_completed`). */
-  recent_sessions: ProfileSession[] | null;
   stats: {
     totalSongs: number | null;
     masteredSongs: number | null;
@@ -867,13 +866,6 @@ export interface SessionActivityMetadata {
     minutes: number;
     bpm: number | null;
   }[];
-}
-
-/** Une session vue sur un profil : ce qu'en dit son activite. */
-export interface ProfileSession extends SessionActivityMetadata {
-  /** L'id de l'activite. */
-  id: string;
-  created_at: string;
 }
 
 export interface UpdatePracticeSessionInput {

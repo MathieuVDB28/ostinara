@@ -22,8 +22,6 @@ import type {
   WishlistSong,
   PlaylistWithSongs,
   AlbumReview,
-  ProfileSession,
-  SessionActivityMetadata,
   CoverWithSong,
 } from "@/types";
 
@@ -254,7 +252,6 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
   let playlists: PlaylistWithSongs[] | null = null;
   let albumReviews: AlbumReview[] | null = null;
   let practiceStats = null;
-  let recentSessions: ProfileSession[] | null = null;
   let totalSongs: number | null = null;
   let masteredSongs: number | null = null;
   let totalAlbumReviews = 0;
@@ -273,7 +270,6 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
       playlistsData,
       albumReviewsData,
       sessionsData,
-      recentSessionsData,
     ] = await Promise.all([
       supabase
         .from("favorite_songs")
@@ -333,16 +329,9 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
         .order("created_at", { ascending: false }),
       // Les sessions ne sont lisibles que par leur proprietaire : pour les
       // chiffres, la date et la duree de chacune, et rien d'autre.
+      // Le detail, tel que les amis le voient dans le feed, vient des
+      // activites (getProfileSessions).
       supabase.rpc("get_profile_practice_days", { p_user_id: userId }),
-      // Le detail, tel que les amis le voient dans le feed : seulement les
-      // sessions partagees.
-      supabase
-        .from("activities")
-        .select("id, created_at, metadata")
-        .eq("user_id", userId)
-        .eq("type", "session_completed")
-        .order("created_at", { ascending: false })
-        .limit(5),
     ]);
 
     // Mapper les favorite songs
@@ -379,12 +368,6 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
       return { ...pl, songs, song_count: songs.length, playlist_songs: undefined };
     }) as PlaylistWithSongs[];
 
-    recentSessions = (recentSessionsData.data || []).map((activity) => ({
-      ...(activity.metadata as SessionActivityMetadata),
-      id: activity.id as string,
-      created_at: activity.created_at as string,
-    }));
-
     // Compute practice stats (streak + totals)
     const sessions = (sessionsData.data || []) as { practiced_at: string; duration_minutes: number; session_key: string }[];
     // Une session a plusieurs morceaux a une ligne par morceau : on compte les sessions.
@@ -393,7 +376,8 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
 
     const startOfWeek = new Date();
     startOfWeek.setHours(0, 0, 0, 0);
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    // Le lundi, comme le reste de l'app (getDay() rend 0 le dimanche).
+    startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
     const minutesThisWeek = sessions
       .filter((s: any) => new Date(s.practiced_at) >= startOfWeek)
       .reduce((sum: number, s: any) => sum + (s.duration_minutes || 0), 0);
@@ -471,7 +455,6 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     playlists,
     album_reviews: albumReviews,
     practice_stats: practiceStats,
-    recent_sessions: recentSessions,
     stats: {
       totalSongs,
       masteredSongs,

@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useIntlLocale } from "@/i18n/intl-locale";
 import { formatDuration } from "@/components/progress/stats-summary";
-import { ChevronLeft, Dumbbell, ExternalLink, Heart, Lock, X } from "lucide-react";
-import type { CoverWithSong, Instrument, ProfileSession, PublicProfile, SessionMood, Song } from "@/types";
+import { ChevronLeft, ExternalLink, Heart, Lock, X } from "lucide-react";
+import type { ActivityWithDetails, CoverWithSong, Instrument, PublicProfile, Song } from "@/types";
+import { getProfileSessions } from "@/lib/actions/activities";
+import { ActivityCard } from "@/components/social/activity-card";
 import { ProfileIdentity } from "./profile-identity";
 import { ProfileShowcase } from "./profile-showcase";
 import { FriendshipButton } from "@/components/friends/friendship-button";
@@ -23,20 +24,13 @@ type Tab = "songs" | "albums" | "gear" | "activity";
 
 const TABS: Tab[] = ["songs", "albums", "gear", "activity"];
 
-const MOOD_EMOJI: Record<SessionMood, string> = {
-  frustrated: "😤",
-  neutral: "😐",
-  good: "🙂",
-  great: "😎",
-  on_fire: "🔥",
-};
+interface ProfileSessions {
+  sessions: ActivityWithDetails[];
+  hasMore: boolean;
+}
 
 const SECTION_TITLE =
   "mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground";
-
-function formatDate(dateStr: string, intlLocale: string): string {
-  return new Date(dateStr).toLocaleDateString(intlLocale, { day: "numeric", month: "short" });
-}
 
 function Empty({ children }: { children: React.ReactNode }) {
   return <p className="py-10 text-center text-sm text-muted-foreground">{children}</p>;
@@ -54,11 +48,16 @@ export function PublicProfileView({
   data,
   badges = [],
   librarySongIds = [],
+  sessions,
+  currentUserId,
 }: {
   data: PublicProfile;
   badges?: BadgeStatus[];
   /** Ses morceaux deja dans ma biblio. */
   librarySongIds?: string[];
+  /** Ses sessions partagees, premiere page. */
+  sessions: ProfileSessions;
+  currentUserId: string;
 }) {
   const t = useTranslations("profile.public");
   const tc = useTranslations("common");
@@ -245,7 +244,7 @@ export function PublicProfileView({
               </ul>
             ))}
 
-          {tab === "activity" && <ActivityTab data={data} />}
+          {tab === "activity" && <ActivityTab data={data} sessions={sessions} currentUserId={currentUserId} />}
         </>
       )}
 
@@ -263,12 +262,32 @@ export function PublicProfileView({
   );
 }
 
-function ActivityTab({ data }: { data: PublicProfile }) {
+function ActivityTab({
+  data,
+  sessions: initialSessions,
+  currentUserId,
+}: {
+  data: PublicProfile;
+  sessions: ProfileSessions;
+  currentUserId: string;
+}) {
   const t = useTranslations("profile.public");
   const tc = useTranslations("common");
   const stats = data.practice_stats;
-  const sessions = data.recent_sessions ?? [];
   const covers = data.recent_covers;
+  const [sessions, setSessions] = useState(initialSessions.sessions);
+  const [hasMore, setHasMore] = useState(initialSessions.hasMore);
+  const [loading, startLoading] = useTransition();
+
+  const loadMore = () => {
+    const last = sessions[sessions.length - 1];
+    if (!last) return;
+    startLoading(async () => {
+      const next = await getProfileSessions(data.profile.id, last.created_at);
+      setSessions((previous) => [...previous, ...next.sessions]);
+      setHasMore(next.hasMore);
+    });
+  };
 
   if (!stats?.totalSessions && sessions.length === 0 && covers.length === 0) {
     return <Empty>{t("noActivity")}</Empty>;
@@ -293,14 +312,26 @@ function ActivityTab({ data }: { data: PublicProfile }) {
         </dl>
       )}
 
+      {/* Les sessions en entier, comme dans le feed : morceaux et tempos,
+          exercices, sections, objectif, note — et de quoi y reagir. */}
       {sessions.length > 0 && (
         <section>
           <h2 className={SECTION_TITLE}>{t("lastSessions")}</h2>
-          <ul className="divide-y divide-border border-b border-border">
-            {sessions.map((session) => (
-              <SessionRow key={session.id} session={session} />
+          <div className="-mx-4 sm:mx-0">
+            {sessions.map((activity) => (
+              <ActivityCard key={activity.id} activity={activity} currentUserId={currentUserId} />
             ))}
-          </ul>
+          </div>
+          {hasMore && (
+            <button
+              type="button"
+              onClick={loadMore}
+              disabled={loading}
+              className="mt-3 flex min-h-[44px] w-full items-center justify-center rounded-lg border border-border text-sm font-semibold transition-colors hover:bg-accent disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {loading ? t("loadingSessions") : t("moreSessions")}
+            </button>
+          )}
         </section>
       )}
 
@@ -315,59 +346,6 @@ function ActivityTab({ data }: { data: PublicProfile }) {
         </section>
       )}
     </div>
-  );
-}
-
-/**
- * Une session partagee : ce qu'elle a travaille (le morceau le plus joue,
- * sinon les exercices), sa duree, son humeur et la note du musicien.
- */
-function SessionRow({ session }: { session: ProfileSession }) {
-  const t = useTranslations("profile.public");
-  const tc = useTranslations("common");
-  const te = useTranslations("enums");
-  const intlLocale = useIntlLocale();
-  const songs = Array.isArray(session.songs) ? session.songs : [];
-  const exercises = Array.isArray(session.exercises) ? session.exercises : [];
-  const lead = songs[0] ?? null;
-
-  const title = lead
-    ? songs.length > 1
-      ? t("songAndOthers", { title: lead.title, count: songs.length - 1 })
-      : lead.title
-    : exercises.length > 0
-      ? exercises.map((exercise) => exercise.name).join(", ")
-      : t("freeSession");
-  const meta = [
-    formatDuration(session.duration_minutes, tc),
-    lead?.bpm ? `${lead.bpm} BPM` : null,
-    lead && exercises.length > 0 ? t("exercisesCount", { count: exercises.length }) : null,
-    formatDate(session.practiced_at, intlLocale),
-  ].filter(Boolean);
-  const mood = session.mood && session.mood in MOOD_EMOJI ? session.mood : null;
-
-  return (
-    <li className="flex items-start gap-3 py-2.5">
-      {lead || exercises.length === 0 ? (
-        <Cover src={lead?.cover_url} className="h-10 w-10 rounded-[4px]" />
-      ) : (
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[4px] bg-secondary text-muted-foreground">
-          <Dumbbell className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
-        </span>
-      )}
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{title}</p>
-        <p className="truncate text-xs text-muted-foreground">{meta.join(" · ")}</p>
-        {session.notes && (
-          <p className="mt-1 line-clamp-2 font-serif text-[13.5px] italic text-foreground/80">{session.notes}</p>
-        )}
-      </div>
-      {mood && (
-        <span className="text-lg" aria-label={te(`mood.${mood}`)}>
-          {MOOD_EMOJI[mood]}
-        </span>
-      )}
-    </li>
   );
 }
 

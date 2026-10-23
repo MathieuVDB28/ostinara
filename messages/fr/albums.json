@@ -43,7 +43,8 @@
     "already": "{count, plural, one {Déjà dans ta biblio} other {Déjà tous dans ta biblio}}",
     "see": "Voir",
     "add": "{count, plural, one {Ajouter à ma biblio} other {Ajouter les # à ma biblio}}",
-    "partial": "{count, plural, one {# ajouté} other {# ajoutés}}, puis : "
+    "partial": "{count, plural, one {# ajouté} other {# ajoutés}}, puis : ",
+    "likedBy": "Dans les préférés de {names}"
   },
   "artist": {
     "back": "Retour",
@@ -155,7 +156,9 @@
     "tracksTitle": "Titres",
     "tapFavorite": "Touche tes morceaux préférés",
     "learnTracks": "Apprendre des titres",
-    "yourFavorite": "{count, plural, one {Ton préféré : } other {Tes préférés : }}"
+    "yourFavorite": "{count, plural, one {Ton préféré : } other {Tes préférés : }}",
+    "friendsTitle": "Chez tes amis · {count}",
+    "friendFavorite": "{count, plural, one {Préféré :} other {Préférés :}}"
   },
   "view": {
     "tabs": {

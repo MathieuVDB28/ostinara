@@ -21,13 +21,15 @@ interface FavoriteTrackPickerProps {
   disabled?: boolean;
   /** Hauteur bornee dans une modale, liste entiere sur la page de l'album. */
   scroll?: boolean;
+  /** Les amis qui ont mis un coeur, par identifiant Deezer du titre. */
+  likedBy?: Record<string, string[]>;
 }
 
 /**
  * La tracklist, ou l'on marque ses morceaux preferes d'un coeur. Toucher
  * un titre l'ajoute ou le retire ; les preferes suivent l'ordre de l'album.
  */
-export function FavoriteTrackPicker({ tracks, value, onChange, disabled, scroll }: FavoriteTrackPickerProps) {
+export function FavoriteTrackPicker({ tracks, value, onChange, disabled, scroll, likedBy }: FavoriteTrackPickerProps) {
   const t = useTranslations("albums.tracks");
   const multiDisc = tracks.some((track) => track.disc_number > 1);
   const chosen = new Set(value);
@@ -60,7 +62,10 @@ export function FavoriteTrackPicker({ tracks, value, onChange, disabled, scroll 
               <span className="tabular text-right font-mono text-xs text-muted-foreground">
                 {multiDisc ? `${track.disc_number}.${track.track_number}` : track.track_number}
               </span>
-              <span className="truncate text-sm">{track.name}</span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm">{track.name}</span>
+                <LikedBy names={likedBy?.[track.id]} />
+              </span>
               <span className="tabular font-mono text-xs text-muted-foreground">
                 {formatDuration(track.duration_ms)}
               </span>
@@ -74,6 +79,20 @@ export function FavoriteTrackPicker({ tracks, value, onChange, disabled, scroll 
         );
       })}
     </ol>
+  );
+}
+
+/** « ♡ Léa, Tom » sous un titre : les amis qui l'ont mis dans leurs preferes. */
+export function LikedBy({ names }: { names?: string[] }) {
+  const t = useTranslations("albums.tracks");
+  if (!names || names.length === 0) return null;
+  const label = t("likedBy", { names: names.join(", ") });
+  return (
+    <span className="flex min-w-0 items-center gap-1 text-xs font-normal text-muted-foreground" title={label}>
+      <Heart className="h-3 w-3 shrink-0 text-primary" strokeWidth={2} aria-hidden="true" />
+      <span className="sr-only">{label}</span>
+      <span aria-hidden="true" className="truncate">{names.join(", ")}</span>
+    </span>
   );
 }
 
