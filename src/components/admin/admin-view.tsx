@@ -22,7 +22,6 @@ const smallButton =
 
 function Avatar({ url }: { url?: string | null }) {
   return url ? (
-    // eslint-disable-next-line @next/next/no-img-element
     <img src={url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
   ) : (
     <span className="h-10 w-10 shrink-0 rounded-full bg-muted" />

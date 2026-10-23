@@ -1,10 +1,10 @@
 import { getLocale } from "next-intl/server";
 import { tErr } from "@/i18n/server";
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getStripeServer } from '@/lib/stripe/server';
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

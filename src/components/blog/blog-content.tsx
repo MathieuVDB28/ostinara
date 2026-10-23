@@ -132,7 +132,6 @@ export function BlogContent({ document, signedIn }: Props) {
         const caption = typeof node.attrs?.title === "string" ? node.attrs.title : "";
         return (
           <figure key={key}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt={alt} loading="lazy" className="w-full rounded-xl" />
             {caption && <figcaption>{caption}</figcaption>}
           </figure>

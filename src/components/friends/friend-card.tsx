@@ -52,7 +52,6 @@ export function FriendCard({ friend, onRefresh }: FriendCardProps) {
         className="-my-3 flex min-w-0 flex-1 items-center gap-3 py-3 transition-colors hover:bg-accent/50"
       >
       {friend.profile.avatar_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img src={friend.profile.avatar_url} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
       ) : (
         <span

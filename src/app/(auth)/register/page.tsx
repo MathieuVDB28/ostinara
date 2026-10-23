@@ -2,7 +2,6 @@
 
 import { Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { signup } from "@/lib/actions/auth";
@@ -10,7 +9,6 @@ import { signup } from "@/lib/actions/auth";
 export default function RegisterPage() {
   const t = useTranslations("auth.register");
   const tl = useTranslations("auth.login");
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);

@@ -16,7 +16,6 @@ export default async function BiblioCoversPage({
   return (
     <CoversView
       initialCovers={covers}
-      canUpload={uploadStatus.allowed}
       coverLimit={uploadStatus.limit}
       coverCount={uploadStatus.current}
       initialCoverId={initialCoverId}

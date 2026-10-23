@@ -69,7 +69,6 @@ export function ProfileIdentity({
           style={{ gridTemplateColumns: `repeat(${banner.length}, minmax(0, 1fr))` }}
         >
           {banner.map((url, index) => (
-            // eslint-disable-next-line @next/next/no-img-element
             <img key={`${url}-${index}`} src={url} alt="" className="h-full w-full object-cover" />
           ))}
           <span className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-background" />

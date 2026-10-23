@@ -117,7 +117,6 @@ export function MentionTextarea({ value, onChange, topicId, className = "", ...p
                 className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm ${index === active ? "bg-accent" : ""}`}
               >
                 {suggestion.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={suggestion.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" />
                 ) : (
                   <span className="h-6 w-6 rounded-full bg-muted" />

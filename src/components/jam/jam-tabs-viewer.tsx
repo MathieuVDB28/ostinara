@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { getJamTrackHint } from "@/lib/actions/jam-sessions";
 import { instrumentPhrase } from "@/lib/instruments";
@@ -33,7 +33,7 @@ export function JamTabsViewer({
   const tabWindowRef = useRef<Window | null>(null);
   const activeRef = useRef<HTMLButtonElement | null>(null);
 
-  const sections = currentItem?.played_sections || [];
+  const sections = useMemo(() => currentItem?.played_sections || [], [currentItem?.played_sections]);
   const songBpm = currentItem?.bpm || bpm;
   const tabsUrl = currentItem?.tabs_url;
 

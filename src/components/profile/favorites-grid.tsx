@@ -9,7 +9,6 @@ type FavoriteItem = FavoriteSong | FavoriteAlbum;
 interface FavoritesGridProps {
   items: FavoriteItem[];
   mode: 'view' | 'edit';
-  type: 'songs' | 'albums';
   onAdd?: (position: number) => void;
   onRemove?: (position: number) => void;
   onReorder?: (fromPosition: number, toPosition: number) => void;
@@ -19,7 +18,7 @@ function isFavoriteSong(item: FavoriteItem): item is FavoriteSong {
   return 'song' in item;
 }
 
-export function FavoritesGrid({ items, mode, type, onAdd, onRemove, onReorder }: FavoritesGridProps) {
+export function FavoritesGrid({ items, mode, onAdd, onRemove, onReorder }: FavoritesGridProps) {
   const t = useTranslations("profile.favorites");
   const positions = [1, 2, 3, 4];
   const [draggedPosition, setDraggedPosition] = useState<number | null>(null);

@@ -337,7 +337,6 @@ export function PostEditor({ post, userId, defaultLocale, translatable, canDelet
       <div>
         {coverUrl ? (
           <div className="relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={coverUrl} alt="" className="aspect-[16/9] w-full rounded-2xl bg-muted object-cover" />
             <div className="absolute right-3 bottom-3 flex gap-2">
               <button type="button" onClick={() => coverInput.current?.click()} className="rounded-full bg-background/90 px-3 py-1.5 text-xs font-bold">

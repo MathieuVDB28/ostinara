@@ -66,7 +66,7 @@ process.on('SIGINT', async () => {
   try {
     await ngrok.kill();
     console.log('✅ Ngrok tunnel closed');
-  } catch (error) {
+  } catch {
     // Ignore errors during cleanup
   }
 
@@ -77,7 +77,7 @@ process.on('SIGINT', async () => {
 process.on('SIGTERM', async () => {
   try {
     await ngrok.kill();
-  } catch (error) {
+  } catch {
     // Ignore errors during cleanup
   }
   nextProcess.kill('SIGTERM');

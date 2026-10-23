@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ExternalLink, LoaderCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -35,19 +35,7 @@ export default function SubscriptionPage() {
 
   const isSuccess = searchParams.get("success") === "true";
 
-  useEffect(() => {
-    loadSubscription();
-  }, []);
-
-  useEffect(() => {
-    if (isSuccess) {
-      setSuccess(t("successCheckout"));
-      // Recharger les données après un paiement réussi
-      loadSubscription();
-    }
-  }, [isSuccess]);
-
-  const loadSubscription = async () => {
+  const loadSubscription = useCallback(async () => {
     try {
       const profile = await getMyProfile();
       if (profile) {
@@ -64,7 +52,17 @@ export default function SubscriptionPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  // Au montage, et de nouveau au retour d'un paiement (?success=true).
+  useEffect(() => {
+    void loadSubscription();
+  }, [loadSubscription, isSuccess]);
+
+  // Le message du retour de paiement se deduit de l'adresse ; une action
+  // sur la page le remplace.
+  const successMessage = success ?? (isSuccess ? t("successCheckout") : null);
+
 
   const handleSelectPlan = async (plan: UserPlan) => {
     if (!subscription) return;
@@ -161,9 +159,9 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Messages */}
-      {success && (
+      {successMessage && (
         <div className="mb-6 rounded-lg bg-success/10 px-4 py-3 text-sm text-success">
-          {success}
+          {successMessage}
         </div>
       )}
       {error && (

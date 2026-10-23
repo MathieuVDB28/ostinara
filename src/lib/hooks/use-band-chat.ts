@@ -41,11 +41,8 @@ export function useBandChat({
 
     const channel = supabase.channel(channelName);
 
-    // Build the filter based on whether we're in a rehearsal thread or general chat
-    const filter = rehearsalId
-      ? `band_id=eq.${bandId}&rehearsal_id=eq.${rehearsalId}`
-      : `band_id=eq.${bandId}`;
-
+    // Realtime ne filtre que sur une colonne : on ecoute le groupe, et le
+    // fil (general ou repetition) se trie dans le handler.
     // Listen for new messages via postgres_changes
     channel.on(
       "postgres_changes",

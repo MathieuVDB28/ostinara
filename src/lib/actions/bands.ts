@@ -10,7 +10,6 @@ import type {
   Instrument,
   Band,
   BandWithMembers,
-  BandMemberWithProfile,
   BandInvitationWithDetails,
   CreateBandInput,
   UpdateBandInput,

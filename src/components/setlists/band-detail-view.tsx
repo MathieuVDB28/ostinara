@@ -216,7 +216,6 @@ export function BandDetailView({
           <div className="pt-3">
             <RehearsalCalendar
               rehearsals={rehearsals}
-              currentUserId={currentUserId}
               onRehearsalClick={(rehearsal) => router.push(`/setlists/rehearsals/${rehearsal.id}`)}
             />
           </div>

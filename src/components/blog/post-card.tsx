@@ -24,7 +24,6 @@ export function PostCard({ post, href, featured = false, showStatus = false }: P
       className={`group flex gap-4 ${featured ? "flex-col" : "flex-row-reverse items-start sm:flex-col sm:items-stretch"}`}
     >
       {post.cover_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={post.cover_url}
           alt=""

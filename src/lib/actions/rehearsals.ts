@@ -9,7 +9,6 @@ import { sendPushNotificationToMultipleUsers, type PushT } from "@/lib/notificat
 import type {
   Rehearsal,
   RehearsalWithDetails,
-  RehearsalParticipantWithProfile,
   CreateRehearsalInput,
   UpdateRehearsalInput,
   RehearsalRsvpStatus,

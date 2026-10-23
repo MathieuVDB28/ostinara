@@ -85,7 +85,6 @@ export function BlogComments({ postId, initial, currentUserId, isStaff, loginHre
           return (
             <li key={comment.id} className="flex gap-3 py-4">
               {comment.user?.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={comment.user.avatar_url} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
               ) : (
                 <span className="h-9 w-9 shrink-0 rounded-full bg-muted" />

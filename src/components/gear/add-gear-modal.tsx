@@ -2,9 +2,9 @@
 
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { gearTypesFor } from "@/lib/instruments";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import type { GearType, GearCondition, GearVisibility, UserPlan } from "@/types";
+import type { GearType, GearCondition, GearVisibility } from "@/types";
 import { GEAR_BRANDS } from "@/types";
 import { createGearItem } from "@/lib/actions/gear";
 import { GearTypeIcon } from "./gear-card";
@@ -13,7 +13,6 @@ interface AddGearModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
-  userPlan: UserPlan;
 }
 
 
@@ -31,14 +30,16 @@ export function AddGearModal({
   isOpen,
   onClose,
   onSaved,
-  userPlan,
 }: AddGearModalProps) {
   const t = useTranslations("gear.form");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
   // Le matos de mes instruments d'abord, et le premier preselectionne.
   const myInstruments = useMyInstruments();
-  const gearTypes = gearTypesFor(myInstruments.instruments.map((i) => i.instrument));
+  const gearTypes = useMemo(
+    () => gearTypesFor(myInstruments.instruments.map((i) => i.instrument)),
+    [myInstruments.instruments]
+  );
   const [type, setType] = useState<GearType>(gearTypes[0]);
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
@@ -116,7 +117,7 @@ export function AddGearModal({
     setIsActive(true);
     setVisibility("friends");
     setError("");
-  }, []);
+  }, [gearTypes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

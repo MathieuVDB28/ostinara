@@ -204,7 +204,6 @@ export function TopicForm({ topic, userId, defaultLocale, gear }: Props) {
         <div className="grid grid-cols-4 gap-2">
           {images.map((url) => (
             <div key={url} className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" className="aspect-square w-full rounded-xl bg-muted object-cover" />
               <button
                 type="button"

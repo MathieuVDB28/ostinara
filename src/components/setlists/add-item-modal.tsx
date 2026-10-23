@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { ALL_EXERCISE_CATEGORIES } from "@/lib/instruments";
-import { getSongs } from "@/lib/actions/songs";
 import { addSetlistItem } from "@/lib/actions/setlists";
 import { getExercises } from "@/lib/actions/exercises";
 import {

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import type { Song } from "@/types";
 import { createClient } from "@/lib/supabase/client";
@@ -47,7 +47,6 @@ export function FavoriteSelectorModal({
   const [catalogTracks, setCatalogTracks] = useState<CatalogResultTrack[]>([]);
   const [catalogAlbums, setCatalogAlbums] = useState<CatalogResultAlbum[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Charger les morceaux de la bibliothèque
   useEffect(() => {
@@ -63,28 +62,7 @@ export function FavoriteSelectorModal({
     }
   }, [isOpen, activeTab, type]);
 
-  // Recherche Deezer avec debounce
-  useEffect(() => {
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
-    }
-
-    if (searchQuery.length > 2 && activeTab === "catalog") {
-      const timeout = setTimeout(() => {
-        searchCatalog(searchQuery);
-      }, 500);
-      setSearchTimeout(timeout);
-    } else {
-      setCatalogTracks([]);
-      setCatalogAlbums([]);
-    }
-
-    return () => {
-      if (searchTimeout) clearTimeout(searchTimeout);
-    };
-  }, [searchQuery, activeTab]);
-
-  const searchCatalog = async (query: string) => {
+  const searchCatalog = useCallback(async (query: string) => {
     setLoading(true);
     try {
       const searchType = type === "song" ? "track" : "album";
@@ -101,7 +79,24 @@ export function FavoriteSelectorModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [type]);
+
+  // Recherche Deezer avec debounce. Le minuteur se coupe au nettoyage :
+  // le garder dans un state laissait partir les recherches des frappes
+  // precedentes.
+  const searchesCatalog = searchQuery.length > 2 && activeTab === "catalog";
+  useEffect(() => {
+    if (!searchesCatalog) return;
+    const timeout = setTimeout(() => {
+      searchCatalog(searchQuery);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [searchesCatalog, searchQuery, searchCatalog]);
+
+  // Hors recherche, rien a montrer (sans vider les listes dans l'effet).
+  const shownTracks = searchesCatalog ? catalogTracks : [];
+  const shownAlbums = searchesCatalog ? catalogAlbums : [];
+
 
   const handleSelectSong = (song: Song | CatalogResultTrack) => {
     if (onSelectSong) {
@@ -275,9 +270,9 @@ export function FavoriteSelectorModal({
             )
           ) : activeTab === "catalog" && type === "song" ? (
             // Deezer tracks
-            catalogTracks.length > 0 ? (
+            shownTracks.length > 0 ? (
               <div className="space-y-2">
-                {catalogTracks.map((track) => (
+                {shownTracks.map((track) => (
                   <button
                     key={track.id}
                     onClick={() => handleSelectSong(track)}
@@ -317,9 +312,9 @@ export function FavoriteSelectorModal({
             )
           ) : activeTab === "catalog" && type === "album" ? (
             // Deezer albums
-            catalogAlbums.length > 0 ? (
+            shownAlbums.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
-                {catalogAlbums.map((album) => (
+                {shownAlbums.map((album) => (
                   <button
                     key={album.id}
                     onClick={() => handleSelectAlbum(album)}

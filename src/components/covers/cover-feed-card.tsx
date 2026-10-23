@@ -136,7 +136,6 @@ export function CoverFeedCard({
     <article className="border-b border-border pb-4">
       <header className="flex items-center gap-2.5 px-4 py-3 sm:px-0">
         {item.author.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={item.author.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
         ) : (
           <span

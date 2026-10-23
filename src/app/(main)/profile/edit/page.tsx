@@ -453,7 +453,6 @@ function EditProfilePageContent() {
               <FavoritesGrid
                 items={profile.favorite_songs}
                 mode="edit"
-                type="songs"
                 onAdd={handleAddFavoriteSong}
                 onRemove={handleRemoveFavoriteSong}
                 onReorder={handleReorderFavoriteSongs}
@@ -468,7 +467,6 @@ function EditProfilePageContent() {
               <FavoritesGrid
                 items={profile.favorite_albums}
                 mode="edit"
-                type="albums"
                 onAdd={handleAddFavoriteAlbum}
                 onRemove={handleRemoveFavoriteAlbum}
                 onReorder={handleReorderFavoriteAlbums}

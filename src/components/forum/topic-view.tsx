@@ -62,7 +62,6 @@ function AuthorLine({
   return (
     <div className="flex items-center gap-2.5">
       {author?.avatar_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img src={author.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
       ) : (
         <span className="h-8 w-8 shrink-0 rounded-full bg-muted" />
@@ -334,7 +333,6 @@ export function TopicView({ topic: initialTopic, initialReplies, viewer, context
         <div className="mt-4 grid grid-cols-2 gap-2">
           {topic.images.map((url) => (
             <a key={url} href={url} target="_blank" rel="noopener noreferrer">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" loading="lazy" className="aspect-square w-full rounded-xl bg-muted object-cover" />
             </a>
           ))}

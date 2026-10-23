@@ -30,8 +30,8 @@ export function Cover({ src, alt = "", className = "", priority = false, childre
     >
       {src ? (
         // Pochettes deja dimensionnees par le CDN : <img>, comme
-        // partout ailleurs dans l'app, plutot que l'optimiseur d'images.
-        // eslint-disable-next-line @next/next/no-img-element
+        // partout ailleurs dans l'app, plutot que l'optimiseur d'images
+        // (regle desactivee dans eslint.config.mjs).
         <img
           src={src}
           alt={alt}

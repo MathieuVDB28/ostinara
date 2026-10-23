@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getRehearsal } from "@/lib/actions/rehearsals";
 import { getBandMessages } from "@/lib/actions/band-messages";
-import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/server";
 import { RehearsalDetailView } from "@/components/rehearsals/rehearsal-detail-view";
 
 interface RehearsalPageProps {
@@ -11,7 +11,6 @@ interface RehearsalPageProps {
 export default async function RehearsalPage({ params }: RehearsalPageProps) {
   const { id } = await params;
 
-  const supabase = await createClient();
   const user = await getAuthenticatedUser();
 
   if (!user) {

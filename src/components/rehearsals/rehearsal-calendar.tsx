@@ -8,7 +8,6 @@ import { Icon } from "@/components/ui/icon";
 
 interface RehearsalCalendarProps {
   rehearsals: RehearsalWithDetails[];
-  currentUserId: string;
   onRehearsalClick: (rehearsal: RehearsalWithDetails) => void;
 }
 
@@ -50,7 +49,6 @@ function getCalendarDays(year: number, month: number) {
 
 export function RehearsalCalendar({
   rehearsals,
-  currentUserId,
   onRehearsalClick,
 }: RehearsalCalendarProps) {
   const t = useTranslations("rehearsals.calendar");

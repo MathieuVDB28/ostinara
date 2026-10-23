@@ -9,7 +9,7 @@ import {
   StyleSheet,
   pdf,
 } from "@react-pdf/renderer";
-import type { SetlistWithDetails, SetlistItemWithSongOwner } from "@/types";
+import type { SetlistWithDetails } from "@/types";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import type { CommonT, EnumsT, Translator } from "@/i18n/types";
@@ -310,7 +310,7 @@ function SetlistPDFDocument({ setlist, labels: { t, tc, te, intlLocale } }: Setl
         </View>
 
         {/* Items list */}
-        {items.map((item, index) => {
+        {items.map((item) => {
           if (item.item_type === "section") {
             return (
               <View key={item.id}>

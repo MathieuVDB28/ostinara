@@ -32,12 +32,7 @@ export function Metronome({
   className = "",
 }: MetronomeProps) {
   const t = useTranslations("metronome");
-  const metronome = useMetronome({
-    initialBpm,
-    onBeat: (beat, isAccent) => {
-      // Callback optionnel pour synchroniser avec d'autres éléments
-    },
-  });
+  const metronome = useMetronome({ initialBpm });
 
   const { setBpm } = metronome;
 

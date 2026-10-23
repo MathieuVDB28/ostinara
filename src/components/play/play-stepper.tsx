@@ -216,7 +216,6 @@ export function PlayStepper({
             <div className="flex items-center gap-3 rounded-xl border border-border p-4">
               <div className="h-14 w-14 shrink-0 overflow-hidden rounded bg-muted">
                 {current.songCoverUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={current.songCoverUrl}
                     alt=""

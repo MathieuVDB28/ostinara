@@ -96,7 +96,6 @@ export async function PostArticle({ post, context, viewer }: Props) {
         {post.excerpt && <p className="text-lg text-muted-foreground">{post.excerpt}</p>}
         <div className="flex items-center gap-3 pt-1">
           {author?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={author.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
           ) : (
             <span className="h-10 w-10 rounded-full bg-muted" />
@@ -127,7 +126,6 @@ export async function PostArticle({ post, context, viewer }: Props) {
       </header>
 
       {post.cover_url && (
-        // eslint-disable-next-line @next/next/no-img-element
         <img src={post.cover_url} alt="" className="mt-6 aspect-[16/9] w-full rounded-2xl bg-muted object-cover" />
       )}
 
@@ -165,7 +163,6 @@ export async function PostArticle({ post, context, viewer }: Props) {
       {author && (
         <aside className="mt-10 flex gap-4 rounded-2xl border border-border p-4">
           {author.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={author.avatar_url} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
           ) : (
             <span className="h-14 w-14 shrink-0 rounded-full bg-muted" />

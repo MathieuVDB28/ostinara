@@ -11,7 +11,6 @@ import type {
   GearType,
   GearCondition,
   GearVisibility,
-  UserPlan,
 } from "@/types";
 import {
   GEAR_CONDITION_COLORS,
@@ -26,7 +25,6 @@ interface GearDetailModalProps {
   onClose: () => void;
   onUpdated: () => void;
   onDeleted: () => void;
-  userPlan: UserPlan;
 }
 
 
@@ -46,7 +44,6 @@ export function GearDetailModal({
   onClose,
   onUpdated,
   onDeleted,
-  userPlan,
 }: GearDetailModalProps) {
   const t = useTranslations("gear.form");
   const td = useTranslations("gear.detail");

@@ -13,17 +13,11 @@ import type {
   GearPriority,
   UserPlan,
 } from "@/types";
-import { GEAR_CONDITION_COLORS, GEAR_PRIORITY_COLORS } from "@/types";
 import {
   getGearItems,
-  createGearItem,
-  updateGearItem,
-  deleteGearItem,
   getGearSetups,
   createGearSetup,
-  updateGearSetup,
   deleteGearSetup,
-  addGearToSetup,
   removeGearFromSetup,
   getGearWishlist,
   addToGearWishlist,
@@ -80,6 +74,9 @@ export function GearView({
     })),
   ];
 
+  // Le type propose par defaut dans la wishlist : le premier de mes instruments.
+  const defaultWishlistType = GEAR_TYPES[1].value as GearType;
+
   // --- Tab state ---
   const [mainTab, setMainTab] = useState<MainTab>("gear");
 
@@ -114,15 +111,12 @@ export function GearView({
   const [showWishlistForm, setShowWishlistForm] = useState(false);
   const [wishlistBrand, setWishlistBrand] = useState("");
   const [wishlistModel, setWishlistModel] = useState("");
-  const [wishlistType, setWishlistType] = useState<GearType>(GEAR_TYPES[1].value as GearType);
+  const [wishlistType, setWishlistType] = useState<GearType>(defaultWishlistType);
   const [wishlistPriority, setWishlistPriority] = useState<GearPriority>("medium");
   const [wishlistEstimatedPrice, setWishlistEstimatedPrice] = useState("");
   const [wishlistNotes, setWishlistNotes] = useState("");
   const [wishlistUrl, setWishlistUrl] = useState("");
   const [isAddingWishlist, setIsAddingWishlist] = useState(false);
-
-  // --- Loading state ---
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // --- Plan limits ---
   const isFree = userPlan === "free";
@@ -135,33 +129,15 @@ export function GearView({
 
   // --- Refresh functions ---
   const refreshGear = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      const items = await getGearItems();
-      setGearItems(items);
-    } finally {
-      setIsRefreshing(false);
-    }
+    setGearItems(await getGearItems());
   }, []);
 
   const refreshSetups = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      const setups = await getGearSetups();
-      setGearSetups(setups);
-    } finally {
-      setIsRefreshing(false);
-    }
+    setGearSetups(await getGearSetups());
   }, []);
 
   const refreshWishlist = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      const items = await getGearWishlist();
-      setWishlistItems(items);
-    } finally {
-      setIsRefreshing(false);
-    }
+    setWishlistItems(await getGearWishlist());
   }, []);
 
   // --- Filtering and sorting (Mon Matos) ---
@@ -280,7 +256,7 @@ export function GearView({
       });
       setWishlistBrand("");
       setWishlistModel("");
-      setWishlistType(GEAR_TYPES[1].value as GearType);
+      setWishlistType(defaultWishlistType);
       setWishlistPriority("medium");
       setWishlistEstimatedPrice("");
       setWishlistNotes("");
@@ -299,6 +275,7 @@ export function GearView({
     wishlistNotes,
     wishlistUrl,
     refreshWishlist,
+    defaultWishlistType,
   ]);
 
   const handleRemoveWishlistItem = useCallback(
@@ -887,7 +864,6 @@ export function GearView({
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSaved={handleGearAdded}
-        userPlan={userPlan}
       />
 
       {selectedGear && (
@@ -897,7 +873,6 @@ export function GearView({
           onClose={() => setSelectedGear(null)}
           onUpdated={handleGearUpdated}
           onDeleted={handleGearDeleted}
-          userPlan={userPlan}
         />
       )}
     </div>

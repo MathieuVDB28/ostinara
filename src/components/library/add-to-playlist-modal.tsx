@@ -9,7 +9,7 @@ import {
   removeSongFromPlaylist,
   createPlaylist,
 } from "@/lib/actions/playlists";
-import type { Playlist, PlaylistWithSongs } from "@/types";
+import type { PlaylistWithSongs } from "@/types";
 
 interface AddToPlaylistModalProps {
   songId: string | null;

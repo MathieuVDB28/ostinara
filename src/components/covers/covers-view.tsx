@@ -12,7 +12,6 @@ import type { CoverWithSong, CoverVisibility } from "@/types";
 
 interface CoversViewProps {
   initialCovers: CoverWithSong[];
-  canUpload: boolean;
   coverLimit?: number;
   coverCount?: number;
   /** Cover a ouvrir a l'arrivee — lien profond de la recherche globale. */
@@ -23,7 +22,6 @@ const FILTERS: (CoverVisibility | "all")[] = ["all", "private", "friends", "publ
 
 export function CoversView({
   initialCovers,
-  canUpload,
   coverLimit,
   coverCount,
   initialCoverId,
