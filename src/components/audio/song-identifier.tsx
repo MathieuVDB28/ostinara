@@ -69,7 +69,7 @@ export function SongIdentifier() {
       setState("error");
       setErrorMessage(t("network"));
     }
-  }, [recorder]);
+  }, [recorder, t]);
 
   const handleRetry = useCallback(() => {
     setState("idle");

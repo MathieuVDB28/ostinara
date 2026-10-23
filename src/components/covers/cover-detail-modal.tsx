@@ -79,11 +79,13 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
     }
   };
 
+  // Les setters sont stables ; les nommer laisse le React Compiler garder
+  // cette memoisation (il ne les reconnait pas comme tels ici).
   const handleClose = useCallback(() => {
     setError(null);
     setShowDeleteConfirm(false);
     onClose();
-  }, [onClose]);
+  }, [onClose, setError, setShowDeleteConfirm]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
