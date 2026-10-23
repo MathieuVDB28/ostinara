@@ -19,6 +19,13 @@ interface Fetched {
 const NOTHING: Fetched = { query: "", groups: [] };
 
 /**
+ * Toujours le meme tableau vide : la palette compare la liste rendue a la
+ * precedente pendant le rendu, un `[]` neuf a chaque fois la faisait
+ * boucler (React #301) des la premiere frappe.
+ */
+const NO_GROUPS: SearchResultGroup[] = [];
+
+/**
  * La recherche globale, cote client.
  *
  * Deux choses a tenir. Ne pas interroger la base a chaque frappe — d'ou
@@ -60,7 +67,7 @@ export function useGlobalSearch(query: string) {
   const isUpToDate = !isTooShort && fetched.query === trimmed;
 
   return {
-    groups: isUpToDate ? fetched.groups : [],
+    groups: isUpToDate ? fetched.groups : NO_GROUPS,
     isSearching: !isTooShort && !isUpToDate,
   };
 }
