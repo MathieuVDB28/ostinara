@@ -26,6 +26,21 @@ import type {
 } from "@/types";
 
 /**
+ * Une jointure Supabase (`song:songs(*)`) rend un objet ou un tableau
+ * selon la relation, ou rien si la RLS masque la ligne : on la ramene a
+ * un objet.
+ */
+type Joined<T, K extends keyof T> = Omit<T, K> & { [P in K]: T[P] | T[P][] | null };
+
+function one<T>(value: T | T[] | null | undefined): T {
+  return (Array.isArray(value) ? value[0] : value) as T;
+}
+
+type PlaylistRow = Omit<PlaylistWithSongs, "songs" | "song_count"> & {
+  playlist_songs: { position: number; song: Song | Song[] | null }[] | null;
+};
+
+/**
  * Upload un avatar pour l'utilisateur connecté
  * @param file - Le fichier image à uploader
  * @returns L'URL publique de l'avatar ou une erreur
@@ -168,15 +183,15 @@ export async function getMyProfile(): Promise<UserProfile | null> {
   ]);
 
   // Mapper les favorite songs pour convertir song de tableau à objet
-  const mappedFavoriteSongs = (favoriteSongs || []).map((fs: any) => ({
+  const mappedFavoriteSongs = ((favoriteSongs || []) as Joined<FavoriteSong, "song">[]).map((fs) => ({
     ...fs,
-    song: Array.isArray(fs.song) ? fs.song[0] : fs.song,
+    song: one(fs.song),
   }));
 
   // Mapper les favorite gear pour convertir gear de tableau à objet
-  const mappedFavoriteGear = (favoriteGear || []).map((fg: any) => ({
+  const mappedFavoriteGear = ((favoriteGear || []) as Joined<FavoriteGear, "gear">[]).map((fg) => ({
     ...fg,
-    gear: Array.isArray(fg.gear) ? fg.gear[0] : fg.gear,
+    gear: one(fg.gear),
   }));
 
   return {
@@ -335,18 +350,18 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     ]);
 
     // Mapper les favorite songs
-    const mappedFavSongs = (favSongsData.data || []).map((fs: any) => ({
+    const mappedFavSongs = ((favSongsData.data || []) as Joined<FavoriteSong, "song">[]).map((fs) => ({
       ...fs,
-      song: Array.isArray(fs.song) ? fs.song[0] : fs.song,
+      song: one(fs.song),
     }));
 
     favoriteSongs = mappedFavSongs as FavoriteSong[];
     favoriteAlbums = (favAlbumsData.data as FavoriteAlbum[]) || [];
 
     // Mapper les favorite gear
-    const mappedFavGear = (favGearData.data || []).map((fg: any) => ({
+    const mappedFavGear = ((favGearData.data || []) as Joined<FavoriteGear, "gear">[]).map((fg) => ({
       ...fg,
-      gear: Array.isArray(fg.gear) ? fg.gear[0] : fg.gear,
+      gear: one(fg.gear),
     }));
     favoriteGearItems = mappedFavGear as FavoriteGear[];
     gearItems = (gearItemsData.data as GearItem[]) || [];
@@ -360,31 +375,31 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     totalAlbumReviews = albumReviews.length;
 
     // Map playlists with song count
-    playlists = (playlistsData.data || []).map((pl: any) => {
-      const songs = (pl.playlist_songs || [])
-        .sort((a: any, b: any) => a.position - b.position)
-        .map((ps: any) => (Array.isArray(ps.song) ? ps.song[0] : ps.song))
-        .filter(Boolean);
-      return { ...pl, songs, song_count: songs.length, playlist_songs: undefined };
-    }) as PlaylistWithSongs[];
+    playlists = ((playlistsData.data || []) as PlaylistRow[]).map(({ playlist_songs, ...pl }) => {
+      const songs = [...(playlist_songs || [])]
+        .sort((a, b) => a.position - b.position)
+        .map((ps) => one(ps.song))
+        .filter((song): song is Song => Boolean(song));
+      return { ...pl, songs, song_count: songs.length };
+    });
 
     // Compute practice stats (streak + totals)
     const sessions = (sessionsData.data || []) as { practiced_at: string; duration_minutes: number; session_key: string }[];
     // Une session a plusieurs morceaux a une ligne par morceau : on compte les sessions.
     const totalSessions = new Set(sessions.map((s) => s.session_key)).size;
-    const totalMinutes = sessions.reduce((sum: number, s: any) => sum + (s.duration_minutes || 0), 0);
+    const totalMinutes = sessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
     const startOfWeek = new Date();
     startOfWeek.setHours(0, 0, 0, 0);
     // Le lundi, comme le reste de l'app (getDay() rend 0 le dimanche).
     startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
     const minutesThisWeek = sessions
-      .filter((s: any) => new Date(s.practiced_at) >= startOfWeek)
-      .reduce((sum: number, s: any) => sum + (s.duration_minutes || 0), 0);
+      .filter((s) => new Date(s.practiced_at) >= startOfWeek)
+      .reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
     // Streak calculation
     const uniqueDays = [...new Set(
-      sessions.map((s: any) => new Date(s.practiced_at).toDateString())
+      sessions.map((s) => new Date(s.practiced_at).toDateString())
     )].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
     let currentStreak = 0;
@@ -437,9 +452,9 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     .order("created_at", { ascending: false });
 
   // Mapper les covers
-  const mappedCovers = (covers || []).map((cover: any) => ({
+  const mappedCovers = ((covers || []) as Joined<CoverWithSong, "song">[]).map((cover) => ({
     ...cover,
-    song: Array.isArray(cover.song) ? cover.song[0] : cover.song,
+    song: one(cover.song),
   })) as CoverWithSong[];
 
   return {
