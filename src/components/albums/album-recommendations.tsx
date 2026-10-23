@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { getAlbumRecommendations } from "@/lib/actions/albums";
 import { addToAlbumWishlist } from "@/lib/actions/album-wishlist";
@@ -24,7 +24,7 @@ export function AlbumRecommendations({
   const t = useTranslations("albums.recs");
   const tc = useTranslations("common");
   const [recommendations, setRecommendations] = useState<AlbumRecommendation[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(isPaid);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,23 +34,37 @@ export function AlbumRecommendations({
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [wishlistStatus, setWishlistStatus] = useState<Record<string, "loading" | "done">>({});
 
-  useEffect(() => {
-    if (isPaid && !loaded) {
-      loadRecommendations();
-    }
-  }, [isPaid, loaded]);
+  const applyResult = useCallback(
+    (result: Awaited<ReturnType<typeof getAlbumRecommendations>>) => {
+      if (result.success && result.data) {
+        setRecommendations(result.data);
+      } else if (!result.success) {
+        setError(result.error || t("loadFailed"));
+      }
+      setLoading(false);
+      setLoaded(true);
+    },
+    [t]
+  );
 
+  // Chargees a la premiere ouverture de l'onglet, pour les plans payants :
+  // `loading` part a vrai, l'effet ne fait que recevoir la reponse.
+  useEffect(() => {
+    if (!isPaid || loaded) return;
+    let cancelled = false;
+    void getAlbumRecommendations().then((result) => {
+      if (!cancelled) applyResult(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isPaid, loaded, applyResult]);
+
+  /** « Réessayer » et « Rafraîchir ». */
   const loadRecommendations = async () => {
     setLoading(true);
     setError(null);
-    const result = await getAlbumRecommendations();
-    if (result.success && result.data) {
-      setRecommendations(result.data);
-    } else if (!result.success) {
-      setError(result.error || t("loadFailed"));
-    }
-    setLoading(false);
-    setLoaded(true);
+    applyResult(await getAlbumRecommendations());
   };
 
   const handleAddToWishlist = async (album: AlbumRecommendation) => {
