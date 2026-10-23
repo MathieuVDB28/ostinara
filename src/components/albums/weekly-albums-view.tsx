@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -57,23 +57,36 @@ export function WeeklyAlbumsView({ initial, query = "" }: WeeklyAlbumsViewProps)
   const searchParams = useSearchParams();
   const [week, setWeek] = useState(initial);
   const [sort, setSort] = useState<SortMode>(() => (searchParams.get("tri") === "ecoutes" ? "popular" : "top"));
+  // La semaine voulue, distincte de celle chargee : au retour depuis un
+  // album, Next peut rendre la page de son cache, calculee pour la semaine
+  // en cours — on va alors chercher celle de l'adresse.
+  const [offset, setOffset] = useState(() => {
+    const value = Number(searchParams.get("semaine"));
+    return Number.isInteger(value) && value > 0 ? value : 0;
+  });
   // La semaine et le tri dans l'adresse : « Retour » depuis un album
-  // ramene sur la semaine parcourue (la page relit `?semaine=`).
-  useParamInUrl("semaine", week.week_offset > 0 ? String(week.week_offset) : "");
+  // ramene sur la semaine parcourue.
+  useParamInUrl("semaine", offset > 0 ? String(offset) : "");
   useParamInUrl("tri", sort === "popular" ? "ecoutes" : "");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const goToWeek = (offset: number) => {
-    setError(null);
+  useEffect(() => {
+    if (week.week_offset === offset) return;
     startTransition(async () => {
       const next = await getWeeklyAlbums(offset);
       if (next) {
         setWeek(next);
       } else {
         setError(t("loadFailed"));
+        setOffset(week.week_offset);
       }
     });
+  }, [offset, week.week_offset, t]);
+
+  const goToWeek = (next: number) => {
+    setError(null);
+    setOffset(next);
   };
 
   const search = normalize(query.trim());
