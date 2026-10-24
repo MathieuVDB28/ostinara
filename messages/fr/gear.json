@@ -43,7 +43,8 @@
     "activeHint": "Ce matériel fait partie de ton setup actuel",
     "visibility": "Visibilité",
     "saving": "Enregistrement...",
-    "add": "Ajouter"
+    "add": "Ajouter",
+    "publicOnPrivateProfile": "Ton profil est privé : « Public » reste visible par tes amis seulement."
   },
   "detail": {
     "updateFailed": "Erreur lors de la mise à jour.",

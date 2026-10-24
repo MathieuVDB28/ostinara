@@ -233,7 +233,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 
 ### Covers (`/covers`)
 - Upload video/audio avec drag & drop
-- Visibilite : private, friends, public
+- Visibilite : suit le profil (Public sur un profil public, Amis sur un profil prive), case « Reservee a mes amis » ; `private` (moi seul) reste pour les anciennes
 - Filtrage par visibilite
 - Modal de detail : lecture, telechargement, modification visibilite, suppression
 - Limite : 3 pour Free, illimite Pro/Band
@@ -818,6 +818,15 @@ sujets du forum) ; la biblio, les albums notes, la wishlist, les playlists et
 les sessions restent entre amis (`getPublicProfile` : `canViewLibrary`). Les
 morceaux favoris passent par la RPC `get_profile_favorite_songs` (titre,
 artiste, pochette seulement).
+
+« Public » (cover ou matos) va aussi loin que le profil : tout le monde sur un
+profil public, les amis seulement sur un profil prive (RLS, et
+`effectiveVisibility` dans `src/lib/visibility.ts` pour l'affichage). La valeur
+stockee ne change pas quand le profil change. Une nouvelle cover est « Public »
+par defaut ; sur un profil public, la case « Reservee a mes amis » la passe en
+« Amis » (`CoverVisibilityField`). « Moi seul » n'est plus propose pour les
+covers (les anciennes le restent). `useMyProfileIsPrivate()` :
+`ProfilePrivacyProvider`, monte dans `(main)/layout.tsx`.
 
 ### Colonnes ajoutees pour les langues
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { CoverVisibilityField } from "./cover-visibility-field";
 import { VideoUpload } from "./video-upload";
 import { createCover, canUploadCover } from "@/lib/actions/covers";
 import { getUpcomingRehearsalSetlists } from "@/lib/actions/rehearsals";
@@ -20,7 +21,6 @@ interface AddCoverModalProps {
   replyToLabel?: string;
 }
 
-const VISIBILITIES: CoverVisibility[] = ["private", "friends", "public"];
 
 export function AddCoverModal({
   song,
@@ -33,8 +33,6 @@ export function AddCoverModal({
   const t = useTranslations("covers.add");
   const td = useTranslations("covers.detail");
   const tc = useTranslations("common");
-  const te = useTranslations("enums");
-  const visibilityOptions = VISIBILITIES.map((value) => ({ value, label: te(`visibility.${value}`) }));
   const nextSteps = useNextSteps();
   const [step, setStep] = useState<"upload" | "details">("upload");
   const [uploadedFile, setUploadedFile] = useState<{
@@ -42,12 +40,8 @@ export function AddCoverModal({
     mediaType: "video" | "audio";
     fileSize: number;
   } | null>(null);
-  const [visibility, setVisibility] = useState<CoverVisibility>("friends");
-  // Repondre en prive n'a pas de sens : la personne a qui l'on repond ne
-  // verrait rien. Le selecteur reste, mais « Privé » est ecarte.
-  const replyVisibilityOptions = visibilityOptions.filter(
-    (option) => !replyToCoverId || option.value !== "private"
-  );
+  // « Public » suit le profil : tout le monde, ou les amis sur un profil prive.
+  const [visibility, setVisibility] = useState<CoverVisibility>("public");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +95,7 @@ export function AddCoverModal({
   const handleClose = useCallback(() => {
     setStep("upload");
     setUploadedFile(null);
-    setVisibility("friends");
+    setVisibility("public");
     setDescription("");
     setError(null);
     onClose();
@@ -209,21 +203,7 @@ export function AddCoverModal({
             {/* Visibilité */}
             <div>
               <label className="mb-2 block text-sm font-medium">{td("visibility")}</label>
-              <div className="flex gap-2">
-                {replyVisibilityOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setVisibility(option.value)}
-                    className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
-                      visibility === option.value
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted hover:bg-accent"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+              <CoverVisibilityField value={visibility} onChange={setVisibility} />
             </div>
 
             {/* Description */}

@@ -165,7 +165,8 @@ export async function createCover(input: CreateCoverInput): Promise<{
       ...input,
       reply_to_cover_id: replyTo,
       user_id: user.id,
-      visibility: input.visibility || "friends",
+      // « Public » suit le profil : les amis seulement sur un profil prive (RLS).
+      visibility: input.visibility || "public",
     })
     .select()
     .single();
@@ -201,7 +202,7 @@ export async function createCover(input: CreateCoverInput): Promise<{
   }
 
   // Créer une activité si le cover est visible par les amis ou public
-  const visibility = input.visibility || "friends";
+  const visibility = input.visibility || "public";
   if (visibility !== "private") {
     await createActivity({
       type: "cover_posted",

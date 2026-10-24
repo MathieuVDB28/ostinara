@@ -1,6 +1,7 @@
 "use client";
 
 import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { useMyProfileIsPrivate } from "@/components/providers/profile-privacy-provider";
 import { gearTypesFor } from "@/lib/instruments";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
@@ -34,6 +35,7 @@ export function AddGearModal({
   const t = useTranslations("gear.form");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
+  const profileIsPrivate = useMyProfileIsPrivate();
   // Le matos de mes instruments d'abord, et le premier preselectionne.
   const myInstruments = useMyInstruments();
   const gearTypes = useMemo(
@@ -428,6 +430,9 @@ export function AddGearModal({
                 </button>
               ))}
             </div>
+            {profileIsPrivate && visibility === "public" && (
+              <p className="mt-2 text-xs text-muted-foreground">{t("publicOnPrivateProfile")}</p>
+            )}
           </div>
 
           {/* Error */}

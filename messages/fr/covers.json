@@ -81,5 +81,14 @@
     "orClick": "ou clique pour sélectionner (max 500 Mo)",
     "formats": "MP4, WebM, MOV, MP3, WAV",
     "autoCompress": "Les vidéos de plus de 50 Mo seront compressées automatiquement"
+  },
+  "visibilityField": {
+    "friendsOnly": "Réservée à mes amis",
+    "friendsOnlyHint": "Seuls tes amis la voient.",
+    "publicHint": "Visible par tous, comme ton profil.",
+    "privateProfile": "Ton profil est privé : cette cover sera visible par tes amis.",
+    "onlyMe": "Cette cover n'est visible que par toi.",
+    "share": "La partager",
+    "shareWithFriends": "La partager avec mes amis"
   }
 }

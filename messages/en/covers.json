@@ -81,5 +81,14 @@
     "orClick": "or click to select one (max 500 MB)",
     "formats": "MP4, WebM, MOV, MP3, WAV",
     "autoCompress": "Videos over 50 MB will be compressed automatically"
+  },
+  "visibilityField": {
+    "friendsOnly": "Friends only",
+    "friendsOnlyHint": "Only your friends can see it.",
+    "publicHint": "Visible to everyone, like your profile.",
+    "privateProfile": "Your profile is private: your friends will see this cover.",
+    "onlyMe": "Only you can see this cover.",
+    "share": "Share it",
+    "shareWithFriends": "Share it with my friends"
   }
 }

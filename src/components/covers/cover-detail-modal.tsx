@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { CoverVisibilityField } from "./cover-visibility-field";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import { updateCover, deleteCover } from "@/lib/actions/covers";
 import type { CoverWithSong, CoverVisibility } from "@/types";
@@ -13,14 +14,10 @@ interface CoverDetailModalProps {
   onUpdate: () => void;
 }
 
-const VISIBILITIES: CoverVisibility[] = ["private", "friends", "public"];
-
 export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDetailModalProps) {
   const t = useTranslations("covers.detail");
   const tc = useTranslations("common");
-  const te = useTranslations("enums");
   const intlLocale = useIntlLocale();
-  const visibilityOptions = VISIBILITIES.map((value) => ({ value, label: te(`visibility.${value}`) }));
   const [visibility, setVisibility] = useState<CoverVisibility>("friends");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
@@ -160,21 +157,7 @@ export function CoverDetailModal({ cover, isOpen, onClose, onUpdate }: CoverDeta
           {/* Sélecteur de visibilité */}
           <div>
             <label className="mb-2 block text-sm font-medium">{t("visibility")}</label>
-            <div className="flex gap-2">
-              {visibilityOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setVisibility(option.value)}
-                  className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
-                    visibility === option.value
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted hover:bg-accent"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+            <CoverVisibilityField value={visibility} onChange={setVisibility} />
           </div>
 
           {/* Description */}

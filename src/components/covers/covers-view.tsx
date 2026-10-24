@@ -8,6 +8,8 @@ import { CoverCard } from "./cover-card";
 import { CoverDetailModal } from "./cover-detail-modal";
 import { ArrowUpRight } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useMyProfileIsPrivate } from "@/components/providers/profile-privacy-provider";
+import { effectiveVisibility } from "@/lib/visibility";
 import type { CoverWithSong, CoverVisibility } from "@/types";
 
 interface CoversViewProps {
@@ -41,8 +43,12 @@ export function CoversView({
     setCovers(initialCovers);
   }, [initialCovers]);
 
+  // Ce que la cover donne vraiment : « Public » reste entre amis sur un profil prive.
+  const profileIsPrivate = useMyProfileIsPrivate();
+  const visibilityOf = (cover: CoverWithSong) => effectiveVisibility(cover.visibility, profileIsPrivate);
+
   const filteredCovers = covers.filter((cover) => {
-    return activeFilter === "all" || cover.visibility === activeFilter;
+    return activeFilter === "all" || visibilityOf(cover) === activeFilter;
   });
 
   const handleRefresh = () => {
@@ -51,9 +57,9 @@ export function CoversView({
 
   const stats = {
     total: covers.length,
-    private: covers.filter(c => c.visibility === "private").length,
-    friends: covers.filter(c => c.visibility === "friends").length,
-    public: covers.filter(c => c.visibility === "public").length,
+    private: covers.filter(c => visibilityOf(c) === "private").length,
+    friends: covers.filter(c => visibilityOf(c) === "friends").length,
+    public: covers.filter(c => visibilityOf(c) === "public").length,
   };
 
   return (

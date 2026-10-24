@@ -43,7 +43,8 @@
     "activeHint": "This gear is part of your current setup",
     "visibility": "Visibility",
     "saving": "Saving...",
-    "add": "Add"
+    "add": "Add",
+    "publicOnPrivateProfile": "Your profile is private: “Public” stays visible to your friends only."
   },
   "detail": {
     "updateFailed": "Couldn't update it.",

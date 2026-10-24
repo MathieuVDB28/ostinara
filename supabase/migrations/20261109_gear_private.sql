@@ -197,3 +197,77 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- =============================================
+-- 5. Un profil prive ramene le « Public » a « Amis »
+-- =============================================
+-- « Public » sur une cover ou un matos veut dire « aussi loin que mon
+-- profil » : tout le monde si le profil est public, les amis s'il est
+-- prive. La valeur stockee ne change pas : repasser son profil en public
+-- rend a nouveau publiques les covers et le matos qui l'etaient.
+
+-- Covers : les amis voient « Amis » et « Public », les autres le « Public »
+-- des profils publics seulement.
+DROP POLICY IF EXISTS "Anyone can view public covers" ON covers;
+DROP POLICY IF EXISTS "Friends can view friend-visible covers" ON covers;
+DROP POLICY IF EXISTS "Friends can view friends covers" ON covers;
+DROP POLICY IF EXISTS "Friends can view shared covers" ON covers;
+DROP POLICY IF EXISTS "Anyone can view public covers of public profiles" ON covers;
+
+CREATE POLICY "Friends can view shared covers"
+  ON covers FOR SELECT
+  USING (
+    visibility IN ('friends', 'public')
+    AND EXISTS (
+      SELECT 1 FROM friendships f
+      WHERE f.status = 'accepted'
+        AND (
+          (f.requester_id = auth.uid() AND f.addressee_id = covers.user_id)
+          OR (f.addressee_id = auth.uid() AND f.requester_id = covers.user_id)
+        )
+    )
+  );
+
+CREATE POLICY "Anyone can view public covers of public profiles"
+  ON covers FOR SELECT
+  USING (
+    visibility = 'public'
+    AND EXISTS (SELECT 1 FROM profiles p WHERE p.id = covers.user_id AND p.is_private IS NOT TRUE)
+  );
+
+-- Le morceau derriere une cover partagee suit la meme regle.
+DROP POLICY IF EXISTS "Users can view songs behind shared covers" ON songs;
+CREATE POLICY "Users can view songs behind shared covers"
+  ON songs FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM covers c
+      WHERE c.song_id = songs.id
+        AND (
+          (
+            c.visibility = 'public'
+            AND EXISTS (SELECT 1 FROM profiles p WHERE p.id = songs.user_id AND p.is_private IS NOT TRUE)
+          )
+          OR (
+            c.visibility IN ('friends', 'public')
+            AND EXISTS (
+              SELECT 1 FROM friendships f
+              WHERE f.status = 'accepted'
+                AND (
+                  (f.requester_id = auth.uid() AND f.addressee_id = songs.user_id)
+                  OR (f.addressee_id = auth.uid() AND f.requester_id = songs.user_id)
+                )
+            )
+          )
+        )
+    )
+  );
+
+-- Matos : les amis voyaient deja « Amis » et « Public ».
+DROP POLICY IF EXISTS "Anyone can view public gear" ON gear_items;
+CREATE POLICY "Anyone can view public gear"
+  ON gear_items FOR SELECT
+  USING (
+    visibility = 'public'
+    AND EXISTS (SELECT 1 FROM profiles p WHERE p.id = gear_items.user_id AND p.is_private IS NOT TRUE)
+  );

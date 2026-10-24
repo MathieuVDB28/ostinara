@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 
 import { useMyInstruments } from "@/components/providers/instruments-provider";
+import { useMyProfileIsPrivate } from "@/components/providers/profile-privacy-provider";
 import { gearTypesFor } from "@/lib/instruments";
 import { useState, useEffect, useCallback } from "react";
 import type {
@@ -47,6 +48,7 @@ export function GearDetailModal({
 }: GearDetailModalProps) {
   const t = useTranslations("gear.form");
   const td = useTranslations("gear.detail");
+  const profileIsPrivate = useMyProfileIsPrivate();
   const tg = useTranslations("gear.card");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
@@ -488,6 +490,9 @@ export function GearDetailModal({
                     </button>
                   ))}
                 </div>
+                {profileIsPrivate && visibility === "public" && (
+                  <p className="mt-2 text-xs text-muted-foreground">{t("publicOnPrivateProfile")}</p>
+                )}
               </div>
 
               {/* Error */}

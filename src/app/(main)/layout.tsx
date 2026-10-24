@@ -15,6 +15,7 @@ import { CommandPaletteProvider } from "@/components/search/command-palette";
 import { OfflineProvider } from "@/components/offline/offline-provider";
 import { NextStepsProvider } from "@/components/next-steps/next-steps-provider";
 import { InstrumentsProvider } from "@/components/providers/instruments-provider";
+import { ProfilePrivacyProvider } from "@/components/providers/profile-privacy-provider";
 import { PROFILE_INSTRUMENTS_SELECT } from "@/lib/instruments";
 import { privateRow } from "@/lib/profile-private";
 import type { BadgeCounts } from "@/lib/navigation";
@@ -44,7 +45,7 @@ export default async function MainLayout({
   ] = await Promise.all([
     supabase
       .from("profiles")
-      .select(`username, display_name, avatar_url, ${PROFILE_INSTRUMENTS_SELECT}, private:profile_private(locale)`)
+      .select(`username, display_name, avatar_url, is_private, ${PROFILE_INSTRUMENTS_SELECT}, private:profile_private(locale)`)
       .eq("id", user.id)
       .single(),
     getPendingRequestsCount(),
@@ -93,6 +94,7 @@ export default async function MainLayout({
       quand le reseau manque.
     */
     <InstrumentsProvider instruments={(profile?.instruments ?? []) as ProfileInstrument[]}>
+    <ProfilePrivacyProvider isPrivate={profile?.is_private !== false}>
     <OfflineProvider>
     {/* Les ponts entre features (« et maintenant ? ») : au-dessus du chrono,
         parce que la fin de session est l'un des moments qui les ouvrent. */}
@@ -125,6 +127,7 @@ export default async function MainLayout({
     </PracticeSessionProvider>
     </NextStepsProvider>
     </OfflineProvider>
+    </ProfilePrivacyProvider>
     </InstrumentsProvider>
   );
 }

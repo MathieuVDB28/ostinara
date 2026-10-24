@@ -3,9 +3,11 @@
 import { Globe, Lock, Music, Play, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
+import { useMyProfileIsPrivate } from "@/components/providers/profile-privacy-provider";
 import { Cover } from "@/components/ui/cover";
 import type { CoverWithSong, CoverVisibility } from "@/types";
 import { CoverGearLine } from "./cover-gear-line";
+import { effectiveVisibility } from "@/lib/visibility";
 
 interface CoverCardProps {
   cover: CoverWithSong;
@@ -29,6 +31,7 @@ const VISIBILITY_ICON: Record<CoverVisibility, typeof Lock> = {
 export function CoverCard({ cover, onClick }: CoverCardProps) {
   const tc = useTranslations("common");
   const te = useTranslations("enums");
+  const profileIsPrivate = useMyProfileIsPrivate();
   const intlLocale = useIntlLocale();
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(intlLocale, {
@@ -45,8 +48,9 @@ export function CoverCard({ cover, onClick }: CoverCardProps) {
     return tc("fileSize.mb", { size: size(bytes / (1024 * 1024)) });
   };
 
-  const Icon = VISIBILITY_ICON[cover.visibility];
-  const label = te(`visibility.${cover.visibility}`);
+  const visibility = effectiveVisibility(cover.visibility, profileIsPrivate);
+  const Icon = VISIBILITY_ICON[visibility];
+  const label = te(`visibility.${visibility}`);
   const image = cover.thumbnail_url ?? cover.song.cover_url;
 
   return (
