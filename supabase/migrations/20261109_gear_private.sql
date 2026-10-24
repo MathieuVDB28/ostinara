@@ -138,7 +138,8 @@ CREATE TRIGGER move_gear_private
 -- d'ouvrir la ligne `songs` entiere (notes, tabs…), on n'en rend que ce
 -- que la vitrine affiche.
 CREATE OR REPLACE FUNCTION get_profile_favorite_songs(p_user_id UUID)
-RETURNS TABLE (id UUID, song_id UUID, position INTEGER, title TEXT, artist TEXT, cover_url TEXT)
+-- « slot » et non « position », mot reserve de PostgreSQL
+RETURNS TABLE (id UUID, song_id UUID, slot INTEGER, title TEXT, artist TEXT, cover_url TEXT)
 LANGUAGE sql
 STABLE
 SECURITY DEFINER

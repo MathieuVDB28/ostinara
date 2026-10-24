@@ -345,10 +345,10 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
         .limit(5),
     ]);
 
-    type FavoriteSongRow = { id: string; song_id: string; position: number; title: string; artist: string; cover_url: string | null };
+    type FavoriteSongRow = { id: string; song_id: string; slot: number; title: string; artist: string; cover_url: string | null };
     favoriteSongs = ((favSongsData.data || []) as FavoriteSongRow[]).map((row) => ({
       id: row.id,
-      position: row.position,
+      position: row.slot,
       song: { id: row.song_id, title: row.title, artist: row.artist, cover_url: row.cover_url ?? undefined },
     }));
     favoriteAlbums = (favAlbumsData.data as FavoriteAlbum[]) || [];
