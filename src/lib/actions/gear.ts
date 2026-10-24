@@ -19,6 +19,7 @@ import type {
   CoverGear,
 } from "@/types";
 import { one, type Joined } from "@/lib/supabase/joins";
+import { OWN_GEAR_SELECT, PUBLIC_GEAR_COLUMNS, splitGearInput, withGearDetails } from "@/lib/gear-columns";
 
 const FREE_PLAN_GEAR_LIMIT = 5;
 const FREE_PLAN_SETUP_LIMIT = 1;
@@ -38,7 +39,7 @@ export async function getGearItems(): Promise<GearItem[]> {
 
   const { data, error } = await supabase
     .from("gear_items")
-    .select("*")
+    .select(OWN_GEAR_SELECT)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -47,7 +48,7 @@ export async function getGearItems(): Promise<GearItem[]> {
     return [];
   }
 
-  return data as GearItem[];
+  return (data ?? []).map(withGearDetails);
 }
 
 export async function getGearItem(id: string): Promise<GearItem | null> {
@@ -60,7 +61,7 @@ export async function getGearItem(id: string): Promise<GearItem | null> {
 
   const { data, error } = await supabase
     .from("gear_items")
-    .select("*")
+    .select(OWN_GEAR_SELECT)
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
@@ -70,7 +71,7 @@ export async function getGearItem(id: string): Promise<GearItem | null> {
     return null;
   }
 
-  return data as GearItem;
+  return withGearDetails(data);
 }
 
 export async function createGearItem(input: CreateGearItemInput): Promise<{
@@ -106,18 +107,29 @@ export async function createGearItem(input: CreateGearItemInput): Promise<{
     }
   }
 
+  // Le numero de serie, le prix… vont dans gear_item_private, lisible par
+  // moi seul : gear_items se lit par les amis, voire par tous.
+  const { publicPart, details } = splitGearInput(input);
+
   const { data, error } = await supabase
     .from("gear_items")
     .insert({
-      ...input,
+      ...publicPart,
       user_id: user.id,
     })
-    .select()
+    .select(PUBLIC_GEAR_COLUMNS)
     .single();
 
   if (error) {
     console.error("Error creating gear item:", error);
     return { success: false, error: await tErr("gearAddFailed") };
+  }
+
+  if (Object.keys(details).length > 0) {
+    const { error: detailsError } = await supabase
+      .from("gear_item_private")
+      .insert({ ...details, gear_id: data.id, user_id: user.id });
+    if (detailsError) console.error("Error saving gear details:", detailsError);
   }
 
   // Creer une activite pour le feed — sauf pour le matos prive, que les
@@ -137,7 +149,7 @@ export async function createGearItem(input: CreateGearItemInput): Promise<{
 
   revalidatePath("/gear");
   revalidatePath("/feed");
-  return { success: true, gearItem: data as GearItem };
+  return { success: true, gearItem: { ...data, ...details } as GearItem };
 }
 
 export async function updateGearItem(
@@ -151,15 +163,30 @@ export async function updateGearItem(
     return { success: false, error: await tErr("notAuthenticated") };
   }
 
-  const { error } = await supabase
-    .from("gear_items")
-    .update(input)
-    .eq("id", id)
-    .eq("user_id", user.id);
+  const { publicPart, details } = splitGearInput(input);
 
-  if (error) {
-    console.error("Error updating gear item:", error);
-    return { success: false, error: await tErr("updateFailed") };
+  if (Object.keys(publicPart).length > 0) {
+    const { error } = await supabase
+      .from("gear_items")
+      .update(publicPart)
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error updating gear item:", error);
+      return { success: false, error: await tErr("updateFailed") };
+    }
+  }
+
+  if (Object.keys(details).length > 0) {
+    const { error } = await supabase
+      .from("gear_item_private")
+      .upsert({ ...details, gear_id: id, user_id: user.id, updated_at: new Date().toISOString() }, { onConflict: "gear_id" });
+
+    if (error) {
+      console.error("Error updating gear details:", error);
+      return { success: false, error: await tErr("updateFailed") };
+    }
   }
 
   revalidatePath("/gear");
@@ -226,7 +253,7 @@ export async function getGearSetups(): Promise<GearSetupWithItems[]> {
     .from("gear_setups")
     .select(`
       *,
-      gear_setup_items(*, gear:gear_items(*))
+      gear_setup_items(*, gear:gear_items(${OWN_GEAR_SELECT}))
     `)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -242,7 +269,10 @@ export async function getGearSetups(): Promise<GearSetupWithItems[]> {
     ...setup,
     items: [...(gear_setup_items || [])]
       .sort((a, b) => a.position - b.position)
-      .map((item) => ({ ...item, gear: one(item.gear) })),
+      .map((item) => {
+        const gear = one(item.gear);
+        return { ...item, gear: gear && withGearDetails(gear) };
+      }),
   }));
 }
 
@@ -635,7 +665,7 @@ export async function getCoverGear(coverId: string): Promise<CoverGear[]> {
     .from("cover_gear")
     .select(`
       *,
-      gear:gear_items(*)
+      gear:gear_items(${PUBLIC_GEAR_COLUMNS})
     `)
     .eq("cover_id", coverId);
 
@@ -771,7 +801,7 @@ export async function getSongGear(songId: string): Promise<GearItem[]> {
     .from("song_gear")
     .select(`
       *,
-      gear:gear_items(*)
+      gear:gear_items(${PUBLIC_GEAR_COLUMNS})
     `)
     .eq("song_id", songId);
 
@@ -910,7 +940,7 @@ export async function getUserGearItems(userId: string): Promise<GearItem[]> {
 
   const { data, error } = await supabase
     .from("gear_items")
-    .select("*")
+    .select(PUBLIC_GEAR_COLUMNS)
     .eq("user_id", userId)
     .in("visibility", visibilityFilter)
     .order("created_at", { ascending: false });

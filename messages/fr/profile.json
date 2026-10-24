@@ -6,7 +6,7 @@
     "instrumentsEmpty": "Dis-nous ce que tu joues",
     "privacy": "Confidentialité",
     "private": "Profil privé",
-    "friendsOnly": "Profil visible par tes amis",
+    "friendsOnly": "Profil public : ta vitrine est visible par tous",
     "subscription": "Abonnement",
     "upgrade": "Passer à un plan payant",
     "manage": "Gérer mon abonnement",
@@ -82,7 +82,11 @@
     "seeTab": "Voir sa tablature",
     "badges": "Badges · {count}",
     "moreSessions": "Voir plus de sessions",
-    "loadingSessions": "Chargement…"
+    "loadingSessions": "Chargement…",
+    "libraryFriendsOnly": "Sa biblio, ses albums notés et ses sessions sont réservés à ses amis.",
+    "forumTopics": "Sur le forum",
+    "forumReplies": "{count, plural, =0 {Pas encore de réponse} one {# réponse} other {# réponses}}",
+    "forumSolved": "Résolu"
   },
   "favorites": {
     "selectSong": "Sélectionner un morceau",
@@ -141,15 +145,12 @@
     "visibility": "Visibilité du compte",
     "private": "Compte privé",
     "public": "Compte public",
-    "privateHint": "Seuls tes amis peuvent voir tes morceaux, favoris et bio. Ton nom et ton avatar restent visibles par tous.",
-    "publicHint": "Tout le monde peut voir ton profil complet, y compris tes morceaux et favoris.",
+    "privateHint": "Seuls tes amis voient ton profil au-delà de ton nom et de ton avatar.",
+    "publicHint": "Tout le monde voit ta vitrine. Ta biblio, tes albums notés et tes sessions restent entre amis.",
     "togglePrivate": "Compte privé",
     "othersSee": "Ce que les autres voient :",
     "seeIdentity": "Ton avatar, nom et nom d'utilisateur",
     "seeBadge": "Ton badge de plan (Free/Pro/Band)",
-    "seeStats": "Tes statistiques (nombre de morceaux, covers)",
-    "seeBio": "Ta bio et tes liens sociaux",
-    "seeSongs": "Tes morceaux et favoris",
     "friendsOnly": "(amis uniquement)",
     "myPlan": "Mon plan",
     "goPro": "Passer Pro",
@@ -157,6 +158,9 @@
     "planFeatures": "Fonctionnalités de ton plan",
     "upsell": "<strong>Passe Pro</strong> pour débloquer morceaux illimités, covers illimités, instruments illimités, et bien plus encore !",
     "compare": "Comparer tous les plans →",
-    "saving": "Enregistrement..."
+    "saving": "Enregistrement...",
+    "seeShowcase": "Ta bio, tes liens, tes favoris et tes badges",
+    "seePublicItems": "Ton matos et tes covers marqués « Public », tes chiffres de pratique, tes sujets du forum",
+    "seeLibrary": "Ta biblio, tes albums notés, ta wishlist, tes playlists et tes sessions"
   }
 }

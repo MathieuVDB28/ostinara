@@ -21,10 +21,10 @@ export default async function FriendProfilePage({
 
   const canView = !data.profile.is_private || data.is_friend;
 
-  // Les badges d'un ami se lisent entre amis seulement (RLS).
+  // Les badges font partie de la vitrine : entre amis, ou profil public (RLS).
   const [user, badges, librarySongIds, sessions] = await Promise.all([
     getAuthenticatedUser(),
-    data.is_friend ? getUserBadges(data.profile.id) : [],
+    canView ? getUserBadges(data.profile.id) : [],
     // Ses morceaux que j'ai deja : on ne me propose pas de les ajouter.
     getLibraryMatches(
       (data.all_songs ?? []).map((song) => ({
@@ -34,7 +34,8 @@ export default async function FriendProfilePage({
         deezer_id: song.deezer_id,
       }))
     ),
-    canView ? getProfileSessions(data.profile.id) : { sessions: [], hasMore: false },
+    // Les sessions restent entre amis, meme sur un profil public.
+    data.is_friend ? getProfileSessions(data.profile.id) : { sessions: [], hasMore: false },
   ]);
 
   return (

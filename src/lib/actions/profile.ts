@@ -1,6 +1,7 @@
 "use server";
 
 import { PUBLIC_PROFILE_COLUMNS } from "@/lib/public-profile";
+import { PUBLIC_GEAR_COLUMNS } from "@/lib/gear-columns";
 import { PROFILE_PRIVATE_SELECT, privateRow } from "@/lib/profile-private";
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
@@ -18,7 +19,9 @@ import type {
   FavoriteSong,
   FavoriteAlbum,
   FavoriteGear,
-  GearItem,
+  PublicGearItem,
+  ProfileForumTopic,
+  ShowcaseFavoriteSong,
   Song,
   WishlistSong,
   PlaylistWithSongs,
@@ -159,7 +162,7 @@ export async function getMyProfile(): Promise<UserProfile | null> {
       gear_id,
       position,
       created_at,
-      gear:gear_items!gear_id(*)
+      gear:gear_items!gear_id(${PUBLIC_GEAR_COLUMNS})
     `)
     .eq("user_id", user.id)
     .order("position");
@@ -243,14 +246,19 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     friendshipStatus = 'self';
   }
 
-  // Déterminer si on peut voir le contenu privé
+  // La vitrine (favoris, matos et covers publics, chiffres de pratique,
+  // forum) : amis, ou tout le monde si le profil est public. La biblio,
+  // les albums notes, la wishlist et les playlists : entre amis seulement
+  // (c'est aussi ce que la RLS laisse lire).
   const canViewPrivateContent = isOwner || !profile.is_private || isFriend;
+  const canViewLibrary = isOwner || isFriend;
 
   // Initialiser les données conditionnelles
-  let favoriteSongs: FavoriteSong[] | null = null;
+  let favoriteSongs: ShowcaseFavoriteSong[] | null = null;
   let favoriteAlbums: FavoriteAlbum[] | null = null;
   let favoriteGearItems: FavoriteGear[] | null = null;
-  let gearItems: GearItem[] | null = null;
+  let gearItems: PublicGearItem[] | null = null;
+  let forumTopics: ProfileForumTopic[] = [];
   let recentSongs: Song[] | null = null;
   let allSongs: Song[] | null = null;
   let wishlist: WishlistSong[] | null = null;
@@ -262,6 +270,7 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
   let totalAlbumReviews = 0;
 
   if (canViewPrivateContent) {
+    const SKIPPED = { data: null, count: null, error: null };
     const [
       favSongsData,
       favAlbumsData,
@@ -275,12 +284,11 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
       playlistsData,
       albumReviewsData,
       sessionsData,
+      forumTopicsData,
     ] = await Promise.all([
-      supabase
-        .from("favorite_songs")
-        .select(`id, user_id, song_id, position, created_at, song:songs(*)`)
-        .eq("user_id", userId)
-        .order("position"),
+      // Le morceau lui-meme n'est lisible qu'entre amis : la RPC n'en rend
+      // que ce que la vitrine affiche.
+      supabase.rpc("get_profile_favorite_songs", { p_user_id: userId }),
       supabase
         .from("favorite_albums")
         .select("*")
@@ -288,64 +296,61 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
         .order("position"),
       supabase
         .from("favorite_gear")
-        .select(`id, user_id, gear_id, position, created_at, gear:gear_items!gear_id(*)`)
+        .select(`id, user_id, gear_id, position, created_at, gear:gear_items!gear_id(${PUBLIC_GEAR_COLUMNS})`)
         .eq("user_id", userId)
         .order("position"),
       supabase
         .from("gear_items")
-        .select("*")
+        .select(PUBLIC_GEAR_COLUMNS)
         .eq("user_id", userId)
         .in("visibility", isOwner ? ["private", "friends", "public"] : isFriend ? ["friends", "public"] : ["public"])
         .order("created_at", { ascending: false }),
-      supabase
-        .from("songs")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("songs")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(6),
-      supabase
-        .from("songs")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId),
-      supabase
-        .from("songs")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId)
-        .eq("status", "mastered"),
-      supabase
-        .from("wishlist_songs")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("playlists")
-        .select(`*, playlist_songs(*, song:songs(*))`)
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("album_reviews")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false }),
+      canViewLibrary
+        ? supabase.from("songs").select("*").eq("user_id", userId).order("created_at", { ascending: false })
+        : SKIPPED,
+      canViewLibrary
+        ? supabase.from("songs").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(6)
+        : SKIPPED,
+      canViewLibrary
+        ? supabase.from("songs").select("*", { count: "exact", head: true }).eq("user_id", userId)
+        : SKIPPED,
+      canViewLibrary
+        ? supabase.from("songs").select("*", { count: "exact", head: true }).eq("user_id", userId).eq("status", "mastered")
+        : SKIPPED,
+      canViewLibrary
+        ? supabase.from("wishlist_songs").select("*").eq("user_id", userId).order("created_at", { ascending: false })
+        : SKIPPED,
+      canViewLibrary
+        ? supabase
+            .from("playlists")
+            .select(`*, playlist_songs(*, song:songs(*))`)
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+        : SKIPPED,
+      canViewLibrary
+        ? supabase.from("album_reviews").select("*").eq("user_id", userId).order("created_at", { ascending: false })
+        : SKIPPED,
       // Les sessions ne sont lisibles que par leur proprietaire : pour les
       // chiffres, la date et la duree de chacune, et rien d'autre.
       // Le detail, tel que les amis le voient dans le feed, vient des
       // activites (getProfileSessions).
       supabase.rpc("get_profile_practice_days", { p_user_id: userId }),
+      // Le forum est public : ses sujets font partie de la vitrine.
+      supabase
+        .from("forum_topics")
+        .select("id, slug, category, title, reply_count, solved_reply_id, created_at")
+        .eq("author_id", userId)
+        .eq("is_hidden", false)
+        .order("created_at", { ascending: false })
+        .limit(5),
     ]);
 
-    // Mapper les favorite songs
-    const mappedFavSongs = ((favSongsData.data || []) as Joined<FavoriteSong, "song">[]).map((fs) => ({
-      ...fs,
-      song: one(fs.song),
+    type FavoriteSongRow = { id: string; song_id: string; position: number; title: string; artist: string; cover_url: string | null };
+    favoriteSongs = ((favSongsData.data || []) as FavoriteSongRow[]).map((row) => ({
+      id: row.id,
+      position: row.position,
+      song: { id: row.song_id, title: row.title, artist: row.artist, cover_url: row.cover_url ?? undefined },
     }));
-
-    favoriteSongs = mappedFavSongs as FavoriteSong[];
     favoriteAlbums = (favAlbumsData.data as FavoriteAlbum[]) || [];
 
     // Mapper les favorite gear
@@ -354,15 +359,18 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
       gear: one(fg.gear),
     }));
     favoriteGearItems = mappedFavGear as FavoriteGear[];
-    gearItems = (gearItemsData.data as GearItem[]) || [];
+    gearItems = (gearItemsData.data as PublicGearItem[]) || [];
 
     allSongs = (allSongsData.data as Song[]) || [];
     recentSongs = (recentSongsData.data as Song[]) || [];
-    totalSongs = songsCountData.count || 0;
-    masteredSongs = masteredCountData.count || 0;
+    if (canViewLibrary) {
+      totalSongs = songsCountData.count || 0;
+      masteredSongs = masteredCountData.count || 0;
+    }
     wishlist = (wishlistData.data as WishlistSong[]) || [];
     albumReviews = (albumReviewsData.data as AlbumReview[]) || [];
     totalAlbumReviews = albumReviews.length;
+    forumTopics = (forumTopicsData.data as ProfileForumTopic[]) || [];
 
     // Map playlists with song count
     playlists = ((playlistsData.data || []) as PlaylistRow[]).map(({ playlist_songs, ...pl }) => {
@@ -470,6 +478,7 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     friendship_id: friendshipId,
     request_incoming: requestIncoming,
     is_friend: isFriend,
+    forum_topics: forumTopics,
   };
 }
 

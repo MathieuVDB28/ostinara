@@ -152,11 +152,12 @@ export function GearDetailModal({
         year: year ? parseInt(year) : undefined,
         color: colorFinish.trim() || undefined,
         condition,
-        serial_number: serialNumber.trim() || undefined,
-        purchase_price: purchasePrice ? parseFloat(purchasePrice) : undefined,
-        purchase_date: purchaseDate || undefined,
+        // null : un champ vide est efface (undefined le laisserait tel quel)
+        serial_number: serialNumber.trim() || null,
+        purchase_price: purchasePrice ? parseFloat(purchasePrice) : null,
+        purchase_date: purchaseDate || null,
         image_url: imageUrl.trim() || undefined,
-        notes: notes.trim() || undefined,
+        notes: notes.trim() || null,
         is_active: isActive,
         visibility,
       });

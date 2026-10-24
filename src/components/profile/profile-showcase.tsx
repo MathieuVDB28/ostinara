@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import type { FavoriteAlbum, FavoriteGear, FavoriteSong } from "@/types";
+import type { FavoriteAlbum, FavoriteGear, ShowcaseFavoriteSong } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { Cover } from "@/components/ui/cover";
 
 interface ProfileShowcaseProps {
-  favoriteSongs: FavoriteSong[] | null;
+  favoriteSongs: ShowcaseFavoriteSong[] | null;
   favoriteAlbums: FavoriteAlbum[] | null;
   favoriteGear: FavoriteGear[] | null;
   /**

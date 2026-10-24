@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { formatDuration } from "@/components/progress/stats-summary";
-import { ChevronLeft, ExternalLink, Heart, Lock, X } from "lucide-react";
+import { ChevronLeft, ExternalLink, Heart, Lock, MessagesSquare, X } from "lucide-react";
 import type { ActivityWithDetails, CoverWithSong, Instrument, PublicProfile, Song } from "@/types";
 import { getProfileSessions } from "@/lib/actions/activities";
 import { ActivityCard } from "@/components/social/activity-card";
@@ -19,10 +19,13 @@ import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
 import { BadgeMedal } from "@/components/badges/badge-medal";
 import { badgeLabel, type BadgeStatus } from "@/lib/badges/catalog";
+import { forumTopicAppHref } from "@/lib/forum";
 
 type Tab = "songs" | "albums" | "gear" | "activity";
 
 const TABS: Tab[] = ["songs", "albums", "gear", "activity"];
+/** La vitrine d'un profil public, pour qui n'est pas ami : sa biblio et ses albums restent entre amis. */
+const SHOWCASE_TABS: Tab[] = ["activity", "gear"];
 
 interface ProfileSessions {
   sessions: ActivityWithDetails[];
@@ -63,7 +66,8 @@ export function PublicProfileView({
   const tc = useTranslations("common");
   const te = useTranslations("enums");
   const { profile } = data;
-  const [tab, setTab] = useState<Tab>("songs");
+  const tabs = data.is_friend ? TABS : SHOWCASE_TABS;
+  const [tab, setTab] = useState<Tab>(tabs[0]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const closeSong = useCallback(() => setSelectedSong(null), []);
   const [inMyLibrary, setInMyLibrary] = useState<ReadonlySet<string>>(() => new Set(librarySongIds));
@@ -131,9 +135,16 @@ export function PublicProfileView({
 
           <FriendBadges badges={badges} instrument={profile.instruments?.find((i) => i.is_primary)?.instrument} />
 
+          {!data.is_friend && (
+            <p className="mb-4 flex items-center gap-2 text-[13px] text-muted-foreground">
+              <Lock className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden="true" />
+              {data.friendship_status === "pending" ? t("pending", { name }) : t("libraryFriendsOnly", { name })}
+            </p>
+          )}
+
           {/* Onglets locaux, style Atelier comme ceux du profil */}
           <div role="tablist" aria-label={t("tablist", { name })} className="mb-5 flex gap-6 overflow-x-auto border-b border-border [scrollbar-width:none]">
-            {TABS.map((key) => ({ key, label: t(`tabs.${key}`) })).map((item) => {
+            {tabs.map((key) => ({ key, label: t(`tabs.${key}`) })).map((item) => {
               const active = tab === item.key;
               return (
                 <button
@@ -289,7 +300,9 @@ function ActivityTab({
     });
   };
 
-  if (!stats?.totalSessions && sessions.length === 0 && covers.length === 0) {
+  const topics = data.forum_topics;
+
+  if (!stats?.totalSessions && sessions.length === 0 && covers.length === 0 && topics.length === 0) {
     return <Empty>{t("noActivity")}</Empty>;
   }
 
@@ -332,6 +345,31 @@ function ActivityTab({
               {loading ? t("loadingSessions") : t("moreSessions")}
             </button>
           )}
+        </section>
+      )}
+
+      {topics.length > 0 && (
+        <section>
+          <h2 className={SECTION_TITLE}>{t("forumTopics")}</h2>
+          <ul className="divide-y divide-border border-b border-border">
+            {topics.map((topic) => (
+              <li key={topic.id}>
+                <Link
+                  href={forumTopicAppHref(topic.slug)}
+                  className="flex items-center gap-3 py-3 transition-colors hover:bg-accent/50"
+                >
+                  <MessagesSquare className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">{topic.title}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {t("forumReplies", { count: topic.reply_count })}
+                      {topic.solved_reply_id ? ` · ${t("forumSolved")}` : ""}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

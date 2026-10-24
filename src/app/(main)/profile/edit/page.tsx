@@ -527,55 +527,31 @@ function EditProfilePageContent() {
             <div className="rounded-lg bg-muted/50 p-4">
               <h4 className="mb-2 font-medium">{t("othersSee")}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {t("seeIdentity")}
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {t("seeBadge")}
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {t("seeStats")}
-                </li>
-                {isPrivate ? (
-                  <>
-                    <li className="flex items-start gap-2">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      {t("seeBio")} <span className="text-primary">{t("friendsOnly")}</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      {t("seeSongs")} <span className="text-primary">{t("friendsOnly")}</span>
-                    </li>
-                  </>
-                ) : (
-                  <>
-                    <li className="flex items-start gap-2">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {(
+                  [
+                    { key: "seeIdentity", shown: true },
+                    { key: "seeBadge", shown: true },
+                    { key: "seeShowcase", shown: !isPrivate },
+                    { key: "seePublicItems", shown: !isPrivate },
+                    { key: "seeLibrary", shown: false },
+                  ] as const
+                ).map((item) => (
+                  <li key={item.key} className="flex items-start gap-2">
+                    {item.shown ? (
+                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      {t("seeBio")}
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    ) : (
+                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      {t("seeSongs")}
-                    </li>
-                  </>
-                )}
+                    )}
+                    <span>
+                      {t(item.key)}
+                      {!item.shown && <span className="text-primary"> {t("friendsOnly")}</span>}
+                    </span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { FavoriteAlbum, FavoriteSong, Profile } from "@/types";
+import type { FavoriteAlbum, Profile, ShowcaseFavoriteSong } from "@/types";
 import { SocialLinks } from "./social-links";
 import { Icon } from "@/components/ui/icon";
 import { InstrumentChips } from "@/components/instruments/instrument-chips";
@@ -15,7 +15,7 @@ export interface IdentityStat {
 
 interface ProfileIdentityProps {
   profile: Profile;
-  favoriteSongs?: FavoriteSong[] | null;
+  favoriteSongs?: ShowcaseFavoriteSong[] | null;
   favoriteAlbums?: FavoriteAlbum[] | null;
   stats: IdentityStat[];
   /** Le bouton a droite de l'avatar : « Éditer » chez soi, l'amitie chez un autre. */

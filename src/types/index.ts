@@ -489,6 +489,19 @@ export interface FavoriteSong {
   song: Song;
 }
 
+/** Un morceau favori tel que la vitrine l'affiche (get_profile_favorite_songs). */
+export interface ShowcaseFavoriteSong {
+  id: string;
+  position: number;
+  song: Pick<Song, 'id' | 'title' | 'artist' | 'cover_url'>;
+}
+
+/** Un sujet du forum, sur le profil de son auteur. */
+export type ProfileForumTopic = Pick<
+  ForumTopicSummary,
+  'id' | 'slug' | 'category' | 'title' | 'reply_count' | 'solved_reply_id' | 'created_at'
+>;
+
 export interface FavoriteAlbum {
   id: string;
   user_id: string;
@@ -517,10 +530,10 @@ export interface UserProfile extends Profile, ProfilePrivate {
 // Type pour un profil public (profil d'autres utilisateurs)
 export interface PublicProfile {
   profile: Profile;
-  favorite_songs: FavoriteSong[] | null;
+  favorite_songs: ShowcaseFavoriteSong[] | null;
   favorite_albums: FavoriteAlbum[] | null;
   favorite_gear: FavoriteGear[] | null;
-  gear_items: GearItem[] | null;
+  gear_items: PublicGearItem[] | null;
   recent_songs: Song[] | null;
   recent_covers: CoverWithSong[];
   all_songs: Song[] | null;
@@ -546,6 +559,8 @@ export interface PublicProfile {
   /** Demande en attente envoyee par ce profil : on peut l'accepter. */
   request_incoming: boolean;
   is_friend: boolean;
+  /** Ses derniers sujets du forum (vitrine). */
+  forum_topics: ProfileForumTopic[];
 }
 
 // Inputs pour mise à jour du profil
@@ -1855,7 +1870,17 @@ export type GearCondition = 'mint' | 'excellent' | 'good' | 'fair' | 'poor';
 export type GearVisibility = 'private' | 'friends' | 'public';
 export type GearPriority = 'low' | 'medium' | 'high';
 
-export interface GearItem {
+/** Le detail prive d'un matos (`gear_item_private`), lisible par son seul proprietaire. */
+export interface GearItemDetails {
+  serial_number?: string;
+  condition?: GearCondition;
+  purchase_price?: number;
+  purchase_date?: string;
+  notes?: string;
+}
+
+/** Un matos tel que les autres le voient (`PUBLIC_GEAR_COLUMNS`). */
+export interface PublicGearItem {
   id: string;
   user_id: string;
   type: GearType;
@@ -1863,17 +1888,15 @@ export interface GearItem {
   model: string;
   year?: number;
   color?: string;
-  serial_number?: string;
-  condition?: GearCondition;
-  purchase_price?: number;
-  purchase_date?: string;
   image_url?: string;
-  notes?: string;
   is_active: boolean;
   visibility: GearVisibility;
   created_at: string;
   updated_at: string;
 }
+
+/** Mon matos : le public et le detail prive, a plat. */
+export interface GearItem extends PublicGearItem, GearItemDetails {}
 
 export interface CreateGearItemInput {
   type: GearType;
@@ -1897,12 +1920,13 @@ export interface UpdateGearItemInput {
   model?: string;
   year?: number;
   color?: string;
-  serial_number?: string;
-  condition?: GearCondition;
-  purchase_price?: number;
-  purchase_date?: string;
+  // null efface le champ, absent le laisse tel quel
+  serial_number?: string | null;
+  condition?: GearCondition | null;
+  purchase_price?: number | null;
+  purchase_date?: string | null;
   image_url?: string;
-  notes?: string;
+  notes?: string | null;
   is_active?: boolean;
   visibility?: GearVisibility;
 }
@@ -1980,7 +2004,7 @@ export interface FavoriteGear {
   gear_id: string;
   position: number;
   created_at: string;
-  gear: GearItem;
+  gear: PublicGearItem;
 }
 
 export interface SetFavoriteGearInput {

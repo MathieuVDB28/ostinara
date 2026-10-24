@@ -6,7 +6,7 @@
     "instrumentsEmpty": "Tell us what you play",
     "privacy": "Privacy",
     "private": "Private profile",
-    "friendsOnly": "Profile visible to your friends",
+    "friendsOnly": "Public profile: everyone sees your showcase",
     "subscription": "Subscription",
     "upgrade": "Upgrade to a paid plan",
     "manage": "Manage my subscription",
@@ -82,7 +82,11 @@
     "seeTab": "See their tab",
     "badges": "Badges · {count}",
     "moreSessions": "Show more sessions",
-    "loadingSessions": "Loading…"
+    "loadingSessions": "Loading…",
+    "libraryFriendsOnly": "Their library, rated albums and sessions are for their friends only.",
+    "forumTopics": "On the forum",
+    "forumReplies": "{count, plural, =0 {No replies yet} one {# reply} other {# replies}}",
+    "forumSolved": "Solved"
   },
   "favorites": {
     "selectSong": "Pick a song",
@@ -141,15 +145,12 @@
     "visibility": "Account visibility",
     "private": "Private account",
     "public": "Public account",
-    "privateHint": "Only your friends can see your songs, favorites and bio. Your name and avatar stay visible to everyone.",
-    "publicHint": "Everyone can see your full profile, including your songs and favorites.",
+    "privateHint": "Only your friends see more than your name and avatar.",
+    "publicHint": "Everyone sees your showcase. Your library, rated albums and sessions stay between friends.",
     "togglePrivate": "Private account",
     "othersSee": "What others see:",
     "seeIdentity": "Your avatar, name and username",
     "seeBadge": "Your plan badge (Free/Pro/Band)",
-    "seeStats": "Your stats (number of songs, covers)",
-    "seeBio": "Your bio and social links",
-    "seeSongs": "Your songs and favorites",
     "friendsOnly": "(friends only)",
     "myPlan": "My plan",
     "goPro": "Go Pro",
@@ -157,6 +158,9 @@
     "planFeatures": "Your plan's features",
     "upsell": "<strong>Go Pro</strong> to unlock unlimited songs, unlimited covers, unlimited instruments, and much more!",
     "compare": "Compare all plans →",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "seeShowcase": "Your bio, links, favorites and badges",
+    "seePublicItems": "Your gear and covers set to “Public”, your practice stats, your forum topics",
+    "seeLibrary": "Your library, rated albums, wishlist, playlists and sessions"
   }
 }

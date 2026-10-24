@@ -801,6 +801,24 @@ profile_private (
 )
 ```
 
+### Matos : detail prive, et vitrine des profils publics
+
+`gear_items` est lisible par les amis (matos « Amis ») et par tous (« Public ») :
+il ne garde que ce qui peut etre montre (`PUBLIC_GEAR_COLUMNS`,
+`src/lib/gear-columns.ts`). Numero de serie, etat, prix, date d'achat et notes
+vivent dans `gear_item_private` (lisible par soi seul, migrations
+`20261109_gear_private` puis `20261110_gear_private_drop`). Son propre matos se lit
+avec `OWN_GEAR_SELECT` + `withGearDetails`, s'ecrit avec `splitGearInput` ; le
+matos d'un autre jamais en `select("*")`.
+
+`profiles.is_private` (prive par defaut, le choix reste a l'inscription et dans
+Confidentialite) : un profil public montre aux non-amis sa **vitrine** (bio,
+liens, favoris, badges, matos et covers « Public », chiffres de pratique,
+sujets du forum) ; la biblio, les albums notes, la wishlist, les playlists et
+les sessions restent entre amis (`getPublicProfile` : `canViewLibrary`). Les
+morceaux favoris passent par la RPC `get_profile_favorite_songs` (titre,
+artiste, pochette seulement).
+
 ### Colonnes ajoutees pour les langues
 
 ```sql
