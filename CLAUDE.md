@@ -180,6 +180,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - **Protocol** : Tus (resumable uploads) vers Supabase Storage
 - **Compression video** : FFmpeg WASM pour les fichiers > 50MB
 - **Buckets** : `covers` (video/audio, 200MB limit), `avatars` (images)
+- **Covers privees** (migration `20261112_private_covers_bucket`) : `covers.media_url` garde le chemin dans le bucket (les anciennes lignes, l'URL publique ; `coverStoragePath` lit les deux). Toute fonction serveur qui renvoie des covers passe ses lignes, lues sous RLS, a `signCoverMedia` ; une cover ne pointe que vers un fichier du dossier de son auteur (trigger `check_cover_media_owner`).
 
 ---
 
@@ -897,7 +898,7 @@ get_practice_leaderboard(p_user_id UUID, p_period TEXT, p_limit INTEGER DEFAULT 
 
 | Bucket | Type | Contenu |
 |--------|------|---------|
-| covers | Public | Video/audio covers (mp4, webm, quicktime, mpeg, wav, webm audio) - 200MB max |
+| covers | Prive (liens signes 6 h, `signCoverMedia` dans `src/lib/storage/cover-media.ts`) | Video/audio covers (mp4, webm, quicktime, mpeg, wav, webm audio) - 200MB max |
 | avatars | Public | Images de profil |
 
 ---

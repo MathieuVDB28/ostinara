@@ -2,6 +2,7 @@
 
 import { PUBLIC_PROFILE_COLUMNS } from "@/lib/public-profile";
 import { PUBLIC_GEAR_COLUMNS } from "@/lib/gear-columns";
+import { signCoverMedia } from "@/lib/storage/cover-media";
 import { PROFILE_PRIVATE_SELECT, privateRow } from "@/lib/profile-private";
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
@@ -461,10 +462,12 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     .order("created_at", { ascending: false });
 
   // Mapper les covers
-  const mappedCovers = ((covers || []) as Joined<CoverWithSong, "song">[]).map((cover) => ({
-    ...cover,
-    song: one(cover.song),
-  })) as CoverWithSong[];
+  const mappedCovers = await signCoverMedia(
+    ((covers || []) as Joined<CoverWithSong, "song">[]).map((cover) => ({
+      ...cover,
+      song: one(cover.song),
+    })) as CoverWithSong[]
+  );
 
   return {
     profile: profile as Profile,

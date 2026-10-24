@@ -1,5 +1,6 @@
 "use server";
 
+import { signCoverMedia } from "@/lib/storage/cover-media";
 import { getLocale, getTranslations } from "next-intl/server";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { profileHref } from "@/lib/navigation";
@@ -192,7 +193,8 @@ export async function searchEverything(
    * trois covers au plan gratuit, quelques dizaines au-dela.
    */
   const needle = query.toLowerCase();
-  for (const cover of covers.data ?? []) {
+  // Les miniatures sont dans le bucket prive des covers : liens signes.
+  for (const cover of await signCoverMedia(covers.data ?? [])) {
     const song = cover.song as unknown as
       | { title: string; artist: string | null }
       | null;

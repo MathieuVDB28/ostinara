@@ -37,6 +37,7 @@ export function AddCoverModal({
   const [step, setStep] = useState<"upload" | "details">("upload");
   const [uploadedFile, setUploadedFile] = useState<{
     url: string;
+    previewUrl: string;
     mediaType: "video" | "audio";
     fileSize: number;
   } | null>(null);
@@ -91,6 +92,12 @@ export function AddCoverModal({
 
     setSaving(false);
   };
+
+  // L'apercu lit le fichier local : on le libere quand il ne sert plus.
+  useEffect(() => {
+    if (!uploadedFile) return;
+    return () => URL.revokeObjectURL(uploadedFile.previewUrl);
+  }, [uploadedFile]);
 
   const handleClose = useCallback(() => {
     setStep("upload");
@@ -188,7 +195,7 @@ export function AddCoverModal({
             {/* Aperçu vidéo */}
             {uploadedFile && uploadedFile.mediaType === "video" && (
               <video
-                src={uploadedFile.url}
+                src={uploadedFile.previewUrl}
                 controls
                 className="w-full rounded-lg"
               />
@@ -196,7 +203,7 @@ export function AddCoverModal({
 
             {uploadedFile && uploadedFile.mediaType === "audio" && (
               <div className="rounded-lg bg-muted p-4">
-                <audio src={uploadedFile.url} controls className="w-full" />
+                <audio src={uploadedFile.previewUrl} controls className="w-full" />
               </div>
             )}
 

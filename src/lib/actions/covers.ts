@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import { COVER_GEAR_SELECT, withCoverGear } from "@/lib/cover-gear";
+import { coverStoragePath, signCoverMedia, signOneCoverMedia } from "@/lib/storage/cover-media";
 import type {
   Cover,
   CoverFeedItem,
@@ -42,7 +43,7 @@ export async function getCovers(): Promise<CoverWithSong[]> {
     return [];
   }
 
-  return (data ?? []).map(withCoverGear) as CoverWithSong[];
+  return signCoverMedia((data ?? []).map(withCoverGear) as CoverWithSong[]);
 }
 
 export async function getCoversBySong(songId: string): Promise<Cover[]> {
@@ -65,7 +66,7 @@ export async function getCoversBySong(songId: string): Promise<Cover[]> {
     return [];
   }
 
-  return data as Cover[];
+  return signCoverMedia(data as Cover[]);
 }
 
 export async function canUploadCover(): Promise<{
@@ -120,6 +121,15 @@ export async function createCover(input: CreateCoverInput): Promise<{
 
   if (!user) {
     return { success: false, error: await tErr("notAuthenticated") };
+  }
+
+  // Le fichier doit etre dans mon dossier du bucket : la cover le signe
+  // pour qui la voit, elle ne doit pas pouvoir pointer celui d'un autre.
+  // (La base le verifie aussi, trigger check_cover_media_owner.)
+  const ownsFile = (value: string | null | undefined) =>
+    coverStoragePath(value)?.startsWith(`${user.id}/`) ?? false;
+  if (!ownsFile(input.media_url) || (input.thumbnail_url && !ownsFile(input.thumbnail_url))) {
+    return { success: false, error: await tErr("coverAddFailed") };
   }
 
   // Vérifier la limite du plan
@@ -232,9 +242,10 @@ export async function updateCover(
     return { success: false, error: await tErr("notAuthenticated") };
   }
 
+  // Seuls la visibilite et le texte se modifient (pas le fichier).
   const { error } = await supabase
     .from("covers")
-    .update(input)
+    .update({ visibility: input.visibility, description: input.description })
     .eq("id", id)
     .eq("user_id", user.id);
 
@@ -281,12 +292,12 @@ export async function deleteCover(id: string): Promise<{ success: boolean; error
 
   // Supprimer les fichiers du storage
   try {
-    const mediaPath = extractStoragePath(cover.media_url);
+    const mediaPath = coverStoragePath(cover.media_url);
     if (mediaPath) {
       await supabase.storage.from("covers").remove([mediaPath]);
     }
     if (cover.thumbnail_url) {
-      const thumbPath = extractStoragePath(cover.thumbnail_url);
+      const thumbPath = coverStoragePath(cover.thumbnail_url);
       if (thumbPath) {
         await supabase.storage.from("covers").remove([thumbPath]);
       }
@@ -298,12 +309,6 @@ export async function deleteCover(id: string): Promise<{ success: boolean; error
   revalidatePath("/covers");
   revalidatePath("/library");
   return { success: true };
-}
-
-function extractStoragePath(url: string): string | null {
-  // Extraire le chemin depuis l'URL Supabase Storage
-  const match = url.match(/\/storage\/v1\/object\/public\/covers\/(.+)$/);
-  return match ? match[1] : null;
 }
 
 /**
@@ -359,6 +364,10 @@ export async function getCoversFeed(limit = 30): Promise<CoverFeedItem[]> {
   if (!covers || covers.length === 0) {
     return [];
   }
+
+  // Les fichiers se lisent par liens signes (bucket prive) : les lignes
+  // viennent d'etre lues sous RLS.
+  const signedCovers = await signCoverMedia(covers);
 
   const coverIds = covers.map((cover) => cover.id);
   const authorIds = [...new Set(covers.map((cover) => cover.user_id))];
@@ -473,10 +482,10 @@ export async function getCoversFeed(limit = 30): Promise<CoverFeedItem[]> {
   };
 
   const parents = new Map<string, ParentRow>(
-    ((parentsResult.data ?? []) as ParentRow[]).map((row) => [row.id, row])
+    (await signCoverMedia((parentsResult.data ?? []) as ParentRow[])).map((row) => [row.id, row])
   );
 
-  return covers.map((cover) => {
+  return signedCovers.map((cover) => {
     const activityId = activityByCover.get(cover.id) ?? null;
     const parent = cover.reply_to_cover_id
       ? parents.get(cover.reply_to_cover_id)
@@ -547,7 +556,7 @@ export async function getCoverForReply(
     .maybeSingle();
 
   return {
-    cover: cover as CoverWithSong,
+    cover: (await signOneCoverMedia(cover)) as CoverWithSong,
     author: (author ?? {
       id: cover.user_id,
       username: "musicien",

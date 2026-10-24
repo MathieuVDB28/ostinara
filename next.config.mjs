@@ -125,6 +125,15 @@ export default withNextIntl(withPWA({
       },
     },
     {
+      /*
+       * Les fichiers des covers, par liens signes (bucket prive) : chaque
+       * lien porte un jeton qui expire, et une video ne tient pas dans le
+       * cache de l'API. Toujours le reseau.
+       */
+      urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/v1\/object\/sign\/.*/i,
+      handler: 'NetworkOnly',
+    },
+    {
       urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
       handler: 'NetworkFirst',
       options: {

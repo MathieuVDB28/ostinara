@@ -22,6 +22,7 @@ import type {
   AlbumReview,
   AlbumWishlistItem,
 } from "@/types";
+import { signCoverMedia } from "@/lib/storage/cover-media";
 import { COVER_GEAR_SELECT, withCoverGear } from "@/lib/cover-gear";
 
 /** « 4,5/5 ★ » : la note est stockee sur 10, une unite par demi-etoile. */
@@ -418,7 +419,9 @@ export async function getFeedActivities(
       .in("visibility", ["friends", "public"]);
 
     if (covers) {
-      covers.forEach((cover) => coversMap.set(cover.id, withCoverGear(cover) as CoverWithSong));
+      // Liens signes : le bucket des covers est prive.
+      const signed = await signCoverMedia(covers.map((cover) => withCoverGear(cover) as CoverWithSong));
+      signed.forEach((cover) => coversMap.set(cover.id, cover));
     }
   }
 

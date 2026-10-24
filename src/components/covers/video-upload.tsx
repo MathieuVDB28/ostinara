@@ -9,7 +9,10 @@ import { needsCompression } from "@/lib/video-compression";
 interface VideoUploadProps {
   songId: string;
   onUploadComplete: (result: {
+    /** Le chemin dans le bucket (prive) : a enregistrer sur la cover. */
     url: string;
+    /** Le fichier local, pour l'apercu avant d'enregistrer. */
+    previewUrl: string;
     mediaType: "video" | "audio";
     fileSize: number;
   }) => void;
@@ -130,12 +133,11 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
         });
       });
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("covers")
-        .getPublicUrl(filePath);
-
+      // Le bucket est prive : on garde le chemin, le serveur le signe pour
+      // qui a le droit de voir la cover (src/lib/storage/cover-media.ts).
       onUploadComplete({
-        url: publicUrl,
+        url: filePath,
+        previewUrl: URL.createObjectURL(fileToUpload),
         mediaType: isVideo ? "video" : "audio",
         fileSize: fileToUpload.size,
       });

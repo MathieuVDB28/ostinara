@@ -1,5 +1,6 @@
 "use server";
 
+import { signCoverMedia } from "@/lib/storage/cover-media";
 import { PUBLIC_PROFILE_COLUMNS } from "@/lib/public-profile";
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
@@ -533,7 +534,7 @@ export async function getFriendProfile(
   return {
     profile: profile as Profile,
     songs: songsList,
-    covers: (covers || []) as CoverWithSong[],
+    covers: await signCoverMedia((covers || []) as CoverWithSong[]),
     friendship: friendship as Friendship,
     stats: {
       totalSongs: songsList.length,
