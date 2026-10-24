@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Bookmark,
   Check,
@@ -164,6 +164,58 @@ function Compact({
   );
 }
 
+/** Texte coupe a 2 lignes, « Lire » des qu'il deborde vraiment (la largeur
+ * de l'ecran decide, pas un nombre de caracteres). */
+function ClampedQuote({
+  name,
+  text,
+  moreLabel,
+  lessLabel,
+  className,
+}: {
+  name: string;
+  text: string;
+  moreLabel: string;
+  lessLabel: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const [open, setOpen] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || open) return;
+    const check = () => setOverflows(el.scrollHeight > el.clientHeight + 1);
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    document.fonts?.ready.then(check);
+    return () => observer.disconnect();
+  }, [open, text]);
+
+  return (
+    <div className={className}>
+      <p
+        ref={ref}
+        className={`whitespace-pre-line break-words font-serif text-[15px] italic leading-relaxed ${open ? "" : "line-clamp-2"}`}
+      >
+        <span className="mr-1 font-sans text-[13px] font-bold not-italic">{name}</span>
+        {text}
+      </p>
+      {(overflows || open) && (
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          aria-expanded={open}
+          className="mt-1 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground"
+        >
+          {open ? lessLabel : moreLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
 const pill =
   "flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 font-display text-[13px] font-bold tracking-[0.04em] text-white";
 
@@ -175,7 +227,6 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
   const intlLocale = useIntlLocale();
   const isOwn = activity.user_id === currentUserId;
   const [playing, setPlaying] = useState(false);
-  const [reviewOpen, setReviewOpen] = useState(false);
   const name = isOwn ? t("you") : activity.user.display_name || activity.user.username;
   const message = activityMessage(activity.type, t, isOwn);
   const meta = activity.metadata ?? {};
@@ -233,23 +284,13 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
             </p>
           )}
           {activity.albumReview.review && (
-            <div className="px-4 pt-3 sm:px-0">
-              <p
-                className={`font-serif text-[15px] italic leading-relaxed ${reviewOpen ? "" : "line-clamp-2"}`}
-              >
-                <span className="mr-1 font-sans text-[13px] font-bold not-italic">{name}</span>
-                {activity.albumReview.review}
-              </p>
-              {activity.albumReview.review.length > 140 && (
-                <button
-                  type="button"
-                  onClick={() => setReviewOpen((open) => !open)}
-                  className="mt-1 text-xs font-semibold text-muted-foreground hover:text-foreground"
-                >
-                  {reviewOpen ? t("collapse") : t("readReview")}
-                </button>
-              )}
-            </div>
+            <ClampedQuote
+              className="px-4 pt-3 sm:px-0"
+              name={name}
+              text={activity.albumReview.review}
+              moreLabel={t("readReview")}
+              lessLabel={t("collapse")}
+            />
           )}
         </>
       )}
@@ -442,7 +483,6 @@ function SessionBlock({
   const ta = useTranslations("activity");
   const te = useTranslations("enums");
   const intlLocale = useIntlLocale();
-  const [noteOpen, setNoteOpen] = useState(false);
 
   const phrase = instrumentPhrase(session.instrument, te);
   const instrument = phrase ? ` ${phrase}` : "";
@@ -576,21 +616,13 @@ function SessionBlock({
       )}
 
       {session.notes && (
-        <div className="pt-3">
-          <p className={`font-serif text-[15px] italic leading-relaxed ${noteOpen ? "" : "line-clamp-2"}`}>
-            <span className="mr-1 font-sans text-[13px] font-bold not-italic">{name}</span>
-            {session.notes}
-          </p>
-          {session.notes.length > 140 && (
-            <button
-              type="button"
-              onClick={() => setNoteOpen((open) => !open)}
-              className="mt-1 text-xs font-semibold text-muted-foreground hover:text-foreground"
-            >
-              {noteOpen ? ta("collapse") : t("readNote")}
-            </button>
-          )}
-        </div>
+        <ClampedQuote
+          className="pt-3"
+          name={name}
+          text={session.notes}
+          moreLabel={t("readNote")}
+          lessLabel={ta("collapse")}
+        />
       )}
     </div>
   );
