@@ -172,5 +172,9 @@
   "sessionLogged": {
     "title": "Session logged",
     "body": "{name} logged a {minutes}-min{instrument, select, guitar { guitar} bass { bass} drums { drums} keys { keys} other {}} session{song, select, none {{exercises, plural, =0 {} one {: 1 exercise} other {: # exercises}}} other {: “{song}”{others, plural, =0 {} one { and 1 other song} other { and # other songs}}{exercises, plural, =0 {} one {, 1 exercise} other {, # exercises}}}}"
+  },
+  "gearWishlisted": {
+    "title": "Gear wish",
+    "body": "{name} has their eye on “{gear}”"
   }
 }

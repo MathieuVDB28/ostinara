@@ -14,7 +14,14 @@
   "wishlist": {
     "estimated": "Estimated price:",
     "link": "View link",
-    "remove": "Remove from wishlist"
+    "remove": "Remove from wishlist",
+    "friendsOnly": "Friends only",
+    "friendsOnlyHint": "Only your friends see it, on your profile and in their feed.",
+    "publicHint": "Everyone sees it on your profile, like your profile. Your friends also see it in their feed.",
+    "privateProfile": "Your profile is private: your friends will see this wish on your profile and in their feed.",
+    "visibilityPublic": "Public",
+    "visibilityFriends": "Friends",
+    "toggleVisibility": "Change who sees this wish"
   },
   "form": {
     "brandOrModel": "Enter at least the brand or the model.",

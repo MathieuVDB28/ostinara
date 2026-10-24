@@ -28,6 +28,7 @@ import { AddGearModal } from "@/components/gear/add-gear-modal";
 import { GearDetailModal } from "@/components/gear/gear-detail-modal";
 import { GearSetupCard } from "@/components/gear/gear-setup-card";
 import { GearWishlistCard } from "@/components/gear/gear-wishlist-card";
+import { AudienceField, type Audience } from "@/components/ui/audience-field";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
 import { Icon } from "@/components/ui/icon";
 
@@ -58,6 +59,7 @@ export function GearView({
   const t = useTranslations("gear.view");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
+  const tw = useTranslations("gear.wishlist");
   const SORT_OPTIONS = SORT_VALUES.map((value) => ({ value, label: t(`sort.${value}`) }));
   // « Mauvais » et non « Usé » ici : le filtre lit l'etat comme une echelle.
   const CONDITION_OPTIONS = CONDITION_VALUES.map((value) => ({
@@ -116,6 +118,8 @@ export function GearView({
   const [wishlistEstimatedPrice, setWishlistEstimatedPrice] = useState("");
   const [wishlistNotes, setWishlistNotes] = useState("");
   const [wishlistUrl, setWishlistUrl] = useState("");
+  // « Public » suit le profil : amis seulement sur un profil prive.
+  const [wishlistVisibility, setWishlistVisibility] = useState<Audience>("public");
   const [isAddingWishlist, setIsAddingWishlist] = useState(false);
 
   // --- Plan limits ---
@@ -253,6 +257,7 @@ export function GearView({
           : undefined,
         notes: wishlistNotes.trim() || undefined,
         url: wishlistUrl.trim() || undefined,
+        visibility: wishlistVisibility,
       });
       setWishlistBrand("");
       setWishlistModel("");
@@ -261,6 +266,7 @@ export function GearView({
       setWishlistEstimatedPrice("");
       setWishlistNotes("");
       setWishlistUrl("");
+      setWishlistVisibility("public");
       setShowWishlistForm(false);
       await refreshWishlist();
     } finally {
@@ -274,6 +280,7 @@ export function GearView({
     wishlistEstimatedPrice,
     wishlistNotes,
     wishlistUrl,
+    wishlistVisibility,
     refreshWishlist,
     defaultWishlistType,
   ]);
@@ -781,6 +788,16 @@ export function GearView({
                 rows={2}
                 className="w-full resize-none rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
+              <AudienceField
+                value={wishlistVisibility}
+                onChange={setWishlistVisibility}
+                texts={{
+                  friendsOnly: tw("friendsOnly"),
+                  friendsOnlyHint: tw("friendsOnlyHint"),
+                  publicHint: tw("publicHint"),
+                  privateProfile: tw("privateProfile"),
+                }}
+              />
               <div className="flex items-center justify-end gap-2">
                 <button
                   onClick={() => {
@@ -792,6 +809,7 @@ export function GearView({
                     setWishlistEstimatedPrice("");
                     setWishlistNotes("");
                     setWishlistUrl("");
+                    setWishlistVisibility("public");
                   }}
                   className="rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
@@ -820,6 +838,7 @@ export function GearView({
                   key={item.id}
                   item={item}
                   onRemove={() => handleRemoveWishlistItem(item.id)}
+                  onVisibilityChange={refreshWishlist}
                 />
               ))}
             </div>

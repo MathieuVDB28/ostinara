@@ -17,7 +17,8 @@
     "album_wishlisted": "veut écouter un album",
     "gear_added": "a ajouté du matos à sa collection",
     "badge_unlocked": "a débloqué un badge",
-    "session_completed": "a joué une session"
+    "session_completed": "a joué une session",
+    "gear_wishlisted": "rêve d'un nouveau matos"
   },
   "typesSelf": {
     "song_added": "a ajouté un nouveau morceau",
@@ -37,7 +38,8 @@
     "album_wishlisted": "veut écouter un album",
     "gear_added": "a ajouté du matos à sa collection",
     "badge_unlocked": "a débloqué un badge",
-    "session_completed": "a joué une session"
+    "session_completed": "a joué une session",
+    "gear_wishlisted": "rêve d'un nouveau matos"
   },
   "you": "Toi",
   "myProfile": "Mon profil",
@@ -78,5 +80,6 @@
     "readNote": "Lire la note",
     "moodLabel": "Humeur : {mood}",
     "exercise": "Exercice"
-  }
+  },
+  "gearWish": "Envie · {type}"
 }

@@ -169,6 +169,11 @@ function getNotificationForActivity(
         title: t("gearAdded.title"),
         body: t("gearAdded.body", { name, gear: `${m("brand")} ${m("model")}`.trim() }),
       }));
+    case "gear_wishlisted":
+      return build("gear_wishlisted", "/feed", (t, name) => ({
+        title: t("gearWishlisted.title"),
+        body: t("gearWishlisted.body", { name, gear: `${m("brand")} ${m("model")}`.trim() }),
+      }));
     default:
       return null;
   }

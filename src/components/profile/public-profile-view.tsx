@@ -18,6 +18,7 @@ import { StarRating } from "@/components/ui/star-rating";
 import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
 import { BadgeMedal } from "@/components/badges/badge-medal";
+import { GearWishlistCard } from "@/components/gear/gear-wishlist-card";
 import { badgeLabel, type BadgeStatus } from "@/lib/badges/catalog";
 import { forumTopicAppHref } from "@/lib/forum";
 
@@ -229,30 +230,44 @@ export function PublicProfileView({
             ))}
 
           {tab === "gear" &&
-            (!data.gear_items || data.gear_items.length === 0 ? (
+            (!data.gear_items?.length && !data.gear_wishlist?.length ? (
               <Empty>{t("noGear")}</Empty>
             ) : (
-              <ul className="divide-y divide-border border-b border-border">
-                {data.gear_items.map((gear) => (
-                  <li key={gear.id} className="flex items-center gap-3.5 py-3">
-                    <Cover src={gear.image_url} className="h-14 w-14 rounded-[4px]" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">
-                        {gear.brand} {gear.model}
-                      </p>
-                      <p className="truncate text-[13px] text-muted-foreground">
-                        {te(`gearType.${gear.type}`)}
-                        {gear.year ? ` · ${gear.year}` : ""}
-                      </p>
-                    </div>
-                    {gear.is_active && (
-                      <span className="shrink-0 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-success">
-                        {t("playingNow")}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <div className="flex flex-col gap-7">
+                {data.gear_items && data.gear_items.length > 0 && (
+                  <ul className="divide-y divide-border border-b border-border">
+                    {data.gear_items.map((gear) => (
+                      <li key={gear.id} className="flex items-center gap-3.5 py-3">
+                        <Cover src={gear.image_url} className="h-14 w-14 rounded-[4px]" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold">
+                            {gear.brand} {gear.model}
+                          </p>
+                          <p className="truncate text-[13px] text-muted-foreground">
+                            {te(`gearType.${gear.type}`)}
+                            {gear.year ? ` · ${gear.year}` : ""}
+                          </p>
+                        </div>
+                        {gear.is_active && (
+                          <span className="shrink-0 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-success">
+                            {t("playingNow")}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* Ses envies : de quoi lui faire un cadeau, ou en parler */}
+                {data.gear_wishlist && data.gear_wishlist.length > 0 && (
+                  <section>
+                    <h2 className={SECTION_TITLE}>{t("gearWishlist")}</h2>
+                    {data.gear_wishlist.map((item) => (
+                      <GearWishlistCard key={item.id} item={item} />
+                    ))}
+                  </section>
+                )}
+              </div>
             ))}
 
           {tab === "activity" && <ActivityTab data={data} sessions={sessions} currentUserId={currentUserId} />}

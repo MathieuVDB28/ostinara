@@ -50,6 +50,7 @@ const COMPACT_ICONS: Record<string, LucideIcon> = {
   band_created: Users,
   band_joined: Users,
   gear_added: Guitar,
+  gear_wishlisted: Bookmark,
   challenge_created: Trophy,
   challenge_accepted: Trophy,
   challenge_completed: Trophy,
@@ -402,6 +403,15 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
           type={activity.type}
           label={activity.type === "band_created" ? t("newBand") : t("joinedBand")}
           title={String(meta.band_name ?? t("band"))}
+        />
+      )}
+
+      {activity.type === "gear_wishlisted" && activity.metadata && (
+        <Compact
+          src={meta.image_url ? String(meta.image_url) : null}
+          type={activity.type}
+          label={meta.type ? t("gearWish", { type: te(`gearType.${String(meta.type) as GearType}`) }) : t("gear")}
+          title={`${String(meta.brand ?? "")} ${String(meta.model ?? "")}`.trim()}
         />
       )}
 

@@ -78,6 +78,7 @@ export type NotificationType =
   | 'rehearsal_today'
   | 'band_message'
   | 'gear_added'
+  | 'gear_wishlisted'
   | 'song_learning'
   | 'badge_unlocked'
   | 'session_completed'

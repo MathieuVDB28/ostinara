@@ -14,7 +14,14 @@
   "wishlist": {
     "estimated": "Prix estimé :",
     "link": "Voir le lien",
-    "remove": "Retirer de la wishlist"
+    "remove": "Retirer de la wishlist",
+    "friendsOnly": "Réservée à mes amis",
+    "friendsOnlyHint": "Seuls tes amis la voient, sur ton profil et dans leur feed.",
+    "publicHint": "Visible par tous sur ton profil, comme ton profil. Tes amis la voient aussi dans leur feed.",
+    "privateProfile": "Ton profil est privé : tes amis verront cette envie sur ton profil et dans leur feed.",
+    "visibilityPublic": "Public",
+    "visibilityFriends": "Amis",
+    "toggleVisibility": "Changer qui voit cette envie"
   },
   "form": {
     "brandOrModel": "Renseigne au moins la marque ou le modèle.",

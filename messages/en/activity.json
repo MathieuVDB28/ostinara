@@ -17,7 +17,8 @@
     "album_wishlisted": "wants to listen to an album",
     "gear_added": "added gear to their collection",
     "badge_unlocked": "unlocked a badge",
-    "session_completed": "played a session"
+    "session_completed": "played a session",
+    "gear_wishlisted": "has their eye on new gear"
   },
   "typesSelf": {
     "song_added": "added a new song",
@@ -37,7 +38,8 @@
     "album_wishlisted": "want to listen to an album",
     "gear_added": "added gear to your collection",
     "badge_unlocked": "unlocked a badge",
-    "session_completed": "played a session"
+    "session_completed": "played a session",
+    "gear_wishlisted": "have your eye on new gear"
   },
   "you": "You",
   "myProfile": "My profile",
@@ -78,5 +80,6 @@
     "readNote": "Read the note",
     "moodLabel": "Mood: {mood}",
     "exercise": "Exercise"
-  }
+  },
+  "gearWish": "Wish · {type}"
 }

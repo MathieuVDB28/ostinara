@@ -828,6 +828,13 @@ par defaut ; sur un profil public, la case « Reservee a mes amis » la passe en
 covers (les anciennes le restent). `useMyProfileIsPrivate()` :
 `ProfilePrivacyProvider`, monte dans `(main)/layout.tsx`.
 
+La wishlist matos (`gear_wishlist.visibility`, migration
+`20261111_gear_wishlist_visibility`) suit la meme regle : « Public » par defaut,
+case « Reservee a mes amis » (`AudienceField`, `src/components/ui/audience-field.tsx`),
+basculable sur la carte (`updateGearWishlistVisibility`). Une envie ajoutee cree
+l'activite `gear_wishlisted` (retiree avec l'envie) ; elle s'affiche dans l'onglet
+Matos du profil (« Ses envies »).
+
 ### Colonnes ajoutees pour les langues
 
 ```sql
@@ -875,7 +882,7 @@ get_practice_leaderboard(p_user_id UUID, p_period TEXT, p_limit INTEGER DEFAULT 
 | gear_type | guitar, bass, amp, effect, drums, cymbals, keyboard, accessory, recording, other |
 | exercise_difficulty | beginner, intermediate, advanced, expert |
 | friendship_status | pending, accepted, blocked |
-| activity_type | song_added, song_learning, song_mastered, cover_posted, friend_added, song_wishlisted, setlist_created, band_created, band_joined, challenge_created, challenge_accepted, challenge_completed, challenge_won, album_reviewed, album_wishlisted, exercise_shared, gear_added, badge_unlocked, session_completed |
+| activity_type | song_added, song_learning, song_mastered, cover_posted, friend_added, song_wishlisted, setlist_created, band_created, band_joined, challenge_created, challenge_accepted, challenge_completed, challenge_won, album_reviewed, album_wishlisted, exercise_shared, gear_added, gear_wishlisted, badge_unlocked, session_completed |
 | band_member_role | owner, admin, member |
 | band_invitation_status | pending, accepted, declined |
 | challenge_type | practice_time, streak, song_mastery |

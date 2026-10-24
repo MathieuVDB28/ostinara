@@ -3,13 +3,13 @@
 import { useTranslations } from "next-intl";
 import { Lock } from "lucide-react";
 import { useMyProfileIsPrivate } from "@/components/providers/profile-privacy-provider";
+import { AudienceField } from "@/components/ui/audience-field";
 import type { CoverVisibility } from "@/types";
 
 /**
- * Qui voit la cover. Elle suit le profil : publique sur un profil public,
- * entre amis sur un profil prive. Sur un profil public, une case la garde
- * entre amis. « Moi seul » n'est plus propose ; une cover ancienne qui
- * l'etait le reste jusqu'a ce qu'on la partage.
+ * Qui voit la cover : elle suit le profil (cf. AudienceField). « Moi seul »
+ * n'est plus propose ; une cover ancienne qui l'etait le reste jusqu'a ce
+ * qu'on la partage.
  */
 export function CoverVisibilityField({
   value,
@@ -39,29 +39,16 @@ export function CoverVisibilityField({
     );
   }
 
-  if (profileIsPrivate) {
-    return (
-      <p className="flex items-start gap-2 rounded-lg bg-muted/60 px-3 py-2.5 text-sm text-muted-foreground">
-        <Lock className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
-        {t("privateProfile")}
-      </p>
-    );
-  }
-
   return (
-    <label className="flex min-h-[44px] cursor-pointer items-start gap-3 rounded-lg border border-border px-3 py-2.5">
-      <input
-        type="checkbox"
-        checked={value === "friends"}
-        onChange={(event) => onChange(event.target.checked ? "friends" : "public")}
-        className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-      />
-      <span className="min-w-0">
-        <span className="block text-sm font-medium">{t("friendsOnly")}</span>
-        <span className="block text-xs text-muted-foreground">
-          {value === "friends" ? t("friendsOnlyHint") : t("publicHint")}
-        </span>
-      </span>
-    </label>
+    <AudienceField
+      value={value}
+      onChange={onChange}
+      texts={{
+        friendsOnly: t("friendsOnly"),
+        friendsOnlyHint: t("friendsOnlyHint"),
+        publicHint: t("publicHint"),
+        privateProfile: t("privateProfile"),
+      }}
+    />
   );
 }

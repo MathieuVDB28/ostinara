@@ -20,6 +20,7 @@ import type {
   FavoriteAlbum,
   FavoriteGear,
   PublicGearItem,
+  GearWishlistItem,
   ProfileForumTopic,
   ShowcaseFavoriteSong,
   Song,
@@ -259,6 +260,7 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
   let favoriteGearItems: FavoriteGear[] | null = null;
   let gearItems: PublicGearItem[] | null = null;
   let forumTopics: ProfileForumTopic[] = [];
+  let gearWishlist: GearWishlistItem[] | null = null;
   let recentSongs: Song[] | null = null;
   let allSongs: Song[] | null = null;
   let wishlist: WishlistSong[] | null = null;
@@ -285,6 +287,7 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
       albumReviewsData,
       sessionsData,
       forumTopicsData,
+      gearWishlistData,
     ] = await Promise.all([
       // Le morceau lui-meme n'est lisible qu'entre amis : la RPC n'en rend
       // que ce que la vitrine affiche.
@@ -343,6 +346,13 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
         .eq("is_hidden", false)
         .order("created_at", { ascending: false })
         .limit(5),
+      // Ses envies de matos : la RLS ne rend que celles que j'ai le droit de
+      // voir (« Amis » entre amis, « Public » si son profil est public).
+      supabase
+        .from("gear_wishlist")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false }),
     ]);
 
     type FavoriteSongRow = { id: string; song_id: string; slot: number; title: string; artist: string; cover_url: string | null };
@@ -371,6 +381,7 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     albumReviews = (albumReviewsData.data as AlbumReview[]) || [];
     totalAlbumReviews = albumReviews.length;
     forumTopics = (forumTopicsData.data as ProfileForumTopic[]) || [];
+    gearWishlist = (gearWishlistData.data as GearWishlistItem[]) || [];
 
     // Map playlists with song count
     playlists = ((playlistsData.data || []) as PlaylistRow[]).map(({ playlist_songs, ...pl }) => {
@@ -461,6 +472,7 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     favorite_albums: favoriteAlbums,
     favorite_gear: favoriteGearItems,
     gear_items: gearItems,
+    gear_wishlist: gearWishlist,
     recent_songs: recentSongs,
     recent_covers: mappedCovers,
     all_songs: allSongs,

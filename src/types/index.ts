@@ -534,6 +534,8 @@ export interface PublicProfile {
   favorite_albums: FavoriteAlbum[] | null;
   favorite_gear: FavoriteGear[] | null;
   gear_items: PublicGearItem[] | null;
+  /** Ses envies de matos partagees (vitrine). */
+  gear_wishlist: GearWishlistItem[] | null;
   recent_songs: Song[] | null;
   recent_covers: CoverWithSong[];
   all_songs: Song[] | null;
@@ -669,7 +671,7 @@ export interface FriendRequest {
 }
 
 // Types pour les activités
-export type ActivityType = 'song_added' | 'song_learning' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won' | 'album_reviewed' | 'exercise_shared' | 'gear_added' | 'album_wishlisted' | 'badge_unlocked' | 'session_completed';
+export type ActivityType = 'song_added' | 'song_learning' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won' | 'album_reviewed' | 'exercise_shared' | 'gear_added' | 'gear_wishlisted' | 'album_wishlisted' | 'badge_unlocked' | 'session_completed';
 
 export interface Activity {
   id: string;
@@ -1983,6 +1985,8 @@ export interface GearWishlistItem {
   url?: string;
   notes?: string;
   priority: GearPriority;
+  /** « Public » suit le profil (amis seulement sur un profil prive), « Amis » reste entre amis. */
+  visibility: GearVisibility;
   created_at: string;
 }
 
@@ -1995,6 +1999,7 @@ export interface CreateGearWishlistItemInput {
   url?: string;
   notes?: string;
   priority?: GearPriority;
+  visibility?: GearVisibility;
 }
 
 // Gear Favoris (profil, 4 max)

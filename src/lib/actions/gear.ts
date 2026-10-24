@@ -16,6 +16,7 @@ import type {
   GearWishlistItem,
   CreateGearWishlistItemInput,
   SetFavoriteGearInput,
+  GearVisibility,
   CoverGear,
 } from "@/types";
 import { one, type Joined } from "@/lib/supabase/joins";
@@ -551,7 +552,20 @@ export async function addToGearWishlist(input: CreateGearWishlistItemInput): Pro
     return { success: false, error: await tErr("wishlistAddFailed") };
   }
 
+  // Une envie se partage toujours avec les amis (« Amis » ou « Public »).
+  await createActivity({
+    type: "gear_wishlisted",
+    reference_id: data.id,
+    metadata: {
+      brand: data.brand,
+      model: data.model,
+      type: data.type,
+      image_url: data.image_url,
+    },
+  });
+
   revalidatePath("/gear");
+  revalidatePath("/feed");
   return { success: true, item: data as GearWishlistItem };
 }
 
@@ -572,6 +586,41 @@ export async function removeFromGearWishlist(id: string): Promise<{ success: boo
   if (error) {
     console.error("Error removing from gear wishlist:", error);
     return { success: false, error: await tErr("deleteFailed") };
+  }
+
+  // L'envie retiree quitte aussi le feed des amis.
+  await supabase
+    .from("activities")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("type", "gear_wishlisted")
+    .eq("reference_id", id);
+
+  revalidatePath("/gear");
+  revalidatePath("/feed");
+  return { success: true };
+}
+
+export async function updateGearWishlistVisibility(
+  id: string,
+  visibility: GearVisibility
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: await tErr("notAuthenticated") };
+  }
+
+  const { error } = await supabase
+    .from("gear_wishlist")
+    .update({ visibility })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("Error updating gear wishlist visibility:", error);
+    return { success: false, error: await tErr("updateFailed") };
   }
 
   revalidatePath("/gear");

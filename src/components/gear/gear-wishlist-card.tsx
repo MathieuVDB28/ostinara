@@ -1,22 +1,29 @@
 "use client";
 
+import { useState } from "react";
+import { Globe, Users } from "lucide-react";
 import type { GearWishlistItem } from "@/types";
 import { GEAR_PRIORITY_COLORS } from "@/types";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
+import { useMyProfileIsPrivate } from "@/components/providers/profile-privacy-provider";
+import { updateGearWishlistVisibility } from "@/lib/actions/gear";
 import { GearTypeIcon } from "./gear-card";
 
 interface GearWishlistCardProps {
   item: GearWishlistItem;
-  onRemove: () => void;
+  /** Absent : la carte est en lecture (profil d'un ami). */
+  onRemove?: () => void;
+  onVisibilityChange?: () => void;
 }
 
-export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
+export function GearWishlistCard({ item, onRemove, onVisibilityChange }: GearWishlistCardProps) {
   const t = useTranslations("gear.wishlist");
   const tg = useTranslations("gear.card");
   const te = useTranslations("enums");
   const intlLocale = useIntlLocale();
   const title = [item.brand, item.model].filter(Boolean).join(" ");
+  const editable = Boolean(onRemove);
 
   return (
     <div className="group flex items-start gap-3 border-b border-border py-3 transition-colors hover:bg-accent/50">
@@ -35,6 +42,7 @@ export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
           <span className="rounded border border-border px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em]">
             {te(`gearType.${item.type}`)}
           </span>
+          {editable && <WishVisibility item={item} onChange={onVisibilityChange} />}
           {item.priority && (
             <span
               className={`rounded border border-border px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em] ${GEAR_PRIORITY_COLORS[item.priority]}`}
@@ -83,6 +91,7 @@ export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
       </div>
 
       {/* Remove button */}
+      {onRemove && (
       <button aria-label={t("remove")}
         onClick={onRemove}
         className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
@@ -92,6 +101,56 @@ export function GearWishlistCard({ item, onRemove }: GearWishlistCardProps) {
           <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
         </svg>
       </button>
+      )}
     </div>
+  );
+}
+
+/**
+ * Qui voit l'envie, et de quoi le changer : sur un profil public, on passe
+ * de « Public » a « Amis » ; sur un profil prive, tout reste entre amis.
+ */
+function WishVisibility({ item, onChange }: { item: GearWishlistItem; onChange?: () => void }) {
+  const t = useTranslations("gear.wishlist");
+  const profileIsPrivate = useMyProfileIsPrivate();
+  const [visibility, setVisibility] = useState(item.visibility);
+  const [saving, setSaving] = useState(false);
+  const shownPublic = visibility === "public" && !profileIsPrivate;
+  const Icon = shownPublic ? Globe : Users;
+  const label = shownPublic ? t("visibilityPublic") : t("visibilityFriends");
+  const className =
+    "inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 font-display text-[10.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground";
+
+  if (profileIsPrivate) {
+    return (
+      <span className={className}>
+        <Icon className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
+        {label}
+      </span>
+    );
+  }
+
+  const toggle = async () => {
+    const next = visibility === "public" ? "friends" : "public";
+    setSaving(true);
+    setVisibility(next);
+    const result = await updateGearWishlistVisibility(item.id, next);
+    if (!result.success) setVisibility(visibility);
+    setSaving(false);
+    onChange?.();
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      disabled={saving}
+      aria-label={t("toggleVisibility")}
+      title={t("toggleVisibility")}
+      className={`${className} transition-colors hover:border-primary/40 hover:text-foreground disabled:opacity-60`}
+    >
+      <Icon className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
+      {label}
+    </button>
   );
 }

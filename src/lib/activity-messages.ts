@@ -10,7 +10,7 @@ const ACTIVITY_TYPES = [
   "song_added", "song_learning", "song_mastered", "cover_posted", "friend_added",
   "song_wishlisted", "setlist_created", "band_created", "band_joined",
   "challenge_created", "challenge_accepted", "challenge_completed", "challenge_won",
-  "album_reviewed", "album_wishlisted", "gear_added", "badge_unlocked",
+  "album_reviewed", "album_wishlisted", "gear_added", "gear_wishlisted", "badge_unlocked",
   "session_completed",
 ] as const;
 

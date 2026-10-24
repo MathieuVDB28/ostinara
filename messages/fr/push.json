@@ -172,5 +172,9 @@
   "sessionLogged": {
     "title": "Session ajoutée",
     "body": "{name} a ajouté une session de {minutes} min{instrument, select, guitar { de guitare} bass { de basse} drums { de batterie} keys { de clavier} other {}}{song, select, none {{exercises, plural, =0 {} one { : 1 exercice} other { : # exercices}}} other { : « {song} »{others, plural, =0 {} one { et 1 autre morceau} other { et # autres morceaux}}{exercises, plural, =0 {} one {, 1 exercice} other {, # exercices}}}}"
+  },
+  "gearWishlisted": {
+    "title": "Envie de matos",
+    "body": "{name} rêve de « {gear} »"
   }
 }

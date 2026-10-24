@@ -86,7 +86,8 @@
     "libraryFriendsOnly": "Sa biblio, ses albums notés et ses sessions sont réservés à ses amis.",
     "forumTopics": "Sur le forum",
     "forumReplies": "{count, plural, =0 {Pas encore de réponse} one {# réponse} other {# réponses}}",
-    "forumSolved": "Résolu"
+    "forumSolved": "Résolu",
+    "gearWishlist": "Ses envies"
   },
   "favorites": {
     "selectSong": "Sélectionner un morceau",
@@ -160,7 +161,7 @@
     "compare": "Comparer tous les plans →",
     "saving": "Enregistrement...",
     "seeShowcase": "Ta bio, tes liens, tes favoris et tes badges",
-    "seePublicItems": "Ton matos et tes covers marqués « Public », tes chiffres de pratique, tes sujets du forum",
+    "seePublicItems": "Ton matos, tes envies de matos et tes covers marqués « Public », tes chiffres de pratique, tes sujets du forum",
     "seeLibrary": "Ta biblio, tes albums notés, ta wishlist, tes playlists et tes sessions"
   }
 }
