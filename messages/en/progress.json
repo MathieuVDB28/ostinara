@@ -126,7 +126,13 @@
     "freeSession": "Free session (no song)",
     "noSongFound": "No songs found",
     "confirmDeleteTitle": "Delete this session?",
-    "irreversible": "This can't be undone."
+    "irreversible": "This can't be undone.",
+    "songsCount": "Songs · {count}",
+    "removeSong": "Remove {name} from the session",
+    "minutesOf": "Minutes spent on {name}",
+    "bpmOf": "BPM held on {name}",
+    "min": "min",
+    "exercisesFloor": "Includes exercises: at least {minutes} min."
   },
   "add": {
     "minutesPerSong": "Enter the minutes spent on each song and exercise",
@@ -161,8 +167,9 @@
     "tempoComputed": "Progress is based on your best tempo held.",
     "progressOf": "Progress of {title}",
     "notEnoughMinutes": "The total time doesn't leave a minute for each song or exercise without a duration.",
-    "splitHint": "Songs and exercises without a duration share the remaining time.",
+    "splitHint": "Songs and exercises without a duration share the remaining time. Type a time on a line to set it.",
     "autoMinutes": "auto",
+    "autoShare": "{minutes} (auto)",
     "shareWithFriends": "Share with my friends",
     "shareHint": "They'll see it in their feed, notes included, and get a notification.",
     "exercisesCount": "{count, plural, =0 {Exercises} one {Exercise} other {# exercises}}",

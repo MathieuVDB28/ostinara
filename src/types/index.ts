@@ -697,6 +697,14 @@ export interface ActivityWithDetails extends ActivityWithProfile {
   myAlbumStatus?: "reviewed" | "wishlisted";
   /** Le morceau de l'activite (ajoute, appris, maitrise, en cover) est deja dans ma biblio. */
   songInMyLibrary?: boolean;
+  /**
+   * Les details (accordage, capo, tempo, difficulte) des morceaux d'une
+   * session, par id, lus a l'affichage : ceux que la RLS laisse voir.
+   */
+  sessionSongs?: Record<
+    string,
+    Pick<Song, "tuning" | "capo_position" | "difficulty" | "target_bpm" | "tab_bpm" | "spotify_bpm">
+  >;
   reactions?: ReactionSummary[];
   commentCount?: number;
   currentUserReactions?: string[];

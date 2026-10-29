@@ -126,7 +126,13 @@
     "freeSession": "Session libre (sans morceau)",
     "noSongFound": "Aucun morceau trouvé",
     "confirmDeleteTitle": "Supprimer la session ?",
-    "irreversible": "Cette action est irréversible."
+    "irreversible": "Cette action est irréversible.",
+    "songsCount": "Morceaux · {count}",
+    "removeSong": "Retirer {name} de la session",
+    "minutesOf": "Minutes passées sur {name}",
+    "bpmOf": "BPM tenu sur {name}",
+    "min": "min",
+    "exercisesFloor": "Exercices compris : au moins {minutes} min."
   },
   "add": {
     "minutesPerSong": "Indique les minutes passées sur chaque morceau et exercice",
@@ -161,8 +167,9 @@
     "tempoComputed": "Progression calculée d'après ton meilleur tempo tenu.",
     "progressOf": "Progression de {title}",
     "notEnoughMinutes": "Le temps total ne laisse pas une minute à chaque morceau ou exercice sans durée.",
-    "splitHint": "Les morceaux et exercices sans durée se partagent le temps restant.",
+    "splitHint": "Les morceaux et exercices sans durée se partagent le temps restant. Tape un temps sur une ligne pour le fixer.",
     "autoMinutes": "auto",
+    "autoShare": "{minutes} (auto)",
     "shareWithFriends": "Partager avec mes amis",
     "shareHint": "Ils la verront dans leur feed, notes comprises, et recevront une notification.",
     "exercisesCount": "{count, plural, =0 {Exercices} one {Exercice} other {# exercices}}",

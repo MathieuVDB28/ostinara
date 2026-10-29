@@ -24,6 +24,7 @@ import type {
 } from "@/types";
 import { signCoverMedia } from "@/lib/storage/cover-media";
 import { COVER_GEAR_SELECT, withCoverGear } from "@/lib/cover-gear";
+import { SONG_DETAILS_COLUMNS } from "@/lib/song-meta";
 
 /** « 4,5/5 ★ » : la note est stockee sur 10, une unite par demi-etoile. */
 function formatStars(rating: unknown, intlLocale: string): string {
@@ -511,11 +512,10 @@ export async function getFeedActivities(
   });
   const songsInMyLibrary = new Set(await getLibraryMatches(friendSongs));
 
-  const { reactionsMap, userReactionsMap, commentCountMap } = await interactionsFor(
-    supabase,
-    user.id,
-    activities.map((a) => a.id)
-  );
+  const [{ reactionsMap, userReactionsMap, commentCountMap }, sessionSongs] = await Promise.all([
+    interactionsFor(supabase, user.id, activities.map((a) => a.id)),
+    sessionSongDetails(supabase, activities),
+  ]);
 
   // Enrichir les activités avec les détails récupérés
   const enrichedActivities: ActivityWithDetails[] = activities.map((activity) => {
@@ -527,6 +527,8 @@ export async function getFeedActivities(
       currentUserReactions: userReactionsMap.get(activity.id) || [],
     };
     if (songsInMyLibrary.has(activity.id)) enriched.songInMyLibrary = true;
+    const details = sessionSongs.get(activity.id);
+    if (details) enriched.sessionSongs = details;
 
     if (activity.reference_id) {
       if (activity.type === "song_added" || activity.type === "song_learning" || activity.type === "song_mastered") {
@@ -541,7 +543,8 @@ export async function getFeedActivities(
             title: activity.metadata.title as string,
             artist: activity.metadata.artist as string,
             cover_url: (activity.metadata.cover_url as string) || undefined,
-            tuning: "standard",
+            // Morceau illisible : pas de details plutot que des details inventes.
+            tuning: "",
             capo_position: 0,
             progress_percent: 0,
             status: "learning",
@@ -614,6 +617,44 @@ export async function getFeedActivities(
   });
 
   return enrichedActivities;
+}
+
+/**
+ * Les details des morceaux des sessions (accordage, capo, tempo,
+ * difficulte), par activite. L'instantane de l'activite ne garde que titre
+ * et pochette : on relit les morceaux, en une requete, sous RLS — ce que
+ * le lecteur n'a pas le droit de voir reste absent.
+ */
+async function sessionSongDetails(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  activities: { id: string; type: string; metadata: Record<string, unknown> | null }[]
+): Promise<Map<string, NonNullable<ActivityWithDetails["sessionSongs"]>>> {
+  const idsByActivity = new Map<string, string[]>();
+  for (const activity of activities) {
+    if (activity.type !== "session_completed") continue;
+    const songs = Array.isArray(activity.metadata?.songs) ? (activity.metadata.songs as { id?: unknown }[]) : [];
+    const ids = songs.map((song) => song.id).filter((id): id is string => typeof id === "string");
+    if (ids.length > 0) idsByActivity.set(activity.id, ids);
+  }
+
+  const result = new Map<string, NonNullable<ActivityWithDetails["sessionSongs"]>>();
+  const allIds = [...new Set([...idsByActivity.values()].flat())];
+  if (allIds.length === 0) return result;
+
+  const { data: songs, error } = await supabase.from("songs").select(SONG_DETAILS_COLUMNS).in("id", allIds);
+  if (error) {
+    console.error("Error fetching session song details:", error);
+    return result;
+  }
+  const byId = new Map((songs ?? []).map(({ id, ...details }) => [id as string, details]));
+
+  for (const [activityId, ids] of idsByActivity) {
+    const details = Object.fromEntries(
+      ids.flatMap((id) => (byId.has(id) ? [[id, byId.get(id)!]] : []))
+    );
+    if (Object.keys(details).length > 0) result.set(activityId, details);
+  }
+  return result;
 }
 
 /** Les reactions et le nombre de commentaires d'une liste d'activites, en deux lectures. */
@@ -964,11 +1005,10 @@ export async function getProfileSessions(
   }
 
   const page = activities.slice(0, PROFILE_SESSIONS_PAGE);
-  const { reactionsMap, userReactionsMap, commentCountMap } = await interactionsFor(
-    supabase,
-    user.id,
-    page.map((a) => a.id)
-  );
+  const [{ reactionsMap, userReactionsMap, commentCountMap }, sessionSongs] = await Promise.all([
+    interactionsFor(supabase, user.id, page.map((a) => a.id)),
+    sessionSongDetails(supabase, page),
+  ]);
 
   return {
     sessions: page.map((activity) => ({
@@ -977,6 +1017,7 @@ export async function getProfileSessions(
       reactions: reactionsMap.get(activity.id) || [],
       commentCount: commentCountMap.get(activity.id) || 0,
       currentUserReactions: userReactionsMap.get(activity.id) || [],
+      ...(sessionSongs.has(activity.id) ? { sessionSongs: sessionSongs.get(activity.id) } : {}),
     })),
     hasMore: activities.length > PROFILE_SESSIONS_PAGE,
   };

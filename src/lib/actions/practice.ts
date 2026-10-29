@@ -630,6 +630,83 @@ export async function updatePracticeSession(
   return { success: true };
 }
 
+/**
+ * Corrige une session a plusieurs morceaux d'un bloc : le temps et le tempo
+ * de chaque morceau, les lignes retirees, et ce qui est commun a la session
+ * (date, humeur, notes…), recopie sur chaque ligne comme a la creation.
+ */
+export async function updatePracticeSessionGroup(
+  groupId: string,
+  input: {
+    rows: { id: string; duration_minutes: number; bpm_achieved: number | null }[];
+    removed: string[];
+    shared: Omit<UpdatePracticeSessionInput, "song_id" | "duration_minutes" | "bpm_achieved">;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: await tErr("notAuthenticated") };
+  }
+  if (input.rows.length === 0 || input.rows.some((row) => !(row.duration_minutes >= 1))) {
+    return { success: false, error: await tErr("updateFailed") };
+  }
+
+  if (input.removed.length > 0) {
+    const { error } = await supabase
+      .from("practice_sessions")
+      .delete()
+      .in("id", input.removed)
+      .eq("user_id", user.id)
+      .eq("session_group_id", groupId);
+    if (error) {
+      console.error("Error removing practice session rows:", error);
+      return { success: false, error: await tErr("updateFailed") };
+    }
+  }
+
+  const now = new Date().toISOString();
+  const results = await Promise.all(
+    input.rows.map((row) =>
+      supabase
+        .from("practice_sessions")
+        .update({
+          ...input.shared,
+          duration_minutes: row.duration_minutes,
+          bpm_achieved: row.bpm_achieved,
+          updated_at: now,
+        })
+        .eq("id", row.id)
+        .eq("user_id", user.id)
+        .eq("session_group_id", groupId)
+        .select("song_id, instrument")
+        .single()
+    )
+  );
+
+  const failed = results.find((result) => result.error);
+  if (failed) {
+    console.error("Error updating practice session group:", failed.error);
+    return { success: false, error: await tErr("updateFailed") };
+  }
+
+  // Les amis voient la session corrigee, pas l'ancienne.
+  await refreshSessionActivity(supabase, user.id, groupId);
+
+  // Un tempo corrige corrige la progression du morceau, sur l'instrument joue.
+  await Promise.all(
+    results.flatMap(({ data }) =>
+      data?.song_id ? [syncSongProgressFromTempo(data.song_id, data.instrument as Instrument | null)] : []
+    )
+  );
+
+  revalidatePath("/progress");
+  revalidatePath("/library");
+  revalidatePath("/jouer");
+  return { success: true };
+}
+
 export async function deletePracticeSession(
   id: string
 ): Promise<{ success: boolean; error?: string }> {

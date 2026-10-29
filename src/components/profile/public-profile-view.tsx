@@ -13,6 +13,7 @@ import { ProfileShowcase } from "./profile-showcase";
 import { FriendshipButton } from "@/components/friends/friendship-button";
 import { SongShelf } from "@/components/library/song-shelf";
 import { songProgress } from "@/components/library/song-card";
+import { songMeta } from "@/lib/song-meta";
 import { AddTracksToLibraryButton, libraryKey } from "@/components/albums/favorite-track-picker";
 import { StarRating } from "@/components/ui/star-rating";
 import { Cover } from "@/components/ui/cover";
@@ -444,7 +445,8 @@ function FriendSongSheet({
   const t = useTranslations("profile.public");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
-  const { tempo, percent } = songProgress(song);
+  const tl = useTranslations("library");
+  const { percent } = songProgress(song);
   const track = { name: song.title, deezer_id: song.deezer_id ?? undefined };
 
   useEffect(() => {
@@ -459,11 +461,10 @@ function FriendSongSheet({
     };
   }, [onClose]);
 
-  const meta = [
-    song.tuning,
-    tempo ? `${tempo.target} BPM` : null,
-    song.capo_position > 0 ? `Capo ${song.capo_position}` : null,
-  ].filter(Boolean) as string[];
+  const meta = songMeta(song, {
+    capo: (position) => tl("capo", { position }),
+    difficulty: (difficulty) => te(`difficulty.${difficulty}`),
+  });
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">

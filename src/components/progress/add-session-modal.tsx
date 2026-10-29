@@ -326,6 +326,9 @@ export function AddSessionModal({
   const totalMinutes: number | "" = isMulti && !splitsTotal
     ? allMinutes.reduce<number>((sum, value) => sum + (Number(value) || 0), 0)
     : durationMinutes;
+  // La part de chaque ligne sans duree, affichee dans son champ : on voit
+  // la repartition avant d'enregistrer, et on la corrige en tapant par-dessus.
+  const shares = splitsTotal && durationMinutes ? splitRemaining(allMinutes, durationMinutes) : null;
 
   const updateExerciseEntry = (index: number, patch: Partial<ExerciseEntry>) => {
     setExerciseEntries((current) => current.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
@@ -598,6 +601,7 @@ export function AddSessionModal({
                     instrument={instrument}
                     showMinutes={isMulti}
                     minutesOptional={mode === "manual"}
+                    autoMinutes={shares?.[index]}
                     canEditSong={isOnline}
                     onChange={(patch) => updateEntry(index, patch)}
                     onRemove={() => setEntries((current) => current.filter((_, i) => i !== index))}
@@ -631,6 +635,7 @@ export function AddSessionModal({
                     entry={entry}
                     showMinutes={isMulti}
                     minutesOptional={mode === "manual"}
+                    autoMinutes={shares?.[entries.length + index]}
                     onChange={(patch) => updateExerciseEntry(index, patch)}
                     onRemove={() => setExerciseEntries((current) => current.filter((_, i) => i !== index))}
                   />
@@ -1022,12 +1027,15 @@ function ExerciseRow({
   entry,
   showMinutes,
   minutesOptional,
+  autoMinutes,
   onChange,
   onRemove,
 }: {
   entry: ExerciseEntry;
   showMinutes: boolean;
   minutesOptional: boolean;
+  /** La part du total que recevra la ligne laissee vide. */
+  autoMinutes?: number;
   onChange: (patch: Partial<ExerciseEntry>) => void;
   onRemove: () => void;
 }) {
@@ -1066,7 +1074,7 @@ function ExerciseRow({
               min="1"
               max="480"
               value={entry.minutes}
-              placeholder={minutesOptional ? t("autoMinutes") : undefined}
+              placeholder={minutesOptional ? (autoMinutes ? t("autoShare", { minutes: autoMinutes }) : t("autoMinutes")) : undefined}
               onChange={(e) => onChange({ minutes: e.target.value === "" ? "" : parseInt(e.target.value) || 0 })}
               onFocus={(e) => e.target.select()}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
@@ -1113,6 +1121,7 @@ function EntryRow({
   song,
   showMinutes,
   minutesOptional,
+  autoMinutes,
   canEditSong,
   instrument,
   onChange,
@@ -1125,6 +1134,8 @@ function EntryRow({
   showMinutes: boolean;
   /** Saisie manuelle : sans duree, le morceau prend sa part du total. */
   minutesOptional: boolean;
+  /** La part du total que recevra la ligne laissee vide. */
+  autoMinutes?: number;
   /** Hors ligne, statut et progression ne partiraient pas : on les cache. */
   canEditSong: boolean;
   onChange: (patch: Partial<Entry>) => void;
@@ -1164,7 +1175,7 @@ function EntryRow({
               min="1"
               max="480"
               value={entry.minutes}
-              placeholder={minutesOptional ? t("autoMinutes") : undefined}
+              placeholder={minutesOptional ? (autoMinutes ? t("autoShare", { minutes: autoMinutes }) : t("autoMinutes")) : undefined}
               onChange={(e) => onChange({ minutes: e.target.value === "" ? "" : parseInt(e.target.value) || 0 })}
               onFocus={(e) => e.target.select()}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"

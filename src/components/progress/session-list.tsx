@@ -169,13 +169,21 @@ export function SessionList({
                 item.kind === "group" ? (
                   /*
                     Session a plusieurs morceaux : une carte, chaque morceau
-                    en sous-ligne qu'on touche pour la modifier. Supprimer
-                    retire toute la session.
+                    en sous-ligne. Modifier (ou toucher un morceau) corrige
+                    toute la session, le temps de chaque morceau compris ;
+                    supprimer la retire en entier.
                   */
                   <SwipeRow
                     key={item.key}
                     label={t("sessionOf", { date: new Date(item.sessions[0].practiced_at).toLocaleDateString(intlLocale) })}
                     actions={[
+                      {
+                        key: "edit",
+                        label: tc("edit"),
+                        icon: "edit",
+                        tone: "neutral",
+                        onAction: () => onSessionClick(item.sessions[0]),
+                      },
                       {
                         key: "delete",
                         label: tc("delete"),

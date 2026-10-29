@@ -89,6 +89,14 @@ export function ProgressView({
 
   const remaining = Math.max(0, stats.totalSessions - sessions.length);
 
+  // Une ligne d'une session a plusieurs morceaux ouvre la session entiere.
+  const selectedGroup = useMemo(() => {
+    const groupId = selectedSession?.session_group_id;
+    if (!groupId) return null;
+    const rows = sessions.filter((session) => session.session_group_id === groupId);
+    return rows.length > 1 ? rows : null;
+  }, [selectedSession, sessions]);
+
   const { openManualEntry } = usePracticeSession();
 
   // Callback de succès
@@ -285,6 +293,7 @@ export function ProgressView({
       {/* Modal d'édition */}
       <EditSessionModal
         session={selectedSession}
+        group={selectedGroup}
         isOpen={!!selectedSession}
         onClose={() => setSelectedSession(null)}
         onSuccess={handleSuccess}

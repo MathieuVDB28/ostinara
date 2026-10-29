@@ -28,6 +28,7 @@ import { badgeGoal, badgeLabel } from "@/lib/badges/catalog";
 import { profileHref } from "@/lib/navigation";
 import { activityMessage, formatActivityDate } from "@/lib/activity-messages";
 import { MOOD_EMOJI } from "@/components/progress/mood-selector";
+import { songMeta } from "@/lib/song-meta";
 import type { ActivityWithDetails, GearType, Instrument, SessionActivityMetadata, SessionMood } from "@/types";
 import { ActivityReactions } from "./activity-reactions";
 import { ActivityComments } from "./activity-comments";
@@ -102,6 +103,7 @@ function Poster({
   eyebrow,
   title,
   subtitle,
+  details,
   badge,
   aspect = "aspect-square",
 }: {
@@ -109,6 +111,8 @@ function Poster({
   eyebrow: string;
   title: string;
   subtitle?: string;
+  /** Une ligne de details sous le sous-titre (accordage, tempo, capo…). */
+  details?: string;
   badge?: React.ReactNode;
   aspect?: string;
 }) {
@@ -128,6 +132,9 @@ function Poster({
             {subtitle}
           </span>
         )}
+        {details && (
+          <span className="tabular mt-1 block truncate text-xs font-medium opacity-85">{details}</span>
+        )}
       </span>
     </Cover>
   );
@@ -139,12 +146,15 @@ function Compact({
   type,
   label,
   title,
+  details,
   round = false,
 }: {
   src?: string | null;
   type: string;
   label: string;
   title: string;
+  /** Une ligne de details sous le titre (accordage, tempo, capo…). */
+  details?: string;
   round?: boolean;
 }) {
   const Icon = COMPACT_ICONS[type];
@@ -160,6 +170,7 @@ function Compact({
       <div className="min-w-0 flex-1">
         <p className="truncate text-xs text-muted-foreground">{label}</p>
         <p className="truncate font-display text-xl font-extrabold uppercase leading-tight">{title}</p>
+        {details && <p className="tabular truncate text-xs text-muted-foreground">{details}</p>}
       </div>
     </div>
   );
@@ -224,6 +235,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
   const t = useTranslations("activity");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
+  const tl = useTranslations("library");
   const tb = useTranslations("badges");
   const intlLocale = useIntlLocale();
   const isOwn = activity.user_id === currentUserId;
@@ -232,6 +244,13 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
   const message = activityMessage(activity.type, t, isOwn);
   const meta = activity.metadata ?? {};
   const phrase = instrumentPhrase(meta.instrument, te);
+  // Accordage, tempo vise, capo, difficulte : ce qu'un ami veut savoir avant de s'y mettre.
+  const songDetails = activity.song
+    ? songMeta(activity.song, {
+        capo: (position) => tl("capo", { position }),
+        difficulty: (difficulty) => te(`difficulty.${difficulty}`),
+      }).join(" · ") || undefined
+    : undefined;
 
   return (
     <article className="border-b border-border pb-4">
@@ -338,6 +357,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
           eyebrow={t("mastered", { instrument: phrase ? ` ${phrase}` : "" })}
           title={activity.song.title}
           subtitle={activity.song.artist}
+          details={songDetails}
           aspect="aspect-[16/10]"
         />
       )}
@@ -353,6 +373,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
               : activity.song.artist
           }
           title={activity.song.title}
+          details={songDetails}
         />
       )}
 
@@ -449,6 +470,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
       {activity.type === "session_completed" && typeof meta.duration_minutes === "number" && (
         <SessionBlock
           session={meta as unknown as SessionActivityMetadata}
+          songDetails={activity.sessionSongs}
           createdAt={activity.created_at}
           name={name}
         />
@@ -482,14 +504,17 @@ const SESSION_PAST_AFTER_MS = 3 * 60 * 60 * 1000;
  */
 function SessionBlock({
   session,
+  songDetails,
   createdAt,
   name,
 }: {
   session: SessionActivityMetadata;
+  songDetails?: ActivityWithDetails["sessionSongs"];
   createdAt: string;
   name: string;
 }) {
   const t = useTranslations("activity.sessionCard");
+  const tl = useTranslations("library");
   const ta = useTranslations("activity");
   const te = useTranslations("enums");
   const intlLocale = useIntlLocale();
@@ -556,6 +581,16 @@ function SessionBlock({
                   {song.artist}
                   {itemCount > 1 ? ` · ${t("songMinutes", { minutes: song.minutes })}` : ""}
                 </p>
+                {songDetails?.[song.id] && (
+                  <SessionSongDetails
+                    details={songMeta(songDetails[song.id], {
+                      capo: (position) => tl("capo", { position }),
+                      // A cote du tempo tenu : on precise que c'est la cible.
+                      tempo: (bpm) => t("targetBpm", { bpm }),
+                      difficulty: (difficulty) => te(`difficulty.${difficulty}`),
+                    })}
+                  />
+                )}
               </div>
               {song.bpm ? (
                 <span className="tabular font-display text-lg font-bold leading-none">
@@ -636,4 +671,9 @@ function SessionBlock({
       )}
     </div>
   );
+}
+
+function SessionSongDetails({ details }: { details: string[] }) {
+  if (details.length === 0) return null;
+  return <p className="tabular truncate text-[11px] text-muted-foreground">{details.join(" · ")}</p>;
 }

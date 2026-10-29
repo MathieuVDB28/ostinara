@@ -74,6 +74,7 @@
     "hours": "h",
     "bpm": "BPM",
     "songMinutes": "{minutes} min",
+    "targetBpm": "cible {bpm} BPM",
     "sections": "Sections",
     "goal": "Objectif",
     "goalReached": "Atteint",
