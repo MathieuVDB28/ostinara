@@ -20,6 +20,8 @@ interface GroupRow {
   session: PracticeSessionWithSong;
   minutes: number | "";
   bpm: string;
+  /** Les parties jouees sur ce morceau. */
+  sections: SongSection[];
 }
 
 /** Le temps des exercices rattaches a une ligne : elle ne peut pas descendre en dessous. */
@@ -92,6 +94,7 @@ export function EditSessionModal({
         session: row,
         minutes: row.duration_minutes,
         bpm: row.bpm_achieved?.toString() || "",
+        sections: row.sections_worked ?? [],
       }))
     );
     setSelectedSong(session.song);
@@ -151,13 +154,14 @@ export function EditSessionModal({
         id: row.session.id,
         duration_minutes: Number(row.minutes),
         bpm_achieved: row.bpm ? parseInt(row.bpm) : null,
+        // Le temps sans morceau n'a pas de parties : il garde ce qu'il a.
+        ...(row.session.song_id ? { sections_worked: row.sections } : {}),
       })),
       removed: group.filter((row) => !kept.has(row.id)).map((row) => row.id),
       shared: {
         practiced_at: new Date(practicedAt).toISOString(),
         mood,
         energy_level: energyLevel,
-        sections_worked: sectionsWorked,
         session_goals: sessionGoals || null,
         goals_achieved: goalsAchieved,
         notes: notes || null,
@@ -392,11 +396,13 @@ export function EditSessionModal({
             </div>
             )}
 
-            {/* Sections */}
+            {/* Sections (plusieurs morceaux : sur chaque ligne) */}
+            {!isGroup && (
             <div>
               <label className="mb-3 block text-sm font-medium">{t("sectionsWorked")}</label>
               <SectionsSelector value={sectionsWorked} onChange={setSectionsWorked} />
             </div>
+            )}
 
             {/* Objectifs */}
             <div>
@@ -444,6 +450,9 @@ export function EditSessionModal({
                       <p className="truncate text-xs text-muted-foreground">
                         {row.song?.artist || exerciseNames(row)}
                       </p>
+                      {row.song_id && row.sections_worked.length > 0 && (
+                        <p className="truncate text-xs font-medium">{getSectionsLabels(row.sections_worked, te)}</p>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="tabular text-sm font-semibold">{formatDuration(row.duration_minutes)}</p>
@@ -519,7 +528,7 @@ export function EditSessionModal({
             )}
 
             {/* Sections */}
-            {session.sections_worked.length > 0 && (
+            {!isGroup && session.sections_worked.length > 0 && (
               <div>
                 <p className="text-xs text-muted-foreground mb-2">{t("sectionsWorked")}</p>
                 <p className="font-medium">{getSectionsLabels(session.sections_worked, te)}</p>
@@ -697,6 +706,14 @@ function GroupRowEditor({
           </label>
         )}
       </div>
+      {row.session.song_id && (
+        <SectionsSelector
+          compact
+          value={row.sections}
+          onChange={(sections) => onChange({ sections })}
+          label={t("sectionsOf", { name: title })}
+        />
+      )}
       {floor > 0 && <p className="text-xs text-muted-foreground">{t("exercisesFloor", { minutes: floor })}</p>}
     </li>
   );

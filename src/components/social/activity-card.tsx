@@ -29,7 +29,7 @@ import { profileHref } from "@/lib/navigation";
 import { activityMessage, formatActivityDate } from "@/lib/activity-messages";
 import { MOOD_EMOJI } from "@/components/progress/mood-selector";
 import { songMeta } from "@/lib/song-meta";
-import type { ActivityWithDetails, GearType, Instrument, SessionActivityMetadata, SessionMood } from "@/types";
+import type { ActivityWithDetails, GearType, Instrument, SessionActivityMetadata, SessionMood, SongSection } from "@/types";
 import { ActivityReactions } from "./activity-reactions";
 import { ActivityComments } from "./activity-comments";
 import { FeedBridge } from "./feed-bridge";
@@ -536,7 +536,11 @@ function SessionBlock({
   const songs = Array.isArray(session.songs) ? session.songs : [];
   const exercises = Array.isArray(session.exercises) ? session.exercises : [];
   const itemCount = songs.length + exercises.length;
-  const sections = Array.isArray(session.sections_worked) ? session.sections_worked : [];
+  const sectionsOf = (list: unknown): SongSection[] => (Array.isArray(list) ? list : []);
+  // Les activites recentes donnent les parties de chaque morceau ; les
+  // plus anciennes, une liste pour toute la session.
+  const perSong = songs.some((song) => Array.isArray(song.sections));
+  const sections = perSong ? [] : sectionsOf(session.sections_worked);
 
   return (
     <div className="px-4 sm:px-0">
@@ -581,6 +585,11 @@ function SessionBlock({
                   {song.artist}
                   {itemCount > 1 ? ` · ${t("songMinutes", { minutes: song.minutes })}` : ""}
                 </p>
+                {sectionsOf(song.sections).length > 0 && (
+                  <p className="truncate text-xs font-medium">
+                    {sectionsOf(song.sections).map((section) => te(`section.${section}`)).join(" · ")}
+                  </p>
+                )}
                 {songDetails?.[song.id] && (
                   <SessionSongDetails
                     details={songMeta(songDetails[song.id], {

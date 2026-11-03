@@ -46,6 +46,8 @@ interface Entry {
   status: SongStatus | null;
   /** Null tant qu'on ne touche pas a la progression. */
   percent: number | null;
+  /** Les parties jouees sur ce morceau (session a plusieurs elements). */
+  sections: SongSection[];
 }
 
 /** Un exercice de la session, tel qu'on l'edite dans la modale. */
@@ -75,6 +77,7 @@ function initialEntries(
       bpm: row.bpm ? String(row.bpm) : "",
       status: null,
       percent: null,
+      sections: [],
     }));
   }
   if (timerSong) {
@@ -84,6 +87,7 @@ function initialEntries(
       bpm: timerBpm ? String(timerBpm) : "",
       status: null,
       percent: null,
+      sections: [],
     }];
   }
   // Une session passee montee comme une session a jouer : ses morceaux,
@@ -95,6 +99,7 @@ function initialEntries(
       bpm: "",
       status: null,
       percent: null,
+      sections: [],
     }));
   }
   return [];
@@ -318,6 +323,14 @@ export function AddSessionModal({
   const allMinutes = [...entries.map((entry) => entry.minutes), ...exerciseEntries.map((entry) => entry.minutes)];
   const isMulti = allMinutes.length > 1;
   /*
+   * Plusieurs elements dont au moins un morceau : chaque morceau a ses
+   * parties, sur sa ligne. Sinon, un seul choix pour la session.
+   */
+  const perSongSections = isMulti && entries.some((entry) => entry.songId);
+  const sectionsCount = perSongSections
+    ? entries.reduce((sum, entry) => sum + (entry.songId ? entry.sections.length : 0), 0)
+    : sectionsWorked.length;
+  /*
    * Apres coup, on se souvient du temps passe, rarement de celui de chaque
    * morceau : en saisie manuelle, on donne le total et ce qui n'a pas de
    * duree se partage ce qui reste.
@@ -372,8 +385,23 @@ export function AddSessionModal({
       // En saisie manuelle, le morceau prend sa part du total tant qu'on ne
       // lui donne pas de duree.
       const minutes = mode === "timer" && base.length === 0 ? durationMinutes : "";
-      return [...base, { songId: song.id, minutes, bpm: "", status: null, percent: null }];
+      // Les parties deja choisies pour le premier morceau le suivent quand
+      // la session passe a plusieurs morceaux.
+      const carried = sectionsWorked.length > 0 && base.length === 1 && base[0].songId && base[0].sections.length === 0
+        ? [{ ...base[0], sections: sectionsWorked }]
+        : base;
+      return [...carried, { songId: song.id, minutes, bpm: "", status: null, percent: null, sections: [] }];
     });
+  };
+
+  const removeEntry = (index: number) => {
+    const remaining = entries.filter((_, i) => i !== index);
+    // Retour a un seul morceau : ses parties reviennent au choix de la session.
+    const backToSingle = remaining.length + exerciseEntries.length <= 1;
+    if (backToSingle && remaining[0]?.sections.length && sectionsWorked.length === 0) {
+      setSectionsWorked(remaining[0].sections);
+    }
+    setEntries(remaining);
   };
 
   const handleSubmit = async () => {
@@ -412,6 +440,7 @@ export function AddSessionModal({
             song_id: entry.songId,
             duration_minutes: songMinutes[index],
             bpm_achieved: entry.bpm ? parseInt(entry.bpm) : undefined,
+            ...(perSongSections ? { sections_worked: entry.songId ? entry.sections : [] } : {}),
           }))
         : undefined,
       exercises: hasExercises
@@ -430,7 +459,7 @@ export function AddSessionModal({
       bpm_achieved: single ? (single.bpm ? parseInt(single.bpm) : undefined) : bpmAchieved ? parseInt(bpmAchieved) : undefined,
       mood: mood || undefined,
       energy_level: energyLevel || undefined,
-      sections_worked: sectionsWorked.length > 0 ? sectionsWorked : undefined,
+      sections_worked: !perSongSections && sectionsWorked.length > 0 ? sectionsWorked : undefined,
       session_goals: sessionGoals || undefined,
       goals_achieved: goalsAchieved,
       notes: notes || undefined,
@@ -544,7 +573,7 @@ export function AddSessionModal({
                 }
               />
             )}
-            <RecapStat label={t("recapSections")} value={<>{sectionsWorked.length}</>} />
+            <RecapStat label={t("recapSections")} value={<>{sectionsCount}</>} />
           </dl>
         )}
 
@@ -603,8 +632,9 @@ export function AddSessionModal({
                     minutesOptional={mode === "manual"}
                     autoMinutes={shares?.[index]}
                     canEditSong={isOnline}
+                    showSections={perSongSections}
                     onChange={(patch) => updateEntry(index, patch)}
-                    onRemove={() => setEntries((current) => current.filter((_, i) => i !== index))}
+                    onRemove={() => removeEntry(index)}
                   />
                 ))}
               </ul>
@@ -690,8 +720,11 @@ export function AddSessionModal({
             <MoodSelector value={mood} onChange={setMood} />
           </div>
 
-          {/* Section Performance (collapsible) */}
-          <div className="border-b border-border">
+          {/*
+            Section Performance (collapsible). Avec plusieurs morceaux, tempo
+            et parties se notent sur chaque ligne : il ne reste rien ici.
+          */}
+          {!perSongSections && <div className="border-b border-border">
             <button
               type="button"
               onClick={() => setShowPerformance(!showPerformance)}
@@ -725,7 +758,7 @@ export function AddSessionModal({
                 </div>
               </div>
             )}
-          </div>
+          </div>}
 
           {/* Section Ressenti (collapsible) */}
           <div className="border-b border-border">
@@ -1123,6 +1156,7 @@ function EntryRow({
   minutesOptional,
   autoMinutes,
   canEditSong,
+  showSections,
   instrument,
   onChange,
   onRemove,
@@ -1138,6 +1172,8 @@ function EntryRow({
   autoMinutes?: number;
   /** Hors ligne, statut et progression ne partiraient pas : on les cache. */
   canEditSong: boolean;
+  /** Session a plusieurs morceaux : les parties jouees se choisissent ici. */
+  showSections: boolean;
   onChange: (patch: Partial<Entry>) => void;
   onRemove: () => void;
 }) {
@@ -1199,6 +1235,15 @@ function EntryRow({
           </label>
         )}
       </div>
+
+      {showSections && entry.songId && (
+        <SectionsSelector
+          compact
+          value={entry.sections}
+          onChange={(sections) => onChange({ sections })}
+          label={t("sectionsOf", { title: song?.title ?? t("song") })}
+        />
+      )}
 
       {song && canEditSong && (
         <div className="space-y-2.5">

@@ -827,6 +827,8 @@ export interface PracticeSessionSongEntry {
   song_id: string | null;
   duration_minutes: number;
   bpm_achieved?: number;
+  /** Les parties jouees sur ce morceau. Absent : celles de la session. */
+  sections_worked?: SongSection[];
 }
 
 export interface CreatePracticeSessionInput {
@@ -882,6 +884,8 @@ export interface SessionActivityMetadata {
     cover_url: string | null;
     minutes: number;
     bpm: number | null;
+    /** Les parties jouees sur ce morceau. Absent sur les activites plus anciennes. */
+    sections?: SongSection[];
   }[];
   /** Absent sur les activites d'avant les exercices. */
   exercises?: {

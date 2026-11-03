@@ -9,9 +9,13 @@ const SECTIONS: SongSection[] = ["intro", "verse", "chorus", "bridge", "solo", "
 interface SectionsSelectorProps {
   value: SongSection[];
   onChange: (sections: SongSection[]) => void;
+  /** Nom du groupe pour les lecteurs d'ecran (ex. « Parties jouees sur … »). */
+  label?: string;
+  /** Plus petit, pour tenir dans la ligne d'un morceau. */
+  compact?: boolean;
 }
 
-export function SectionsSelector({ value, onChange }: SectionsSelectorProps) {
+export function SectionsSelector({ value, onChange, label, compact = false }: SectionsSelectorProps) {
   const t = useTranslations("enums");
   const sections = SECTIONS.map((section) => ({ value: section, label: t(`section.${section}`) }));
   const handleToggle = (section: SongSection) => {
@@ -35,7 +39,7 @@ export function SectionsSelector({ value, onChange }: SectionsSelectorProps) {
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div role="group" aria-label={label} className={`flex flex-wrap ${compact ? "gap-1.5" : "gap-2"}`}>
       {sections.map((section) => {
         const isSelected = value.includes(section.value);
         const isFullSong = section.value === "full_song";
@@ -44,9 +48,10 @@ export function SectionsSelector({ value, onChange }: SectionsSelectorProps) {
           <button
             key={section.value}
             type="button"
+            aria-pressed={isSelected}
             onClick={() => handleToggle(section.value)}
             className={`
-              px-3 py-1.5 rounded-full text-sm font-medium
+              rounded-full font-medium ${compact ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-sm"}
               transition-all duration-200
               ${isSelected
                 ? isFullSong

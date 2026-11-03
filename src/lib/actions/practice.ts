@@ -26,6 +26,8 @@ import type {
   SessionMood,
   SessionActivityMetadata,
   PracticeSessionExerciseEntry,
+  PracticeSessionSongEntry,
+  SongSection,
   Instrument,
 } from "@/types";
 import { syncBadges } from "@/lib/badges/sync";
@@ -220,7 +222,7 @@ export async function createPracticeSession(
     input.songs && (input.songs.length > 0 || exercises.length > 0)
       ? input.songs.filter((entry) => entry.duration_minutes > 0)
       : [{ song_id: input.song_id || null, duration_minutes: input.duration_minutes, bpm_achieved: input.bpm_achieved }]
-  ).map((entry) => ({ ...entry }));
+  ).map((entry): PracticeSessionSongEntry => ({ ...entry }));
 
   /*
    * Le temps des exercices vit dans la ligne sans morceau : les totaux, la
@@ -248,6 +250,8 @@ export async function createPracticeSession(
         song_id: entry.song_id || null,
         duration_minutes: entry.duration_minutes,
         bpm_achieved: entry.bpm_achieved || null,
+        // Chaque morceau a ses parties ; sans detail, celles de la session.
+        sections_worked: entry.sections_worked ?? shared.sections_worked,
         session_group_id: groupId,
       }))
     )
@@ -349,7 +353,9 @@ async function sessionActivityMetadata(
     practiced_at: first.practiced_at,
     mood: first.mood,
     energy_level: first.energy_level,
-    sections_worked: first.sections_worked ?? [],
+    // Les parties de la session vont avec ses morceaux : on ne garde ici
+    // que celles d'une session sans morceau.
+    sections_worked: rows.some((row) => row.song_id) ? [] : first.sections_worked ?? [],
     session_goals: first.session_goals,
     goals_achieved: first.goals_achieved,
     notes: first.notes,
@@ -366,6 +372,7 @@ async function sessionActivityMetadata(
           cover_url: song.cover_url ?? null,
           minutes: row.duration_minutes,
           bpm: row.bpm_achieved,
+          sections: row.sections_worked ?? [],
         };
       }),
     exercises: (exercises ?? []).map((exercise) => ({
@@ -638,9 +645,10 @@ export async function updatePracticeSession(
 export async function updatePracticeSessionGroup(
   groupId: string,
   input: {
-    rows: { id: string; duration_minutes: number; bpm_achieved: number | null }[];
+    /** `sections_worked` absent : la ligne garde les siennes. */
+    rows: { id: string; duration_minutes: number; bpm_achieved: number | null; sections_worked?: SongSection[] }[];
     removed: string[];
-    shared: Omit<UpdatePracticeSessionInput, "song_id" | "duration_minutes" | "bpm_achieved">;
+    shared: Omit<UpdatePracticeSessionInput, "song_id" | "duration_minutes" | "bpm_achieved" | "sections_worked">;
   }
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
@@ -675,6 +683,7 @@ export async function updatePracticeSessionGroup(
           ...input.shared,
           duration_minutes: row.duration_minutes,
           bpm_achieved: row.bpm_achieved,
+          ...(row.sections_worked ? { sections_worked: row.sections_worked } : {}),
           updated_at: now,
         })
         .eq("id", row.id)

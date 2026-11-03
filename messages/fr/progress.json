@@ -131,6 +131,7 @@
     "removeSong": "Retirer {name} de la session",
     "minutesOf": "Minutes passées sur {name}",
     "bpmOf": "BPM tenu sur {name}",
+    "sectionsOf": "Parties jouées sur {name}",
     "min": "min",
     "exercisesFloor": "Exercices compris : au moins {minutes} min."
   },
@@ -164,6 +165,7 @@
     "bpmHeld": "BPM tenu",
     "bpm": "bpm",
     "statusOf": "Statut de {title}",
+    "sectionsOf": "Parties jouées sur {title}",
     "tempoComputed": "Progression calculée d'après ton meilleur tempo tenu.",
     "progressOf": "Progression de {title}",
     "notEnoughMinutes": "Le temps total ne laisse pas une minute à chaque morceau ou exercice sans durée.",

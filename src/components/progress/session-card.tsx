@@ -148,14 +148,12 @@ export function GroupSessionCard({
   const total = sessions.reduce((sum, session) => sum + session.duration_minutes, 0);
   const songCount = sessions.filter((session) => session.song).length;
   const moodEmoji = getMoodEmoji(first.mood);
-  const sectionsLabel = getSectionsLabels(first.sections_worked, te);
-
   const instrument = useSessionInstrument(first.instrument);
 
+  // Les parties se lisent sur la sous-ligne de chaque morceau.
   const meta = [
     new Date(first.practiced_at).toLocaleTimeString(intlLocale, { hour: "2-digit", minute: "2-digit" }),
     instrument,
-    sectionsLabel || null,
   ].filter(Boolean);
 
   return (
@@ -215,6 +213,9 @@ export function GroupSessionCard({
                 <span className="font-semibold">{session.song?.title || sessionExercisesLabel(session) || t("noSong")}</span>
                 {session.bpm_achieved ? (
                   <span className="tabular text-muted-foreground"> · {session.bpm_achieved} bpm</span>
+                ) : null}
+                {session.song_id && session.sections_worked.length > 0 ? (
+                  <span className="text-muted-foreground"> · {getSectionsLabels(session.sections_worked, te)}</span>
                 ) : null}
               </span>
               <span className="tabular text-xs font-semibold text-muted-foreground">
