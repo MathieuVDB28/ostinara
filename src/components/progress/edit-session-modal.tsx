@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
+import { toLocalInput } from "@/lib/datetime-local";
 import { formatDuration as formatMinutes } from "./stats-summary";
 import { updatePracticeSession, updatePracticeSessionGroup, deletePracticeSession } from "@/lib/actions/practice";
 import { Cover } from "@/components/ui/cover";
@@ -99,9 +100,7 @@ export function EditSessionModal({
     );
     setSelectedSong(session.song);
     setDurationMinutes(session.duration_minutes);
-    setPracticedAt(
-      new Date(session.practiced_at).toISOString().slice(0, 16)
-    );
+    setPracticedAt(toLocalInput(session.practiced_at));
     setBpmAchieved(session.bpm_achieved?.toString() || "");
     setMood(session.mood);
     setEnergyLevel(session.energy_level);

@@ -11,6 +11,7 @@ import { useOffline } from "@/components/offline/offline-provider";
 import { updateSong } from "@/lib/actions/songs";
 import { getShareSessionsDefault } from "@/lib/actions/practice";
 import { songTargetBpm } from "@/lib/song-progress";
+import { toLocalInput } from "@/lib/datetime-local";
 import { EXERCISE_CATEGORIES } from "@/lib/instruments";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
@@ -223,9 +224,7 @@ export function AddSessionModal({
     )
   );
   const [durationMinutes, setDurationMinutes] = useState<number | "">(timerDuration || 30);
-  const [practicedAt, setPracticedAt] = useState(
-    new Date().toISOString().slice(0, 16)
-  );
+  const [practicedAt, setPracticedAt] = useState(() => toLocalInput());
   const [bpmAchieved, setBpmAchieved] = useState<string>(
     timerBpm ? String(timerBpm) : ""
   );
@@ -271,7 +270,7 @@ export function AddSessionModal({
       )
     );
     setDurationMinutes(timerDuration || 30);
-    setPracticedAt(new Date().toISOString().slice(0, 16));
+    setPracticedAt(toLocalInput());
     setBpmAchieved(timerBpm ? String(timerBpm) : "");
     setMood(null);
     setEnergyLevel(null);
