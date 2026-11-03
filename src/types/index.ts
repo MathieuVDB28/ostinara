@@ -1034,6 +1034,8 @@ export interface BandMember {
   instrument?: Instrument | null;
   /** Precise « autre » : chant, saxo… */
   instrument_label?: string | null;
+  /** Recevoir les notifications des setlists du groupe (reglage de chacun). */
+  setlist_notifications?: boolean;
 }
 
 export interface BandMemberWithProfile extends BandMember {

@@ -176,5 +176,21 @@
   "gearWishlisted": {
     "title": "Envie de matos",
     "body": "{name} rêve de « {gear} »"
+  },
+  "bandSetlistCreated": {
+    "title": "{band} : nouvelle setlist",
+    "body": "{name} a créé « {setlist} »"
+  },
+  "bandSetlistUpdated": {
+    "title": "{band} : setlist modifiée",
+    "body": "{name} a modifié « {setlist} » : {changes}"
+  },
+  "bandSetlistDeleted": {
+    "title": "{band} : setlist supprimée",
+    "body": "{name} a supprimé « {setlist} »"
+  },
+  "bandSetlistRehearsalUpdated": {
+    "title": "{band} : setlist de la répète modifiée",
+    "body": "{name} a modifié « {setlist} » pour la répète du {date} : {changes}"
   }
 }

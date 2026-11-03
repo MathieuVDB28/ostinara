@@ -4,6 +4,12 @@ import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
+import {
+  notifyBandSetlistCreated,
+  notifyBandSetlistDeleted,
+  recordSetlistChange,
+} from "@/lib/notifications/band-setlists";
+import type { SetlistChange } from "@/lib/setlist-changes";
 import type {
   Setlist,
   SetlistWithDetails,
@@ -16,6 +22,17 @@ import type {
   Band,
   ExerciseCategory,
 } from "@/types";
+
+/** De quoi nommer un element dans le resume envoye au groupe. */
+const ITEM_LABEL_COLUMNS = "song_title, section_name, exercise_name";
+
+function itemLabel(item: {
+  song_title?: string | null;
+  section_name?: string | null;
+  exercise_name?: string | null;
+}): string | null {
+  return item.song_title || item.section_name || item.exercise_name || null;
+}
 
 // === Get all setlists (personal + band) ===
 export async function getSetlists(): Promise<SetlistWithDetails[]> {
@@ -258,6 +275,15 @@ export async function createSetlist(
     metadata: { name: data.name, is_band: !!input.band_id },
   });
 
+  if (input.band_id) {
+    notifyBandSetlistCreated({
+      setlistId: data.id,
+      bandId: input.band_id,
+      authorId: user.id,
+      setlistName: data.name,
+    });
+  }
+
   revalidatePath("/setlists");
   return { success: true, setlist: data as Setlist };
 }
@@ -284,6 +310,8 @@ export async function updateSetlist(
     return { success: false, error: await tErr("updateFailed") };
   }
 
+  recordSetlistChange({ setlistId, authorId: user.id, kind: "details_updated" });
+
   revalidatePath("/setlists");
   revalidatePath(`/setlists/${setlistId}`);
   return { success: true };
@@ -300,6 +328,13 @@ export async function deleteSetlist(
     return { success: false, error: await tErr("notAuthenticated") };
   }
 
+  // Le nom et le groupe, pour l'annoncer aux membres une fois supprimee.
+  const { data: existing } = await supabase
+    .from("setlists")
+    .select("name, band_id")
+    .eq("id", setlistId)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("setlists")
     .delete()
@@ -308,6 +343,14 @@ export async function deleteSetlist(
   if (error) {
     console.error("Error deleting setlist:", error);
     return { success: false, error: await tErr("deleteFailed") };
+  }
+
+  if (existing?.band_id) {
+    notifyBandSetlistDeleted({
+      bandId: existing.band_id,
+      authorId: user.id,
+      setlistName: existing.name,
+    });
   }
 
   revalidatePath("/setlists");
@@ -359,6 +402,13 @@ export async function addSetlistItem(
     console.error("Error adding item:", error);
     return { success: false, error: await tErr("addFailed") };
   }
+
+  recordSetlistChange({
+    setlistId: input.setlist_id,
+    authorId: user.id,
+    kind: "item_added",
+    itemLabel: itemLabel(data),
+  });
 
   revalidatePath(`/setlists/${input.setlist_id}`);
   return { success: true, item: data as SetlistItem };
@@ -439,7 +489,7 @@ export async function updateSetlistItem(
 
   const { data: item } = await supabase
     .from("setlist_items")
-    .select("setlist_id")
+    .select(`setlist_id, ${ITEM_LABEL_COLUMNS}`)
     .eq("id", itemId)
     .single();
 
@@ -454,6 +504,12 @@ export async function updateSetlistItem(
   }
 
   if (item) {
+    recordSetlistChange({
+      setlistId: item.setlist_id,
+      authorId: user.id,
+      kind: "item_updated",
+      itemLabel: itemLabel(item),
+    });
     revalidatePath(`/setlists/${item.setlist_id}`);
   }
   return { success: true };
@@ -473,7 +529,7 @@ export async function deleteSetlistItem(
   // Get item info before deletion
   const { data: item } = await supabase
     .from("setlist_items")
-    .select("setlist_id, position")
+    .select(`setlist_id, position, ${ITEM_LABEL_COLUMNS}`)
     .eq("id", itemId)
     .single();
 
@@ -491,6 +547,12 @@ export async function deleteSetlistItem(
   if (item) {
     await supabase.rpc("reorder_setlist_items", {
       p_setlist_id: item.setlist_id,
+    });
+    recordSetlistChange({
+      setlistId: item.setlist_id,
+      authorId: user.id,
+      kind: "item_removed",
+      itemLabel: itemLabel(item),
     });
     revalidatePath(`/setlists/${item.setlist_id}`);
   }
@@ -540,6 +602,8 @@ export async function reorderSetlistItems(
     console.error("Error reordering items:", error);
     return { success: false, error: await tErr("reorderFailed") };
   }
+
+  recordSetlistChange({ setlistId, authorId: user.id, kind: "reordered" });
 
   revalidatePath(`/setlists/${setlistId}`);
   return { success: true };
@@ -618,6 +682,121 @@ export async function duplicateSetlist(
     }
   }
 
+  if (newSetlist.band_id) {
+    notifyBandSetlistCreated({
+      setlistId: newSetlist.id,
+      bandId: newSetlist.band_id,
+      authorId: user.id,
+      setlistName: newSetlist.name,
+    });
+  }
+
   revalidatePath("/setlists");
   return { success: true, setlist: newSetlist as Setlist };
+}
+
+// === Historique d'une setlist de groupe ===
+
+export interface SetlistHistoryAuthor {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+}
+
+/** Les gestes d'un membre resumes ensemble (meme envoi au groupe). */
+export interface SetlistHistoryBatch {
+  /** user_id + notified_at : les gestes d'un meme resume. */
+  key: string;
+  author: SetlistHistoryAuthor | null;
+  /** Le dernier geste du lot. */
+  at: string;
+  /** Encore en attente de resume : l'auteur est peut-etre en train d'editer. */
+  pending: boolean;
+  changes: SetlistChange[];
+}
+
+export interface SetlistHistoryPage {
+  batches: SetlistHistoryBatch[];
+  /** A passer a `getSetlistHistory` pour la suite ; null s'il n'y a plus rien. */
+  nextCursor: string | null;
+  /** Creation de la setlist, a afficher en fin d'historique. */
+  created: { at: string; author: SetlistHistoryAuthor | null } | null;
+}
+
+const HISTORY_PAGE_ROWS = 150;
+
+/**
+ * Les changements d'une setlist de groupe, du plus recent au plus ancien,
+ * regroupes par resume. Lu sous RLS : les membres du groupe seulement.
+ * La page coupe par lignes, pas par lots : un lot a cheval sur deux pages
+ * se recolle cote client grace a sa `key`.
+ */
+export async function getSetlistHistory(
+  setlistId: string,
+  before?: string
+): Promise<SetlistHistoryPage | null> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+  if (!user) return null;
+
+  let query = supabase
+    .from("setlist_change_log")
+    .select(
+      "user_id, kind, item_label, created_at, notified_at, author:profiles!setlist_change_log_user_id_fkey(id, username, display_name, avatar_url)"
+    )
+    .eq("setlist_id", setlistId)
+    .order("created_at", { ascending: false })
+    .limit(HISTORY_PAGE_ROWS);
+  if (before) query = query.lt("created_at", before);
+
+  const [{ data: rows, error }, setlistResult] = await Promise.all([
+    query,
+    before
+      ? Promise.resolve({ data: null })
+      : supabase
+          .from("setlists")
+          .select("created_at, band_id, creator:profiles!setlists_user_id_fkey(id, username, display_name, avatar_url)")
+          .eq("id", setlistId)
+          .maybeSingle(),
+  ]);
+
+  if (error) {
+    console.error("Error fetching setlist history:", error);
+    return null;
+  }
+
+  type Row = {
+    user_id: string;
+    kind: SetlistChange["kind"];
+    item_label: string | null;
+    created_at: string;
+    notified_at: string | null;
+    author: SetlistHistoryAuthor | SetlistHistoryAuthor[] | null;
+  };
+  const one = <T,>(value: T | T[] | null): T | null => (Array.isArray(value) ? value[0] ?? null : value);
+
+  const batches: SetlistHistoryBatch[] = [];
+  const byKey = new Map<string, SetlistHistoryBatch>();
+  for (const row of (rows ?? []) as Row[]) {
+    const key = `${row.user_id}:${row.notified_at ?? "pending"}`;
+    let batch = byKey.get(key);
+    if (!batch) {
+      batch = { key, author: one(row.author), at: row.created_at, pending: !row.notified_at, changes: [] };
+      byKey.set(key, batch);
+      batches.push(batch);
+    }
+    batch.changes.push({ kind: row.kind, item_label: row.item_label });
+  }
+
+  const setlist = setlistResult.data as
+    | { created_at: string; band_id: string | null; creator: SetlistHistoryAuthor | SetlistHistoryAuthor[] | null }
+    | null;
+
+  return {
+    batches,
+    nextCursor:
+      rows && rows.length === HISTORY_PAGE_ROWS ? (rows[rows.length - 1] as Row).created_at : null,
+    created: setlist ? { at: setlist.created_at, author: one(setlist.creator) } : null,
+  };
 }

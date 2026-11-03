@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getSetlist } from "@/lib/actions/setlists";
+import { getSetlist, getSetlistHistory } from "@/lib/actions/setlists";
 import { getBandMembersSongs } from "@/lib/actions/bands";
 import { getSongs } from "@/lib/actions/songs";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
@@ -39,8 +39,12 @@ export default async function SetlistPage({ params }: SetlistPageProps) {
 
   // Get songs based on whether it's a band setlist or personal
   let songSources;
+  let history = null;
   if (setlist.band_id) {
-    songSources = await getBandMembersSongs(setlist.band_id);
+    [songSources, history] = await Promise.all([
+      getBandMembersSongs(setlist.band_id),
+      getSetlistHistory(setlist.id),
+    ]);
   } else {
     const personalSongs = await getSongs();
     songSources = [{ member: null, songs: personalSongs }];
@@ -51,6 +55,7 @@ export default async function SetlistPage({ params }: SetlistPageProps) {
       setlist={setlist}
       songSources={songSources}
       userPlan={userPlan}
+      history={history}
     />
   );
 }

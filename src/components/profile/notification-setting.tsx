@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { usePushNotifications } from "@/lib/hooks/use-push-notifications";
 import { updateProfile } from "@/lib/actions/profile";
 
-function Switch({
+export function Switch({
   on,
   labelledBy,
   disabled,

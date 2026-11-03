@@ -176,5 +176,21 @@
   "gearWishlisted": {
     "title": "Gear wish",
     "body": "{name} has their eye on “{gear}”"
+  },
+  "bandSetlistCreated": {
+    "title": "{band}: new setlist",
+    "body": "{name} created \"{setlist}\""
+  },
+  "bandSetlistUpdated": {
+    "title": "{band}: setlist updated",
+    "body": "{name} updated \"{setlist}\": {changes}"
+  },
+  "bandSetlistDeleted": {
+    "title": "{band}: setlist deleted",
+    "body": "{name} deleted \"{setlist}\""
+  },
+  "bandSetlistRehearsalUpdated": {
+    "title": "{band}: rehearsal setlist updated",
+    "body": "{name} updated \"{setlist}\" for the {date} rehearsal: {changes}"
   }
 }

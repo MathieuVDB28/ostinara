@@ -275,6 +275,8 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
   - Invitation de membres
   - Gestion des membres (changer role, retirer)
   - Setlists partagees au sein du groupe
+  - Notifications des setlists du groupe (`src/lib/notifications/band-setlists.ts`, migration `20261113_band_setlist_notifications`) : creation et suppression tout de suite aux membres (plus aux amis) ; les modifications sont notees dans `setlist_change_log` et partent en un resume quand l'auteur a fini (90 s de calme, minuteur dans `after()`, rattrapage des resumes restes en plan au geste suivant). Chacun coupe pour un groupe : `band_members.setlist_notifications`, RPC `set_band_setlist_notifications`, interrupteur sous les setlists de la page du groupe. Si la setlist est celle de la prochaine repete, ceux qui y vont (pas « decline ») recoivent le resume meme coupe, dans une version qui nomme la repete.
+  - Historique d'une setlist de groupe : le meme journal, garde sans limite et lisible par les membres (RLS). « Modifiee par Lea il y a 2 h » sous le titre et section Historique en bas de `/setlists/[id]` (`getSetlistHistory`, un lot = un resume, `src/components/setlists/setlist-history.tsx`). Resume partage notif / page : `src/lib/setlist-changes.ts` (textes `setlists.changes`).
 - **Repetitions (Rehearsals)** :
   - Planification : date, lieu (avec URL), setlist associee, notes
   - RSVP : invited, accepted, declined, maybe
@@ -980,7 +982,7 @@ get_practice_leaderboard(p_user_id UUID, p_period TEXT, p_limit INTEGER DEFAULT 
 ## Notifications Push
 
 ### Types de notifications
-friend_request, friend_accepted, song_added, song_mastered, cover_posted, song_wishlisted, setlist_created, band_created, band_joined, band_invitation, challenge_created, challenge_accepted, challenge_completed, challenge_won, jam_session_started, album_reviewed, activity_reaction, activity_comment, exercise_shared, rehearsal_created, rehearsal_reminder, rehearsal_cancelled, band_message
+friend_request, friend_accepted, song_added, song_mastered, cover_posted, song_wishlisted, setlist_created, band_setlist_created, band_setlist_updated, band_setlist_deleted, band_created, band_joined, band_invitation, challenge_created, challenge_accepted, challenge_completed, challenge_won, jam_session_started, album_reviewed, activity_reaction, activity_comment, exercise_shared, rehearsal_created, rehearsal_reminder, rehearsal_cancelled, band_message
 
 ### Infrastructure
 - Service worker custom (`sw-push-handler.js`)

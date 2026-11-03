@@ -84,7 +84,11 @@
     "noRehearsal": "Aucune répète planifiée.",
     "members": "Membres",
     "lineup": "Line-up",
-    "admin": "Admin"
+    "admin": "Admin",
+    "setlistNotifs": "Me prévenir des changements",
+    "setlistNotifsOn": "Création, modifications (en résumé) et suppression des setlists du groupe",
+    "setlistNotifsOff": "Tu ne reçois plus rien sur les setlists de ce groupe",
+    "setlistNotifsFailed": "Le réglage n'a pas pu être enregistré"
   },
   "bandCard": {
     "confirmLeave": "Es-tu sûr de vouloir quitter ce groupe ?",
@@ -234,5 +238,25 @@
     "start": "Début",
     "end": "Fin",
     "add": "Ajouter la section"
+  },
+  "changes": {
+    "addedOne": "« {title} » ajouté",
+    "added": "{count, plural, one {# ajout} other {# ajouts}}",
+    "removedOne": "« {title} » retiré",
+    "removed": "{count, plural, one {# retrait} other {# retraits}}",
+    "updated": "{count, plural, one {# élément retouché} other {# éléments retouchés}}",
+    "reordered": "ordre changé",
+    "details": "infos changées"
+  },
+  "history": {
+    "title": "Historique",
+    "lastChange": "Modifiée par {name} {when}",
+    "created": "Créée par {name}",
+    "someone": "quelqu'un",
+    "more": "Voir plus",
+    "loading": "Chargement…",
+    "loadFailed": "L'historique n'a pas pu être chargé",
+    "pending": "en cours",
+    "nothing": "modifiée"
   }
 }

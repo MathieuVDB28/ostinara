@@ -84,7 +84,11 @@
     "noRehearsal": "No rehearsals scheduled.",
     "members": "Members",
     "lineup": "Line-up",
-    "admin": "Admin"
+    "admin": "Admin",
+    "setlistNotifs": "Notify me of changes",
+    "setlistNotifsOn": "New setlists, edits (summarized) and deletions in this band",
+    "setlistNotifsOff": "You won't hear about this band's setlists anymore",
+    "setlistNotifsFailed": "Couldn't save this setting"
   },
   "bandCard": {
     "confirmLeave": "Are you sure you want to leave this band?",
@@ -234,5 +238,25 @@
     "start": "Start",
     "end": "End",
     "add": "Add section"
+  },
+  "changes": {
+    "addedOne": "\"{title}\" added",
+    "added": "{count, plural, one {# added} other {# added}}",
+    "removedOne": "\"{title}\" removed",
+    "removed": "{count, plural, one {# removed} other {# removed}}",
+    "updated": "{count, plural, one {# item edited} other {# items edited}}",
+    "reordered": "order changed",
+    "details": "details changed"
+  },
+  "history": {
+    "title": "History",
+    "lastChange": "Updated by {name} {when}",
+    "created": "Created by {name}",
+    "someone": "someone",
+    "more": "Show more",
+    "loading": "Loading…",
+    "loadFailed": "Couldn't load the history",
+    "pending": "in progress",
+    "nothing": "updated"
   }
 }

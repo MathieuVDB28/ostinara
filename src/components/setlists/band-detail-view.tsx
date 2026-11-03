@@ -13,6 +13,7 @@ import { CreateRehearsalModal } from "@/components/rehearsals/create-rehearsal-m
 import { RehearsalCard } from "@/components/rehearsals/rehearsal-card";
 import { RehearsalCalendar } from "@/components/rehearsals/rehearsal-calendar";
 import { BandMemberPoste } from "./band-member-poste";
+import { BandSetlistNotifications } from "./band-setlist-notifications";
 import { bandLineup } from "@/lib/instruments";
 import type {
   BandWithMembers,
@@ -57,7 +58,8 @@ export function BandDetailView({
 
   const handleRefresh = () => router.refresh();
   const isOwner = band.owner_id === currentUserId;
-  const myRole = band.members.find((member) => member.user_id === currentUserId)?.role;
+  const myMembership = band.members.find((member) => member.user_id === currentUserId);
+  const myRole = myMembership?.role;
   const isAdmin = isOwner || myRole === "owner" || myRole === "admin";
   const lineup = bandLineup(band.members, te);
 
@@ -179,6 +181,13 @@ export function BandDetailView({
           </div>
         ) : (
           <p className="py-6 text-sm text-muted-foreground">{t("noSetlist")}</p>
+        )}
+
+        {myMembership && (
+          <BandSetlistNotifications
+            bandId={band.id}
+            initialOn={myMembership.setlist_notifications ?? true}
+          />
         )}
       </section>
 

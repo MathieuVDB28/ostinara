@@ -95,6 +95,9 @@ function getNotificationForActivity(
         body: t("songWishlisted.body", { name, title: m("title") }),
       }));
     case "setlist_created":
+      // Une setlist de groupe est annoncee aux membres du groupe
+      // (notifyBandSetlistCreated), pas aux amis.
+      if (metadata?.is_band) return null;
       return build("setlist_created", "/feed", (t, name) => ({
         title: t("setlistCreated.title"),
         body: t("setlistCreated.body", { name, setlist: m("name") }),

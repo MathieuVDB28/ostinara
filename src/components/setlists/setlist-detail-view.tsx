@@ -24,6 +24,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SetlistItemCard } from "./setlist-item-card";
+import { SetlistHistory, SetlistLastChange } from "./setlist-history";
+import type { SetlistHistoryPage } from "@/lib/actions/setlists";
 import { AddItemModal } from "./add-item-modal";
 import { EditItemModal } from "./edit-item-modal";
 // Charge a la demande : @react-pdf/renderer pese ~988 Ko et ne sert
@@ -57,6 +59,8 @@ interface SetlistDetailViewProps {
   setlist: SetlistWithDetails;
   songSources: { member: Profile | null; songs: Song[] }[];
   userPlan: UserPlan;
+  /** Setlist de groupe seulement : qui a change quoi. */
+  history?: SetlistHistoryPage | null;
 }
 
 function formatDuration(seconds: number, t: CommonT): string {
@@ -98,6 +102,7 @@ export function SetlistDetailView({
   setlist: initialSetlist,
   songSources,
   userPlan,
+  history = null,
 }: SetlistDetailViewProps) {
   const t = useTranslations("setlists.detail");
   const tc = useTranslations("common");
@@ -311,6 +316,7 @@ export function SetlistDetailView({
             {setlist.description && (
               <p className="mt-2 font-serif text-[15px] italic text-muted-foreground">{setlist.description}</p>
             )}
+            {setlist.band_id && <SetlistLastChange history={history} />}
 
             {/* Les chiffres du set, style Atelier */}
             <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-border py-3 sm:grid-cols-4">
@@ -417,6 +423,8 @@ export function SetlistDetailView({
           </div>
         )}
       </div>
+
+      {setlist.band_id && <SetlistHistory setlistId={setlist.id} history={history} />}
 
       {/* Modals */}
       <AddItemModal
