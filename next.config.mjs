@@ -132,6 +132,11 @@ export default withNextIntl(withPWA({
        */
       urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/v1\/object\/sign\/.*/i,
       handler: 'NetworkOnly',
+      // next-pwa ecrit options.precacheFallback sur chaque regle (page
+      // /offline) : sans `options`, le build plante.
+      options: {
+        cacheName: 'cover-media',
+      },
     },
     {
       urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
