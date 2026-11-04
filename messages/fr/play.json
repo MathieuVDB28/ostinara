@@ -44,7 +44,13 @@
     "choose": "Choisis une setlist à dérouler : le métronome se cale sur chaque élément, le chrono tourne.",
     "items": "{count, plural, one {# élément à jouer} other {# éléments à jouer}}",
     "empty": "Aucun morceau ni exercice",
-    "change": "← Changer de setlist"
+    "change": "← Changer de setlist",
+    "jamHint": "Jouez ensemble avec {band} : métronome synchronisé et chat en direct.",
+    "jamRunning": "{band} est en jam en ce moment.",
+    "jamLaunch": "Lancer en jam avec le groupe",
+    "jamJoin": "Rejoindre la jam",
+    "jamFailed": "La jam n'a pas pu démarrer. Réessaie.",
+    "jamUpsell": "Jouer en jam avec le groupe (plan Band)"
   },
   "carnet": {
     "sessions": "sessions",

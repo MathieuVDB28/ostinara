@@ -22,7 +22,9 @@ export async function getBandMessages(
       profile:profiles(id, username, display_name, avatar_url, plan)
     `)
     .eq("band_id", bandId)
-    .order("created_at", { ascending: true })
+    // Les plus recents : au-dela de la limite, le fil ne doit pas s'arreter
+    // aux premiers messages du groupe. Remis dans l'ordre de lecture plus bas.
+    .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (rehearsalId) {
@@ -38,7 +40,7 @@ export async function getBandMessages(
     return [];
   }
 
-  return messages as BandMessageWithProfile[];
+  return (messages as BandMessageWithProfile[]).reverse();
 }
 
 // === Send band message ===

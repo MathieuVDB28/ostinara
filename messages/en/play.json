@@ -44,7 +44,13 @@
     "choose": "Pick a setlist to run through: the metronome locks onto each item and the timer runs.",
     "items": "{count, plural, one {# item to play} other {# items to play}}",
     "empty": "No songs or exercises",
-    "change": "← Change setlist"
+    "change": "← Change setlist",
+    "jamHint": "Play together with {band}: synced metronome and live chat.",
+    "jamRunning": "{band} is jamming right now.",
+    "jamLaunch": "Start a band jam",
+    "jamJoin": "Join the jam",
+    "jamFailed": "The jam couldn't start. Try again.",
+    "jamUpsell": "Jam with your band (Band plan)"
   },
   "carnet": {
     "sessions": "sessions",

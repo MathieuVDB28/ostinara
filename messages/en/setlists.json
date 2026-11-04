@@ -88,7 +88,11 @@
     "setlistNotifs": "Notify me of changes",
     "setlistNotifsOn": "New setlists, edits (summarized) and deletions in this band",
     "setlistNotifsOff": "You won't hear about this band's setlists anymore",
-    "setlistNotifsFailed": "Couldn't save this setting"
+    "setlistNotifsFailed": "Couldn't save this setting",
+    "chat": "Chat",
+    "closeChat": "Close chat",
+    "chatUpsellTitle": "Band chat",
+    "chatUpsellBody": "The general chat and jams are part of the Band plan."
   },
   "bandCard": {
     "confirmLeave": "Are you sure you want to leave this band?",

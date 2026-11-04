@@ -170,7 +170,9 @@ export function useJamSession({
             ...(payload.new as JamSessionMessageWithProfile),
             profile: profile as Profile,
           };
-          setMessages((prev) => [...prev, newMessage]);
+          setMessages((prev) =>
+            prev.some((message) => message.id === newMessage.id) ? prev : [...prev, newMessage]
+          );
         }
       }
     );

@@ -3,7 +3,9 @@ import { getBand } from "@/lib/actions/bands";
 import { getSetlists } from "@/lib/actions/setlists";
 import { getBandRehearsals } from "@/lib/actions/rehearsals";
 import { getActiveJamSession } from "@/lib/actions/jam-sessions";
-import { getAuthenticatedUser } from "@/lib/supabase/server";
+import { getBandMessages } from "@/lib/actions/band-messages";
+import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import type { UserPlan } from "@/types";
 import { BandDetailView } from "@/components/setlists/band-detail-view";
 
 export default async function BandDetailPage({
@@ -18,11 +20,15 @@ export default async function BandDetailPage({
     return null;
   }
 
-  const [band, allSetlists, rehearsals, activeJam] = await Promise.all([
+  const supabase = await createClient();
+  const [band, allSetlists, rehearsals, activeJam, messages, { data: profile }] = await Promise.all([
     getBand(bandId),
     getSetlists(),
     getBandRehearsals(bandId),
     getActiveJamSession(bandId),
+    // Sous RLS : vide pour qui n'a pas le plan Band.
+    getBandMessages(bandId),
+    supabase.from("profiles").select("plan").eq("id", user.id).maybeSingle(),
   ]);
 
   if (!band) {
@@ -36,6 +42,8 @@ export default async function BandDetailPage({
       rehearsals={rehearsals}
       activeJam={activeJam}
       currentUserId={user.id}
+      userPlan={(profile?.plan as UserPlan | undefined) ?? "free"}
+      messages={messages}
     />
   );
 }

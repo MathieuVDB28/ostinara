@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ChevronRight, ListMusic } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { PlayStepper, type PlayStep } from "./play-stepper";
+import { BandJamCallout } from "./band-jam-callout";
 import type { SaveSessionItemInput } from "@/lib/actions/setlists";
 import type {
   Song,
@@ -172,18 +173,29 @@ export function PlaySetlistPanel({
 
   // --- Setlist choisie : le dérouleur partagé (remonté à chaque changement) ---
   return (
-    <PlayStepper
-      key={selected.id}
-      steps={steps}
-      title={selected.name}
-      onBack={() => setSelectedId(null)}
-      backLabel={t("change")}
-      songPracticeStats={songPracticeStats}
-      currentBpm={currentBpm}
-      onRequestBpm={onRequestBpm}
-      songWorkingBpm={songWorkingBpm}
-      userPlan={userPlan}
-      sessionItems={sessionItems}
-    />
+    <div className="space-y-4">
+      {selected.band_id && (
+        <BandJamCallout
+          key={selected.id}
+          bandId={selected.band_id}
+          bandName={selected.band?.name ?? ""}
+          setlistId={selected.id}
+          userPlan={userPlan}
+        />
+      )}
+      <PlayStepper
+        key={selected.id}
+        steps={steps}
+        title={selected.name}
+        onBack={() => setSelectedId(null)}
+        backLabel={t("change")}
+        songPracticeStats={songPracticeStats}
+        currentBpm={currentBpm}
+        onRequestBpm={onRequestBpm}
+        songWorkingBpm={songWorkingBpm}
+        userPlan={userPlan}
+        sessionItems={sessionItems}
+      />
+    </div>
   );
 }

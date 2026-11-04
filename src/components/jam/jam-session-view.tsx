@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useJamSession } from "@/lib/hooks/use-jam-session";
@@ -8,6 +10,7 @@ import { JamChat } from "./jam-chat";
 import { JamParticipants } from "./jam-participants";
 import { JamSongQueue } from "./jam-song-queue";
 import { JamTabsViewer } from "./jam-tabs-viewer";
+import { ChatSheet } from "@/components/ui/chat-sheet";
 import { leaveJamSession, endJamSession } from "@/lib/actions/jam-sessions";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { bandPosteLabel } from "@/lib/instruments";
@@ -63,6 +66,16 @@ export function JamSessionView({
     initialSession,
     initialMessages,
   });
+
+  // Sur telephone, le chat s'ouvre par-dessus le metronome : le compteur dit
+  // qu'on a ecrit au groupe, sans son ni vibration.
+  const [chatOpen, setChatOpen] = useState(false);
+  const [seenMessages, setSeenMessages] = useState(initialMessages.length);
+  const unread = chatOpen ? 0 : Math.max(0, messages.length - seenMessages);
+  const toggleChat = () => {
+    setSeenMessages(messages.length);
+    setChatOpen((open) => !open);
+  };
 
   const handleLeave = async () => {
     await leaveJamSession(initialSession.id);
@@ -121,9 +134,9 @@ export function JamSessionView({
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       {/* Header */}
       <div className="shrink-0 border-b border-border p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <h1 className="font-display text-3xl font-extrabold uppercase leading-none">
                 {isPersonalJam ? t("solo") : t("band")}
               </h1>
@@ -151,7 +164,7 @@ export function JamSessionView({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Session status badge */}
             <span
               className={`rounded-full px-3 py-1 text-xs font-medium ${
@@ -219,11 +232,11 @@ export function JamSessionView({
         className={`flex-1 overflow-hidden ${
           isPersonalJam
             ? "flex flex-col"
-            : "grid gap-4 lg:grid-cols-[1fr_350px]"
+            : "grid min-h-0 grid-rows-[minmax(0,1fr)] gap-4 lg:grid-cols-[1fr_350px]"
         }`}
       >
         {/* Main column */}
-        <div className="flex flex-col gap-4 overflow-auto p-4">
+        <div className={`flex flex-col gap-4 overflow-auto p-4 ${isPersonalJam ? "" : "pb-24 lg:pb-4"}`}>
           {/* Metronome */}
           <JamMetronome
             metronome={metronome}
@@ -274,7 +287,7 @@ export function JamSessionView({
 
         {/* Right column - Sidebar (only for band jams) */}
         {!isPersonalJam && (
-          <div className="flex flex-col gap-4 border-l border-border p-4 overflow-hidden">
+          <div className="hidden min-h-0 flex-col gap-4 overflow-hidden border-l border-border p-4 lg:flex">
             {/* Participants */}
             <JamParticipants participants={participants} hostId={session.host_id} postes={postes} />
 
@@ -287,6 +300,32 @@ export function JamSessionView({
           </div>
         )}
       </div>
+
+      {!isPersonalJam && !chatOpen && (
+        <button
+          type="button"
+          onClick={toggleChat}
+          className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-30 flex min-h-[48px] items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-lg lg:hidden"
+        >
+          <MessageCircle className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+          {t("chat")}
+          {unread > 0 && (
+            <span className="tabular rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">
+              <span className="sr-only">{t("unread", { count: unread })}</span>
+              <span aria-hidden="true">{unread}</span>
+            </span>
+          )}
+        </button>
+      )}
+
+      {!isPersonalJam && chatOpen && (
+        <ChatSheet title={t("chat")} closeLabel={t("closeChat")} onClose={toggleChat}>
+          <div className="max-h-40 shrink-0 overflow-y-auto">
+            <JamParticipants participants={participants} hostId={session.host_id} postes={postes} />
+          </div>
+          <JamChat messages={messages} currentUserId={currentUser.id} onSendMessage={sendMessage} />
+        </ChatSheet>
+      )}
     </div>
   );
 }

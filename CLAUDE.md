@@ -288,7 +288,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
   - Planification : date, lieu (avec URL), setlist associee, notes
   - RSVP : invited, accepted, declined, maybe
   - Recurrence : none, weekly, biweekly, monthly
-  - Chat par repetition ou general au groupe
+  - Chat par repetition, ou general au groupe (puce Chat de la page du groupe, plan Band, RLS comprise)
   - Export iCalendar (.ics)
   - Rappels automatiques par push (cron daily 8h UTC)
 
@@ -322,7 +322,8 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - **Metronome synchronise** : broadcast BPM + time signature a tous les participants
 - **File de morceaux** : setlist associee avec navigation
 - **Viewer de tabs** : affichage tabs du morceau en cours
-- **Chat en direct** : messages dans la session
+- **Chat en direct** : messages dans la session (jam de groupe, plan Band), panneau `ChatSheet` avec compteur de non-lus sur telephone, efface a la fin de la jam par trigger (migration `20261116_group_chat`). Sans plan Band, la page de la jam explique pourquoi elle reste fermee
+- **Depuis Jouer** : une setlist de groupe propose de lancer ou rejoindre la jam (`BandJamCallout`), a cote du chrono solo
 - **Presence** : tracking des participants connectes via Supabase Presence
 
 ### Audio (`/audio`)

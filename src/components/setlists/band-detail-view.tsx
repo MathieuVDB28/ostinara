@@ -14,12 +14,17 @@ import { RehearsalCard } from "@/components/rehearsals/rehearsal-card";
 import { RehearsalCalendar } from "@/components/rehearsals/rehearsal-calendar";
 import { BandMemberPoste } from "./band-member-poste";
 import { BandSetlistNotifications } from "./band-setlist-notifications";
+import { BandChatPanel } from "@/components/rehearsals/band-chat-panel";
+import { ProUpsell } from "@/components/subscription/pro-upsell";
+import { ChatSheet } from "@/components/ui/chat-sheet";
 import { bandLineup } from "@/lib/instruments";
 import type {
   BandWithMembers,
   SetlistWithDetails,
   RehearsalWithDetails,
   JamSessionWithDetails,
+  BandMessageWithProfile,
+  UserPlan,
 } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
@@ -29,6 +34,9 @@ interface BandDetailViewProps {
   rehearsals: RehearsalWithDetails[];
   activeJam: JamSessionWithDetails | null;
   currentUserId: string;
+  userPlan: UserPlan;
+  /** Le chat general du groupe : les derniers messages, pour le plan Band. */
+  messages: BandMessageWithProfile[];
 }
 
 /**
@@ -46,6 +54,8 @@ export function BandDetailView({
   rehearsals,
   activeJam,
   currentUserId,
+  userPlan,
+  messages,
 }: BandDetailViewProps) {
   const t = useTranslations("setlists.band");
   const te = useTranslations("enums");
@@ -54,6 +64,7 @@ export function BandDetailView({
   const [showCreateSetlist, setShowCreateSetlist] = useState(false);
   const [showCreateRehearsal, setShowCreateRehearsal] = useState(false);
   const [showJam, setShowJam] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [rehearsalView, setRehearsalView] = useState<"list" | "calendar">("list");
 
   const handleRefresh = () => router.refresh();
@@ -117,6 +128,10 @@ export function BandDetailView({
         )}
 
         <div className="-mx-4 mt-4 flex gap-1.5 overflow-x-auto px-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
+          <button onClick={() => setShowChat(true)} className={CHIP}>
+            <Icon name="chat_bubble_outline" className="h-4 w-4" />
+            {t("chat")}
+          </button>
           <button onClick={() => setShowJam(true)} className={CHIP}>
             <Icon name="music_note" className="h-4 w-4" />
             {t("startJam")}
@@ -293,6 +308,23 @@ export function BandDetailView({
           ))}
         </ul>
       </section>
+
+      {showChat && (
+        <ChatSheet title={band.name} closeLabel={t("closeChat")} onClose={() => setShowChat(false)}>
+          {userPlan === "band" ? (
+            <div className="min-h-0 flex-1">
+              <BandChatPanel
+                bandId={band.id}
+                currentUserId={currentUserId}
+                initialMessages={messages}
+                title={t("chat")}
+              />
+            </div>
+          ) : (
+            <ProUpsell feature={t("chatUpsellTitle")} description={t("chatUpsellBody")} />
+          )}
+        </ChatSheet>
+      )}
 
       <CreateSetlistModal
         isOpen={showCreateSetlist}

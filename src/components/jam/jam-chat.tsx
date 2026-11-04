@@ -45,7 +45,7 @@ export function JamChat({
   };
 
   return (
-    <div className="flex flex-1 flex-col rounded-xl border border-border bg-card overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card overflow-hidden">
       <div className="border-b border-border p-3">
         <h3 className="font-semibold">Chat</h3>
       </div>

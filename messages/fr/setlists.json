@@ -88,7 +88,11 @@
     "setlistNotifs": "Me prévenir des changements",
     "setlistNotifsOn": "Création, modifications (en résumé) et suppression des setlists du groupe",
     "setlistNotifsOff": "Tu ne reçois plus rien sur les setlists de ce groupe",
-    "setlistNotifsFailed": "Le réglage n'a pas pu être enregistré"
+    "setlistNotifsFailed": "Le réglage n'a pas pu être enregistré",
+    "chat": "Chat",
+    "closeChat": "Fermer le chat",
+    "chatUpsellTitle": "Le chat du groupe",
+    "chatUpsellBody": "Le chat général et les jams sont réservés au plan Band."
   },
   "bandCard": {
     "confirmLeave": "Es-tu sûr de vouloir quitter ce groupe ?",

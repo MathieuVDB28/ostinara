@@ -36,7 +36,12 @@
     "pause": "Pause",
     "resume": "Resume",
     "end": "End",
-    "leave": "Leave"
+    "leave": "Leave",
+    "chat": "Chat",
+    "closeChat": "Close chat",
+    "unread": "{count, plural, one {# unread message} other {# unread messages}}",
+    "bandRequiredTitle": "{band} is jamming",
+    "bandRequiredBody": "Jams and their chat are part of the Band plan. Upgrade to the Band plan to join your band live."
   },
   "queue": {
     "setlist": "Setlist: {name}",

@@ -2,6 +2,9 @@ import { notFound, redirect } from "next/navigation";
 import { getJamSession, getJamMessages, joinJamSession } from "@/lib/actions/jam-sessions";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { JamSessionView } from "@/components/jam";
+import { ProUpsell } from "@/components/subscription/pro-upsell";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 interface JamPageProps {
   params: Promise<{ id: string }>;
@@ -41,15 +44,28 @@ export default async function JamPage({ params }: JamPageProps) {
 
   // Access control
   if (session.band_id && session.band) {
-    // Band jam: check band plan and membership
-    if (profile.plan !== "band") {
-      redirect("/setlists");
-    }
+    // Band jam: check membership, then the plan
     const isMember = session.band.members?.some(
       (m) => m.user_id === user.id
     );
     if (!isMember) {
       redirect("/setlists");
+    }
+    // Le lien vient d'une notification ou de la page du groupe : on explique
+    // pourquoi la jam reste fermee plutot que de renvoyer ailleurs sans un mot.
+    if (profile.plan !== "band") {
+      const t = await getTranslations("jam.session");
+      return (
+        <div className="mx-auto max-w-xl space-y-4 p-4">
+          <ProUpsell
+            feature={t("bandRequiredTitle", { band: session.band.name })}
+            description={t("bandRequiredBody")}
+          />
+          <Link href="/commu/groupes" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
+            {t("back")}
+          </Link>
+        </div>
+      );
     }
   } else {
     // Personal jam: only host can access
