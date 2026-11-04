@@ -34,8 +34,10 @@
     "remindersOn": "Neglected song, break, streak, weekly plan — at most one a day",
     "saveFailed": "Couldn't save the setting. Try again.",
     "shareSessions": "Share my sessions",
-    "shareSessionsOn": "Your friends see your sessions in their feed and get a notification",
-    "shareSessionsOff": "Your sessions stay private unless you tick the box when you save one"
+    "shareSessionsOn": "Your friends are told when you play, can follow you live and see your sessions in their feed",
+    "shareSessionsOff": "Your sessions stay private unless you tick the box when you save one",
+    "friendsPlaying": "When a friend starts playing",
+    "friendsPlayingOn": "A notification when a friend starts a session"
   },
   "privateAccount": "Private account",
   "showcase": {

@@ -20,6 +20,7 @@ self.addEventListener('push', function (event) {
       icon: data.icon || '/icons/android/android-launchericon-192-192.png',
       badge: data.badge || '/icons/android/android-launchericon-96-96.png',
       tag: data.tag || 'notification',
+      renotify: data.renotify === true,
       data: data.data || {},
       vibrate: [200, 100, 200],
       requireInteraction: false,

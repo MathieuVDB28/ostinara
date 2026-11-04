@@ -1,0 +1,33 @@
+{
+  "badge": "Live",
+  "paused": "Paused",
+  "playing": "Playing",
+  "freePlay": "Free play",
+  "exercise": "Exercise: {name}",
+  "playToo": "Grab my instrument",
+  "watching": "{count, plural, =0 {Nobody else is watching} one {# friend watching} other {# friends watching}}",
+  "hostWatching": "{count, plural, one {# friend is watching you} other {# friends are watching you}}",
+  "ended": {
+    "title": "Session over",
+    "body": "{name} has finished playing.",
+    "feed": "See the feed"
+  },
+  "snapshot": {
+    "since": "Playing since {time}",
+    "withInstrument": "{instrument} · playing since {time}",
+    "upsellTitle": "Follow the session live",
+    "upsellBody": "With Pro or Band, you see the timer, song and tempo in real time, and chat with the musician and their friends."
+  },
+  "chat": {
+    "title": "Chat",
+    "open": "Open chat",
+    "close": "Close chat",
+    "empty": "No messages yet. Say hi!",
+    "placeholder": "Write a message",
+    "send": "Send",
+    "failed": "The message didn't go through. Try again.",
+    "someone": "A friend",
+    "ephemeral": "Messages are deleted when the session ends.",
+    "upsell": "Your session chat"
+  }
+}

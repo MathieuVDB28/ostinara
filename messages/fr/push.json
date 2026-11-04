@@ -192,5 +192,9 @@
   "bandSetlistRehearsalUpdated": {
     "title": "{band} : setlist de la répète modifiée",
     "body": "{name} a modifié « {setlist} » pour la répète du {date} : {changes}"
+  },
+  "friendPlaying": {
+    "title": "{name} joue en ce moment",
+    "body": "{kind, select, song {« {title} »} exercise {Exercice : {title}} other {Jeu libre}}{instrument, select, guitar { à la guitare} bass { à la basse} drums { à la batterie} keys { au clavier} other {}}. Tu sors ton instrument ?"
   }
 }

@@ -1,0 +1,33 @@
+{
+  "badge": "En direct",
+  "paused": "En pause",
+  "playing": "En train de jouer",
+  "freePlay": "Jeu libre",
+  "exercise": "Exercice : {name}",
+  "playToo": "Sortir mon instrument",
+  "watching": "{count, plural, =0 {Personne d'autre ne regarde} one {# ami regarde} other {# amis regardent}}",
+  "hostWatching": "{count, plural, one {# ami te regarde} other {# amis te regardent}}",
+  "ended": {
+    "title": "Session terminée",
+    "body": "{name} a fini de jouer.",
+    "feed": "Voir le feed"
+  },
+  "snapshot": {
+    "since": "Joue depuis {time}",
+    "withInstrument": "{instrument} · joue depuis {time}",
+    "upsellTitle": "Suis la session en direct",
+    "upsellBody": "Avec Pro ou Band, tu vois le chrono, le morceau et le tempo en temps réel, et tu discutes avec le musicien et ses amis."
+  },
+  "chat": {
+    "title": "Chat",
+    "open": "Ouvrir le chat",
+    "close": "Fermer le chat",
+    "empty": "Aucun message pour l'instant. Dis-lui un mot !",
+    "placeholder": "Écris un message",
+    "send": "Envoyer",
+    "failed": "Le message n'est pas parti. Réessaie.",
+    "someone": "Un ami",
+    "ephemeral": "Les messages sont effacés à la fin de la session.",
+    "upsell": "Le chat de ta session"
+  }
+}

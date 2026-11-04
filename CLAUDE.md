@@ -216,6 +216,12 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
   - Resume : total sessions, total minutes, streak, plus long streak, morceau le plus pratique
   - Serie : `computeStreak` (`src/lib/streak.ts`), seule regle de l'app, jours de Paris. Un jour manque ne la casse pas et ne l'augmente pas, deux la cassent. Stats, profil public, badges, rappels et defis passent par la.
 
+### Sessions en direct (`/commu/direct/[id]`)
+- Migration `20261115_live_sessions`. Le chrono reste dans `PracticeSessionProvider` ; `live_sessions` (une ligne par musicien, ecrite par le service role) recopie ce que les amis en voient, `src/lib/actions/live-sessions.ts`. Rien pour qui a coupe `share_sessions`.
+- **Notification** : « X joue en ce moment » (`friend_playing`, `src/lib/notifications/live-sessions.ts`), une minute apres le lancement via `after()` : annuler avant ne previent personne. Cote reception : `profile_private.notify_friends_playing` (Profil > Reglages). « Session terminee » reprend le meme tag et remplace sans bruit le debut pour qui l'a recu (`takeLiveSessionAudience`, `renotify`).
+- **Selon le plan de celui qui regarde** : Pro/Band voient le chrono, le morceau, le tempo, qui regarde et le chat (RLS + Realtime, `useLiveSessionState` / `useLiveAudience` / `useLiveChat`) ; Free n'a aucun droit de lecture et recoit un instantane du serveur (qui, instrument, depuis quand) avec `ProUpsell`. Un musicien Free voit combien d'amis le regardent, sans chat ; ses amis abonnes y discutent entre eux.
+- **Fin** : `ended_at` plutot que suppression (ceux qui regardent recoivent l'UPDATE), messages effaces. Sans nouvelle depuis 12 h (`LIVE_SESSION_TTL_MS`), la session n'est plus en direct ; le cron `practice-reminders` purge les lignes.
+
 ### Mode Practice (`/practice`)
 - Selection de morceau pour pratiquer
 - **Metronome integre** :
@@ -983,7 +989,7 @@ get_practice_leaderboard(p_user_id UUID, p_period TEXT, p_limit INTEGER DEFAULT 
 ## Notifications Push
 
 ### Types de notifications
-friend_request, friend_accepted, song_added, song_mastered, cover_posted, song_wishlisted, setlist_created, band_setlist_created, band_setlist_updated, band_setlist_deleted, band_created, band_joined, band_invitation, challenge_created, challenge_accepted, challenge_completed, challenge_won, jam_session_started, album_reviewed, activity_reaction, activity_comment, exercise_shared, rehearsal_created, rehearsal_reminder, rehearsal_cancelled, band_message
+friend_request, friend_accepted, friend_playing, song_added, song_mastered, cover_posted, song_wishlisted, setlist_created, band_setlist_created, band_setlist_updated, band_setlist_deleted, band_created, band_joined, band_invitation, challenge_created, challenge_accepted, challenge_completed, challenge_won, jam_session_started, album_reviewed, activity_reaction, activity_comment, exercise_shared, rehearsal_created, rehearsal_reminder, rehearsal_cancelled, band_message
 
 ### Infrastructure
 - Service worker custom (`sw-push-handler.js`)

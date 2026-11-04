@@ -192,5 +192,9 @@
   "bandSetlistRehearsalUpdated": {
     "title": "{band}: rehearsal setlist updated",
     "body": "{name} updated \"{setlist}\" for the {date} rehearsal: {changes}"
+  },
+  "friendPlaying": {
+    "title": "{name} is playing right now",
+    "body": "{kind, select, song {\"{title}\"} exercise {Exercise: {title}} other {Free play}}{instrument, select, guitar { on guitar} bass { on bass} drums { on drums} keys { on keys} other {}}. Grab your instrument?"
   }
 }

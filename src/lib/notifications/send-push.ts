@@ -29,6 +29,8 @@ export interface NotificationPayload {
   icon?: string;
   badge?: string;
   tag?: string;
+  /** Sonne meme si une notification porte deja ce tag (sinon, remplacement sans bruit). */
+  renotify?: boolean;
   data?: Record<string, unknown>;
 }
 
@@ -85,6 +87,7 @@ export type NotificationType =
   | 'song_learning'
   | 'badge_unlocked'
   | 'session_completed'
+  | 'friend_playing'
   | 'staff_application'
   | 'staff_application_reviewed'
   | 'blog_comment'
@@ -130,6 +133,7 @@ export async function sendPushNotification(
       icon: payload.icon || '/icons/icon-192x192.svg',
       badge: payload.badge || '/icons/icon-96x96.svg',
       tag: payload.tag || notificationType,
+      renotify: payload.renotify === true,
       data: payload.data || {},
     });
 

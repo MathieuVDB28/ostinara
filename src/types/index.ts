@@ -335,6 +335,8 @@ export interface ProfilePrivate {
   practice_reminders?: boolean;
   /** Partager ses sessions avec ses amis (feed + notification). Vrai par defaut. */
   share_sessions?: boolean;
+  /** Etre prevenu quand un ami lance une session. Vrai par defaut. */
+  notify_friends_playing?: boolean;
 }
 
 // Equipe editoriale : admin (nomme les autres) ou editor (blog + moderation)
@@ -577,6 +579,7 @@ export interface UpdateProfileInput {
   avatar_url?: string;
   practice_reminders?: boolean;
   share_sessions?: boolean;
+  notify_friends_playing?: boolean;
 }
 
 // Inputs pour gestion des favoris

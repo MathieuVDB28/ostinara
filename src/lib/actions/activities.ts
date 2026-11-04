@@ -10,6 +10,7 @@ import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { getLibraryMatches } from "@/lib/actions/songs";
 import { sendPushNotification, sendPushNotificationToMultipleUsers } from "@/lib/notifications";
 import type { LocalizedPayload, NotificationType, PushT } from "@/lib/notifications";
+import { liveSessionTag, takeLiveSessionAudience } from "@/lib/notifications/live-sessions";
 import type {
   ActivityWithDetails,
   ActivityCommentWithProfile,
@@ -35,6 +36,11 @@ function formatStars(rating: unknown, intlLocale: string): string {
 
 /** Au-dela, une session enregistree est une session « ajoutee », pas « terminee ». */
 const SESSION_PAST_AFTER_MS = 3 * 60 * 60 * 1000;
+
+function isPastSession(metadata?: Record<string, unknown>): boolean {
+  const practicedAt = Date.parse(String(metadata?.practiced_at ?? ""));
+  return Number.isFinite(practicedAt) && Date.now() - practicedAt > SESSION_PAST_AFTER_MS;
+}
 
 /** L'instrument d'une activite, pour le `select` ICU des messages push. */
 function instrumentArg(value: unknown): string {
@@ -153,8 +159,7 @@ function getNotificationForActivity(
       }));
     case "session_completed": {
       // Une session ajoutee apres coup ne se dit pas « vient de jouer ».
-      const practicedAt = Date.parse(m("practiced_at"));
-      const past = Number.isFinite(practicedAt) && Date.now() - practicedAt > SESSION_PAST_AFTER_MS;
+      const past = isPastSession(metadata);
       const songs = Array.isArray(metadata?.songs) ? (metadata.songs as { title?: string }[]) : [];
       const exercises = Array.isArray(metadata?.exercises) ? metadata.exercises.length : 0;
       return build("session_completed", "/commu", (t, name) => ({
@@ -255,10 +260,24 @@ async function notifyFriendsOfActivity(
       return;
     }
 
+    // La fin d'une session qui vient d'etre jouee remplace « X joue en ce
+    // moment » : sans bruit pour qui l'a recue, normalement pour les autres.
+    const finishing = input.type === "session_completed" && !isPastSession(input.metadata);
+    const alerted = finishing ? await takeLiveSessionAudience(userId) : null;
+    const payloadFor = (friendId: string): LocalizedPayload => {
+      const base = notification.payload;
+      if (!alerted) return base;
+      return async (t, locale) => ({
+        ...(typeof base === "function" ? await base(t, locale) : base),
+        tag: liveSessionTag(userId),
+        renotify: !alerted.has(friendId),
+      });
+    };
+
     // Envoyer les notifications à tous les amis
     const notifications = friendIds.map((friendId) => ({
       userId: friendId,
-      payload: notification.payload,
+      payload: payloadFor(friendId),
       notificationType: notification.notificationType,
     }));
 

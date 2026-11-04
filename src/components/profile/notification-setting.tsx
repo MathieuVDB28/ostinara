@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlarmClock, Bell, BellOff, Users, type LucideIcon } from "lucide-react";
+import { AlarmClock, Bell, BellOff, Guitar, Users, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePushNotifications } from "@/lib/hooks/use-push-notifications";
 import { updateProfile } from "@/lib/actions/profile";
@@ -188,6 +188,25 @@ export function ShareSessionsSetting({ initialOn }: { initialOn: boolean }) {
       offDescription={t("shareSessionsOff")}
       initialOn={initialOn}
       save={(on) => updateProfile({ share_sessions: on })}
+    />
+  );
+}
+
+/**
+ * Cote reception : etre prevenu quand un ami se met a jouer. C'est la
+ * notification la plus frequente, on doit pouvoir la couper seule.
+ */
+export function FriendsPlayingSetting({ initialOn }: { initialOn: boolean }) {
+  const t = useTranslations("profile.notifications");
+  return (
+    <ProfileToggle
+      id="friends-playing-label"
+      icon={Guitar}
+      label={t("friendsPlaying")}
+      onDescription={t("friendsPlayingOn")}
+      offDescription={t("off")}
+      initialOn={initialOn}
+      save={(on) => updateProfile({ notify_friends_playing: on })}
     />
   );
 }

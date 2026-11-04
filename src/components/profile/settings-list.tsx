@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { LogoutButton } from "@/components/layout/logout-button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { NotificationSetting, PracticeRemindersSetting, ShareSessionsSetting } from "./notification-setting";
+import { FriendsPlayingSetting, NotificationSetting, PracticeRemindersSetting, ShareSessionsSetting } from "./notification-setting";
 import { SubscriptionStatusBadge } from "@/components/subscription";
 import type { UserProfile } from "@/types";
 import { Icon } from "@/components/ui/icon";
@@ -138,6 +138,7 @@ export function SettingsList({ profile }: SettingsListProps) {
           <NotificationSetting />
           <PracticeRemindersSetting initialOn={profile.practice_reminders !== false} />
           <ShareSessionsSetting initialOn={profile.share_sessions !== false} />
+          <FriendsPlayingSetting initialOn={profile.notify_friends_playing !== false} />
         </div>
       </section>
 

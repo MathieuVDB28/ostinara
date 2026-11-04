@@ -22,6 +22,7 @@ import jam from "./jam.json";
 import landing from "./landing.json";
 import legal from "./legal.json";
 import library from "./library.json";
+import live from "./live.json";
 import media from "./media.json";
 import meta from "./meta.json";
 import metronome from "./metronome.json";
@@ -67,6 +68,7 @@ const messages = {
   "landing": landing,
   "legal": legal,
   "library": library,
+  "live": live,
   "media": media,
   "meta": meta,
   "metronome": metronome,

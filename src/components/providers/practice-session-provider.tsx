@@ -16,8 +16,19 @@ import { getSongs } from "@/lib/actions/songs";
 import { getExercises } from "@/lib/actions/exercises";
 import { AddSessionModal } from "@/components/progress/add-session-modal";
 import { SessionSavePrompt } from "@/components/play/session-save-prompt";
-import { Maximize2, Minimize2, Pause, Play } from "lucide-react";
+import { Maximize2, MessageCircle, Minimize2, Pause, Play, X } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
+import { ProUpsell } from "@/components/subscription/pro-upsell";
+import { LiveChat } from "@/components/live/live-chat";
+import {
+  endLiveSession,
+  getLiveMessages,
+  startLiveSession,
+  updateLiveSession,
+  type LiveSessionState,
+} from "@/lib/actions/live-sessions";
+import { useLiveAudience, useLiveChat } from "@/lib/hooks/use-live-session";
+import { createClient } from "@/lib/supabase/client";
 import type { ExerciseCategory, ExerciseWithProgress, Song } from "@/types";
 import type { SaveSessionItemInput } from "@/lib/actions/setlists";
 
@@ -75,6 +86,12 @@ interface StoredSession {
    * d'en faire une routine ou une setlist. Absent pour un travail a l'unite.
    */
   programItems?: SaveSessionItemInput[];
+  /** L'instant du lancement : ce chrono-ci, meme apres des pauses. */
+  launchedAt?: number;
+  /** La session en direct vue par les amis, si elle a ete ouverte. */
+  liveId?: string | null;
+  /** Le musicien peut-il lire et ecrire dans le chat (son plan). */
+  liveCanChat?: boolean;
 }
 
 /** Une ligne de fin de session : un morceau, son temps, son tempo. */
@@ -260,6 +277,20 @@ function elapsedOf(session: StoredSession): number {
   return session.accumulatedMs;
 }
 
+/** Ce que les amis voient de la session, a cet instant. */
+function liveStateOf(session: StoredSession): LiveSessionState {
+  return {
+    status: session.status === "paused" ? "paused" : "running",
+    elapsedMs: elapsedOf(session),
+    songId: session.songId,
+    exerciseName: session.exerciseKey ? session.exerciseInfo?.[session.exerciseKey]?.name ?? null : null,
+    bpm: session.bpm,
+  };
+}
+
+/** Le tempo bouge par a-coups : on attend qu'il se pose avant de l'envoyer. */
+const LIVE_SYNC_DEBOUNCE_MS = 1500;
+
 // ---------------------------------------------------------------------------
 
 export interface StartOptions {
@@ -299,6 +330,10 @@ interface PracticeSessionValue {
   isFocused: boolean;
   openFocus: () => void;
   closeFocus: () => void;
+  /** La session en direct, et ceux qui la regardent. */
+  liveId: string | null;
+  liveCanChat: boolean;
+  liveViewerCount: number;
   /** Ouvre la modale vide, pour une saisie manuelle. */
   openManualEntry: () => void;
   /**
@@ -390,9 +425,11 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
   const start = useCallback((options?: StartOptions) => {
     const exercise = options?.songId ? null : options?.exercise ?? null;
     const exerciseKey = exercise ? exerciseKeyOf(exercise) : null;
+    const launchedAt = Date.now();
     setSession(() => ({
       status: "running",
-      startedAt: Date.now(),
+      startedAt: launchedAt,
+      launchedAt,
       accumulatedMs: 0,
       songId: options?.songId ?? null,
       exerciseId: options?.exerciseId ?? null,
@@ -409,6 +446,19 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
           : undefined,
     }));
     if (options?.focus) setFocused(true);
+
+    // Le direct s'ouvre a cote, sans retarder le chrono. S'il revient apres
+    // une annulation, on le referme : sinon les amis seraient prevenus.
+    startLiveSession(liveStateOf(getSnapshot()))
+      .then((live) => {
+        if (!live) return;
+        if (getSnapshot().launchedAt !== launchedAt) {
+          void endLiveSession(live.id);
+          return;
+        }
+        setSession((current) => ({ ...current, liveId: live.id, liveCanChat: live.canChat }));
+      })
+      .catch((error) => console.error("Error starting live session:", error));
   }, []);
 
   const pause = useCallback(() => {
@@ -444,6 +494,7 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
     if (key && current.bpm) bpms[key] = current.bpm;
     const exerciseTimes = sessionExerciseTimes(current, bpms);
 
+    if (current.liveId) void endLiveSession(current.liveId).catch(() => undefined);
     setSession(() => IDLE);
     setFocused(false);
     void loadSongs();
@@ -465,6 +516,8 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
   }, [loadSongs, loadExercises]);
 
   const cancel = useCallback(() => {
+    const { liveId } = getSnapshot();
+    if (liveId) void endLiveSession(liveId).catch(() => undefined);
     setSession(() => IDLE);
     setFocused(false);
   }, []);
@@ -524,6 +577,18 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
     setSession((current) => ({ ...current, bpm }));
   }, []);
 
+  // Morceau change, pause, tempo : les amis qui regardent le voient.
+  const liveId = session.liveId ?? null;
+  useEffect(() => {
+    if (!liveId || session.status === "idle") return;
+    const timeout = setTimeout(() => {
+      updateLiveSession(liveId, liveStateOf(getSnapshot())).catch(() => undefined);
+    }, LIVE_SYNC_DEBOUNCE_MS);
+    return () => clearTimeout(timeout);
+  }, [liveId, session.status, session.songId, session.exerciseKey, session.bpm]);
+
+  const liveViewerCount = useLiveAudience(liveId).length;
+
   const openManualEntry = useCallback(() => {
     void loadSongs();
     void loadExercises();
@@ -557,6 +622,9 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       isFocused: focused && session.status !== "idle",
       openFocus,
       closeFocus,
+      liveId,
+      liveCanChat: session.liveCanChat === true,
+      liveViewerCount,
       openManualEntry,
       openPastSession,
     }),
@@ -569,6 +637,9 @@ export function PracticeSessionProvider({ children }: { children: ReactNode }) {
       focused,
       openFocus,
       closeFocus,
+      liveId,
+      session.liveCanChat,
+      liveViewerCount,
       elapsedMs,
       start,
       pause,
@@ -660,7 +731,8 @@ function formatElapsed(seconds: number): string {
  */
 function SessionBar() {
   const t = useTranslations("practice.sessionBar");
-  const { status, elapsedSeconds, bpm, song, pause, resume, stop, cancel, openFocus } =
+  const tLive = useTranslations("live");
+  const { status, elapsedSeconds, bpm, song, pause, resume, stop, cancel, openFocus, liveViewerCount } =
     usePracticeSession();
 
   return (
@@ -690,6 +762,7 @@ function SessionBar() {
             {bpm !== null && (
               <span className="tabular font-semibold text-primary"> · {bpm} BPM</span>
             )}
+            {liveViewerCount > 0 && <span> · {tLive("hostWatching", { count: liveViewerCount })}</span>}
           </span>
           <Maximize2 className="hidden h-4 w-4 shrink-0 text-muted-foreground sm:block" strokeWidth={2} aria-hidden="true" />
         </button>
@@ -733,8 +806,21 @@ function SessionBar() {
  */
 function SessionFocus() {
   const t = useTranslations("practice.sessionBar");
-  const { status, elapsedSeconds, bpm, song, pause, resume, stop, cancel, closeFocus } =
-    usePracticeSession();
+  const tLive = useTranslations("live");
+  const {
+    status,
+    elapsedSeconds,
+    bpm,
+    song,
+    pause,
+    resume,
+    stop,
+    cancel,
+    closeFocus,
+    liveId,
+    liveCanChat,
+    liveViewerCount,
+  } = usePracticeSession();
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -788,7 +874,20 @@ function SessionFocus() {
             </div>
           </div>
         )}
+
+        {liveViewerCount > 0 && (
+          <p className="mt-4 text-sm font-medium text-muted-foreground">
+            {tLive("hostWatching", { count: liveViewerCount })}
+          </p>
+        )}
       </div>
+
+      {liveId && liveCanChat && <HostChat sessionId={liveId} />}
+      {liveId && !liveCanChat && liveViewerCount > 0 && (
+        <div className="mx-auto mb-3 w-full max-w-md">
+          <ProUpsell compact feature={tLive("chat.upsell")} description="" />
+        </div>
+      )}
 
       <div className="mx-auto grid w-full max-w-md grid-cols-[auto_1fr] gap-2">
         <button
@@ -816,5 +915,84 @@ function SessionFocus() {
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * Le chat, cote musicien : replie par defaut, il joue. Un compteur dit qu'on
+ * lui a ecrit, sans son ni vibration.
+ */
+function HostChat({ sessionId }: { sessionId: string }) {
+  const t = useTranslations("live.chat");
+  const [open, setOpen] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [seen, setSeen] = useState(0);
+  const { messages, send, setMessages } = useLiveChat(sessionId, []);
+
+  useEffect(() => {
+    let active = true;
+    void createClient()
+      .auth.getUser()
+      .then(({ data }) => {
+        if (active) setUserId(data.user?.id ?? null);
+      });
+    // Le plein ecran se referme et se rouvre : on reprend le fil.
+    getLiveMessages(sessionId)
+      .then((loaded) => {
+        if (!active) return;
+        setMessages(loaded);
+        setSeen(loaded.length);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [sessionId, setMessages]);
+
+  const unread = open ? 0 : Math.max(0, messages.length - seen);
+  const toggle = () => {
+    setSeen(messages.length);
+    setOpen((value) => !value);
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={toggle}
+        className="mx-auto mb-3 flex min-h-[44px] items-center gap-2 rounded-full border border-border px-4 text-sm font-semibold transition-colors hover:bg-accent"
+      >
+        <MessageCircle className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+        {t("open")}
+        {unread > 0 && (
+          <span className="tabular rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">
+            {unread}
+          </span>
+        )}
+      </button>
+    );
+  }
+
+  return (
+    <section
+      aria-label={t("title")}
+      className="absolute inset-x-0 bottom-0 z-10 flex h-[70%] flex-col rounded-t-2xl border-t border-border bg-card px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-3"
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold">{t("title")}</h2>
+          <p className="text-xs text-muted-foreground">{t("ephemeral")}</p>
+        </div>
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={t("close")}
+          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-accent"
+        >
+          <X className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+        </button>
+      </div>
+      <LiveChat messages={messages} currentUserId={userId ?? ""} onSend={send} className="flex-1" />
+    </section>
   );
 }

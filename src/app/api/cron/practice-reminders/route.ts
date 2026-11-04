@@ -6,6 +6,7 @@ import {
   pickReminder,
   type ReminderInput,
 } from "@/lib/notifications/practice-reminders";
+import { LIVE_SESSION_TTL_MS } from "@/lib/live-session";
 import { isGoalDone, type MeasureInput } from "@/lib/weekly-plan-measure";
 import type { PracticeSession, Song, WeeklyGoal } from "@/types";
 
@@ -69,6 +70,15 @@ export async function GET(request: NextRequest) {
   }
 
   const now = new Date();
+
+  // Les sessions en direct finies ou oubliees, et leur chat avec elles.
+  const liveCutoff = new Date(now.getTime() - LIVE_SESSION_TTL_MS).toISOString();
+  const { error: liveError } = await supabaseAdmin
+    .from("live_sessions")
+    .delete()
+    .or(`updated_at.lt.${liveCutoff},ended_at.lt.${liveCutoff}`);
+  if (liveError) console.error("[practice-reminders] live sessions:", liveError);
+
   const today = parisDate(now);
   const weekday = parisWeekday(now);
   const isPlanDay = weekday === 4;
