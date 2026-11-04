@@ -214,6 +214,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
   - Distribution des humeurs (pie chart)
   - Repartition du temps par morceau (bar chart)
   - Resume : total sessions, total minutes, streak, plus long streak, morceau le plus pratique
+  - Serie : `computeStreak` (`src/lib/streak.ts`), seule regle de l'app, jours de Paris. Un jour manque ne la casse pas et ne l'augmente pas, deux la cassent. Stats, profil public, badges, rappels et defis passent par la.
 
 ### Mode Practice (`/practice`)
 - Selection de morceau pour pratiquer
@@ -289,7 +290,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - **3 onglets** : Actifs / Invitations / Leaderboard
 - 3 types de defis :
   - `practice_time` : temps de pratique sur une periode
-  - `streak` : jours consecutifs de pratique
+  - `streak` : plus longue serie sur la duree du defi (regle de `src/lib/streak.ts`)
   - `song_mastery` : maitriser un morceau specifique
 - Duree configurable en jours
 - Suivi automatique de la progression (sync avec les sessions de pratique)

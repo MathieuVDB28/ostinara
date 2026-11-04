@@ -1,4 +1,5 @@
 import { after } from "next/server";
+import { STREAK_MAX_GAP, dayNumber, parisDay } from "@/lib/streak";
 import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
@@ -36,22 +37,6 @@ function countMetric(dates: string[]): Metric {
   };
 }
 
-const PARIS_DAY = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Europe/Paris",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
-
-/** « 2026-10-15 », le jour a Paris : une session a 23 h 30 compte pour ce soir-la. */
-function parisDay(iso: string): string {
-  return PARIS_DAY.format(new Date(iso));
-}
-
-function dayNumber(day: string): number {
-  return Math.round(Date.parse(`${day}T00:00:00Z`) / 86_400_000);
-}
-
 function getServiceRoleSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -68,7 +53,7 @@ interface SessionRow {
   bpm_achieved: number | null;
 }
 
-/** La plus longue serie de jours consecutifs, et quand chaque longueur a ete atteinte. */
+/** La plus longue serie (un jour de creux tolere), et quand chaque longueur a ete atteinte. */
 function streakMetric(sessions: SessionRow[]): Metric {
   // Le premier instant de chaque jour joue, dans l'ordre.
   const firstByDay = new Map<string, string>();
@@ -82,7 +67,7 @@ function streakMetric(sessions: SessionRow[]): Metric {
   let previous: number | null = null;
   for (const [day, iso] of firstByDay) {
     const n = dayNumber(day);
-    run = previous !== null && n - previous === 1 ? run + 1 : 1;
+    run = previous !== null && n - previous <= STREAK_MAX_GAP ? run + 1 : 1;
     previous = n;
     if (run > reached.length) reached.push(iso);
   }

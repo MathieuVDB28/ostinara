@@ -6,6 +6,7 @@ import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import { addSongToLibrary } from "./songs";
 import { sendPushNotification } from "@/lib/notifications";
+import { computeStreak, parisDay } from "@/lib/streak";
 import type {
   Challenge,
   ChallengeWithDetails,
@@ -502,6 +503,20 @@ export async function updateChallengeProgress(
     (allProgress ?? []).map((p) => [p.challenge_id, p])
   );
 
+  // Les sessions des defis de serie, lues une fois pour tous.
+  const streakStarts = challenges
+    .filter((c) => c.challenge_type === "streak" && c.starts_at)
+    .map((c) => c.starts_at as string)
+    .sort();
+  const { data: sessions } =
+    sessionMinutes && streakStarts.length > 0
+      ? await supabase
+          .from("practice_sessions")
+          .select("practiced_at")
+          .eq("user_id", user.id)
+          .gte("practiced_at", streakStarts[0])
+      : { data: [] as { practiced_at: string }[] };
+
   // Les ecritures sont accumulees puis envoyees en parallele en fin de boucle.
   const writes: PromiseLike<unknown>[] = [];
 
@@ -518,28 +533,21 @@ export async function updateChallengeProgress(
     }
 
     if (challenge.challenge_type === "streak" && sessionMinutes) {
-      const today = new Date().toISOString().split("T")[0];
-      const lastDate = progress.streak_last_date;
-
-      if (!lastDate) {
-        // Premier jour de streak
-        updates.streak_days = 1;
-        updates.streak_last_date = today;
-      } else if (lastDate !== today) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split("T")[0];
-
-        if (lastDate === yesterdayStr) {
-          // Jour consécutif
-          updates.streak_days = (progress.streak_days || 0) + 1;
-          updates.streak_last_date = today;
-        } else if (lastDate < yesterdayStr) {
-          // Streak cassé
-          updates.streak_days = 1;
-          updates.streak_last_date = today;
-        }
-      }
+      /*
+       * Recalculee depuis les sessions du defi : une session passee compte
+       * pour son jour, et la meilleure serie reste acquise meme si elle
+       * s'est cassee depuis (le gagnant est « la plus longue serie »).
+       */
+      const days = (sessions ?? [])
+        .filter(
+          (session) =>
+            Date.parse(session.practiced_at) >= Date.parse(challenge.starts_at) &&
+            (!challenge.ends_at || Date.parse(session.practiced_at) <= Date.parse(challenge.ends_at))
+        )
+        .map((session) => parisDay(session.practiced_at))
+        .sort();
+      updates.streak_days = computeStreak(days).longest;
+      updates.streak_last_date = days[days.length - 1] ?? null;
     }
 
     if (challenge.challenge_type === "song_mastery" && songMasteredId) {

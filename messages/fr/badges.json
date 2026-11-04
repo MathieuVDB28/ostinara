@@ -33,7 +33,7 @@
     },
     "serie": {
       "title": "Régularité",
-      "goal": "Joue {count} jours d'affilée"
+      "goal": "Tiens une série de {count} jours"
     },
     "heures": {
       "title": "Corne aux doigts",

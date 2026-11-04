@@ -1,6 +1,7 @@
 "use server";
 
 import { PUBLIC_PROFILE_COLUMNS } from "@/lib/public-profile";
+import { computeStreak, mondayOf, parisDay } from "@/lib/streak";
 import { PUBLIC_GEAR_COLUMNS } from "@/lib/gear-columns";
 import { signCoverMedia } from "@/lib/storage/cover-media";
 import { PROFILE_PRIVATE_SELECT, privateRow } from "@/lib/profile-private";
@@ -399,45 +400,13 @@ export async function getPublicProfile(userId: string): Promise<PublicProfile | 
     const totalSessions = new Set(sessions.map((s) => s.session_key)).size;
     const totalMinutes = sessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
-    const startOfWeek = new Date();
-    startOfWeek.setHours(0, 0, 0, 0);
-    // Le lundi, comme le reste de l'app (getDay() rend 0 le dimanche).
-    startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
+    // Depuis lundi, a l'heure de Paris, comme le reste de l'app.
+    const weekStart = mondayOf(parisDay());
     const minutesThisWeek = sessions
-      .filter((s) => new Date(s.practiced_at) >= startOfWeek)
+      .filter((s) => parisDay(s.practiced_at) >= weekStart)
       .reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
-    // Streak calculation
-    const uniqueDays = [...new Set(
-      sessions.map((s) => new Date(s.practiced_at).toDateString())
-    )].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-
-    let currentStreak = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    for (let i = 0; i < uniqueDays.length; i++) {
-      const dayDate = new Date(uniqueDays[i]);
-      dayDate.setHours(0, 0, 0, 0);
-
-      if (i === 0) {
-        const diffDays = Math.floor((today.getTime() - dayDate.getTime()) / (1000 * 60 * 60 * 24));
-        if (diffDays <= 1) {
-          currentStreak = 1;
-        } else {
-          break;
-        }
-      } else {
-        const prevDate = new Date(uniqueDays[i - 1]);
-        prevDate.setHours(0, 0, 0, 0);
-        const diffDays = Math.floor((prevDate.getTime() - dayDate.getTime()) / (1000 * 60 * 60 * 24));
-        if (diffDays === 1) {
-          currentStreak++;
-        } else {
-          break;
-        }
-      }
-    }
+    const { current: currentStreak } = computeStreak(sessions.map((s) => parisDay(s.practiced_at)));
 
     practiceStats = { currentStreak, totalSessions, totalMinutes, minutesThisWeek };
   }

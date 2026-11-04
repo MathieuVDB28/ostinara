@@ -33,7 +33,7 @@
     },
     "serie": {
       "title": "Consistency",
-      "goal": "Play {count} days in a row"
+      "goal": "Keep a {count}-day streak"
     },
     "heures": {
       "title": "Calloused fingers",

@@ -10,6 +10,7 @@
  */
 
 import type { PushT } from "./send-push";
+import { computeStreak } from "@/lib/streak";
 
 export type ReminderType = "reminder_streak" | "reminder_plan" | "reminder_song" | "reminder_pause";
 
@@ -67,17 +68,6 @@ function shift(date: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** Jours consecutifs joues jusqu'a hier inclus. */
-export function streakUntilYesterday(days: Set<string>, today: string): number {
-  let count = 0;
-  let cursor = shift(today, -1);
-  while (days.has(cursor)) {
-    count++;
-    cursor = shift(cursor, -1);
-  }
-  return count;
-}
-
 export function pickReminder(input: ReminderInput): Reminder | null {
   const { today, weekday, practiceDays, learningSongs, remainingGoals, recent } = input;
 
@@ -92,9 +82,11 @@ export function pickReminder(input: ReminderInput): Reminder | null {
       .filter((r) => r.type === type)
       .reduce<string | null>((latest, r) => (!latest || r.date > latest ? r.date : latest), null);
 
-  // 1. Serie en danger — le plus pressant : elle se perd ce soir.
-  const streak = streakUntilYesterday(practiceDays, today);
-  if (streak >= STREAK_MIN) {
+  // 1. Serie en danger — le plus pressant : hier etait le jour de creux,
+  //    elle se perd ce soir. Rien la veille : un creux ne la menace pas encore.
+  const streak = computeStreak(practiceDays, today).current;
+  const lastChance = !practiceDays.has(shift(today, -1)) && practiceDays.has(shift(today, -2));
+  if (lastChance && streak >= STREAK_MIN) {
     return {
       type: "reminder_streak",
       text: (t) => ({ title: t("reminder.streakTitle", { count: streak }), body: t("reminder.streakBody") }),

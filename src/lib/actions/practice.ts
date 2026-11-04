@@ -7,6 +7,7 @@ import { updateChallengeProgress } from "./challenges";
 import { createActivity } from "./activities";
 import { derivedProgressPercent } from "@/lib/song-progress";
 import { getMyPrimaryInstrument } from "@/lib/instruments-server";
+import { computeStreak, mondayOf, parisDay } from "@/lib/streak";
 import type {
   SongBpmPoint,
   PracticeSession,
@@ -795,60 +796,16 @@ export async function getPracticeStats(): Promise<PracticeStats> {
   const totalMinutes = sessions.reduce((sum, s) => sum + s.duration_minutes, 0);
   const averageSessionLength = Math.round(totalMinutes / totalSessions);
 
-  // Sessions cette semaine
-  const startOfWeek = new Date();
-  startOfWeek.setHours(0, 0, 0, 0);
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-
-  const sessionsThisWeek = sessions.filter(
-    s => new Date(s.practiced_at) >= startOfWeek
-  );
+  // Sessions cette semaine : depuis lundi, a l'heure de Paris.
+  const weekStart = mondayOf(parisDay());
+  const sessionsThisWeek = sessions.filter((s) => parisDay(s.practiced_at) >= weekStart);
   const minutesThisWeek = sessionsThisWeek.reduce(
     (sum, s) => sum + s.duration_minutes, 0
   );
 
-  // Calculer le streak (jours consécutifs de pratique)
-  const uniqueDays = [...new Set(
-    sessions.map(s => new Date(s.practiced_at).toDateString())
-  )].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-
-  let currentStreak = 0;
-  let longestStreak = 0;
-  let tempStreak = 0;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  for (let i = 0; i < uniqueDays.length; i++) {
-    const dayDate = new Date(uniqueDays[i]);
-    dayDate.setHours(0, 0, 0, 0);
-
-    if (i === 0) {
-      // Vérifier si la première date est aujourd'hui ou hier
-      const diffDays = Math.floor((today.getTime() - dayDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays <= 1) {
-        tempStreak = 1;
-        currentStreak = 1;
-      } else {
-        // Streak cassé, on ne compte que pour le longest
-        tempStreak = 1;
-      }
-    } else {
-      const prevDate = new Date(uniqueDays[i - 1]);
-      prevDate.setHours(0, 0, 0, 0);
-      const diffDays = Math.floor((prevDate.getTime() - dayDate.getTime()) / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 1) {
-        tempStreak++;
-        if (i < uniqueDays.length && currentStreak > 0) {
-          currentStreak = tempStreak;
-        }
-      } else {
-        longestStreak = Math.max(longestStreak, tempStreak);
-        tempStreak = 1;
-      }
-    }
-  }
-  longestStreak = Math.max(longestStreak, tempStreak);
+  const { current: currentStreak, longest: longestStreak } = computeStreak(
+    sessions.map((s) => parisDay(s.practiced_at))
+  );
 
   /*
    * Morceau le plus pratique : on compte sur les identifiants, puis on lit
