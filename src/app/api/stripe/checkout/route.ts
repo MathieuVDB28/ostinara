@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { getStripeServer } from '@/lib/stripe/server';
-import { getPriceIdFromEnv, BillingInterval } from '@/lib/stripe/config';
+import { getPlanFromPriceId, getPriceIdFromEnv, BillingInterval } from '@/lib/stripe/config';
 import { UserPlan } from '@/types';
 
 export async function POST(req: NextRequest) {
@@ -35,14 +35,13 @@ export async function POST(req: NextRequest) {
       supabase.from('profiles').select('plan').eq('id', user.id).single(),
       supabase
         .from('profile_private')
-        .select('stripe_customer_id, stripe_subscription_id')
+        .select('stripe_customer_id')
         .eq('user_id', user.id)
         .maybeSingle(),
     ]);
     const profile = {
       plan: publicProfile?.plan,
       stripe_customer_id: privateProfile?.stripe_customer_id,
-      stripe_subscription_id: privateProfile?.stripe_subscription_id,
     };
 
     // Sur la place d'un autre : un abonnement ecraserait ce plan, et la fin de
@@ -79,47 +78,58 @@ export async function POST(req: NextRequest) {
         .upsert({ user_id: user.id, stripe_customer_id: customerId }, { onConflict: 'user_id' });
     }
 
-    // Si l'utilisateur a déjà un abonnement actif, on fait un changement de plan
-    if (profile?.stripe_subscription_id) {
-      try {
-        const subscription = await stripe.subscriptions.retrieve(profile.stripe_subscription_id);
+    // Stripe fait foi, pas la base : si un webhook s'est perdu, la base ne sait
+    // rien de l'abonnement en cours, et un nouveau paiement ferait deux
+    // abonnements debites chaque mois. Si Stripe ne repond pas, on ne vend rien.
+    const { data: subscriptions } = await stripe.subscriptions.list({
+      customer: customerId,
+      status: 'all',
+      limit: 20,
+    });
+    const current = subscriptions.find((subscription) =>
+      ['active', 'trialing', 'past_due', 'unpaid', 'paused'].includes(subscription.status)
+    );
 
-        if (subscription.status === 'active' || subscription.status === 'trialing') {
-          // Changer de plan avec prorata
-          const currentPlan = profile.plan as 'free' | 'pro' | 'band';
-
-          // Deja sur ce plan et ce rythme : rien a changer. /pricing propose
-          // tous les plans a tout le monde, et remplacer le prix ferait passer
-          // un ancien abonne Band de 19 a 24 EUR sans qu'il l'ait demande.
-          const currentInterval = subscription.items.data[0].price.recurring?.interval;
-          const sameInterval = currentInterval === (interval === 'yearly' ? 'year' : 'month');
-          if (plan === currentPlan && sameInterval) {
-            return NextResponse.json({ error: await tErr("alreadyOnPlan") }, { status: 409 });
-          }
-
-          // Déterminer si c'est un upgrade ou downgrade
-          const planOrder: Record<'free' | 'pro' | 'band', number> = { free: 0, pro: 1, band: 2 };
-          const isDowngrade = planOrder[plan] < planOrder[currentPlan];
-
-          await stripe.subscriptions.update(profile.stripe_subscription_id, {
-            items: [{
-              id: subscription.items.data[0].id,
-              price: priceId,
-            }],
-            proration_behavior: isDowngrade ? 'always_invoice' : 'create_prorations',
-          });
-
-          return NextResponse.json({
-            success: true,
-            message: await tErr("subscriptionUpdated"),
-            action: 'updated'
-          });
-        }
-      } catch {
-        // L'abonnement n'existe plus ou est annulé, on continue avec une nouvelle session
-        console.log('Existing subscription not found or canceled, creating new checkout session');
+    if (current) {
+      if (current.status !== 'active' && current.status !== 'trialing') {
+        return NextResponse.json({ error: await tErr("subscriptionPastDue") }, { status: 409 });
       }
+
+      const item = current.items.data[0];
+      const currentPlan = getPlanFromPriceId(item.price.id);
+
+      // Deja sur ce plan et ce rythme : rien a changer. /pricing propose tous
+      // les plans a tout le monde, et remplacer le prix ferait passer un ancien
+      // abonne Band de 19 a 24 EUR sans qu'il l'ait demande.
+      const sameInterval = item.price.recurring?.interval === (interval === 'yearly' ? 'year' : 'month');
+      if (plan === currentPlan && sameInterval) {
+        return NextResponse.json({ error: await tErr("alreadyOnPlan") }, { status: 409 });
+      }
+
+      // Changer de plan avec prorata
+      const planOrder: Record<UserPlan, number> = { free: 0, pro: 1, band: 2 };
+      const isDowngrade = planOrder[plan] < planOrder[currentPlan];
+
+      await stripe.subscriptions.update(current.id, {
+        items: [{ id: item.id, price: priceId }],
+        proration_behavior: isDowngrade ? 'always_invoice' : 'create_prorations',
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: await tErr("subscriptionUpdated"),
+        action: 'updated',
+      });
     }
+
+    // Une page de paiement restee ouverte dans un autre onglet ne doit pas
+    // pouvoir creer un second abonnement.
+    const { data: openSessions } = await stripe.checkout.sessions.list({
+      customer: customerId,
+      status: 'open',
+      limit: 10,
+    });
+    await Promise.all(openSessions.map((session) => stripe.checkout.sessions.expire(session.id)));
 
     // Créer une session Checkout pour un nouvel abonnement
     const session = await stripe.checkout.sessions.create({

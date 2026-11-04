@@ -172,5 +172,6 @@
   "seatAcceptFailed": "The seat couldn't be accepted. The invitation may no longer be valid.",
   "seatReleaseFailed": "The seat couldn't be released.",
   "seatLeaveFirst": "You hold a seat on a Band plan: leave it before subscribing.",
-  "alreadyOnPlan": "You're already on this plan."
+  "alreadyOnPlan": "You're already on this plan.",
+  "subscriptionPastDue": "Your last payment failed: update your payment method before changing plans."
 }

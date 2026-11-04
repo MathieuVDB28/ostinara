@@ -203,7 +203,8 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  const subscriptionId = (invoice as unknown as { subscription?: string }).subscription;
+  const parentSubscription = invoice.parent?.subscription_details?.subscription;
+  const subscriptionId = typeof parentSubscription === 'string' ? parentSubscription : parentSubscription?.id;
   if (!subscriptionId) return;
 
   const subscription = await getStripeServer().subscriptions.retrieve(subscriptionId);
@@ -247,9 +248,9 @@ async function updateUserSubscription(userId: string, subscription: Stripe.Subsc
   }
 
   const plan = getPlanFromPriceId(priceId);
-  // Cast to access current_period_end which exists on subscription but TypeScript doesn't recognize
-  const subData = subscription as unknown as { current_period_end: number };
-  const periodEnd = new Date(subData.current_period_end * 1000).toISOString();
+  // La fin de periode est portee par l'element d'abonnement depuis l'API 2025 :
+  // lue sur l'abonnement, elle donnait une date invalide et le webhook plantait.
+  const periodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString();
 
   const { error } = await writePlanAndNotifySeats(userId, plan, {
     stripe_subscription_id: subscription.id,

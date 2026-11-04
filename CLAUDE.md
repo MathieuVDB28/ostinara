@@ -348,6 +348,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 ### Abonnement (`/account/subscription`)
 - Statut actuel
 - **Places du plan Band** (migration `20261117_band_plan_seats`, `src/lib/actions/band-seats.ts`) : le titulaire offre 2 places a ses amis ou aux membres de ses groupes, l'invite accepte (il doit etre en Free, une seule place a la fois). `profiles.plan` reste la seule source des droits : des triggers le mettent a `band` quand la place est prise, a `free` quand elle est rendue ou quand le titulaire quitte le plan Band. Ne pas ecrire ce plan ailleurs pour un invite.
+- **Webhook Stripe** (`/api/stripe/webhooks`) : seul moyen d'appliquer un paiement au plan, a brancher sur chaque compte Stripe (test puis live). L'achat interroge Stripe, pas la base, pour eviter un second abonnement.
 - **Prix Stripe** : `STRIPE_PRICE_BAND_SHARED_*` pour les nouveaux abonnements ; `STRIPE_PRICE_BAND_MONTHLY/YEARLY` restent reconnus (anciens abonnes), ne pas les retirer.
 - Portal Stripe pour gestion
 - Upgrade/downgrade
