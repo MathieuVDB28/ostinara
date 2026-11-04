@@ -171,5 +171,6 @@
   "seatPlanConflict": "You already have a plan: cancel it and wait for the end of your billing period to accept this seat.",
   "seatAcceptFailed": "The seat couldn't be accepted. The invitation may no longer be valid.",
   "seatReleaseFailed": "The seat couldn't be released.",
-  "seatLeaveFirst": "You hold a seat on a Band plan: leave it before subscribing."
+  "seatLeaveFirst": "You hold a seat on a Band plan: leave it before subscribing.",
+  "alreadyOnPlan": "You're already on this plan."
 }

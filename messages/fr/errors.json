@@ -171,5 +171,6 @@
   "seatPlanConflict": "Tu as déjà un plan : résilie-le et attends la fin de ta période pour accepter cette place.",
   "seatAcceptFailed": "La place n'a pas pu être acceptée. L'invitation n'est peut-être plus valable.",
   "seatReleaseFailed": "La place n'a pas pu être libérée.",
-  "seatLeaveFirst": "Tu occupes une place sur un plan Band : quitte-la avant de t'abonner."
+  "seatLeaveFirst": "Tu occupes une place sur un plan Band : quitte-la avant de t'abonner.",
+  "alreadyOnPlan": "Tu es déjà sur ce plan."
 }

@@ -88,6 +88,15 @@ export async function POST(req: NextRequest) {
           // Changer de plan avec prorata
           const currentPlan = profile.plan as 'free' | 'pro' | 'band';
 
+          // Deja sur ce plan et ce rythme : rien a changer. /pricing propose
+          // tous les plans a tout le monde, et remplacer le prix ferait passer
+          // un ancien abonne Band de 19 a 24 EUR sans qu'il l'ait demande.
+          const currentInterval = subscription.items.data[0].price.recurring?.interval;
+          const sameInterval = currentInterval === (interval === 'yearly' ? 'year' : 'month');
+          if (plan === currentPlan && sameInterval) {
+            return NextResponse.json({ error: await tErr("alreadyOnPlan") }, { status: 409 });
+          }
+
           // Déterminer si c'est un upgrade ou downgrade
           const planOrder: Record<'free' | 'pro' | 'band', number> = { free: 0, pro: 1, band: 2 };
           const isDowngrade = planOrder[plan] < planOrder[currentPlan];
