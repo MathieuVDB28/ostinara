@@ -340,13 +340,15 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - Statut abonnement
 
 ### Pricing (`/pricing`)
-- 3 plans : Free, Pro (9EUR/mois ou 86EUR/an), Band (19EUR/mois ou 182EUR/an)
+- 3 plans : Free, Pro (9EUR/mois ou 86EUR/an), Band a 3 personnes (24EUR/mois ou 230EUR/an ; les abonnes a 19 ou 182EUR gardent leur tarif et ont aussi leurs places)
 - Toggle mensuel/annuel
 - Checkout Stripe
 - FAQ
 
 ### Abonnement (`/account/subscription`)
 - Statut actuel
+- **Places du plan Band** (migration `20261117_band_plan_seats`, `src/lib/actions/band-seats.ts`) : le titulaire offre 2 places a ses amis ou aux membres de ses groupes, l'invite accepte (il doit etre en Free, une seule place a la fois). `profiles.plan` reste la seule source des droits : des triggers le mettent a `band` quand la place est prise, a `free` quand elle est rendue ou quand le titulaire quitte le plan Band. Ne pas ecrire ce plan ailleurs pour un invite.
+- **Prix Stripe** : `STRIPE_PRICE_BAND_SHARED_*` pour les nouveaux abonnements ; `STRIPE_PRICE_BAND_MONTHLY/YEARLY` restent reconnus (anciens abonnes), ne pas les retirer.
 - Portal Stripe pour gestion
 - Upgrade/downgrade
 
@@ -1016,6 +1018,8 @@ STRIPE_PRICE_PRO_MONTHLY=
 STRIPE_PRICE_PRO_YEARLY=
 STRIPE_PRICE_BAND_MONTHLY=
 STRIPE_PRICE_BAND_YEARLY=
+STRIPE_PRICE_BAND_SHARED_MONTHLY=
+STRIPE_PRICE_BAND_SHARED_YEARLY=
 STRIPE_WEBHOOK_SECRET=
 
 # Cron Vercel
@@ -1041,7 +1045,7 @@ EMAIL_FROM=                   # ex. "Ostinara <bonjour@mondomaine.fr>" (domaine 
 
 ## Limites par plan
 
-| Fonctionnalite | Free | Pro (9EUR/mois) | Band (19EUR/mois) |
+| Fonctionnalite | Free | Pro (9EUR/mois) | Band (24EUR/mois) |
 |----------------|------|-----------------|-------------------|
 | Morceaux | 10 | illimite | illimite |
 | Covers | 3 | illimite | illimite |
@@ -1058,7 +1062,8 @@ EMAIL_FROM=                   # ex. "Ostinara <bonjour@mondomaine.fr>" (domaine 
 | Repetitions | non | non | oui |
 | Chat de groupe | non | non | oui |
 | Badge profil | non | Pro | Band |
-| Prix annuel | - | 86EUR/an (-20%) | 182EUR/an (-20%) |
+| Personnes sur le plan | 1 | 1 | 3 (titulaire + 2 places) |
+| Prix annuel | - | 86EUR/an (-20%) | 230EUR/an (-20%) |
 
 ---
 

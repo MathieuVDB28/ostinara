@@ -48,7 +48,7 @@ export function CguEn() {
             These Terms of Use set out the rules for using the Ostinara service and the rights and obligations of its users.
           </p>
           <p className="mt-3 text-sm text-muted-foreground/70">
-            Last updated: February 5, 2026
+            Last updated: November 4, 2026
           </p>
         </div>
       </div>
@@ -210,7 +210,7 @@ export function CguEn() {
                   },
                   {
                     name: "Band",
-                    desc: "Pro features + band spaces",
+                    desc: "Pro features + band spaces, for 3 people",
                   },
                 ].map((plan) => (
                   <div
@@ -233,6 +233,9 @@ export function CguEn() {
               </p>
               <p>
                 Paid subscriptions renew automatically unless cancelled by the user before the end of the current period. Users can manage their subscription from the “My subscription” page of their account.
+              </p>
+              <p>
+                The holder of a Band subscription can offer 2 seats to friends or members of their bands on Ostinara. Each guest must accept and must not hold another subscription. Guests keep the Band plan for as long as the holder retains it and does not take their seat back, then return to the Free plan. The holder remains solely responsible for payment. Seats are for personal use and may not be resold.
               </p>
             </div>
           </section>

@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 import { getStripeServer } from '@/lib/stripe/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { getPlanFromPriceId } from '@/lib/stripe/config';
+import { activeSeatMembers, notifySeatRemoved } from '@/lib/notifications/band-seats';
 
 // Lazy initialization for supabase admin client
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,6 +53,23 @@ async function writeSubscription(
     plan ? admin.from('profiles').update({ plan }).eq('id', userId) : Promise.resolve({ error: null }),
   ]);
   return { error: privateResult.error ?? planResult.error };
+}
+
+/**
+ * Le titulaire quitte le plan Band : un trigger reprend ses places. On relit
+ * qui les occupait avant d'ecrire, pour prevenir ceux qui repassent en Free.
+ */
+async function writePlanAndNotifySeats(
+  userId: string,
+  plan: string,
+  details: Parameters<typeof writeSubscription>[2]
+): Promise<{ error: unknown }> {
+  const members = plan === 'band' ? [] : await activeSeatMembers(userId);
+  const result = await writeSubscription(userId, plan, details);
+  if (!result.error) {
+    await Promise.all(members.map((memberId) => notifySeatRemoved(memberId, userId)));
+  }
+  return result;
 }
 
 export async function POST(req: NextRequest) {
@@ -170,7 +188,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 
   // Réinitialiser au plan free
-  const { error } = await writeSubscription(targetUserId, 'free', {
+  const { error } = await writePlanAndNotifySeats(targetUserId, 'free', {
     subscription_status: 'canceled',
     stripe_subscription_id: null,
     subscription_period_end: null,
@@ -233,7 +251,7 @@ async function updateUserSubscription(userId: string, subscription: Stripe.Subsc
   const subData = subscription as unknown as { current_period_end: number };
   const periodEnd = new Date(subData.current_period_end * 1000).toISOString();
 
-  const { error } = await writeSubscription(userId, plan, {
+  const { error } = await writePlanAndNotifySeats(userId, plan, {
     stripe_subscription_id: subscription.id,
     subscription_status: subscription.status,
     subscription_period_end: periodEnd,

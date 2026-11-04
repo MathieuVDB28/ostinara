@@ -12,7 +12,10 @@ import {
   PricingCard,
   SubscriptionStatusBadge,
 } from "@/components/subscription";
+import { BandSeatsSection } from "@/components/subscription/band-seats-section";
+import { getBandSeats } from "@/lib/actions/band-seats";
 import { getMyProfile } from "@/lib/actions/profile";
+import type { BandSeatsOverview } from "@/lib/band-seats";
 
 interface SubscriptionInfo {
   plan: UserPlan;
@@ -32,12 +35,14 @@ export default function SubscriptionPage() {
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [seats, setSeats] = useState<BandSeatsOverview | null>(null);
 
   const isSuccess = searchParams.get("success") === "true";
 
   const loadSubscription = useCallback(async () => {
     try {
-      const profile = await getMyProfile();
+      const [profile, bandSeats] = await Promise.all([getMyProfile(), getBandSeats()]);
+      setSeats(bandSeats);
       if (profile) {
         setSubscription({
           plan: profile.plan,
@@ -206,7 +211,16 @@ export default function SubscriptionPage() {
         </div>
       )}
 
-      {/* Changer de plan */}
+      {seats && (
+        <BandSeatsSection
+          seats={seats}
+          canShare={subscription?.plan === "band" && !seats.mySeat}
+          onChange={loadSubscription}
+        />
+      )}
+
+      {/* Changer de plan : pas tant qu'on occupe la place d'un autre */}
+      {!seats?.mySeat && (
       <div className="mb-8">
         <h2 className="mb-4 font-display text-3xl font-extrabold uppercase leading-none">
           {subscription?.plan === "free" ? t("upgrade") : t("change")}
@@ -246,8 +260,10 @@ export default function SubscriptionPage() {
         </div>
       </div>
 
+      )}
+
       {/* Informations sur le prorata */}
-      {subscription?.plan !== "free" && (
+      {subscription?.plan !== "free" && !seats?.mySeat && (
         <div className="rounded-lg border border-border bg-card/50 p-4 text-sm text-muted-foreground">
           <p className="flex items-start gap-2">
             <svg

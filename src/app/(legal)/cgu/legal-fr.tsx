@@ -50,7 +50,7 @@ export function CguFr() {
             utilisateurs.
           </p>
           <p className="mt-3 text-sm text-muted-foreground/70">
-            Dernière mise à jour : 5 février 2026
+            Dernière mise à jour : 4 novembre 2026
           </p>
         </div>
       </div>
@@ -227,7 +227,7 @@ export function CguFr() {
                   },
                   {
                     name: "Band",
-                    desc: "Fonctionnalités Pro + espaces de groupe",
+                    desc: "Fonctionnalités Pro + espaces de groupe, pour 3 personnes",
                   },
                 ].map((plan) => (
                   <div
@@ -253,6 +253,15 @@ export function CguFr() {
                 résiliation par l&apos;utilisateur avant la fin de la période en
                 cours. L&apos;utilisateur peut gérer son abonnement depuis la
                 page « Mon abonnement » de son compte.
+              </p>
+              <p>
+                Le titulaire d&apos;un abonnement Band peut offrir 2 places à des
+                amis ou à des membres de ses groupes sur Ostinara. Chaque invité
+                doit accepter et ne pas disposer d&apos;un autre abonnement. Il
+                bénéficie du plan Band tant que le titulaire le conserve et ne lui
+                reprend pas sa place, puis repasse au plan Free. Le titulaire reste
+                seul responsable du paiement. Ces places sont réservées à un usage
+                personnel et ne peuvent pas être revendues.
               </p>
             </div>
           </section>

@@ -161,5 +161,15 @@
   "forumReplyLength": "Your reply must be between 2 and 10,000 characters.",
   "forumVoteFailed": "Your vote wasn't saved.",
   "liveMessageInvalid": "Your message must be 1 to 500 characters long.",
-  "liveMessageFailed": "The message couldn't be sent."
+  "liveMessageFailed": "The message couldn't be sent.",
+  "seatOwnerOnly": "Only a Band plan holder can offer seats.",
+  "seatsFull": "Your 2 seats are already assigned.",
+  "seatNotRelated": "You can invite your friends and band members.",
+  "seatAlreadyInvited": "This person is already invited.",
+  "seatInviteFailed": "The invitation couldn't be sent.",
+  "seatNotFound": "This seat no longer exists.",
+  "seatPlanConflict": "You already have a plan: cancel it and wait for the end of your billing period to accept this seat.",
+  "seatAcceptFailed": "The seat couldn't be accepted. The invitation may no longer be valid.",
+  "seatReleaseFailed": "The seat couldn't be released.",
+  "seatLeaveFirst": "You hold a seat on a Band plan: leave it before subscribing."
 }

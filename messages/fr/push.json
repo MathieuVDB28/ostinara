@@ -196,5 +196,13 @@
   "friendPlaying": {
     "title": "{name} joue en ce moment",
     "body": "{kind, select, song {« {title} »} exercise {Exercice : {title}} other {Jeu libre}}{instrument, select, guitar { à la guitare} bass { à la basse} drums { à la batterie} keys { au clavier} other {}}. Tu sors ton instrument ?"
+  },
+  "bandSeat": {
+    "invitedTitle": "On t'offre le plan Band",
+    "invitedBody": "{name} t'invite sur son plan Band. Tu acceptes ?",
+    "acceptedTitle": "Place acceptée",
+    "acceptedBody": "{name} a rejoint ton plan Band.",
+    "removedTitle": "Fin de ta place Band",
+    "removedBody": "Ta place sur le plan de {name} a pris fin : tu repasses au plan Free."
   }
 }

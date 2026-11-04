@@ -161,5 +161,15 @@
   "forumReplyLength": "Ta réponse doit faire entre 2 et 10 000 caractères.",
   "forumVoteFailed": "Le vote n'a pas été pris en compte.",
   "liveMessageInvalid": "Ton message doit faire entre 1 et 500 caractères.",
-  "liveMessageFailed": "Le message n'a pas pu être envoyé."
+  "liveMessageFailed": "Le message n'a pas pu être envoyé.",
+  "seatOwnerOnly": "Seul le titulaire d'un plan Band peut offrir des places.",
+  "seatsFull": "Tes 2 places sont déjà attribuées.",
+  "seatNotRelated": "Tu peux inviter tes amis et les membres de tes groupes.",
+  "seatAlreadyInvited": "Cette personne est déjà invitée.",
+  "seatInviteFailed": "L'invitation n'a pas pu être envoyée.",
+  "seatNotFound": "Cette place n'existe plus.",
+  "seatPlanConflict": "Tu as déjà un plan : résilie-le et attends la fin de ta période pour accepter cette place.",
+  "seatAcceptFailed": "La place n'a pas pu être acceptée. L'invitation n'est peut-être plus valable.",
+  "seatReleaseFailed": "La place n'a pas pu être libérée.",
+  "seatLeaveFirst": "Tu occupes une place sur un plan Band : quitte-la avant de t'abonner."
 }

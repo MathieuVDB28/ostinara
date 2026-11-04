@@ -45,6 +45,17 @@ export async function POST(req: NextRequest) {
       stripe_subscription_id: privateProfile?.stripe_subscription_id,
     };
 
+    // Sur la place d'un autre : un abonnement ecraserait ce plan, et la fin de
+    // cet abonnement retirerait la place sans le dire.
+    const { count: heldSeats } = await supabase
+      .from('band_plan_seats')
+      .select('id', { count: 'exact', head: true })
+      .eq('member_id', user.id)
+      .eq('status', 'active');
+    if (heldSeats) {
+      return NextResponse.json({ error: await tErr("seatLeaveFirst") }, { status: 409 });
+    }
+
     let customerId = profile?.stripe_customer_id;
 
     if (!customerId) {

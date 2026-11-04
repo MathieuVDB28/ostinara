@@ -8,7 +8,7 @@ export type PlanFeature =
   | 'songs10' | 'instruments2' | 'covers3' | 'friends5' | 'wishlist20'
   | 'unlimitedSongs' | 'unlimitedInstruments' | 'unlimitedCovers' | 'unlimitedFriends' | 'unlimitedWishlist'
   | 'advancedStats' | 'deezerTabs' | 'audioRecognition' | 'proBadge'
-  | 'everythingPro' | 'bandSpaces' | 'sharedSetlists' | 'bandBadge';
+  | 'threeSeats' | 'everythingPro' | 'bandSpaces' | 'sharedSetlists' | 'bandBadge';
 
 export type BillingInterval = 'monthly' | 'yearly';
 
@@ -74,6 +74,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
   band: {
     name: 'Band',
     features: [
+      'threeSeats',
       'everythingPro',
       'deezerTabs',
       'audioRecognition',
@@ -82,10 +83,10 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
       'bandBadge',
     ],
     monthly: {
-      price: 19,
+      price: 24,
     },
     yearly: {
-      price: 182,
+      price: 230,
     },
   },
 };
@@ -97,8 +98,10 @@ export function getPriceIdFromEnv(plan: UserPlan, interval: BillingInterval): st
   const priceIds: Record<string, string | undefined> = {
     'pro_monthly': process.env.STRIPE_PRICE_PRO_MONTHLY,
     'pro_yearly': process.env.STRIPE_PRICE_PRO_YEARLY,
-    'band_monthly': process.env.STRIPE_PRICE_BAND_MONTHLY,
-    'band_yearly': process.env.STRIPE_PRICE_BAND_YEARLY,
+    // Le Band a 3 places. Sans ces variables, le paiement echoue plutot que de
+    // facturer l'ancien prix en affichant le nouveau.
+    'band_monthly': process.env.STRIPE_PRICE_BAND_SHARED_MONTHLY,
+    'band_yearly': process.env.STRIPE_PRICE_BAND_SHARED_YEARLY,
   };
 
   return priceIds[`${plan}_${interval}`] || null;
@@ -112,7 +115,11 @@ export function getPlanFromPriceId(priceId: string): UserPlan {
   ) {
     return 'pro';
   }
+  // Les anciens prix (19 et 182 EUR) restent reconnus : leurs abonnes gardent
+  // leur tarif, et un prix inconnu les ferait retomber en Free.
   if (
+    priceId === process.env.STRIPE_PRICE_BAND_SHARED_MONTHLY ||
+    priceId === process.env.STRIPE_PRICE_BAND_SHARED_YEARLY ||
     priceId === process.env.STRIPE_PRICE_BAND_MONTHLY ||
     priceId === process.env.STRIPE_PRICE_BAND_YEARLY
   ) {

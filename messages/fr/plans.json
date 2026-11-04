@@ -22,7 +22,8 @@
     "everythingPro": "Tout ce qui est dans Pro",
     "bandSpaces": "Espaces groupe",
     "sharedSetlists": "Setlists partagées",
-    "bandBadge": "Badge Band"
+    "bandBadge": "Badge Band",
+    "threeSeats": "3 personnes sur un même plan"
   },
   "pricePerYear": "{price} €/an",
   "pricePerMonth": "{price} €/mois",
@@ -62,6 +63,10 @@
     "lead": "Débloque tout Ostinara pour progresser plus vite.",
     "faqTitle": "Questions fréquentes",
     "faq": {
+      "shared": {
+        "q": "Comment fonctionnent les 3 places du plan Band ?",
+        "a": "Le titulaire offre 2 places à des amis ou à des membres de ses groupes. Chaque invité accepte et profite de tout le plan Band. Si le titulaire résilie, les invités repassent au plan Free à la fin de sa période de facturation."
+      },
       "change": {
         "q": "Puis-je changer de plan à tout moment ?",
         "a": "Oui. Tu peux monter ou descendre de plan quand tu veux. Le prorata est calculé automatiquement."
@@ -96,5 +101,27 @@
     "upgrade": "Passer à un plan payant",
     "change": "Changer de plan",
     "proration": "Les changements de plan sont effectifs immédiatement. Si tu passes à un plan supérieur, tu ne paies que la différence au prorata. Si tu passes à un plan inférieur, le crédit est appliqué sur ta prochaine facture."
+  },
+  "seats": {
+    "ownerTitle": "Ton plan Band à 3",
+    "ownerBody": "{count, plural, =0 {Tes 2 places sont attribuées.} one {Il te reste # place à offrir à un ami ou à un membre de tes groupes.} other {Il te reste # places à offrir à des amis ou à des membres de tes groupes.}}",
+    "invite": "Offrir une place",
+    "inviteOne": "Inviter",
+    "search": "Chercher un ami ou un membre",
+    "noCandidate": "Personne à inviter pour l'instant.",
+    "hasPlan": "A déjà un plan : devra d'abord le quitter",
+    "close": "Fermer",
+    "waiting": "Invitation envoyée",
+    "activeSeat": "Profite de ton plan Band",
+    "cancelInvite": "Annuler",
+    "takeBack": "Reprendre la place",
+    "invitationTitle": "On t'offre une place",
+    "invitationBody": "T'invite sur son plan Band, gratuitement pour toi",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "memberTitle": "Ton plan Band est offert par",
+    "memberBody": "Si tu pars, tu repasses au plan Free",
+    "leave": "Quitter la place",
+    "failed": "L'action n'a pas abouti. Réessaie."
   }
 }

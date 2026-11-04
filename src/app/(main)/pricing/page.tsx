@@ -8,7 +8,7 @@ import { UserPlan } from "@/types";
 import { BillingInterval } from "@/lib/stripe/config";
 import { PlanToggle, PricingCard } from "@/components/subscription";
 
-const FAQ = ["change", "refund", "cancel", "payment"] as const;
+const FAQ = ["shared", "change", "refund", "cancel", "payment"] as const;
 
 export default function PricingPage() {
   const t = useTranslations("plans.pricing");
