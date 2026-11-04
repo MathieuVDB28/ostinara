@@ -57,7 +57,11 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
     formatRelativeTime(session.practiced_at),
     formatTime(session.practiced_at),
     instrument,
-    session.bpm_achieved ? `${session.bpm_achieved} bpm` : null,
+    session.bpm_achieved
+      ? `${session.bpm_achieved} bpm`
+      : session.reference_bpm
+        ? t("baseBpm", { bpm: session.reference_bpm })
+        : null,
     sectionsLabel || null,
   ].filter(Boolean);
 
@@ -213,6 +217,8 @@ export function GroupSessionCard({
                 <span className="font-semibold">{session.song?.title || sessionExercisesLabel(session) || t("noSong")}</span>
                 {session.bpm_achieved ? (
                   <span className="tabular text-muted-foreground"> · {session.bpm_achieved} bpm</span>
+                ) : session.reference_bpm ? (
+                  <span className="tabular text-muted-foreground"> · {t("baseBpm", { bpm: session.reference_bpm })}</span>
                 ) : null}
                 {session.song_id && session.sections_worked.length > 0 ? (
                   <span className="text-muted-foreground"> · {getSectionsLabels(session.sections_worked, te)}</span>

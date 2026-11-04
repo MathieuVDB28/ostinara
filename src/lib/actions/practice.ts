@@ -221,7 +221,7 @@ export async function createPracticeSession(
   const entries = (
     input.songs && (input.songs.length > 0 || exercises.length > 0)
       ? input.songs.filter((entry) => entry.duration_minutes > 0)
-      : [{ song_id: input.song_id || null, duration_minutes: input.duration_minutes, bpm_achieved: input.bpm_achieved }]
+      : [{ song_id: input.song_id || null, duration_minutes: input.duration_minutes, bpm_achieved: input.bpm_achieved, reference_bpm: input.reference_bpm }]
   ).map((entry): PracticeSessionSongEntry => ({ ...entry }));
 
   /*
@@ -250,6 +250,9 @@ export async function createPracticeSession(
         song_id: entry.song_id || null,
         duration_minutes: entry.duration_minutes,
         bpm_achieved: entry.bpm_achieved || null,
+        // Le tempo du morceau : a part, pour que la progression, les badges
+        // et les statistiques ne le prennent pas pour un tempo tenu.
+        ...(entry.reference_bpm ? { reference_bpm: entry.reference_bpm } : {}),
         // Chaque morceau a ses parties ; sans detail, celles de la session.
         sections_worked: entry.sections_worked ?? shared.sections_worked,
         session_group_id: groupId,

@@ -192,6 +192,8 @@ export function EditSessionModal({
 
     const result = await updatePracticeSession(session.id, {
       song_id: selectedSong?.id || null,
+      // Le tempo de base etait celui de l'ancien morceau.
+      ...(selectedSong?.id !== session.song_id ? { reference_bpm: null } : {}),
       duration_minutes: durationMinutes,
       practiced_at: new Date(practicedAt).toISOString(),
       bpm_achieved: bpmAchieved ? parseInt(bpmAchieved) : null,
@@ -391,7 +393,7 @@ export function EditSessionModal({
             {!isGroup && (
             <div>
               <label className="mb-2 block text-sm font-medium">{t("bpmReached")}</label>
-              <input type="number" min="20" max="300" placeholder={t("bpmPlaceholder")} value={bpmAchieved} onChange={(e) => setBpmAchieved(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
+              <input type="number" min="20" max="300" placeholder={session.reference_bpm && selectedSong?.id === session.song_id ? String(session.reference_bpm) : t("bpmPlaceholder")} value={bpmAchieved} onChange={(e) => setBpmAchieved(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
             </div>
             )}
 
@@ -455,9 +457,11 @@ export function EditSessionModal({
                     </div>
                     <div className="text-right">
                       <p className="tabular text-sm font-semibold">{formatDuration(row.duration_minutes)}</p>
-                      {row.bpm_achieved && (
+                      {row.bpm_achieved ? (
                         <p className="tabular text-xs text-primary">{row.bpm_achieved} BPM</p>
-                      )}
+                      ) : row.reference_bpm ? (
+                        <p className="tabular text-xs text-muted-foreground">{ts("baseBpm", { bpm: row.reference_bpm })}</p>
+                      ) : null}
                     </div>
                   </li>
                 ))}
@@ -523,6 +527,13 @@ export function EditSessionModal({
               <div className="rounded-lg bg-muted p-3">
                 <p className="text-xs text-muted-foreground">{t("bpmReached")}</p>
                 <p className="text-xl font-bold text-primary">{session.bpm_achieved} BPM</p>
+              </div>
+            )}
+
+            {!isGroup && !session.bpm_achieved && session.reference_bpm && (
+              <div className="rounded-lg bg-muted p-3">
+                <p className="text-xs text-muted-foreground">{t("baseBpm")}</p>
+                <p className="text-xl font-bold text-muted-foreground">{session.reference_bpm} BPM</p>
               </div>
             )}
 
@@ -695,7 +706,7 @@ function GroupRowEditor({
               inputMode="numeric"
               min="20"
               max="300"
-              placeholder={t("bpmPlaceholder")}
+              placeholder={row.session.reference_bpm ? String(row.session.reference_bpm) : t("bpmPlaceholder")}
               value={row.bpm}
               onChange={(e) => onChange({ bpm: e.target.value })}
               aria-label={t("bpmOf", { name: title })}

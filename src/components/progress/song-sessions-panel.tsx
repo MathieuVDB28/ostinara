@@ -16,6 +16,7 @@ interface SongSessionsPanelProps {
 
 export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelProps) {
   const t = useTranslations("progress.songSessions");
+  const ts = useTranslations("progress.session");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
   const intlLocale = useIntlLocale();
@@ -117,9 +118,11 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{formatDuration(session.duration_minutes)}</span>
-                    {session.bpm_achieved && (
+                    {session.bpm_achieved ? (
                       <span className="text-xs text-primary">{session.bpm_achieved} BPM</span>
-                    )}
+                    ) : session.reference_bpm ? (
+                      <span className="text-xs text-muted-foreground">{ts("baseBpm", { bpm: session.reference_bpm })}</span>
+                    ) : null}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{formatDate(session.practiced_at)}</span>

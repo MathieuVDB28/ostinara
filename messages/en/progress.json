@@ -74,6 +74,7 @@
     "sessions": "{count, plural, one {# session} other {# sessions}}"
   },
   "session": {
+    "baseBpm": "base {bpm} bpm",
     "free": "Free session",
     "goalsAchieved": "Goals reached",
     "session": "Session",
@@ -131,6 +132,7 @@
     "removeSong": "Remove {name} from the session",
     "minutesOf": "Minutes spent on {name}",
     "bpmOf": "BPM held on {name}",
+    "baseBpm": "Song's base tempo",
     "sectionsOf": "Parts played on {name}",
     "min": "min",
     "exercisesFloor": "Includes exercises: at least {minutes} min."
@@ -165,6 +167,8 @@
     "bpmHeld": "BPM held",
     "bpm": "bpm",
     "statusOf": "Status of {title}",
+    "baseBpmHint": "The song's tempo, it doesn't count towards your progress.",
+    "baseBpmHeld": "I held it",
     "sectionsOf": "Parts played on {title}",
     "tempoComputed": "Progress is based on your best tempo held.",
     "progressOf": "Progress of {title}",

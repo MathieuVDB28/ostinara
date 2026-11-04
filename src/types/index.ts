@@ -779,6 +779,8 @@ export interface PracticeSession {
   duration_minutes: number;
   practiced_at: string;
   bpm_achieved: number | null;
+  /** Le tempo du morceau, prerempli sur une session passee : pas un tempo tenu. */
+  reference_bpm?: number | null;
   mood: SessionMood | null;
   energy_level: EnergyLevel | null;
   sections_worked: SongSection[];
@@ -827,6 +829,8 @@ export interface PracticeSessionSongEntry {
   song_id: string | null;
   duration_minutes: number;
   bpm_achieved?: number;
+  /** Le tempo du morceau, garde sans compter comme tenu. */
+  reference_bpm?: number;
   /** Les parties jouees sur ce morceau. Absent : celles de la session. */
   sections_worked?: SongSection[];
 }
@@ -843,6 +847,8 @@ export interface CreatePracticeSessionInput {
   duration_minutes: number;
   practiced_at?: string;
   bpm_achieved?: number;
+  /** Le tempo du morceau, garde sans compter comme tenu. */
+  reference_bpm?: number;
   mood?: SessionMood;
   energy_level?: EnergyLevel;
   sections_worked?: SongSection[];
@@ -902,6 +908,7 @@ export interface UpdatePracticeSessionInput {
   duration_minutes?: number;
   practiced_at?: string;
   bpm_achieved?: number | null;
+  reference_bpm?: number | null;
   mood?: SessionMood | null;
   energy_level?: EnergyLevel | null;
   sections_worked?: SongSection[];

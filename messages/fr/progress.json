@@ -74,6 +74,7 @@
     "sessions": "{count, plural, one {# session} other {# sessions}}"
   },
   "session": {
+    "baseBpm": "base {bpm} bpm",
     "free": "Session libre",
     "goalsAchieved": "Objectifs atteints",
     "session": "Session",
@@ -131,6 +132,7 @@
     "removeSong": "Retirer {name} de la session",
     "minutesOf": "Minutes passées sur {name}",
     "bpmOf": "BPM tenu sur {name}",
+    "baseBpm": "Tempo de base du morceau",
     "sectionsOf": "Parties jouées sur {name}",
     "min": "min",
     "exercisesFloor": "Exercices compris : au moins {minutes} min."
@@ -165,6 +167,8 @@
     "bpmHeld": "BPM tenu",
     "bpm": "bpm",
     "statusOf": "Statut de {title}",
+    "baseBpmHint": "Tempo du morceau, il ne compte pas dans ta progression.",
+    "baseBpmHeld": "Je l'ai tenu",
     "sectionsOf": "Parties jouées sur {title}",
     "tempoComputed": "Progression calculée d'après ton meilleur tempo tenu.",
     "progressOf": "Progression de {title}",

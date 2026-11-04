@@ -43,6 +43,8 @@ interface Entry {
   songId: string | null;
   minutes: number | "";
   bpm: string;
+  /** Vrai des qu'on a touche au tempo : le tempo du morceau ne s'affiche plus. */
+  bpmTouched: boolean;
   /** Null tant qu'on ne touche pas au statut du morceau. */
   status: SongStatus | null;
   /** Null tant qu'on ne touche pas a la progression. */
@@ -76,6 +78,7 @@ function initialEntries(
       songId: row.songId,
       minutes: row.minutes,
       bpm: row.bpm ? String(row.bpm) : "",
+      bpmTouched: false,
       status: null,
       percent: null,
       sections: [],
@@ -86,6 +89,7 @@ function initialEntries(
       songId: timerSong.id,
       minutes: timerDuration || 30,
       bpm: timerBpm ? String(timerBpm) : "",
+      bpmTouched: false,
       status: null,
       percent: null,
       sections: [],
@@ -98,6 +102,7 @@ function initialEntries(
       songId,
       minutes: "",
       bpm: "",
+      bpmTouched: false,
       status: null,
       percent: null,
       sections: [],
@@ -369,6 +374,18 @@ export function AddSessionModal({
     );
   };
 
+  /*
+   * Session passee : le tempo du morceau, tant qu'on n'y a pas touche. Il
+   * se lit a chaque rendu parce que les morceaux arrivent parfois apres
+   * l'ouverture de la modale. Hors des bornes du champ, on ne propose rien.
+   */
+  const baseBpmOf = (entry: Entry): number | null => {
+    if (mode !== "manual" || entry.bpmTouched || entry.bpm || !entry.songId) return null;
+    const song = songs.find((item) => item.id === entry.songId);
+    const base = song ? songTargetBpm(song)?.bpm : null;
+    return base && base >= 20 && base <= 300 ? base : null;
+  };
+
   const updateEntry = (index: number, patch: Partial<Entry>) => {
     setEntries((current) => current.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
   };
@@ -389,7 +406,7 @@ export function AddSessionModal({
       const carried = sectionsWorked.length > 0 && base.length === 1 && base[0].songId && base[0].sections.length === 0
         ? [{ ...base[0], sections: sectionsWorked }]
         : base;
-      return [...carried, { songId: song.id, minutes, bpm: "", status: null, percent: null, sections: [] }];
+      return [...carried, { songId: song.id, minutes, bpm: "", bpmTouched: false, status: null, percent: null, sections: [] }];
     });
   };
 
@@ -439,6 +456,7 @@ export function AddSessionModal({
             song_id: entry.songId,
             duration_minutes: songMinutes[index],
             bpm_achieved: entry.bpm ? parseInt(entry.bpm) : undefined,
+            reference_bpm: baseBpmOf(entry) ?? undefined,
             ...(perSongSections ? { sections_worked: entry.songId ? entry.sections : [] } : {}),
           }))
         : undefined,
@@ -456,6 +474,7 @@ export function AddSessionModal({
       duration_minutes: totalMinutes,
       practiced_at: new Date(practicedAt).toISOString(),
       bpm_achieved: single ? (single.bpm ? parseInt(single.bpm) : undefined) : bpmAchieved ? parseInt(bpmAchieved) : undefined,
+      reference_bpm: single ? baseBpmOf(single) ?? undefined : undefined,
       mood: mood || undefined,
       energy_level: energyLevel || undefined,
       sections_worked: !perSongSections && sectionsWorked.length > 0 ? sectionsWorked : undefined,
@@ -627,6 +646,7 @@ export function AddSessionModal({
                     entry={entry}
                     song={entry.songId ? songs.find((song) => song.id === entry.songId) ?? null : null}
                     instrument={instrument}
+                    baseBpm={baseBpmOf(entry)}
                     showMinutes={isMulti}
                     minutesOptional={mode === "manual"}
                     autoMinutes={shares?.[index]}
@@ -1157,6 +1177,7 @@ function EntryRow({
   canEditSong,
   showSections,
   instrument,
+  baseBpm,
   onChange,
   onRemove,
 }: {
@@ -1173,6 +1194,8 @@ function EntryRow({
   canEditSong: boolean;
   /** Session a plusieurs morceaux : les parties jouees se choisissent ici. */
   showSections: boolean;
+  /** Le tempo du morceau affiche dans le champ, tant qu'on n'y a pas touche. */
+  baseBpm: number | null;
   onChange: (patch: Partial<Entry>) => void;
   onRemove: () => void;
 }) {
@@ -1226,14 +1249,31 @@ function EntryRow({
               min="20"
               max="300"
               placeholder={t("bpmHeld")}
-              value={entry.bpm}
-              onChange={(e) => onChange({ bpm: e.target.value })}
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary"
+              value={baseBpm ?? entry.bpm}
+              onChange={(e) => onChange({ bpm: e.target.value, bpmTouched: true })}
+              onFocus={(e) => e.target.select()}
+              className={`w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary ${
+                baseBpm ? "text-muted-foreground" : "text-foreground"
+              }`}
             />
             {t("bpm")}
           </label>
         )}
       </div>
+
+      {/* Un tempo prerempli n'est pas un tempo tenu : on le dit, et un appui suffit a le confirmer. */}
+      {baseBpm && (
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+          {t("baseBpmHint")}
+          <button
+            type="button"
+            onClick={() => onChange({ bpm: String(baseBpm), bpmTouched: true })}
+            className="font-semibold text-foreground underline underline-offset-2"
+          >
+            {t("baseBpmHeld")}
+          </button>
+        </p>
+      )}
 
       {showSections && entry.songId && (
         <SectionsSelector
