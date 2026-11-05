@@ -6,7 +6,8 @@ import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import { addSongToLibrary } from "./songs";
 import { sendPushNotification } from "@/lib/notifications";
-import { computeStreak, parisDay } from "@/lib/streak";
+import { measureChallenge, type ChallengeSession } from "@/lib/challenge-progress";
+import { fetchAllRows } from "@/lib/supabase/fetch-all";
 import type {
   Challenge,
   ChallengeWithDetails,
@@ -449,10 +450,11 @@ function isChallengeSong(
   return same(challenge.song_title, song.title) && same(challenge.song_artist, song.artist);
 }
 
-export async function updateChallengeProgress(
-  sessionMinutes?: number,
-  songMasteredId?: string
-): Promise<void> {
+/**
+ * A appeler apres chaque ajout, correction ou suppression de session : le
+ * temps et la serie des defis actifs sont recalcules depuis les sessions.
+ */
+export async function updateChallengeProgress(songMasteredId?: string): Promise<void> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
 
@@ -503,19 +505,23 @@ export async function updateChallengeProgress(
     (allProgress ?? []).map((p) => [p.challenge_id, p])
   );
 
-  // Les sessions des defis de serie, lues une fois pour tous.
-  const streakStarts = challenges
-    .filter((c) => c.challenge_type === "streak" && c.starts_at)
+  // Les sessions des defis de temps et de serie, lues une fois pour tous.
+  const sessionChallengeStarts = challenges
+    .filter((c) => (c.challenge_type === "practice_time" || c.challenge_type === "streak") && c.starts_at)
     .map((c) => c.starts_at as string)
     .sort();
-  const { data: sessions } =
-    sessionMinutes && streakStarts.length > 0
-      ? await supabase
-          .from("practice_sessions")
-          .select("practiced_at")
-          .eq("user_id", user.id)
-          .gte("practiced_at", streakStarts[0])
-      : { data: [] as { practiced_at: string }[] };
+  const sessions =
+    sessionChallengeStarts.length > 0
+      ? await fetchAllRows<ChallengeSession>((from, to) =>
+          supabase
+            .from("practice_sessions")
+            .select("practiced_at, duration_minutes")
+            .eq("user_id", user.id)
+            .gte("practiced_at", sessionChallengeStarts[0])
+            .order("id")
+            .range(from, to)
+        )
+      : [];
 
   // Les ecritures sont accumulees puis envoyees en parallele en fin de boucle.
   const writes: PromiseLike<unknown>[] = [];
@@ -528,26 +534,14 @@ export async function updateChallengeProgress(
     const updates: Partial<ChallengeProgress> = {};
 
     // Mettre à jour selon le type de challenge
-    if (challenge.challenge_type === "practice_time" && sessionMinutes) {
-      updates.practice_minutes = (progress.practice_minutes || 0) + sessionMinutes;
+    if (challenge.starts_at && challenge.challenge_type === "practice_time") {
+      updates.practice_minutes = measureChallenge(sessions, challenge).practice_minutes;
     }
 
-    if (challenge.challenge_type === "streak" && sessionMinutes) {
-      /*
-       * Recalculee depuis les sessions du defi : une session passee compte
-       * pour son jour, et la meilleure serie reste acquise meme si elle
-       * s'est cassee depuis (le gagnant est « la plus longue serie »).
-       */
-      const days = (sessions ?? [])
-        .filter(
-          (session) =>
-            Date.parse(session.practiced_at) >= Date.parse(challenge.starts_at) &&
-            (!challenge.ends_at || Date.parse(session.practiced_at) <= Date.parse(challenge.ends_at))
-        )
-        .map((session) => parisDay(session.practiced_at))
-        .sort();
-      updates.streak_days = computeStreak(days).longest;
-      updates.streak_last_date = days[days.length - 1] ?? null;
+    if (challenge.starts_at && challenge.challenge_type === "streak") {
+      const { streak_days, streak_last_date } = measureChallenge(sessions, challenge);
+      updates.streak_days = streak_days;
+      updates.streak_last_date = streak_last_date;
     }
 
     if (challenge.challenge_type === "song_mastery" && songMasteredId) {

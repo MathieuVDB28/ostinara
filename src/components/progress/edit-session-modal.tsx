@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
-import { toLocalInput } from "@/lib/datetime-local";
+import { isInFuture, toLocalInput } from "@/lib/datetime-local";
 import { formatDuration as formatMinutes } from "./stats-summary";
 import { updatePracticeSession, updatePracticeSessionGroup, deletePracticeSession } from "@/lib/actions/practice";
 import { Cover } from "@/components/ui/cover";
@@ -56,6 +56,7 @@ export function EditSessionModal({
   const ts = useTranslations("progress.session");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
+  const tErrors = useTranslations("errors");
   const intlLocale = useIntlLocale();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -180,6 +181,10 @@ export function EditSessionModal({
 
   const handleSave = async () => {
     if (!session) return;
+    if (isInFuture(practicedAt)) {
+      setError(tErrors("sessionInFuture"));
+      return;
+    }
     if (isGroup) return handleSaveGroup();
 
     if (!durationMinutes || durationMinutes < 1) {
@@ -373,7 +378,7 @@ export function EditSessionModal({
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium">{t("dateTime")}</label>
-                <input type="datetime-local" value={practicedAt} onChange={(e) => setPracticedAt(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
+                <input type="datetime-local" value={practicedAt} max={toLocalInput()} onChange={(e) => setPracticedAt(e.target.value)} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary" />
               </div>
             </div>
 

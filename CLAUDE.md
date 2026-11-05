@@ -299,7 +299,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
   - `streak` : plus longue serie sur la duree du defi (regle de `src/lib/streak.ts`)
   - `song_mastery` : maitriser un morceau specifique
 - Duree configurable en jours
-- Suivi automatique de la progression (sync avec les sessions de pratique)
+- Suivi automatique de la progression : temps et serie recalcules depuis les sessions jouees pendant le defi (`measureChallenge`, `src/lib/challenge-progress.ts`) a chaque ajout, correction ou suppression de session
 - Leaderboard hebdomadaire/mensuel (via RPC `get_practice_leaderboard`)
 
 ### Amis (`/friends`)

@@ -125,7 +125,9 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
     supabase
       .from("practice_sessions")
       .select("id, session_group_id, practiced_at, duration_minutes, song_id, bpm_achieved")
-      .eq("user_id", userId),
+      .eq("user_id", userId)
+      // Une session datee dans le futur ne compte pas tant qu'elle n'a pas eu lieu.
+      .lte("practiced_at", new Date().toISOString()),
     supabase.from("covers").select("created_at").eq("user_id", userId),
     supabase.from("album_reviews").select("created_at").eq("user_id", userId),
     supabase

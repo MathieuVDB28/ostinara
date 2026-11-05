@@ -1,3 +1,11 @@
+/** Marge pour une horloge d'appareil legerement en avance. */
+const FUTURE_TOLERANCE_MS = 5 * 60_000;
+
+/** Une session ne peut pas etre datee dans le futur. */
+export function isInFuture(value: string | Date, now: number = Date.now()): boolean {
+  return new Date(value).getTime() > now + FUTURE_TOLERANCE_MS;
+}
+
 /**
  * "2026-10-19T14:30" en heure locale, pour un <input type="datetime-local">.
  *

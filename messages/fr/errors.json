@@ -1,5 +1,6 @@
 {
   "notAuthenticated": "Non authentifié",
+  "sessionInFuture": "La date de la session est dans le futur",
   "deleteFailed": "Erreur lors de la suppression",
   "updateFailed": "Erreur lors de la mise à jour",
   "notBandMember": "Tu n'es pas membre de ce groupe",

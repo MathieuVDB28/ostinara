@@ -11,7 +11,7 @@ import { useOffline } from "@/components/offline/offline-provider";
 import { updateSong } from "@/lib/actions/songs";
 import { getShareSessionsDefault } from "@/lib/actions/practice";
 import { songTargetBpm } from "@/lib/song-progress";
-import { toLocalInput } from "@/lib/datetime-local";
+import { isInFuture, toLocalInput } from "@/lib/datetime-local";
 import { EXERCISE_CATEGORIES } from "@/lib/instruments";
 import { useNextSteps } from "@/components/next-steps/next-steps-provider";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
@@ -194,6 +194,7 @@ export function AddSessionModal({
   const tf = useTranslations("progress.form");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
+  const tErrors = useTranslations("errors");
   const intlLocale = useIntlLocale();
   const router = useRouter();
   const nextSteps = useNextSteps();
@@ -423,6 +424,10 @@ export function AddSessionModal({
   const handleSubmit = async () => {
     if (!totalMinutes || totalMinutes < 1) {
       setError(tf("durationMin"));
+      return;
+    }
+    if (mode !== "timer" && isInFuture(practicedAt)) {
+      setError(tErrors("sessionInFuture"));
       return;
     }
     // Un seul element : il prend toute la duree. Plusieurs : chacun la
@@ -723,6 +728,7 @@ export function AddSessionModal({
               <input
                 type="datetime-local"
                 value={practicedAt}
+                max={toLocalInput()}
                 onChange={(e) => setPracticedAt(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
                 disabled={mode === "timer"}

@@ -3,9 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 import { sendPushNotification } from "@/lib/notifications";
 import {
   REMINDER_TYPES,
+  isStreakLastChance,
   pickReminder,
   type ReminderInput,
 } from "@/lib/notifications/practice-reminders";
+import { fetchAllRows } from "@/lib/supabase/fetch-all";
 import { LIVE_SESSION_TTL_MS } from "@/lib/live-session";
 import { isGoalDone, type MeasureInput } from "@/lib/weekly-plan-measure";
 import type { PracticeSession, Song, WeeklyGoal } from "@/types";
@@ -84,25 +86,25 @@ export async function GET(request: NextRequest) {
   const isPlanDay = weekday === 4;
 
   // Abonnes aux notifications, rappels non coupes.
-  const { data: subscriptions, error: subError } = await supabaseAdmin
-    .from("push_subscriptions")
-    .select("user_id");
-  if (subError) {
-    console.error("[practice-reminders] subscriptions:", subError);
-    return NextResponse.json({ error: "subscriptions" }, { status: 500 });
-  }
+  const subscriptions = await fetchAllRows<{ user_id: string }>((from, to) =>
+    supabaseAdmin.from("push_subscriptions").select("user_id").order("id").range(from, to)
+  );
 
-  const subscribed = [...new Set((subscriptions ?? []).map((s) => s.user_id as string))];
+  const subscribed = [...new Set(subscriptions.map((s) => s.user_id))];
   if (subscribed.length === 0) {
     return NextResponse.json({ success: true, sent: 0, candidates: 0 });
   }
 
-  const { data: profiles } = await supabaseAdmin
-    .from("profile_private")
-    .select("user_id")
-    .in("user_id", subscribed)
-    .eq("practice_reminders", true);
-  const userIds = (profiles ?? []).map((p) => p.user_id as string);
+  const profiles = await fetchAllRows<{ user_id: string }>((from, to) =>
+    supabaseAdmin
+      .from("profile_private")
+      .select("user_id")
+      .in("user_id", subscribed)
+      .eq("practice_reminders", true)
+      .order("user_id")
+      .range(from, to)
+  );
+  const userIds = profiles.map((p) => p.user_id);
   if (userIds.length === 0) {
     return NextResponse.json({ success: true, sent: 0, candidates: 0 });
   }
@@ -110,39 +112,54 @@ export async function GET(request: NextRequest) {
   const since = new Date(now.getTime() - HISTORY_DAYS * 86_400_000).toISOString();
   const logsSince = new Date(now.getTime() - 8 * 86_400_000).toISOString();
 
-  const [sessionsResult, songsResult, logsResult] = await Promise.all([
-    supabaseAdmin
-      .from("practice_sessions")
-      .select("*")
-      .in("user_id", userIds)
-      .gte("practiced_at", since),
-    supabaseAdmin
-      .from("songs")
-      .select("id, user_id, title, status, updated_at")
-      .in("user_id", userIds)
-      .eq("status", "learning"),
-    supabaseAdmin
-      .from("notification_logs")
-      .select("user_id, type, data, sent_at")
-      .in("user_id", userIds)
-      .in("type", REMINDER_TYPES)
-      .gte("sent_at", logsSince),
+  // Une lecture en erreur leve une exception : le cron echoue plutot que
+  // d'envoyer des rappels calcules sur des donnees incompletes.
+  const [sessions, learning, logs] = await Promise.all([
+    fetchAllRows<PracticeSession>((from, to) =>
+      supabaseAdmin
+        .from("practice_sessions")
+        .select("*")
+        .in("user_id", userIds)
+        .gte("practiced_at", since)
+        .order("id")
+        .range(from, to)
+    ),
+    fetchAllRows<Pick<Song, "id" | "user_id" | "title" | "status" | "updated_at">>((from, to) =>
+      supabaseAdmin
+        .from("songs")
+        .select("id, user_id, title, status, updated_at")
+        .in("user_id", userIds)
+        .eq("status", "learning")
+        .order("id")
+        .range(from, to)
+    ),
+    fetchAllRows<{ user_id: string; type: string; data: { songId?: string } | null; sent_at: string }>((from, to) =>
+      supabaseAdmin
+        .from("notification_logs")
+        .select("user_id, type, data, sent_at")
+        .in("user_id", userIds)
+        .in("type", REMINDER_TYPES)
+        .gte("sent_at", logsSince)
+        .order("id")
+        .range(from, to)
+    ),
   ]);
-
-  const sessions = (sessionsResult.data ?? []) as PracticeSession[];
-  const learning = (songsResult.data ?? []) as Pick<Song, "id" | "user_id" | "title" | "status" | "updated_at">[];
 
   // Le dernier passage sur chaque morceau en cours, tous temps confondus :
   // la fenetre de 60 jours ferait passer un morceau joue il y a trois mois
   // pour un morceau jamais joue.
   const lastPlayedBySong = new Map<string, string>();
   if (learning.length > 0) {
-    const { data } = await supabaseAdmin
-      .from("practice_sessions")
-      .select("song_id, practiced_at")
-      .in("song_id", learning.map((s) => s.id))
-      .order("practiced_at", { ascending: false });
-    for (const row of data ?? []) {
+    const rows = await fetchAllRows<{ song_id: string | null; practiced_at: string }>((from, to) =>
+      supabaseAdmin
+        .from("practice_sessions")
+        .select("song_id, practiced_at")
+        .in("song_id", learning.map((s) => s.id))
+        .order("practiced_at", { ascending: false })
+        .order("id")
+        .range(from, to)
+    );
+    for (const row of rows) {
       if (row.song_id && !lastPlayedBySong.has(row.song_id)) {
         lastPlayedBySong.set(row.song_id, parisDate(new Date(row.practiced_at)));
       }
@@ -155,36 +172,53 @@ export async function GET(request: NextRequest) {
     const monday = mondayOf(today, weekday);
     const mondayStart = new Date(`${monday}T00:00:00Z`).toISOString();
 
-    const { data: goalsData } = await supabaseAdmin
-      .from("weekly_goals")
-      .select("*")
-      .in("user_id", userIds)
-      .eq("week_start", monday)
-      .order("position");
-    const goals = (goalsData ?? []) as (WeeklyGoal & { user_id: string })[];
+    const goals = await fetchAllRows<WeeklyGoal & { user_id: string }>((from, to) =>
+      supabaseAdmin
+        .from("weekly_goals")
+        .select("*")
+        .in("user_id", userIds)
+        .eq("week_start", monday)
+        .order("position")
+        .order("id")
+        .range(from, to)
+    );
 
     if (goals.length > 0) {
       const goalSongIds = [...new Set(goals.map((g) => g.song_id).filter(Boolean))] as string[];
       const [goalSongs, bpmRows, covers] = await Promise.all([
         goalSongIds.length
-          ? supabaseAdmin.from("songs").select("*").in("id", goalSongIds)
-          : Promise.resolve({ data: [] }),
+          ? fetchAllRows<Song>((from, to) =>
+              supabaseAdmin.from("songs").select("*").in("id", goalSongIds).order("id").range(from, to)
+            )
+          : Promise.resolve([] as Song[]),
         goalSongIds.length
-          ? supabaseAdmin
-              .from("practice_sessions")
-              .select("song_id, bpm_achieved")
-              .in("song_id", goalSongIds)
-              .not("bpm_achieved", "is", null)
-          : Promise.resolve({ data: [] }),
-        supabaseAdmin.from("covers").select("user_id").in("user_id", userIds).gte("created_at", mondayStart),
+          ? fetchAllRows<{ song_id: string; bpm_achieved: number }>((from, to) =>
+              supabaseAdmin
+                .from("practice_sessions")
+                .select("song_id, bpm_achieved")
+                .in("song_id", goalSongIds)
+                .not("bpm_achieved", "is", null)
+                .order("id")
+                .range(from, to)
+            )
+          : Promise.resolve([] as { song_id: string; bpm_achieved: number }[]),
+        fetchAllRows<{ user_id: string }>((from, to) =>
+          supabaseAdmin
+            .from("covers")
+            .select("user_id")
+            .in("user_id", userIds)
+            .gte("created_at", mondayStart)
+            .order("id")
+            .range(from, to)
+        ),
       ]);
 
-      const songs = new Map<string, Song>(((goalSongs.data ?? []) as Song[]).map((s) => [s.id, s]));
+      const songs = new Map<string, Song>(goalSongs.map((s) => [s.id, s]));
       const bestBpm = new Map<string, number>();
-      for (const row of (bpmRows.data ?? []) as { song_id: string; bpm_achieved: number }[]) {
+      for (const row of bpmRows) {
         bestBpm.set(row.song_id, Math.max(bestBpm.get(row.song_id) ?? 0, row.bpm_achieved));
       }
-      const coversByUser = groupBy((covers.data ?? []) as { user_id: string }[], (c) => c.user_id);
+      const coversByUser = groupBy(covers, (c) => c.user_id);
 
       for (const [userId, userGoals] of groupBy(goals, (g) => g.user_id)) {
         const input: MeasureInput = {
@@ -203,10 +237,32 @@ export async function GET(request: NextRequest) {
 
   const sessionsByUser = groupBy(sessions, (s) => s.user_id);
   const songsByUser = groupBy(learning, (s) => s.user_id);
-  const logsByUser = groupBy(
-    (logsResult.data ?? []) as { user_id: string; type: string; data: { songId?: string } | null; sent_at: string }[],
-    (l) => l.user_id
+  const logsByUser = groupBy(logs, (l) => l.user_id);
+
+  const practiceDaysByUser = new Map<string, Set<string>>(
+    userIds.map((userId) => [
+      userId,
+      new Set((sessionsByUser.get(userId) ?? []).map((s) => parisDate(new Date(s.practiced_at)))),
+    ])
   );
+
+  // Le rappel annonce la longueur de la serie : pour ceux dont la serie est
+  // en danger, on lit aussi ce qui precede la fenetre de 60 jours.
+  const atRisk = userIds.filter((userId) => isStreakLastChance(practiceDaysByUser.get(userId)!, today));
+  if (atRisk.length > 0) {
+    const older = await fetchAllRows<{ user_id: string; practiced_at: string }>((from, to) =>
+      supabaseAdmin
+        .from("practice_sessions")
+        .select("user_id, practiced_at")
+        .in("user_id", atRisk)
+        .lt("practiced_at", since)
+        .order("id")
+        .range(from, to)
+    );
+    for (const row of older) {
+      practiceDaysByUser.get(row.user_id)?.add(parisDate(new Date(row.practiced_at)));
+    }
+  }
 
   let sent = 0;
   const picked: Record<string, number> = {};
@@ -215,7 +271,7 @@ export async function GET(request: NextRequest) {
     const input: ReminderInput = {
       today,
       weekday,
-      practiceDays: new Set((sessionsByUser.get(userId) ?? []).map((s) => parisDate(new Date(s.practiced_at)))),
+      practiceDays: practiceDaysByUser.get(userId) ?? new Set<string>(),
       learningSongs: (songsByUser.get(userId) ?? []).map((song) => ({
         id: song.id,
         title: song.title,

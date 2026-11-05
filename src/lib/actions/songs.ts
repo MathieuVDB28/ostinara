@@ -397,7 +397,7 @@ export async function updateSong(
 
     // Vérifier les challenges de maîtrise de morceau
     if (progressType === "song_mastered") {
-      updateChallengeProgress(undefined, id).catch(console.error);
+      updateChallengeProgress(id).catch(console.error);
     }
 
     // Un morceau maitrise peut debloquer un badge.

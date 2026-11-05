@@ -8,6 +8,7 @@ import { createActivity } from "./activities";
 import { derivedProgressPercent } from "@/lib/song-progress";
 import { getMyPrimaryInstrument } from "@/lib/instruments-server";
 import { computeStreak, mondayOf, parisDay } from "@/lib/streak";
+import { isInFuture } from "@/lib/datetime-local";
 import type {
   SongBpmPoint,
   PracticeSession,
@@ -188,6 +189,9 @@ export async function createPracticeSession(
   if (!user) {
     return { success: false, error: await tErr("notAuthenticated") };
   }
+  if (input.practiced_at && isInFuture(input.practiced_at)) {
+    return { success: false, error: await tErr("sessionInFuture") };
+  }
 
   const instrument = input.instrument ?? (await getMyPrimaryInstrument());
 
@@ -294,8 +298,7 @@ export async function createPracticeSession(
 
   // Mettre à jour la progression des challenges actifs, une fois pour
   // toute la session.
-  const totalMinutes = entries.reduce((sum, entry) => sum + entry.duration_minutes, 0);
-  updateChallengeProgress(totalMinutes).catch(console.error);
+  await updateChallengeProgress().catch(console.error);
 
   // La progression de chaque morceau suit son tempo, plus le curseur.
   const songIds = [...new Set(entries.map((entry) => entry.song_id).filter((id): id is string => Boolean(id)))];
@@ -609,6 +612,9 @@ export async function updatePracticeSession(
   if (!user) {
     return { success: false, error: await tErr("notAuthenticated") };
   }
+  if (input.practiced_at && isInFuture(input.practiced_at)) {
+    return { success: false, error: await tErr("sessionInFuture") };
+  }
 
   const { data: updated, error } = await supabase
     .from("practice_sessions")
@@ -628,6 +634,7 @@ export async function updatePracticeSession(
 
   // Les amis voient la session corrigee, pas l'ancienne.
   await refreshSessionActivity(supabase, user.id, updated?.session_group_id ?? id);
+  await updateChallengeProgress().catch(console.error);
 
   // Corriger un tempo a la baisse doit corriger la progression du morceau,
   // sur l'instrument de la session.
@@ -663,6 +670,9 @@ export async function updatePracticeSessionGroup(
   }
   if (input.rows.length === 0 || input.rows.some((row) => !(row.duration_minutes >= 1))) {
     return { success: false, error: await tErr("updateFailed") };
+  }
+  if (input.shared.practiced_at && isInFuture(input.shared.practiced_at)) {
+    return { success: false, error: await tErr("sessionInFuture") };
   }
 
   if (input.removed.length > 0) {
@@ -706,6 +716,7 @@ export async function updatePracticeSessionGroup(
 
   // Les amis voient la session corrigee, pas l'ancienne.
   await refreshSessionActivity(supabase, user.id, groupId);
+  await updateChallengeProgress().catch(console.error);
 
   // Un tempo corrige corrige la progression du morceau, sur l'instrument joue.
   await Promise.all(
@@ -746,6 +757,7 @@ export async function deletePracticeSession(
   // Une session effacee quitte le feed ; une ligne d'une session a
   // plusieurs morceaux en sort seule.
   await refreshSessionActivity(supabase, user.id, deleted?.session_group_id ?? id);
+  await updateChallengeProgress().catch(console.error);
 
   revalidatePath("/progress");
   revalidatePath("/library");

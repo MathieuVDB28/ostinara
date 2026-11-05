@@ -1,5 +1,6 @@
 {
   "notAuthenticated": "Not signed in",
+  "sessionInFuture": "The session date is in the future",
   "deleteFailed": "Couldn't delete",
   "updateFailed": "Couldn't update",
   "notBandMember": "You're not a member of this band",

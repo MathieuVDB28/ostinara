@@ -68,6 +68,15 @@ function shift(date: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** Hier etait le jour de creux : la serie se perd ce soir, sauf session aujourd'hui. */
+export function isStreakLastChance(practiceDays: Set<string>, today: string): boolean {
+  return (
+    !practiceDays.has(today) &&
+    !practiceDays.has(shift(today, -1)) &&
+    practiceDays.has(shift(today, -2))
+  );
+}
+
 export function pickReminder(input: ReminderInput): Reminder | null {
   const { today, weekday, practiceDays, learningSongs, remainingGoals, recent } = input;
 
@@ -85,8 +94,7 @@ export function pickReminder(input: ReminderInput): Reminder | null {
   // 1. Serie en danger — le plus pressant : hier etait le jour de creux,
   //    elle se perd ce soir. Rien la veille : un creux ne la menace pas encore.
   const streak = computeStreak(practiceDays, today).current;
-  const lastChance = !practiceDays.has(shift(today, -1)) && practiceDays.has(shift(today, -2));
-  if (lastChance && streak >= STREAK_MIN) {
+  if (isStreakLastChance(practiceDays, today) && streak >= STREAK_MIN) {
     return {
       type: "reminder_streak",
       text: (t) => ({ title: t("reminder.streakTitle", { count: streak }), body: t("reminder.streakBody") }),
