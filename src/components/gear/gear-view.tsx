@@ -30,6 +30,7 @@ import { GearSetupCard } from "@/components/gear/gear-setup-card";
 import { GearWishlistCard } from "@/components/gear/gear-wishlist-card";
 import { AudienceField, type Audience } from "@/components/ui/audience-field";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
+import { PLANS } from "@/lib/stripe/config";
 import { Icon } from "@/components/ui/icon";
 
 interface GearViewProps {
@@ -124,9 +125,9 @@ export function GearView({
 
   // --- Plan limits ---
   const isFree = userPlan === "free";
-  const GEAR_LIMIT_FREE = 10;
-  const SETUP_LIMIT_FREE = 2;
-  const WISHLIST_LIMIT_FREE = 10;
+  const GEAR_LIMIT_FREE = PLANS.free.limits!.gear;
+  const SETUP_LIMIT_FREE = PLANS.free.limits!.gearSetups;
+  const WISHLIST_LIMIT_FREE = PLANS.free.limits!.gearWishlist;
   const canAddGear = !isFree || gearItems.length < GEAR_LIMIT_FREE;
   const canAddSetup = !isFree || gearSetups.length < SETUP_LIMIT_FREE;
   const canAddWishlist = !isFree || wishlistItems.length < WISHLIST_LIMIT_FREE;

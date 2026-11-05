@@ -173,7 +173,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 
 ### Plan gating
 - Fonction `requirePaidPlan()` dans `src/lib/actions/plan.ts`
-- Composant `ProUpsell` affiche partout pour les features Pro/Band
+- Composant `ProUpsell` affiche partout pour les features Pro/Band ; `plan="band"` pour une fonction reservee au Band (jam, chat de groupe, fiche technique)
 - Verification cote serveur dans les server actions (limites de creation)
 
 ### Uploads fichiers
@@ -325,6 +325,10 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - **Chat en direct** : messages dans la session (jam de groupe, plan Band), panneau `ChatSheet` avec compteur de non-lus sur telephone, efface a la fin de la jam par trigger (migration `20261116_group_chat`). Sans plan Band, la page de la jam explique pourquoi elle reste fermee
 - **Depuis Jouer** : une setlist de groupe propose de lancer ou rejoindre la jam (`BandJamCallout`), a cote du chrono solo
 - **Presence** : tracking des participants connectes via Supabase Presence
+- **Hote** : seul l'hote pilote et termine la jam (action + RLS, migration `20261118_jam_host_only`)
+- **Jam oubliee** : sans changement depuis 12 h (`JAM_SESSION_TTL_MS`), elle ne compte plus comme en cours, une nouvelle jam la ferme, et le cron `practice-reminders` ferme les autres
+- **Ecran** : reste allume pendant la jam (`useWakeLock`)
+- **Session guidee** : le nom affiche d'une jam sans groupe (setlist perso), ouverte a tous les plans
 
 ### Audio (`/audio`)
 - **Identification de morceaux** : enregistrement micro → API AudD.io → resultat avec infos du catalogue
@@ -1053,6 +1057,7 @@ EMAIL_FROM=                   # ex. "Ostinara <bonjour@mondomaine.fr>" (domaine 
 | Amis | 5 | illimite | illimite |
 | Wishlist | 20 | illimite | illimite |
 | Instruments | 2 | illimite | illimite |
+| Matos (equipements / setups / envies) | 5 / 1 / 10 | illimite | illimite |
 | Stats avancees | non | oui | oui |
 | Lecteur Deezer & tablatures | non | oui | oui |
 | Identification audio | non | oui | oui |

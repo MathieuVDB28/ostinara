@@ -64,6 +64,7 @@ export function BandDetailView({
   const [showCreateSetlist, setShowCreateSetlist] = useState(false);
   const [showCreateRehearsal, setShowCreateRehearsal] = useState(false);
   const [showJam, setShowJam] = useState(false);
+  const [showJamUpsell, setShowJamUpsell] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [rehearsalView, setRehearsalView] = useState<"list" | "calendar">("list");
 
@@ -132,7 +133,10 @@ export function BandDetailView({
             <Icon name="chat_bubble_outline" className="h-4 w-4" />
             {t("chat")}
           </button>
-          <button onClick={() => setShowJam(true)} className={CHIP}>
+          <button
+            onClick={() => (userPlan === "band" ? setShowJam(true) : setShowJamUpsell((open) => !open))}
+            className={CHIP}
+          >
             <Icon name="music_note" className="h-4 w-4" />
             {t("startJam")}
           </button>
@@ -152,6 +156,10 @@ export function BandDetailView({
           )}
         </div>
       </div>
+
+      {showJamUpsell && (
+        <ProUpsell plan="band" feature={t("jamUpsellTitle")} description={t("jamUpsellBody")} />
+      )}
 
       {activeJam && (
         <div className="flex items-center gap-3 border-y border-border py-3">
@@ -321,7 +329,7 @@ export function BandDetailView({
               />
             </div>
           ) : (
-            <ProUpsell feature={t("chatUpsellTitle")} description={t("chatUpsellBody")} />
+            <ProUpsell plan="band" feature={t("chatUpsellTitle")} description={t("chatUpsellBody")} />
           )}
         </ChatSheet>
       )}

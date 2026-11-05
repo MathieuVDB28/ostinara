@@ -19,12 +19,13 @@ import type {
   GearVisibility,
   CoverGear,
 } from "@/types";
+import { PLANS } from "@/lib/stripe/config";
 import { one, type Joined } from "@/lib/supabase/joins";
 import { OWN_GEAR_SELECT, PUBLIC_GEAR_COLUMNS, splitGearInput, withGearDetails } from "@/lib/gear-columns";
 
-const FREE_PLAN_GEAR_LIMIT = 5;
-const FREE_PLAN_SETUP_LIMIT = 1;
-const FREE_PLAN_GEAR_WISHLIST_LIMIT = 10;
+const FREE_PLAN_GEAR_LIMIT = PLANS.free.limits!.gear;
+const FREE_PLAN_SETUP_LIMIT = PLANS.free.limits!.gearSetups;
+const FREE_PLAN_GEAR_WISHLIST_LIMIT = PLANS.free.limits!.gearWishlist;
 
 // =============================================
 // Gear Items CRUD

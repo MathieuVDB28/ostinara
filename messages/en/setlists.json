@@ -91,6 +91,8 @@
     "setlistNotifsFailed": "Couldn't save this setting",
     "chat": "Chat",
     "closeChat": "Close chat",
+    "jamUpsellTitle": "Jam with your band",
+    "jamUpsellBody": "Jams, their shared metronome and their chat are part of the Band plan.",
     "chatUpsellTitle": "Band chat",
     "chatUpsellBody": "The general chat and jams are part of the Band plan."
   },
@@ -135,7 +137,7 @@
     "statVenue": "venue",
     "launching": "Starting…",
     "startJam": "Start a jam",
-    "startSoloJam": "Start a solo jam",
+    "startSoloJam": "Start a guided session",
     "duplicate": "Duplicate",
     "confirmDelete": "Confirm deletion",
     "program": "Program",

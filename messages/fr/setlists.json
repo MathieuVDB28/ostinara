@@ -91,6 +91,8 @@
     "setlistNotifsFailed": "Le réglage n'a pas pu être enregistré",
     "chat": "Chat",
     "closeChat": "Fermer le chat",
+    "jamUpsellTitle": "Jouer en jam avec le groupe",
+    "jamUpsellBody": "La jam, son métronome partagé et son chat sont réservés au plan Band.",
     "chatUpsellTitle": "Le chat du groupe",
     "chatUpsellBody": "Le chat général et les jams sont réservés au plan Band."
   },
@@ -135,7 +137,7 @@
     "statVenue": "lieu",
     "launching": "Lancement…",
     "startJam": "Lancer un jam",
-    "startSoloJam": "Lancer un jam solo",
+    "startSoloJam": "Lancer une session guidée",
     "duplicate": "Dupliquer",
     "confirmDelete": "Confirmer la suppression",
     "program": "Programme",

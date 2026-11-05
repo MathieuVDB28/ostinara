@@ -5,6 +5,7 @@ import { MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useJamSession } from "@/lib/hooks/use-jam-session";
+import { useWakeLock } from "@/lib/hooks/use-wake-lock";
 import { JamMetronome } from "./jam-metronome";
 import { JamChat } from "./jam-chat";
 import { JamParticipants } from "./jam-participants";
@@ -66,6 +67,9 @@ export function JamSessionView({
     initialSession,
     initialMessages,
   });
+
+  // L'appareil est pose sur un pupitre : personne ne touche l'ecran en jouant.
+  useWakeLock(session.status !== "ended");
 
   // Sur telephone, le chat s'ouvre par-dessus le metronome : le compteur dit
   // qu'on a ecrit au groupe, sans son ni vibration.

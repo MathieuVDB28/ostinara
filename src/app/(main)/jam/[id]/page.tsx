@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getJamSession, getJamMessages, joinJamSession } from "@/lib/actions/jam-sessions";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { JamSessionView } from "@/components/jam";
+import { isJamSessionStale } from "@/lib/jam-session";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -38,7 +39,8 @@ export default async function JamPage({ params }: JamPageProps) {
   }
 
   // Check if session is ended
-  if (session.status === "ended") {
+  // Une jam oubliee ne se rouvre pas depuis une vieille notification.
+  if (session.status === "ended" || isJamSessionStale(session)) {
     redirect("/setlists");
   }
 
@@ -58,6 +60,7 @@ export default async function JamPage({ params }: JamPageProps) {
       return (
         <div className="mx-auto max-w-xl space-y-4 p-4">
           <ProUpsell
+            plan="band"
             feature={t("bandRequiredTitle", { band: session.band.name })}
             description={t("bandRequiredBody")}
           />

@@ -8,6 +8,7 @@ import {
   type ReminderInput,
 } from "@/lib/notifications/practice-reminders";
 import { fetchAllRows } from "@/lib/supabase/fetch-all";
+import { JAM_SESSION_TTL_MS } from "@/lib/jam-session";
 import { LIVE_SESSION_TTL_MS } from "@/lib/live-session";
 import { isGoalDone, type MeasureInput } from "@/lib/weekly-plan-measure";
 import type { PracticeSession, Song, WeeklyGoal } from "@/types";
@@ -80,6 +81,14 @@ export async function GET(request: NextRequest) {
     .delete()
     .or(`updated_at.lt.${liveCutoff},ended_at.lt.${liveCutoff}`);
   if (liveError) console.error("[practice-reminders] live sessions:", liveError);
+
+  // Les jams oubliees : le trigger efface leur chat.
+  const { error: jamError } = await supabaseAdmin
+    .from("jam_sessions")
+    .update({ status: "ended", ended_at: now.toISOString() })
+    .in("status", ["waiting", "active", "paused"])
+    .lt("updated_at", new Date(now.getTime() - JAM_SESSION_TTL_MS).toISOString());
+  if (jamError) console.error("[practice-reminders] jam sessions:", jamError);
 
   const today = parisDate(now);
   const weekday = parisWeekday(now);

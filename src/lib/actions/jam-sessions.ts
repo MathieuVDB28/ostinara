@@ -1,9 +1,11 @@
 "use server";
 
+import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { extractSongsterrId, findSongsterrTrack } from "@/lib/services/songsterr";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import { isJamSessionStale } from "@/lib/jam-session";
 import { sendPushNotificationToMultipleUsers, type PushT } from "@/lib/notifications";
 import { getTranslations } from "next-intl/server";
 import type {
@@ -30,6 +32,22 @@ async function hasBandPlan(): Promise<boolean> {
     .single();
 
   return profile?.plan === "band";
+}
+
+/**
+ * Ferme une jam oubliee. Service role : seul l'hote a le droit d'ecrire, et il
+ * n'est peut-etre plus la. Le trigger efface le chat avec elle.
+ */
+async function closeForgottenJam(sessionId: string): Promise<void> {
+  const admin = createServiceRoleClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { error } = await admin
+    .from("jam_sessions")
+    .update({ status: "ended", ended_at: new Date().toISOString() })
+    .eq("id", sessionId);
+  if (error) console.error("Error closing forgotten jam session:", error);
 }
 
 // === Create a jam session (personal or band) ===
@@ -68,27 +86,29 @@ export async function createJamSession(
     // Check for existing active band session
     const { data: existingSession } = await supabase
       .from("jam_sessions")
-      .select("id")
+      .select("id, updated_at")
       .eq("band_id", bandId)
       .in("status", ["waiting", "active", "paused"])
       .single();
 
-    if (existingSession) {
+    if (existingSession && !isJamSessionStale(existingSession)) {
       return { success: false, error: await tErr("jamAlreadyRunning") };
     }
+    if (existingSession) await closeForgottenJam(existingSession.id);
   } else {
     // Personal jam: check for existing active personal session
     const { data: existingSession } = await supabase
       .from("jam_sessions")
-      .select("id")
+      .select("id, updated_at")
       .is("band_id", null)
       .eq("host_id", user.id)
       .in("status", ["waiting", "active", "paused"])
       .single();
 
-    if (existingSession) {
+    if (existingSession && !isJamSessionStale(existingSession)) {
       return { success: false, error: await tErr("ownJamRunning") };
     }
+    if (existingSession) await closeForgottenJam(existingSession.id);
   }
 
   // Premier element jouable de la setlist (morceau ou exercice)
@@ -225,7 +245,7 @@ export async function getActiveJamSession(
     .in("status", ["waiting", "active", "paused"])
     .single();
 
-  if (error || !data) return null;
+  if (error || !data || isJamSessionStale(data)) return null;
 
   // Get setlist if present
   let setlist: SetlistWithDetails | null = null;
@@ -414,6 +434,17 @@ export async function updateJamSessionState(
 
   if (!user) {
     return { success: false, error: await tErr("notAuthenticated") };
+  }
+
+  // Seul l'hote pilote la jam (la RLS le garantit aussi).
+  const { data: jam } = await supabase
+    .from("jam_sessions")
+    .select("host_id")
+    .eq("id", sessionId)
+    .maybeSingle();
+
+  if (jam?.host_id !== user.id) {
+    return { success: false, error: await tErr("forbidden") };
   }
 
   const updateData: Record<string, unknown> = { ...updates };

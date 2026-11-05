@@ -5,6 +5,18 @@
     "band": "Pour les groupes"
   },
   "features": {
+    "metronomeNotebook": "Métronome et carnet de pratique",
+    "challengesForum": "Défis entre amis et forum",
+    "joinBands": "Rejoindre un groupe sur invitation",
+    "gear5": "5 équipements de matos max",
+    "unlimitedGear": "Matos illimité",
+    "tuner": "Accordeur guitare et basse",
+    "albumRecommendations": "Recommandations d'albums",
+    "liveSessions": "Sessions en direct de tes amis, avec chat",
+    "jamSessions": "Jams de groupe en direct",
+    "rehearsals": "Répètes avec présence et rappels",
+    "bandChat": "Chat de groupe",
+    "techRider": "Fiche technique",
     "songs10": "10 morceaux max",
     "instruments2": "2 instruments max",
     "covers3": "3 covers max",
@@ -20,10 +32,18 @@
     "audioRecognition": "Reconnaissance audio",
     "proBadge": "Badge Pro",
     "everythingPro": "Tout ce qui est dans Pro",
-    "bandSpaces": "Espaces groupe",
+    "bandSpaces": "Créer et animer tes groupes",
     "sharedSetlists": "Setlists partagées",
     "bandBadge": "Badge Band",
     "threeSeats": "3 personnes sur un même plan"
+  },
+  "upsell": {
+    "proTag": "Pro",
+    "proEyebrow": "Plans Pro et Band",
+    "proCta": "Passer Pro",
+    "bandTag": "Band",
+    "bandEyebrow": "Plan Band",
+    "bandCta": "Passer au plan Band"
   },
   "pricePerYear": "{price} €/an",
   "pricePerMonth": "{price} €/mois",

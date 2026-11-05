@@ -43,7 +43,7 @@ export function BandJamCallout({ bandId, bandName, setlistId, userPlan }: BandJa
     };
   }, [bandId, canJam]);
 
-  if (!canJam) return <ProUpsell compact feature={t("jamUpsell")} description="" />;
+  if (!canJam) return <ProUpsell compact plan="band" feature={t("jamUpsell")} description="" />;
 
   const launch = async () => {
     setLaunching(true);

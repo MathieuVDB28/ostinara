@@ -21,6 +21,9 @@
     "musician": "Musicien"
   },
   "view": {
+    "upsellTitle": "La fiche technique du groupe",
+    "upsellBody": "La fiche technique et le plan de scène sont réservés au plan Band.",
+    "upsellBack": "Retour à {band}",
     "saveFailed": "Erreur lors de la sauvegarde",
     "back": "Retour aux groupes",
     "title": "Fiche technique",

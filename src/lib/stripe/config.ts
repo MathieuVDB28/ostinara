@@ -5,10 +5,11 @@ import type { Translator } from '@/i18n/types';
 export type PlansT = Translator<'plans'>;
 
 export type PlanFeature =
-  | 'songs10' | 'instruments2' | 'covers3' | 'friends5' | 'wishlist20'
-  | 'unlimitedSongs' | 'unlimitedInstruments' | 'unlimitedCovers' | 'unlimitedFriends' | 'unlimitedWishlist'
-  | 'advancedStats' | 'deezerTabs' | 'audioRecognition' | 'proBadge'
-  | 'threeSeats' | 'everythingPro' | 'bandSpaces' | 'sharedSetlists' | 'bandBadge';
+  | 'metronomeNotebook' | 'challengesForum' | 'joinBands'
+  | 'songs10' | 'instruments2' | 'covers3' | 'friends5' | 'wishlist20' | 'gear5'
+  | 'unlimitedSongs' | 'unlimitedInstruments' | 'unlimitedCovers' | 'unlimitedFriends' | 'unlimitedWishlist' | 'unlimitedGear'
+  | 'advancedStats' | 'deezerTabs' | 'audioRecognition' | 'tuner' | 'albumRecommendations' | 'liveSessions' | 'proBadge'
+  | 'threeSeats' | 'everythingPro' | 'bandSpaces' | 'jamSessions' | 'rehearsals' | 'sharedSetlists' | 'bandChat' | 'techRider' | 'bandBadge';
 
 export type BillingInterval = 'monthly' | 'yearly';
 
@@ -23,6 +24,9 @@ export interface PlanConfig {
     wishlist: number;
     albumWishlist: number;
     instruments: number;
+    gear: number;
+    gearSetups: number;
+    gearWishlist: number;
   };
   monthly?: {
     price: number;
@@ -36,11 +40,15 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
   free: {
     name: 'Free',
     features: [
+      'metronomeNotebook',
+      'challengesForum',
+      'joinBands',
       'songs10',
       'instruments2',
       'covers3',
       'friends5',
       'wishlist20',
+      'gear5',
     ],
     limits: {
       songs: 10,
@@ -49,6 +57,9 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
       wishlist: 20,
       albumWishlist: 20,
       instruments: 2,
+      gear: 5,
+      gearSetups: 1,
+      gearWishlist: 10,
     },
   },
   pro: {
@@ -59,9 +70,13 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
       'unlimitedCovers',
       'unlimitedFriends',
       'unlimitedWishlist',
+      'unlimitedGear',
       'advancedStats',
       'deezerTabs',
       'audioRecognition',
+      'tuner',
+      'albumRecommendations',
+      'liveSessions',
       'proBadge',
     ],
     monthly: {
@@ -76,10 +91,12 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
     features: [
       'threeSeats',
       'everythingPro',
-      'deezerTabs',
-      'audioRecognition',
       'bandSpaces',
+      'jamSessions',
+      'rehearsals',
       'sharedSetlists',
+      'bandChat',
+      'techRider',
       'bandBadge',
     ],
     monthly: {
