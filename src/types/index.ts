@@ -1034,6 +1034,8 @@ export interface Band {
   description?: string;
   cover_url?: string;
   owner_id: string;
+  /** Depuis quand le titulaire n'a plus le plan Band. Tenu par la base. */
+  plan_lapsed_at?: string | null;
   created_at: string;
   updated_at: string;
 }

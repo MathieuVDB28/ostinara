@@ -26,12 +26,15 @@ interface RehearsalDetailViewProps {
   rehearsal: RehearsalWithDetails;
   currentUserId: string;
   messages: BandMessageWithProfile[];
+  /** Groupe en lecture seule : le plan Band de son titulaire a pris fin. */
+  readOnly?: boolean;
 }
 
 export function RehearsalDetailView({
   rehearsal: initialRehearsal,
   currentUserId,
   messages,
+  readOnly = false,
 }: RehearsalDetailViewProps) {
   const t = useTranslations("rehearsals.detail");
   const tc = useTranslations("common");
@@ -152,7 +155,7 @@ export function RehearsalDetailView({
       </div>
 
       {/* RSVP Buttons (if active) */}
-      {isActive && myParticipant && (
+      {isActive && myParticipant && !readOnly && (
         <div className="border-y border-border py-3">
           <p className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("yourAttendance")}</p>
           <div className="grid grid-cols-3 gap-1.5">
@@ -373,7 +376,7 @@ export function RehearsalDetailView({
           <div>
             <div className="mb-2 flex items-center justify-between border-b border-border pb-1.5">
               <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t("notes")}</h3>
-              {!editingNotes && (
+              {!editingNotes && !readOnly && (
                 <button
                   onClick={() => setEditingNotes(true)}
                   className="text-xs font-semibold text-foreground hover:underline"
@@ -414,7 +417,7 @@ export function RehearsalDetailView({
           </div>
 
           {/* Actions */}
-          {isActive && (
+          {isActive && !readOnly && (
             <div className="flex flex-wrap gap-2">
               {isPast && (
                 <button
@@ -479,6 +482,7 @@ export function RehearsalDetailView({
             currentUserId={currentUserId}
             initialMessages={messages}
             title={t("chatTitle", { title: rehearsal.title })}
+            readOnly={readOnly}
           />
         </div>
       )}

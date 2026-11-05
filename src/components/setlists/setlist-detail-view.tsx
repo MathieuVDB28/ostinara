@@ -59,6 +59,8 @@ interface SetlistDetailViewProps {
   setlist: SetlistWithDetails;
   songSources: { member: Profile | null; songs: Song[] }[];
   userPlan: UserPlan;
+  /** Groupe en lecture seule : le plan Band de son titulaire a pris fin. */
+  readOnly?: boolean;
   /** Setlist de groupe seulement : qui a change quoi. */
   history?: SetlistHistoryPage | null;
 }
@@ -103,6 +105,7 @@ export function SetlistDetailView({
   songSources,
   userPlan,
   history = null,
+  readOnly = false,
 }: SetlistDetailViewProps) {
   const t = useTranslations("setlists.detail");
   const tc = useTranslations("common");
@@ -327,7 +330,7 @@ export function SetlistDetailView({
             </dl>
 
             <div className="mt-4 flex flex-wrap gap-1.5">
-              {(!setlist.band_id || userPlan === "band") && (
+              {!readOnly && (
                 <button
                   onClick={handleLaunchJam}
                   disabled={launchingJam}
@@ -337,16 +340,20 @@ export function SetlistDetailView({
                   {launchingJam ? t("launching") : setlist.band_id ? t("startJam") : t("startSoloJam")}
                 </button>
               )}
-              <button onClick={() => setIsEditingHeader(true)} className={ACTION}>
-                <Icon name="edit" className="h-4 w-4" />
-                {tc("edit")}
-              </button>
+              {!readOnly && (
+                <button onClick={() => setIsEditingHeader(true)} className={ACTION}>
+                  <Icon name="edit" className="h-4 w-4" />
+                  {tc("edit")}
+                </button>
+              )}
               <SetlistPDFExport setlist={setlist} />
-              <button onClick={handleDuplicate} className={ACTION}>
-                <Icon name="layers" className="h-4 w-4" />
-                {t("duplicate")}
-              </button>
-              {confirmDelete ? (
+              {!readOnly && (
+                <button onClick={handleDuplicate} className={ACTION}>
+                  <Icon name="layers" className="h-4 w-4" />
+                  {t("duplicate")}
+                </button>
+              )}
+              {readOnly ? null : confirmDelete ? (
                 <span className="flex items-center gap-1.5">
                   <button
                     onClick={handleDeleteSetlist}
@@ -378,13 +385,15 @@ export function SetlistDetailView({
           <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
             {t("program")}
           </h2>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
-          >
-            <Icon name="add" className="h-3.5 w-3.5" strokeWidth={2} />
-            {t("add")}
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
+            >
+              <Icon name="add" className="h-3.5 w-3.5" strokeWidth={2} />
+              {t("add")}
+            </button>
+          )}
         </div>
 
         {items.length > 0 ? (
@@ -405,6 +414,7 @@ export function SetlistDetailView({
                     index={index}
                     onEdit={() => setEditingItem(item)}
                     onDelete={() => handleDeleteItem(item.id)}
+                    readOnly={readOnly}
                   />
                 ))}
               </div>
@@ -413,13 +423,15 @@ export function SetlistDetailView({
         ) : (
           <div className="flex flex-col items-start gap-2 py-8">
             <p className="text-muted-foreground">{t("empty")}</p>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-border px-4 text-sm font-semibold transition-colors hover:bg-accent"
-            >
-              <Icon name="add" className="h-4 w-4" />
-              {t("addFirst")}
-            </button>
+            {!readOnly && (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-border px-4 text-sm font-semibold transition-colors hover:bg-accent"
+              >
+                <Icon name="add" className="h-4 w-4" />
+                {t("addFirst")}
+              </button>
+            )}
           </div>
         )}
       </div>

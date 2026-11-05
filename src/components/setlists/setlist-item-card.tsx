@@ -10,6 +10,7 @@ interface SetlistItemCardProps {
   index: number;
   onEdit: () => void;
   onDelete: () => void;
+  readOnly?: boolean;
 }
 
 function formatDuration(seconds: number): string {
@@ -134,6 +135,7 @@ export function SetlistItemCard({
   index,
   onEdit,
   onDelete,
+  readOnly = false,
 }: SetlistItemCardProps) {
   const t = useTranslations("setlists.item");
   const te = useTranslations("enums");
@@ -144,7 +146,7 @@ export function SetlistItemCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.id });
+  } = useSortable({ id: item.id, disabled: readOnly });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -164,6 +166,7 @@ export function SetlistItemCard({
       }`}
     >
       {/* Drag handle */}
+      {!readOnly && (
       <button aria-label={t("reorder")}
         {...attributes}
         {...listeners}
@@ -183,6 +186,7 @@ export function SetlistItemCard({
           />
         </svg>
       </button>
+      )}
 
       {/* Position number */}
       {/* L'ordre du set : c'est l'information, en grand */}
@@ -339,6 +343,7 @@ export function SetlistItemCard({
       )}
 
       {/* Actions (visible on hover) */}
+      {!readOnly && (
       <div className="flex shrink-0 gap-1 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
         <button aria-label={t("edit")}
           onClick={onEdit}
@@ -377,6 +382,7 @@ export function SetlistItemCard({
           </svg>
         </button>
       </div>
+      )}
     </div>
   );
 }

@@ -35,7 +35,8 @@
     "bandSpaces": "Create and run your bands",
     "sharedSetlists": "Shared setlists",
     "bandBadge": "Band badge",
-    "threeSeats": "3 people on one plan"
+    "fivePeople": "5 people on one plan",
+    "bandForAll": "Jams and chat open to the whole band (5 members max)"
   },
   "upsell": {
     "proTag": "Pro",
@@ -85,7 +86,7 @@
     "faq": {
       "shared": {
         "q": "How do the 3 Band plan seats work?",
-        "a": "The account holder offers 2 seats to friends or members of their bands. Each guest accepts and gets the full Band plan. If the holder cancels, guests go back to the Free plan at the end of the holder's billing period."
+        "a": "The account holder offers 4 seats to friends or members of their bands. Each guest accepts and gets the full Band plan. If the holder cancels, guests go back to the Free plan at the end of the holder's billing period, and their bands become read-only 30 days later."
       },
       "change": {
         "q": "Can I change plans at any time?",
@@ -123,13 +124,14 @@
     "proration": "Plan changes take effect immediately. If you upgrade, you only pay the prorated difference. If you downgrade, the credit is applied to your next invoice."
   },
   "seats": {
-    "ownerTitle": "Your 3-person Band plan",
-    "ownerBody": "{count, plural, =0 {Your 2 seats are assigned.} one {You have # seat left to offer a friend or band member.} other {You have # seats left to offer friends or band members.}}",
+    "ownerTitle": "Your 5-person Band plan",
+    "ownerBody": "{count, plural, =0 {Your 4 seats are assigned.} one {You have # seat left to offer a friend or band member.} other {You have # seats left to offer friends or band members.}}",
     "invite": "Offer a seat",
     "inviteOne": "Invite",
     "search": "Search for a friend or member",
     "noCandidate": "Nobody to invite right now.",
-    "hasPlan": "Already on a plan: will have to leave it first",
+    "hasPlan": "Already has a Band plan: must leave it first",
+    "hasPro": "Their Pro subscription will end at the end of its period",
     "close": "Close",
     "waiting": "Invitation sent",
     "activeSeat": "Enjoying your Band plan",
@@ -137,6 +139,7 @@
     "takeBack": "Take seat back",
     "invitationTitle": "You've been offered a seat",
     "invitationBody": "Invites you to their Band plan, free for you",
+    "invitationBodyPro": "Invites you to their Band plan. Your Pro subscription will no longer renew",
     "accept": "Accept",
     "decline": "Decline",
     "memberTitle": "Your Band plan is offered by",

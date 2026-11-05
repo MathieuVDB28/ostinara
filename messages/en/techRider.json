@@ -21,9 +21,6 @@
     "musician": "Musician"
   },
   "view": {
-    "upsellTitle": "Your band's tech rider",
-    "upsellBody": "The tech rider and stage plot are part of the Band plan.",
-    "upsellBack": "Back to {band}",
     "saveFailed": "Couldn't save",
     "back": "Back to bands",
     "title": "Tech rider",

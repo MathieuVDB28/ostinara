@@ -50,7 +50,7 @@
     "jamLaunch": "Start a band jam",
     "jamJoin": "Join the jam",
     "jamFailed": "The jam couldn't start. Try again.",
-    "jamUpsell": "Jam with your band (Band plan)"
+    "jamReadOnly": "{band} is read-only: jams reopen when its holder gets the Band plan back."
   },
   "carnet": {
     "sessions": "sessions",

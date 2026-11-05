@@ -40,8 +40,8 @@
     "chat": "Chat",
     "closeChat": "Fermer le chat",
     "unread": "{count, plural, one {# message non lu} other {# messages non lus}}",
-    "bandRequiredTitle": "{band} joue en jam",
-    "bandRequiredBody": "Les jams et leur chat sont réservés au plan Band. Passe au plan Band pour rejoindre ton groupe en direct."
+    "bandRequiredTitle": "{band} est en lecture seule",
+    "bandRequiredBody": "La jam rouvre quand le titulaire du groupe reprend le plan Band, ou le transfère à un membre qui l'a."
   },
   "queue": {
     "setlist": "Setlist : {name}",

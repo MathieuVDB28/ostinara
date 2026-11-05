@@ -35,7 +35,8 @@
     "bandSpaces": "Créer et animer tes groupes",
     "sharedSetlists": "Setlists partagées",
     "bandBadge": "Badge Band",
-    "threeSeats": "3 personnes sur un même plan"
+    "fivePeople": "5 personnes sur un même plan",
+    "bandForAll": "Jam et chat ouverts à tout le groupe (5 membres max)"
   },
   "upsell": {
     "proTag": "Pro",
@@ -85,7 +86,7 @@
     "faq": {
       "shared": {
         "q": "Comment fonctionnent les 3 places du plan Band ?",
-        "a": "Le titulaire offre 2 places à des amis ou à des membres de ses groupes. Chaque invité accepte et profite de tout le plan Band. Si le titulaire résilie, les invités repassent au plan Free à la fin de sa période de facturation."
+        "a": "Le titulaire offre 4 places à des amis ou à des membres de ses groupes. Chaque invité accepte et profite de tout le plan Band. Si le titulaire résilie, les invités repassent au plan Free à la fin de sa période de facturation, et ses groupes passent en lecture seule 30 jours plus tard."
       },
       "change": {
         "q": "Puis-je changer de plan à tout moment ?",
@@ -123,13 +124,14 @@
     "proration": "Les changements de plan sont effectifs immédiatement. Si tu passes à un plan supérieur, tu ne paies que la différence au prorata. Si tu passes à un plan inférieur, le crédit est appliqué sur ta prochaine facture."
   },
   "seats": {
-    "ownerTitle": "Ton plan Band à 3",
-    "ownerBody": "{count, plural, =0 {Tes 2 places sont attribuées.} one {Il te reste # place à offrir à un ami ou à un membre de tes groupes.} other {Il te reste # places à offrir à des amis ou à des membres de tes groupes.}}",
+    "ownerTitle": "Ton plan Band à 5",
+    "ownerBody": "{count, plural, =0 {Tes 4 places sont attribuées.} one {Il te reste # place à offrir à un ami ou à un membre de tes groupes.} other {Il te reste # places à offrir à des amis ou à des membres de tes groupes.}}",
     "invite": "Offrir une place",
     "inviteOne": "Inviter",
     "search": "Chercher un ami ou un membre",
     "noCandidate": "Personne à inviter pour l'instant.",
-    "hasPlan": "A déjà un plan : devra d'abord le quitter",
+    "hasPlan": "A déjà un plan Band : devra d'abord le quitter",
+    "hasPro": "Son abonnement Pro s'arrêtera à la fin de sa période",
     "close": "Fermer",
     "waiting": "Invitation envoyée",
     "activeSeat": "Profite de ton plan Band",
@@ -137,6 +139,7 @@
     "takeBack": "Reprendre la place",
     "invitationTitle": "On t'offre une place",
     "invitationBody": "T'invite sur son plan Band, gratuitement pour toi",
+    "invitationBodyPro": "T'invite sur son plan Band. Ton abonnement Pro ne sera plus renouvelé",
     "accept": "Accepter",
     "decline": "Refuser",
     "memberTitle": "Ton plan Band est offert par",

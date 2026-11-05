@@ -5,6 +5,7 @@ import { getStripeServer } from '@/lib/stripe/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { getPlanFromPriceId } from '@/lib/stripe/config';
 import { activeSeatMembers, notifySeatRemoved } from '@/lib/notifications/band-seats';
+import { holdsActiveSeat, restorePaidPlan } from '@/lib/band-seat-billing';
 
 // Lazy initialization for supabase admin client
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,10 +65,21 @@ async function writePlanAndNotifySeats(
   plan: string,
   details: Parameters<typeof writeSubscription>[2]
 ): Promise<{ error: unknown }> {
+  // Un ancien abonne Pro sur une place : la fin de son abonnement ne change pas
+  // son plan, c'est la place qui le donne.
+  if (await holdsActiveSeat(userId)) {
+    return writeSubscription(userId, null, details);
+  }
+
   const members = plan === 'band' ? [] : await activeSeatMembers(userId);
   const result = await writeSubscription(userId, plan, details);
   if (!result.error) {
-    await Promise.all(members.map((memberId) => notifySeatRemoved(memberId, userId)));
+    await Promise.all(
+      members.map(async (memberId) => {
+        await restorePaidPlan(memberId);
+        await notifySeatRemoved(memberId, userId);
+      })
+    );
   }
   return result;
 }

@@ -215,6 +215,7 @@ export default function SubscriptionPage() {
         <BandSeatsSection
           seats={seats}
           canShare={subscription?.plan === "band" && !seats.mySeat}
+          myPlan={subscription?.plan}
           onChange={loadSubscription}
         />
       )}

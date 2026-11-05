@@ -91,10 +91,18 @@
     "setlistNotifsFailed": "Couldn't save this setting",
     "chat": "Chat",
     "closeChat": "Close chat",
-    "jamUpsellTitle": "Jam with your band",
-    "jamUpsellBody": "Jams, their shared metronome and their chat are part of the Band plan.",
-    "chatUpsellTitle": "Band chat",
-    "chatUpsellBody": "The general chat and jams are part of the Band plan."
+    "graceBanner": "{name}'s Band plan has ended. This band becomes read-only on {date}.",
+    "readOnlyBanner": "This band is read-only: {name}'s Band plan has ended. It reopens if its holder gets the plan back or transfers it to a member who has it.",
+    "renewPlan": "Get the Band plan back",
+    "transferTitle": "Transfer this band",
+    "transferHint": "The new holder needs the Band plan. You stay on as an admin.",
+    "transferNobody": "Nobody in this band has the Band plan: offer them a seat, or get the plan back yourself.",
+    "transferChoose": "Choose a member",
+    "transferAction": "Transfer",
+    "transferConfirm": "Confirm the transfer",
+    "transferFailed": "The transfer failed.",
+    "offerSeat": "Offer a seat",
+    "offerSeatFailed": "The invitation failed."
   },
   "bandCard": {
     "confirmLeave": "Are you sure you want to leave this band?",

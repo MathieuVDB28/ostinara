@@ -1,5 +1,6 @@
 "use client";
 
+import type { UserPlan } from "@/types";
 import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -41,10 +42,11 @@ interface BandSeatsSectionProps {
   seats: BandSeatsOverview;
   /** Le plan vient d'un abonnement Band du compte : il peut offrir ses places. */
   canShare: boolean;
+  myPlan?: UserPlan;
   onChange: () => Promise<void> | void;
 }
 
-export function BandSeatsSection({ seats, canShare, onChange }: BandSeatsSectionProps) {
+export function BandSeatsSection({ seats, canShare, myPlan, onChange }: BandSeatsSectionProps) {
   const t = useTranslations("plans.seats");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +99,7 @@ export function BandSeatsSection({ seats, canShare, onChange }: BandSeatsSection
         <section key={seat.id} className="mb-6 border-y border-border py-4">
           <h2 className={TITLE}>{t("invitationTitle")}</h2>
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <Person person={seat.person} detail={t("invitationBody")} />
+            <Person person={seat.person} detail={myPlan === "pro" ? t("invitationBodyPro") : t("invitationBody")} />
             <button type="button" disabled={pending} onClick={() => run(() => respondToBandSeat(seat.id, true))} className={PRIMARY}>
               {t("accept")}
             </button>
@@ -158,7 +160,7 @@ export function BandSeatsSection({ seats, canShare, onChange }: BandSeatsSection
                 <ul className="mt-2 max-h-72 divide-y divide-border overflow-y-auto">
                   {filtered.map((person) => (
                     <li key={person.id} className="flex items-center gap-3 py-2.5">
-                      <Person person={person} detail={person.plan === "free" ? undefined : t("hasPlan")} />
+                      <Person person={person} detail={person.plan === "band" ? t("hasPlan") : person.plan === "pro" ? t("hasPro") : undefined} />
                       <button type="button" disabled={pending} onClick={() => run(() => inviteToBandSeat(person.id))} className={SECONDARY}>
                         {t("inviteOne")}
                       </button>

@@ -180,7 +180,6 @@ export function PlaySetlistPanel({
           bandId={selected.band_id}
           bandName={selected.band?.name ?? ""}
           setlistId={selected.id}
-          userPlan={userPlan}
         />
       )}
       <PlayStepper

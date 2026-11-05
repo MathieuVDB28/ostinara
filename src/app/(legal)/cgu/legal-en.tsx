@@ -210,7 +210,7 @@ export function CguEn() {
                   },
                   {
                     name: "Band",
-                    desc: "Pro features + band spaces, for 3 people",
+                    desc: "Pro features + band spaces, for 5 people",
                   },
                 ].map((plan) => (
                   <div
@@ -235,7 +235,7 @@ export function CguEn() {
                 Paid subscriptions renew automatically unless cancelled by the user before the end of the current period. Users can manage their subscription from the “My subscription” page of their account.
               </p>
               <p>
-                The holder of a Band subscription can offer 2 seats to friends or members of their bands on Ostinara. Each guest must accept and must not hold another subscription. Guests keep the Band plan for as long as the holder retains it and does not take their seat back, then return to the Free plan. The holder remains solely responsible for payment. Seats are for personal use and may not be resold.
+                The holder of a Band subscription can offer 4 seats to friends or members of their bands on Ostinara. Each guest must accept and must not hold another Band subscription; a Pro subscription then stops renewing. Guests keep the Band plan for as long as the holder retains it and does not take their seat back, then return to the Free plan. The holder remains solely responsible for payment. Seats are for personal use and may not be resold. If a band&apos;s holder leaves the Band plan, that band becomes read-only after 30 days, until the holder gets the plan back or transfers it to a member who has it.
               </p>
             </div>
           </section>

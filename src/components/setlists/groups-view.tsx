@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import { SetlistCard } from "./setlist-card";
+import { bandStatus } from "@/lib/band-access";
 import { CreateSetlistModal } from "./create-setlist-modal";
 import { CreateBandModal } from "./create-band-modal";
 import { BandInvitationCard } from "./band-invitation-card";
@@ -231,7 +232,7 @@ export function GroupsView({
         isOpen={showCreateSetlist}
         onClose={() => setShowCreateSetlist(false)}
         onSuccess={handleRefresh}
-        bands={bands}
+        bands={bands.filter((band) => bandStatus(band) !== "read_only")}
       />
 
       <CreateBandModal

@@ -3,7 +3,7 @@ import { getJamSession, getJamMessages, joinJamSession } from "@/lib/actions/jam
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { JamSessionView } from "@/components/jam";
 import { isJamSessionStale } from "@/lib/jam-session";
-import { ProUpsell } from "@/components/subscription/pro-upsell";
+import { bandStatus } from "@/lib/band-access";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
@@ -46,7 +46,7 @@ export default async function JamPage({ params }: JamPageProps) {
 
   // Access control
   if (session.band_id && session.band) {
-    // Band jam: check membership, then the plan
+    // Band jam: check membership, then the band's plan
     const isMember = session.band.members?.some(
       (m) => m.user_id === user.id
     );
@@ -55,15 +55,14 @@ export default async function JamPage({ params }: JamPageProps) {
     }
     // Le lien vient d'une notification ou de la page du groupe : on explique
     // pourquoi la jam reste fermee plutot que de renvoyer ailleurs sans un mot.
-    if (profile.plan !== "band") {
+    if (bandStatus(session.band) === "read_only") {
       const t = await getTranslations("jam.session");
       return (
         <div className="mx-auto max-w-xl space-y-4 p-4">
-          <ProUpsell
-            plan="band"
-            feature={t("bandRequiredTitle", { band: session.band.name })}
-            description={t("bandRequiredBody")}
-          />
+          <h1 className="font-display text-2xl font-extrabold uppercase leading-none">
+            {t("bandRequiredTitle", { band: session.band.name })}
+          </h1>
+          <p className="text-sm text-muted-foreground">{t("bandRequiredBody")}</p>
           <Link href="/commu/groupes" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
             {t("back")}
           </Link>

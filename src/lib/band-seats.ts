@@ -1,7 +1,7 @@
 import type { UserPlan } from "@/types";
 
-/** Les places a offrir : avec le titulaire, 3 personnes sur un plan Band. */
-export const BAND_PLAN_SEATS = 2;
+/** Les places a offrir : avec le titulaire, 5 personnes sur un plan Band. */
+export const BAND_PLAN_SEATS = 4;
 
 export interface BandSeatPerson {
   id: string;

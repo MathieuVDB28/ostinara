@@ -15,16 +15,18 @@ import { RehearsalCalendar } from "@/components/rehearsals/rehearsal-calendar";
 import { BandMemberPoste } from "./band-member-poste";
 import { BandSetlistNotifications } from "./band-setlist-notifications";
 import { BandChatPanel } from "@/components/rehearsals/band-chat-panel";
-import { ProUpsell } from "@/components/subscription/pro-upsell";
+import { BandTransfer } from "./band-transfer";
+import { OfferSeatButton } from "./offer-seat-button";
 import { ChatSheet } from "@/components/ui/chat-sheet";
+import { BAND_MAX_MEMBERS, type BandStatus } from "@/lib/band-access";
 import { bandLineup } from "@/lib/instruments";
+import { useIntlLocale } from "@/i18n/intl-locale";
 import type {
   BandWithMembers,
   SetlistWithDetails,
   RehearsalWithDetails,
   JamSessionWithDetails,
   BandMessageWithProfile,
-  UserPlan,
 } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
@@ -34,9 +36,12 @@ interface BandDetailViewProps {
   rehearsals: RehearsalWithDetails[];
   activeJam: JamSessionWithDetails | null;
   currentUserId: string;
-  userPlan: UserPlan;
   /** Le chat general du groupe : les derniers messages, pour le plan Band. */
   messages: BandMessageWithProfile[];
+  status: BandStatus;
+  graceEndsAt: string | null;
+  canOfferSeat: boolean;
+  seatInvitedIds: string[];
 }
 
 /**
@@ -54,17 +59,20 @@ export function BandDetailView({
   rehearsals,
   activeJam,
   currentUserId,
-  userPlan,
   messages,
+  status,
+  graceEndsAt,
+  canOfferSeat,
+  seatInvitedIds,
 }: BandDetailViewProps) {
   const t = useTranslations("setlists.band");
   const te = useTranslations("enums");
+  const intlLocale = useIntlLocale();
   const router = useRouter();
   const [showInvite, setShowInvite] = useState(false);
   const [showCreateSetlist, setShowCreateSetlist] = useState(false);
   const [showCreateRehearsal, setShowCreateRehearsal] = useState(false);
   const [showJam, setShowJam] = useState(false);
-  const [showJamUpsell, setShowJamUpsell] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [rehearsalView, setRehearsalView] = useState<"list" | "calendar">("list");
 
@@ -74,6 +82,9 @@ export function BandDetailView({
   const myRole = myMembership?.role;
   const isAdmin = isOwner || myRole === "owner" || myRole === "admin";
   const lineup = bandLineup(band.members, te);
+  const readOnly = status === "read_only";
+  const canInvite = isAdmin && !readOnly && band.members.length < BAND_MAX_MEMBERS;
+  const ownerName = band.owner?.display_name || band.owner?.username || "";
 
   const upcomingRehearsals = rehearsals.filter(
     (rehearsal) =>
@@ -129,26 +140,27 @@ export function BandDetailView({
         )}
 
         <div className="-mx-4 mt-4 flex gap-1.5 overflow-x-auto px-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
-          <button onClick={() => setShowChat(true)} className={CHIP}>
-            <Icon name="chat_bubble_outline" className="h-4 w-4" />
-            {t("chat")}
-          </button>
-          <button
-            onClick={() => (userPlan === "band" ? setShowJam(true) : setShowJamUpsell((open) => !open))}
-            className={CHIP}
-          >
-            <Icon name="music_note" className="h-4 w-4" />
-            {t("startJam")}
-          </button>
-          <button onClick={() => setShowCreateRehearsal(true)} className={CHIP}>
-            <Icon name="event" className="h-4 w-4" />
-            {t("planRehearsal")}
-          </button>
+          {!readOnly && (
+            <>
+              <button onClick={() => setShowChat(true)} className={CHIP}>
+                <Icon name="chat_bubble_outline" className="h-4 w-4" />
+                {t("chat")}
+              </button>
+              <button onClick={() => setShowJam(true)} className={CHIP}>
+                <Icon name="music_note" className="h-4 w-4" />
+                {t("startJam")}
+              </button>
+              <button onClick={() => setShowCreateRehearsal(true)} className={CHIP}>
+                <Icon name="event" className="h-4 w-4" />
+                {t("planRehearsal")}
+              </button>
+            </>
+          )}
           <Link href={`/setlists/tech-rider/${band.id}`} className={CHIP}>
             <Icon name="description" className="h-4 w-4" />
             {t("techRider")}
           </Link>
-          {isOwner && (
+          {canInvite && (
             <button onClick={() => setShowInvite(true)} className={CHIP}>
               <Icon name="person_add" className="h-4 w-4" />
               {t("invite")}
@@ -157,8 +169,28 @@ export function BandDetailView({
         </div>
       </div>
 
-      {showJamUpsell && (
-        <ProUpsell plan="band" feature={t("jamUpsellTitle")} description={t("jamUpsellBody")} />
+      {status !== "active" && (
+        <div className="flex flex-wrap items-center gap-3 border-y border-border py-3">
+          <p className="min-w-0 flex-1 basis-56 text-sm text-muted-foreground">
+            {readOnly || !graceEndsAt
+              ? t("readOnlyBanner", { name: ownerName })
+              : t("graceBanner", {
+                  name: ownerName,
+                  date: new Date(graceEndsAt).toLocaleDateString(intlLocale, {
+                    day: "numeric",
+                    month: "long",
+                  }),
+                })}
+          </p>
+          {isOwner && (
+            <Link
+              href="/pricing"
+              className="inline-flex min-h-[40px] shrink-0 items-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              {t("renewPlan")}
+            </Link>
+          )}
+        </div>
       )}
 
       {activeJam && (
@@ -183,13 +215,15 @@ export function BandDetailView({
           <h2 className={SECTION_TITLE}>
             {t("setlists")}{setlists.length > 0 && <span className="tabular"> · {setlists.length}</span>}
           </h2>
-          <button
-            onClick={() => setShowCreateSetlist(true)}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
-          >
-            <Icon name="add" className="h-3.5 w-3.5" strokeWidth={2} />
-            {t("setlist")}
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => setShowCreateSetlist(true)}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:underline"
+            >
+              <Icon name="add" className="h-3.5 w-3.5" strokeWidth={2} />
+              {t("setlist")}
+            </button>
+          )}
         </div>
 
         {setlists.length > 0 ? (
@@ -269,7 +303,7 @@ export function BandDetailView({
 
       <section>
         <h2 className={`border-b border-border pb-2 ${SECTION_TITLE}`}>
-          {t("members")} <span className="tabular">· {band.members.length}</span>
+          {t("members")} <span className="tabular">· {band.members.length}/{BAND_MAX_MEMBERS}</span>
         </h2>
         {/* Le line-up en une ligne : qui tient quoi, d'un coup d'oeil. */}
         {lineup.length > 0 && (
@@ -304,9 +338,13 @@ export function BandDetailView({
                 <BandMemberPoste
                   bandId={band.id}
                   member={member}
-                  canEdit={member.user_id === currentUserId || isAdmin}
+                  canEdit={!readOnly && (member.user_id === currentUserId || isAdmin)}
                 />
               </div>
+              {canOfferSeat &&
+                member.user_id !== currentUserId &&
+                member.profile?.plan !== "band" &&
+                !seatInvitedIds.includes(member.user_id) && <OfferSeatButton memberId={member.user_id} />}
               {member.user_id === band.owner_id && (
                 <span className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
                   {t("admin")}
@@ -315,22 +353,26 @@ export function BandDetailView({
             </li>
           ))}
         </ul>
+        {isOwner && (
+          <BandTransfer
+            bandId={band.id}
+            candidates={band.members.filter(
+              (member) => member.user_id !== currentUserId && member.profile?.plan === "band"
+            )}
+          />
+        )}
       </section>
 
       {showChat && (
         <ChatSheet title={band.name} closeLabel={t("closeChat")} onClose={() => setShowChat(false)}>
-          {userPlan === "band" ? (
-            <div className="min-h-0 flex-1">
-              <BandChatPanel
-                bandId={band.id}
-                currentUserId={currentUserId}
-                initialMessages={messages}
-                title={t("chat")}
-              />
-            </div>
-          ) : (
-            <ProUpsell plan="band" feature={t("chatUpsellTitle")} description={t("chatUpsellBody")} />
-          )}
+          <div className="min-h-0 flex-1">
+            <BandChatPanel
+              bandId={band.id}
+              currentUserId={currentUserId}
+              initialMessages={messages}
+              title={t("chat")}
+            />
+          </div>
         </ChatSheet>
       )}
 

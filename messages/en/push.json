@@ -93,6 +93,10 @@
     "title": "Added to a rehearsal",
     "body": "{name} added you to the rehearsal \"{title}\""
   },
+  "bandTransferred": {
+    "title": "A band is now yours",
+    "body": "{name} transferred {band} to you"
+  },
   "bandInvitation": {
     "title": "Band invitation",
     "body": "{name} invited you to join {band}"

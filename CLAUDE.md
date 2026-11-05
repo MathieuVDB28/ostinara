@@ -276,6 +276,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
   - Drag & drop pour reordonnement (dnd-kit)
   - Export PDF (@react-pdf/renderer)
   - Ajout de morceaux depuis la collection personnelle ou celle des membres du groupe
+- **Droits d'un groupe** (migration `20261119_band_access`, `src/lib/band-access.ts`) : c'est le plan du titulaire qui compte, plus celui de chaque membre. Tant qu'il a le plan Band, tout le groupe a jam, chat, repetes, setlists et fiche technique. S'il le quitte : 30 jours de grace (`bands.plan_lapsed_at`, tenu par la base), puis lecture seule (`band_is_active`, RLS) jusqu'a ce qu'il reprenne le plan ou transfere le groupe a un membre qui l'a (`transfer_band_ownership`). 5 membres au plus (migration `20261120_band_plan_five_people`), invitations en attente comprises ; le titulaire et les admins invitent.
 - **Groupes (Bands)** :
   - Creation avec nom, description, cover
   - Roles : owner, admin, member
@@ -317,12 +318,12 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - **Commentaires** : fil de discussion sur chaque activite (1-500 caracteres)
 
 ### Jam Sessions (`/jam/[id]`)
-- Sessions collaboratives en temps reel (Band plan requis)
+- Sessions collaboratives en temps reel (ouvertes a tout le groupe si son titulaire a le plan Band)
 - **Host controls** : demarrer/pause/terminer, changer de morceau, sync metronome
 - **Metronome synchronise** : broadcast BPM + time signature a tous les participants
 - **File de morceaux** : setlist associee avec navigation
 - **Viewer de tabs** : affichage tabs du morceau en cours
-- **Chat en direct** : messages dans la session (jam de groupe, plan Band), panneau `ChatSheet` avec compteur de non-lus sur telephone, efface a la fin de la jam par trigger (migration `20261116_group_chat`). Sans plan Band, la page de la jam explique pourquoi elle reste fermee
+- **Chat en direct** : messages dans la session (jam de groupe, plan Band), panneau `ChatSheet` avec compteur de non-lus sur telephone, efface a la fin de la jam par trigger (migration `20261116_group_chat`). Dans un groupe en lecture seule, la page de la jam explique pourquoi elle reste fermee
 - **Depuis Jouer** : une setlist de groupe propose de lancer ou rejoindre la jam (`BandJamCallout`), a cote du chrono solo
 - **Presence** : tracking des participants connectes via Supabase Presence
 - **Hote** : seul l'hote pilote et termine la jam (action + RLS, migration `20261118_jam_host_only`)
@@ -344,14 +345,14 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - Statut abonnement
 
 ### Pricing (`/pricing`)
-- 3 plans : Free, Pro (9EUR/mois ou 86EUR/an), Band a 3 personnes (24EUR/mois ou 230EUR/an ; les abonnes a 19 ou 182EUR gardent leur tarif et ont aussi leurs places)
+- 3 plans : Free, Pro (9EUR/mois ou 86EUR/an), Band a 5 personnes (24EUR/mois ou 230EUR/an ; les abonnes a 19 ou 182EUR gardent leur tarif et ont aussi leurs places)
 - Toggle mensuel/annuel
 - Checkout Stripe
 - FAQ
 
 ### Abonnement (`/account/subscription`)
 - Statut actuel
-- **Places du plan Band** (migration `20261117_band_plan_seats`, `src/lib/actions/band-seats.ts`) : le titulaire offre 2 places a ses amis ou aux membres de ses groupes, l'invite accepte (il doit etre en Free, une seule place a la fois). `profiles.plan` reste la seule source des droits : des triggers le mettent a `band` quand la place est prise, a `free` quand elle est rendue ou quand le titulaire quitte le plan Band. Ne pas ecrire ce plan ailleurs pour un invite.
+- **Places du plan Band** (migrations `20261117_band_plan_seats` et `20261119_band_access`, `src/lib/actions/band-seats.ts`) : le titulaire offre 4 places (comme un abonnement famille) a ses amis ou aux membres de ses groupes, l'invite accepte (Free ou Pro, une seule place a la fois). Un abonne Pro qui accepte n'est plus renouvele, et retrouve son Pro paye s'il perd la place avant la fin de sa periode (`src/lib/band-seat-billing.ts`) ; le webhook n'ecrit pas le plan d'un compte sur une place. `profiles.plan` reste la seule source des droits : des triggers le mettent a `band` quand la place est prise, a `free` quand elle est rendue ou quand le titulaire quitte le plan Band. Ne pas ecrire ce plan ailleurs pour un invite.
 - **Webhook Stripe** (`/api/stripe/webhooks`) : seul moyen d'appliquer un paiement au plan, a brancher sur chaque compte Stripe (test puis live). L'achat interroge Stripe, pas la base, pour eviter un second abonnement.
 - **Prix Stripe** : `STRIPE_PRICE_BAND_SHARED_*` pour les nouveaux abonnements ; `STRIPE_PRICE_BAND_MONTHLY/YEARLY` restent reconnus (anciens abonnes), ne pas les retirer.
 - Portal Stripe pour gestion
@@ -1064,11 +1065,10 @@ EMAIL_FROM=                   # ex. "Ostinara <bonjour@mondomaine.fr>" (domaine 
 | Accordeur | non | oui | oui |
 | Recommandations d'albums | non | oui | oui |
 | Groupes (bands) | non | non | oui |
-| Jam sessions | non | non | oui |
-| Repetitions | non | non | oui |
-| Chat de groupe | non | non | oui |
+| Creer un groupe | non | non | oui |
+| Jam, repetitions, chat de groupe, fiche technique | sur invitation, si le titulaire du groupe a le plan Band | idem | oui |
 | Badge profil | non | Pro | Band |
-| Personnes sur le plan | 1 | 1 | 3 (titulaire + 2 places) |
+| Personnes sur le plan | 1 | 1 | 5 (titulaire + 4 places) |
 | Prix annuel | - | 86EUR/an (-20%) | 230EUR/an (-20%) |
 
 ---

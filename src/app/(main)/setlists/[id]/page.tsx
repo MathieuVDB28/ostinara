@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getSetlist, getSetlistHistory } from "@/lib/actions/setlists";
-import { getBandMembersSongs } from "@/lib/actions/bands";
+import { getBand, getBandMembersSongs } from "@/lib/actions/bands";
+import { bandStatus } from "@/lib/band-access";
 import { getSongs } from "@/lib/actions/songs";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { SetlistDetailView } from "@/components/setlists/setlist-detail-view";
@@ -40,11 +41,15 @@ export default async function SetlistPage({ params }: SetlistPageProps) {
   // Get songs based on whether it's a band setlist or personal
   let songSources;
   let history = null;
+  let readOnly = false;
   if (setlist.band_id) {
-    [songSources, history] = await Promise.all([
+    let band;
+    [songSources, history, band] = await Promise.all([
       getBandMembersSongs(setlist.band_id),
       getSetlistHistory(setlist.id),
+      getBand(setlist.band_id),
     ]);
+    readOnly = !band || bandStatus(band) === "read_only";
   } else {
     const personalSongs = await getSongs();
     songSources = [{ member: null, songs: personalSongs }];
@@ -56,6 +61,7 @@ export default async function SetlistPage({ params }: SetlistPageProps) {
       songSources={songSources}
       userPlan={userPlan}
       history={history}
+      readOnly={readOnly}
     />
   );
 }

@@ -93,6 +93,10 @@
     "title": "Ajout à une répétition",
     "body": "{name} t'a ajouté à la répète « {title} »"
   },
+  "bandTransferred": {
+    "title": "Un groupe t'est confié",
+    "body": "{name} te transfère {band}"
+  },
   "bandInvitation": {
     "title": "Invitation à un groupe",
     "body": "{name} t'invite à rejoindre {band}"

@@ -10,6 +10,7 @@ import {
   notifySeatInvited,
   notifySeatRemoved,
 } from "@/lib/notifications/band-seats";
+import { restorePaidPlan, resumeSubscription, stopRenewal } from "@/lib/band-seat-billing";
 import { BAND_PLAN_SEATS, type BandSeatPerson, type BandSeatsOverview } from "@/lib/band-seats";
 
 /**
@@ -159,7 +160,19 @@ export async function respondToBandSeat(seatId: string, accept: boolean): Promis
   }
 
   const { data: me } = await db.from("profiles").select("plan").eq("id", user.id).maybeSingle();
-  if (me?.plan !== "free") return { success: false, error: await tErr("seatPlanConflict") };
+  if (me?.plan !== "free" && me?.plan !== "pro") return { success: false, error: await tErr("seatPlanConflict") };
+
+  // Un abonne Pro ne paie pas deux fois : plus de renouvellement, et il garde
+  // ce qu'il a paye s'il perd la place avant la fin de sa periode.
+  let stoppedSubscription: string | null = null;
+  if (me.plan === "pro") {
+    try {
+      stoppedSubscription = await stopRenewal(user.id);
+    } catch (stripeError) {
+      console.error("Error stopping subscription renewal:", stripeError);
+      return { success: false, error: await tErr("seatAcceptFailed") };
+    }
+  }
 
   const { error } = await db
     .from("band_plan_seats")
@@ -167,6 +180,7 @@ export async function respondToBandSeat(seatId: string, accept: boolean): Promis
     .eq("id", seatId);
   if (error) {
     console.error("Error accepting band seat:", error);
+    if (stoppedSubscription) await resumeSubscription(stoppedSubscription).catch(console.error);
     return { success: false, error: await tErr("seatAcceptFailed") };
   }
 
@@ -194,6 +208,8 @@ export async function releaseBandSeat(seatId: string): Promise<ActionResult> {
     console.error("Error releasing band seat:", error);
     return { success: false, error: await tErr("seatReleaseFailed") };
   }
+
+  if (seat.status === "active") await restorePaidPlan(seat.member_id as string);
 
   if (seat.status === "active" && seat.owner_id === user.id) {
     after(() => notifySeatRemoved(seat.member_id as string, user.id));

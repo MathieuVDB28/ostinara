@@ -9,7 +9,7 @@ export type PlanFeature =
   | 'songs10' | 'instruments2' | 'covers3' | 'friends5' | 'wishlist20' | 'gear5'
   | 'unlimitedSongs' | 'unlimitedInstruments' | 'unlimitedCovers' | 'unlimitedFriends' | 'unlimitedWishlist' | 'unlimitedGear'
   | 'advancedStats' | 'deezerTabs' | 'audioRecognition' | 'tuner' | 'albumRecommendations' | 'liveSessions' | 'proBadge'
-  | 'threeSeats' | 'everythingPro' | 'bandSpaces' | 'jamSessions' | 'rehearsals' | 'sharedSetlists' | 'bandChat' | 'techRider' | 'bandBadge';
+  | 'fivePeople' | 'bandForAll' | 'everythingPro' | 'bandSpaces' | 'jamSessions' | 'rehearsals' | 'sharedSetlists' | 'bandChat' | 'techRider' | 'bandBadge';
 
 export type BillingInterval = 'monthly' | 'yearly';
 
@@ -89,9 +89,10 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
   band: {
     name: 'Band',
     features: [
-      'threeSeats',
+      'fivePeople',
       'everythingPro',
       'bandSpaces',
+      'bandForAll',
       'jamSessions',
       'rehearsals',
       'sharedSetlists',

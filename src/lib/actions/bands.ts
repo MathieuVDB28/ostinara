@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import { sendPushNotification } from "@/lib/notifications";
+import { bandStatus, type BandStatus } from "@/lib/band-access";
 import type {
   Instrument,
   Band,
@@ -31,6 +32,61 @@ async function hasBandPlan(): Promise<boolean> {
     .single();
 
   return profile?.plan === "band";
+}
+
+/** Le refus d'un trigger : groupe complet (23514) ou lecture seule (42501). */
+function bandAccessError<K extends string>(code: string | undefined, fallback: K) {
+  if (code === "23514") return "bandFull" as const;
+  if (code === "42501") return "bandReadOnly" as const;
+  return fallback;
+}
+
+// === Etat du groupe : actif, en grace ou en lecture seule ===
+export async function getBandAccessStatus(bandId: string): Promise<BandStatus | null> {
+  const band = await getBand(bandId);
+  return band ? bandStatus(band) : null;
+}
+
+// === Transfer a band to a member who has the Band plan ===
+export async function transferBand(
+  bandId: string,
+  newOwnerId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: await tErr("notAuthenticated") };
+  }
+
+  const { error } = await supabase.rpc("transfer_band_ownership", {
+    p_band_id: bandId,
+    p_new_owner: newOwnerId,
+  });
+
+  if (error) {
+    console.error("Error transferring band:", error);
+    return { success: false, error: await tErr("bandTransferFailed") };
+  }
+
+  const [{ data: band }, { data: previous }] = await Promise.all([
+    supabase.from("bands").select("name").eq("id", bandId).single(),
+    supabase.from("profiles").select("username, display_name").eq("id", user.id).single(),
+  ]);
+  const previousName = previous?.display_name || previous?.username || null;
+  await sendPushNotification(
+    newOwnerId,
+    (t) => ({
+      title: t("bandTransferred.title"),
+      body: t("bandTransferred.body", { name: previousName ?? t("someone"), band: band?.name ?? "" }),
+      data: { url: `/commu/groupes/${bandId}` },
+    }),
+    "band_transferred"
+  );
+
+  revalidatePath(`/commu/groupes/${bandId}`);
+  revalidatePath("/setlists");
+  return { success: true };
 }
 
 // === Get user's bands ===
@@ -228,7 +284,7 @@ export async function inviteToBand(
     return { success: false, error: await tErr("notAuthenticated") };
   }
 
-  // Check if user is member of the band
+  // Le titulaire et les admins invitent (la RLS le garantit aussi).
   const { data: membership } = await supabase
     .from("band_members")
     .select("role")
@@ -238,6 +294,9 @@ export async function inviteToBand(
 
   if (!membership) {
     return { success: false, error: await tErr("notBandMember") };
+  }
+  if (membership.role !== "owner" && membership.role !== "admin") {
+    return { success: false, error: await tErr("forbidden") };
   }
 
   // Check if invitee is already a member
@@ -285,7 +344,7 @@ export async function inviteToBand(
 
   if (error) {
     console.error("Error creating invitation:", error);
-    return { success: false, error: await tErr("invitationSendFailed") };
+    return { success: false, error: await tErr(bandAccessError(error.code, "invitationSendFailed")) };
   }
 
   // Send push notification
@@ -344,7 +403,9 @@ export async function acceptBandInvitation(
 
   if (memberError) {
     console.error("Error adding member:", memberError);
-    return { success: false, error: await tErr("bandAddFailed") };
+    // Groupe complet ou fige : l'invitation reste en attente.
+    await supabase.from("band_invitations").update({ status: "pending" }).eq("id", invitationId);
+    return { success: false, error: await tErr(bandAccessError(memberError.code, "bandAddFailed")) };
   }
 
   // Create activity

@@ -13,6 +13,8 @@ interface BandChatPanelProps {
   currentUserId: string;
   initialMessages: BandMessageWithProfile[];
   title?: string;
+  /** Groupe en lecture seule : on lit le fil sans y ecrire. */
+  readOnly?: boolean;
 }
 
 export function BandChatPanel({
@@ -21,6 +23,7 @@ export function BandChatPanel({
   currentUserId,
   initialMessages,
   title,
+  readOnly = false,
 }: BandChatPanelProps) {
   const { messages, isConnected, sendMessage } = useBandChat({
     bandId,
@@ -187,6 +190,7 @@ export function BandChatPanel({
       </div>
 
       {/* Input */}
+      {!readOnly && (
       <form onSubmit={handleSubmit} className="border-t border-border p-3">
         <div className="flex gap-2">
           <input
@@ -218,6 +222,7 @@ export function BandChatPanel({
           </button>
         </div>
       </form>
+      )}
     </div>
   );
 }

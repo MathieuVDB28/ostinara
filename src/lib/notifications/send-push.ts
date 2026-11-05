@@ -67,6 +67,7 @@ export type NotificationType =
   | 'band_setlist_deleted'
   | 'band_created'
   | 'band_joined'
+  | 'band_transferred'
   | 'band_invitation'
   | 'challenge_created'
   | 'challenge_accepted'

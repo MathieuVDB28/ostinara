@@ -91,10 +91,18 @@
     "setlistNotifsFailed": "Le réglage n'a pas pu être enregistré",
     "chat": "Chat",
     "closeChat": "Fermer le chat",
-    "jamUpsellTitle": "Jouer en jam avec le groupe",
-    "jamUpsellBody": "La jam, son métronome partagé et son chat sont réservés au plan Band.",
-    "chatUpsellTitle": "Le chat du groupe",
-    "chatUpsellBody": "Le chat général et les jams sont réservés au plan Band."
+    "graceBanner": "Le plan Band de {name} a pris fin. Le groupe passera en lecture seule le {date}.",
+    "readOnlyBanner": "Groupe en lecture seule : le plan Band de {name} a pris fin. Il rouvre si son titulaire reprend le plan ou le transfère à un membre qui l'a.",
+    "renewPlan": "Reprendre le plan Band",
+    "transferTitle": "Transférer le groupe",
+    "transferHint": "Le nouveau titulaire doit avoir le plan Band. Tu restes admin du groupe.",
+    "transferNobody": "Personne dans le groupe n'a le plan Band : offre-lui une place, ou reprends le plan toi-même.",
+    "transferChoose": "Choisir un membre",
+    "transferAction": "Transférer",
+    "transferConfirm": "Confirmer le transfert",
+    "transferFailed": "Le transfert n'a pas abouti.",
+    "offerSeat": "Offrir une place",
+    "offerSeatFailed": "L'invitation n'a pas abouti."
   },
   "bandCard": {
     "confirmLeave": "Es-tu sûr de vouloir quitter ce groupe ?",

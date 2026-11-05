@@ -50,7 +50,7 @@
     "jamLaunch": "Lancer en jam avec le groupe",
     "jamJoin": "Rejoindre la jam",
     "jamFailed": "La jam n'a pas pu démarrer. Réessaie.",
-    "jamUpsell": "Jouer en jam avec le groupe (plan Band)"
+    "jamReadOnly": "{band} est en lecture seule : la jam rouvre quand son titulaire reprend le plan Band."
   },
   "carnet": {
     "sessions": "sessions",

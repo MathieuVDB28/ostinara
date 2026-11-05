@@ -4,15 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ProUpsell } from "@/components/subscription/pro-upsell";
+import { getBandAccessStatus } from "@/lib/actions/bands";
 import { createJamSession, getActiveJamSession } from "@/lib/actions/jam-sessions";
-import type { UserPlan } from "@/types";
+import type { BandStatus } from "@/lib/band-access";
 
 interface BandJamCalloutProps {
   bandId: string;
   bandName: string;
   setlistId: string;
-  userPlan: UserPlan;
 }
 
 const BUTTON =
@@ -22,28 +21,33 @@ const BUTTON =
  * Une setlist de groupe se joue aussi a plusieurs : le chrono du dessous
  * reste solo, la jam ajoute le metronome synchronise et le chat.
  */
-export function BandJamCallout({ bandId, bandName, setlistId, userPlan }: BandJamCalloutProps) {
+export function BandJamCallout({ bandId, bandName, setlistId }: BandJamCalloutProps) {
   const t = useTranslations("play.setlistPanel");
   const router = useRouter();
-  const canJam = userPlan === "band";
+  const [status, setStatus] = useState<BandStatus | null>(null);
   const [activeJamId, setActiveJamId] = useState<string | null>(null);
   const [launching, setLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!canJam) return;
     let active = true;
-    getActiveJamSession(bandId)
-      .then((jam) => {
-        if (active) setActiveJamId(jam?.id ?? null);
+    Promise.all([getBandAccessStatus(bandId), getActiveJamSession(bandId)])
+      .then(([bandAccess, jam]) => {
+        if (!active) return;
+        setStatus(bandAccess);
+        setActiveJamId(jam?.id ?? null);
       })
       .catch(() => undefined);
     return () => {
       active = false;
     };
-  }, [bandId, canJam]);
+  }, [bandId]);
 
-  if (!canJam) return <ProUpsell compact plan="band" feature={t("jamUpsell")} description="" />;
+  if (!status) return null;
+
+  if (status === "read_only") {
+    return <p className="border-y border-border py-3 text-sm text-muted-foreground">{t("jamReadOnly", { band: bandName })}</p>;
+  }
 
   const launch = async () => {
     setLaunching(true);

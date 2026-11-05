@@ -5,7 +5,9 @@ import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { extractSongsterrId, findSongsterrTrack } from "@/lib/services/songsterr";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import { bandStatus } from "@/lib/band-access";
 import { isJamSessionStale } from "@/lib/jam-session";
+import { getBand } from "./bands";
 import { sendPushNotificationToMultipleUsers, type PushT } from "@/lib/notifications";
 import { getTranslations } from "next-intl/server";
 import type {
@@ -17,22 +19,6 @@ import type {
   JamSessionMessageWithProfile,
   SetlistWithDetails,
 } from "@/types";
-
-// === Check if user has Band plan ===
-async function hasBandPlan(): Promise<boolean> {
-  const supabase = await createClient();
-  const user = await getAuthenticatedUser();
-
-  if (!user) return false;
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("plan")
-    .eq("id", user.id)
-    .single();
-
-  return profile?.plan === "band";
-}
 
 /**
  * Ferme une jam oubliee. Service role : seul l'hote a le droit d'ecrire, et il
@@ -62,14 +48,11 @@ export async function createJamSession(
     return { success: false, error: await tErr("notAuthenticated") };
   }
 
-  // Band jam: check plan and membership
+  // Jam de groupe : le plan du titulaire ouvre la jam a tout le groupe.
   if (bandId) {
-    const hasPlan = await hasBandPlan();
-    if (!hasPlan) {
-      return {
-        success: false,
-        error: await tErr("bandPlanForJam"),
-      };
+    const band = await getBand(bandId);
+    if (!band || bandStatus(band) === "read_only") {
+      return { success: false, error: await tErr("bandReadOnly") };
     }
 
     const { data: membership } = await supabase
@@ -295,6 +278,7 @@ export async function getJamSession(
       *,
       band:bands(
         *,
+        owner:profiles!bands_owner_id_fkey(id, username, display_name, avatar_url, plan),
         members:band_members(
           *,
           profile:profiles(id, username, display_name, avatar_url, plan)

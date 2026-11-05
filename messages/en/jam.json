@@ -40,8 +40,8 @@
     "chat": "Chat",
     "closeChat": "Close chat",
     "unread": "{count, plural, one {# unread message} other {# unread messages}}",
-    "bandRequiredTitle": "{band} is jamming",
-    "bandRequiredBody": "Jams and their chat are part of the Band plan. Upgrade to the Band plan to join your band live."
+    "bandRequiredTitle": "{band} is read-only",
+    "bandRequiredBody": "Jams reopen when the band's holder gets the Band plan back, or transfers the band to a member who has it."
   },
   "queue": {
     "setlist": "Setlist: {name}",
