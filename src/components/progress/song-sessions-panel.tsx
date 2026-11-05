@@ -7,6 +7,7 @@ import { formatDuration as formatMinutes } from "./stats-summary";
 import { getPracticeSessionsBySong, getSongPracticeStats } from "@/lib/actions/practice";
 import { getMoodEmoji } from "./mood-selector";
 import { getSectionsLabels } from "./sections-selector";
+import { calendarDaysAgo } from "@/lib/streak";
 import type { PracticeSession, SongPracticeStats } from "@/types";
 
 interface SongSessionsPanelProps {
@@ -50,13 +51,10 @@ export function SongSessionsPanel({ songId, onAddSession }: SongSessionsPanelPro
   };
 
   const formatRelativeDate = (date: string): string => {
-    const now = new Date();
     const sessionDate = new Date(date);
-    const diffDays = Math.floor(
-      (now.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const diffDays = calendarDaysAgo(sessionDate);
 
-    if (diffDays === 0) return tc("relative.todayCap");
+    if (diffDays <= 0) return tc("relative.todayCap");
     if (diffDays === 1) return tc("relative.yesterdayCap");
     if (diffDays < 7) return tc("relative.daysAgoCap", { count: diffDays });
     if (diffDays < 30) return tc("relative.weeksAgoCap", { count: Math.floor(diffDays / 7) });

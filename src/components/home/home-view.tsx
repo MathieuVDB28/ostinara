@@ -7,6 +7,7 @@ import { ArrowRight, ChevronRight, Play, Search, Star, Trophy, UserPlus, Users }
 import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
 import { songTempoProgress } from "@/lib/song-progress";
+import { calendarDaysAgo } from "@/lib/streak";
 import { profileHref } from "@/lib/navigation";
 import { activityMessage, formatActivityDate } from "@/lib/activity-messages";
 import type {
@@ -243,7 +244,7 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 
 function formatWhen(practicedAt: string, t: CommonT, intlLocale: string): string {
   const then = new Date(practicedAt);
-  const days = Math.floor((Date.now() - then.getTime()) / 86_400_000);
+  const days = calendarDaysAgo(then);
   if (days <= 0) return t("relative.today");
   if (days === 1) return t("relative.yesterday");
   if (days < 7) return t("relative.daysAgo", { count: days });

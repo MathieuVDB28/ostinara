@@ -6,6 +6,7 @@ import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { formatDuration as formatMinutesShared } from "./stats-summary";
 import { instrumentLabel } from "@/lib/instruments";
 import { sessionExercisesLabel } from "@/lib/session-exercises";
+import { calendarDaysAgo } from "@/lib/streak";
 import type { Instrument } from "@/types";
 import { CircleCheck } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
@@ -31,11 +32,13 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
     const diffMs = now.getTime() - sessionDate.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffDays = calendarDaysAgo(sessionDate, now);
 
     if (diffMinutes < 1) return tc("relative.nowCap");
     if (diffMinutes < 60) return tc("relative.minutesAgoCap", { count: diffMinutes });
     if (diffHours < 24) return tc("relative.hoursAgoCap", { count: diffHours });
+    // 24 h ou plus dans le meme jour : seulement le jour du passage a l'heure d'hiver.
+    if (diffDays <= 0) return tc("relative.todayCap");
     if (diffDays === 1) return tc("relative.yesterdayCap");
     if (diffDays < 7) return tc("relative.daysAgoCap", { count: diffDays });
     return sessionDate.toLocaleDateString(intlLocale, { day: "numeric", month: "short" });

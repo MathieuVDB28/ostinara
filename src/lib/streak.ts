@@ -34,6 +34,14 @@ export function shiftDay(day: string, days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+/**
+ * Il y a combien de jours, au calendrier de Paris : hier soir, c'est 1, meme
+ * s'il s'est passe moins de 24 h. Negatif pour une date dans le futur.
+ */
+export function calendarDaysAgo(value: string | Date, now: string | Date = new Date()): number {
+  return dayNumber(parisDay(now)) - dayNumber(parisDay(value));
+}
+
 /** Le lundi de la semaine d'un jour. */
 export function mondayOf(day: string): string {
   const weekday = new Date(`${day}T00:00:00Z`).getUTCDay();

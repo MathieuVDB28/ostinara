@@ -8,6 +8,7 @@ import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
 import { WeeklyPlanCard } from "@/components/plan/weekly-plan-card";
 import { songTempoProgress } from "@/lib/song-progress";
+import { calendarDaysAgo } from "@/lib/streak";
 import { sessionExercisesLabel } from "@/lib/session-exercises";
 import { PracticeCalendar } from "./practice-calendar";
 import type {
@@ -50,7 +51,7 @@ function splitMinutes(total: number) {
 
 function formatWhen(practicedAt: string, t: CommonT, intlLocale: string): string {
   const then = new Date(practicedAt);
-  const days = Math.floor((Date.now() - then.getTime()) / 86_400_000);
+  const days = calendarDaysAgo(then);
   if (days <= 0) return t("relative.today");
   if (days === 1) return t("relative.yesterday");
   if (days < 7) return t("relative.daysAgoShort", { count: days });

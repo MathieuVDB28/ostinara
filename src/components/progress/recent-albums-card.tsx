@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import type { CommonT } from "@/i18n/types";
+import { calendarDaysAgo } from "@/lib/streak";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { AlbumReview } from "@/types";
 import { Icon } from "@/components/ui/icon";
@@ -22,7 +23,7 @@ interface RecentAlbumsCardProps {
 }
 
 function formatWhen(date: string, t: CommonT, intlLocale: string): string {
-  const days = Math.floor((Date.now() - new Date(date).getTime()) / 86_400_000);
+  const days = calendarDaysAgo(date);
   if (days <= 0) return t("relative.today");
   if (days === 1) return t("relative.yesterday");
   if (days < 7) return t("relative.daysAgoShort", { count: days });
