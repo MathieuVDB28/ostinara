@@ -74,6 +74,10 @@
     "entraide": {
       "title": "Coup de main",
       "goal": "{count, plural, one {Donne ta première meilleure réponse au forum} other {Aide # musiciens sur le forum}}"
+    },
+    "repete": {
+      "title": "Au local",
+      "goal": "{count, plural, one {Ajoute ta première répète à ton carnet} other {Ajoute # répètes à ton carnet}}"
     }
   },
   "toast": {

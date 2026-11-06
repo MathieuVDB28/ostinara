@@ -96,6 +96,8 @@ interface PlayViewProps {
   setlists: SetlistWithDetails[];
   /** Les routines de l'utilisateur, a relancer depuis le Carnet. */
   routines: RoutineWithItems[];
+  /** Membre d'un groupe : le Carnet propose de raconter une repete. */
+  hasBand: boolean;
   userPlan: UserPlan;
   isPaid: boolean;
 }
@@ -144,6 +146,7 @@ export function PlayView({
   routines,
   userPlan,
   isPaid,
+  hasBand,
 }: PlayViewProps) {
   const t = useTranslations("play.view");
   const router = useRouter();
@@ -482,6 +485,7 @@ export function PlayView({
           isPracticing={isPracticing}
           onStartSession={startSession}
           onAddPastSession={() => practiceSession.openManualEntry()}
+          hasBand={hasBand}
           onWorkOnSong={handleWorkOnSong}
           routines={routines}
           onPlayRoutine={handlePlayRoutine}

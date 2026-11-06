@@ -85,7 +85,8 @@
     "startTimer": "Démarrer le chrono",
     "logPast": "Saisir une session passée",
     "emptyHint": "Le chrono suit d'un écran à l'autre : tu peux lancer une session ici et continuer sur « Jouer ».",
-    "sessionOf": "session du {date}"
+    "sessionOf": "session du {date}",
+    "rehearsal": "Répète"
   },
   "view": {
     "tabsAria": "Vue de la progression",

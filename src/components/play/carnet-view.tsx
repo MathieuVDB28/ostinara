@@ -1,6 +1,7 @@
 "use client";
 
-import { History, Play, RotateCcw, X } from "lucide-react";
+import Link from "next/link";
+import { History, Play, RotateCcw, Users, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import type { CommonT } from "@/i18n/types";
@@ -34,6 +35,7 @@ interface CarnetViewProps {
   onStartSession: () => void;
   /** Ajouter une session jouee sans chrono (hier, en repete, chez un ami…). */
   onAddPastSession: () => void;
+  hasBand: boolean;
   onWorkOnSong: (songId: string) => void;
   /** Les routines a relancer en un clic. */
   routines: RoutineWithItems[];
@@ -77,6 +79,7 @@ export function CarnetView({
   isPracticing,
   onStartSession,
   onAddPastSession,
+  hasBand,
   onWorkOnSong,
   routines,
   onPlayRoutine,
@@ -179,6 +182,15 @@ export function CarnetView({
           <History className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
           {t("addPastSession")}
         </button>
+        {hasBand && (
+          <Link
+            href="/commu/groupes/raconter"
+            className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Users className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+            {t("logRehearsal")}
+          </Link>
+        )}
       </div>
 
 
@@ -203,6 +215,7 @@ export function CarnetView({
                     {session.song?.title ?? sessionExercisesLabel(session) ?? t("freeSession")}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
+                    {session.rehearsal_id ? `${t("rehearsalTag")} · ` : ""}
                     {formatWhen(session.practiced_at, tc, intlLocale)}
                     {session.bpm_achieved ? ` · ${session.bpm_achieved} ${t("bpm")}` : ""}
                   </p>

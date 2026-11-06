@@ -674,7 +674,7 @@ export interface FriendRequest {
 }
 
 // Types pour les activités
-export type ActivityType = 'song_added' | 'song_learning' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won' | 'album_reviewed' | 'exercise_shared' | 'gear_added' | 'gear_wishlisted' | 'album_wishlisted' | 'badge_unlocked' | 'session_completed';
+export type ActivityType = 'song_added' | 'song_learning' | 'song_mastered' | 'cover_posted' | 'friend_added' | 'song_wishlisted' | 'setlist_created' | 'band_created' | 'band_joined' | 'challenge_created' | 'challenge_accepted' | 'challenge_completed' | 'challenge_won' | 'album_reviewed' | 'exercise_shared' | 'gear_added' | 'gear_wishlisted' | 'album_wishlisted' | 'badge_unlocked' | 'session_completed' | 'rehearsal_logged';
 
 export interface Activity {
   id: string;
@@ -690,6 +690,8 @@ export interface ActivityWithProfile extends Activity {
 }
 
 export interface ActivityWithDetails extends ActivityWithProfile {
+  /** Les autres amis qui ont partage la meme repete. */
+  rehearsalCompanions?: Pick<Profile, "id" | "username" | "display_name">[];
   song?: Song;
   cover?: CoverWithSong;
   friend?: Profile;
@@ -778,6 +780,7 @@ export type SongSection = 'intro' | 'verse' | 'chorus' | 'bridge' | 'solo' | 'ou
 export interface PracticeSession {
   id: string;
   user_id: string;
+  rehearsal_id?: string | null;
   song_id: string | null;
   duration_minutes: number;
   practiced_at: string;
@@ -839,6 +842,8 @@ export interface PracticeSessionSongEntry {
 }
 
 export interface CreatePracticeSessionInput {
+  /** La repete d'ou vient ce temps. */
+  rehearsal_id?: string;
   /**
    * Plusieurs morceaux : une ligne par morceau, groupees. Quand il est
    * present, il remplace `song_id`, `duration_minutes` et `bpm_achieved`.
@@ -1757,6 +1762,11 @@ export interface Rehearsal {
   recurrence_end_date?: string;
   parent_rehearsal_id?: string;
   notes?: string;
+  /** La duree reelle, notee dans le compte rendu. */
+  duration_minutes?: number | null;
+  /** Rempli quand la repete a ete racontee. */
+  logged_at?: string | null;
+  logged_by?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -1806,6 +1816,131 @@ export interface UpdateRehearsalInput {
   setlist_id?: string | null;
   notes?: string;
   status?: RehearsalStatus;
+}
+
+export type RehearsalVerdict = 'rework' | 'solid' | 'ready';
+export type RehearsalAttendeeStatus = 'pending' | 'confirmed' | 'declined';
+
+type RehearsalPerson = Pick<Profile, "id" | "username" | "display_name" | "avatar_url">;
+
+/** Qui etait a la repete. `pending` : tague, n'a pas encore repondu. */
+export interface RehearsalAttendee {
+  rehearsal_id: string;
+  user_id: string;
+  instrument: Instrument | null;
+  instrument_label: string | null;
+  status: RehearsalAttendeeStatus;
+  tagged_by: string | null;
+  responded_at: string | null;
+  created_at: string;
+  profile: RehearsalPerson;
+}
+
+export interface RehearsalSong {
+  id: string;
+  rehearsal_id: string;
+  position: number;
+  song_key: string;
+  setlist_item_id: string | null;
+  song_title: string;
+  song_artist: string | null;
+  song_cover_url: string | null;
+  deezer_id: string | null;
+  verdict: RehearsalVerdict | null;
+}
+
+/** Un point a bosser. Sans `assignee_id`, c'est pour tout le groupe. */
+export interface RehearsalTask {
+  id: string;
+  band_id: string;
+  rehearsal_id: string;
+  assignee_id: string | null;
+  content: string;
+  created_by: string | null;
+  done_at: string | null;
+  done_by: string | null;
+  created_at: string;
+  assignee?: RehearsalPerson | null;
+}
+
+export interface RehearsalLogDetails {
+  attendees: RehearsalAttendee[];
+  songs: RehearsalSong[];
+  tasks: RehearsalTask[];
+}
+
+export interface ConfirmRehearsalInput {
+  instrument: Instrument;
+  duration_minutes: number;
+  mood?: SessionMood | null;
+  /** Montrer la repete a ses amis (sans les notes ni les verdicts). */
+  share: boolean;
+}
+
+export interface SaveRehearsalLogInput {
+  /** Absent : une repete qui n'avait pas ete planifiee. */
+  rehearsal_id?: string | null;
+  band_id: string;
+  /** Vide : « Répète du 5 novembre ». */
+  title?: string;
+  date: string;
+  duration_minutes: number;
+  location?: string;
+  setlist_id?: string | null;
+  notes?: string;
+  attendee_ids: string[];
+  songs: {
+    setlist_item_id?: string | null;
+    title: string;
+    artist?: string | null;
+    cover_url?: string | null;
+    deezer_id?: string | null;
+    verdict?: RehearsalVerdict | null;
+  }[];
+  tasks: { id?: string; content: string; assignee_id?: string | null }[];
+  /** Ajouter ce temps a son propre carnet en meme temps. */
+  carnet?: Omit<ConfirmRehearsalInput, "duration_minutes"> | null;
+}
+
+export interface PendingRehearsalConfirmation {
+  rehearsal_id: string;
+}
+
+export interface BandRehearsalJournal {
+  stats: {
+    count: number;
+    minutes: number;
+    topSongs: { title: string; artist: string | null; count: number }[];
+  };
+  logs: {
+    id: string;
+    title: string;
+    date: string;
+    duration_minutes: number | null;
+    location: string | null;
+    song_count: number;
+    attendee_count: number;
+  }[];
+  /** Passees, jamais racontees. */
+  unlogged: { id: string; title: string; date: string }[];
+  openTasks: RehearsalTask[];
+}
+
+export interface SetlistReadinessRow {
+  item_id: string;
+  title: string;
+  artist: string | null;
+  verdict: RehearsalVerdict | null;
+  date: string | null;
+}
+
+export interface SetlistReadiness {
+  rows: SetlistReadinessRow[];
+  total: number;
+  ready: number;
+  solid: number;
+  rework: number;
+  unplayed: number;
 }
 
 export const RSVP_COLORS: Record<RehearsalRsvpStatus, string> = {

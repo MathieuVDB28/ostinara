@@ -26,6 +26,7 @@ import type {
 import { signCoverMedia } from "@/lib/storage/cover-media";
 import { COVER_GEAR_SELECT, withCoverGear } from "@/lib/cover-gear";
 import { SONG_DETAILS_COLUMNS } from "@/lib/song-meta";
+import { mergeRehearsalActivities } from "@/lib/rehearsal-log";
 
 /** « 4,5/5 ★ » : la note est stockee sur 10, une unite par demi-etoile. */
 function formatStars(rating: unknown, intlLocale: string): string {
@@ -638,7 +639,7 @@ export async function getFeedActivities(
     return enriched;
   });
 
-  return enrichedActivities;
+  return mergeRehearsalActivities(enrichedActivities);
 }
 
 /**

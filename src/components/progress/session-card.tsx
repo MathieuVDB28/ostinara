@@ -57,6 +57,7 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
   const instrument = useSessionInstrument(session.instrument);
 
   const meta = [
+    session.rehearsal_id ? t("rehearsal") : null,
     formatRelativeTime(session.practiced_at),
     formatTime(session.practiced_at),
     instrument,
@@ -159,6 +160,7 @@ export function GroupSessionCard({
 
   // Les parties se lisent sur la sous-ligne de chaque morceau.
   const meta = [
+    first.rehearsal_id ? t("rehearsal") : null,
     new Date(first.practiced_at).toLocaleTimeString(intlLocale, { hour: "2-digit", minute: "2-digit" }),
     instrument,
   ].filter(Boolean);

@@ -102,7 +102,8 @@
     "transferConfirm": "Confirmer le transfert",
     "transferFailed": "Le transfert n'a pas abouti.",
     "offerSeat": "Offrir une place",
-    "offerSeatFailed": "L'invitation n'a pas abouti."
+    "offerSeatFailed": "L'invitation n'a pas abouti.",
+    "tellRehearsal": "Raconter une répète"
   },
   "bandCard": {
     "confirmLeave": "Es-tu sûr de vouloir quitter ce groupe ?",

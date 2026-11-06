@@ -74,6 +74,10 @@
     "entraide": {
       "title": "Helping hand",
       "goal": "{count, plural, one {Give your first best answer on the forum} other {Help # musicians on the forum}}"
+    },
+    "repete": {
+      "title": "Rehearsal room",
+      "goal": "{count, plural, one {Add your first rehearsal to your log} other {Add # rehearsals to your log}}"
     }
   },
   "toast": {

@@ -292,6 +292,11 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
   - Chat par repetition, ou general au groupe (puce Chat de la page du groupe, plan Band, RLS comprise)
   - Export iCalendar (.ics)
   - Rappels automatiques par push (cron daily 8h UTC)
+- **Raconter une repete** (migration `20261122_rehearsal_logs`, `src/lib/actions/rehearsal-logs.ts`, `src/lib/rehearsal-log.ts`, page `/commu/groupes/[bandId]/raconter`, `?repete=` pour une repete existante ; `/commu/groupes/raconter` choisit le groupe depuis Jouer) : une repete planifiee ou jamais planifiee recoit un compte rendu, c'est la meme ligne de `rehearsals` (`logged_at`, `duration_minutes`). Tout membre d'un groupe actif peut l'ecrire ou le corriger (RPC `save_rehearsal_log`, sous RLS).
+  - **Presents** : `rehearsal_attendees` (a cote de l'intention RSVP). Etre tague ne touche pas aux statistiques : le musicien confirme (`confirmRehearsalAttendance`, « Tu y etais ? », aussi depuis Accueil et en lecture seule), ce qui cree sa session (`practice_sessions.rehearsal_id`), le temps partage entre les morceaux joues ; ce qui n'est pas dans sa biblio va sur la ligne sans morceau. Effacer sa session remet sa presence a confirmer et retire son activite (trigger) ; effacer la repete garde les sessions.
+  - **Verdicts** : `rehearsal_songs.verdict` (`rework` / `solid` / `ready`). L'etat du set d'une setlist de groupe est le dernier verdict de chaque morceau (`setlistReadiness`, retrouve par ligne de setlist ou par `song_key`).
+  - **A bosser** : `rehearsal_tasks`, attribue a un membre (push) ou au groupe, a cocher par tout membre, repris sur la page du groupe avec le journal et les chiffres (`getBandRehearsalJournal`).
+  - **Feed** : activite `rehearsal_logged` a la confirmation si « Partager » est coche, sans notes ni verdicts et sans push aux amis ; `mergeRehearsalActivities` fusionne les amis d'une meme repete. Badge `repete` (1 / 10 / 50).
 
 ### Challenges (`/challenges`)
 - **3 onglets** : Actifs / Invitations / Leaderboard
@@ -901,7 +906,7 @@ get_practice_leaderboard(p_user_id UUID, p_period TEXT, p_limit INTEGER DEFAULT 
 | gear_type | guitar, bass, amp, effect, drums, cymbals, keyboard, accessory, recording, other |
 | exercise_difficulty | beginner, intermediate, advanced, expert |
 | friendship_status | pending, accepted, blocked |
-| activity_type | song_added, song_learning, song_mastered, cover_posted, friend_added, song_wishlisted, setlist_created, band_created, band_joined, challenge_created, challenge_accepted, challenge_completed, challenge_won, album_reviewed, album_wishlisted, exercise_shared, gear_added, gear_wishlisted, badge_unlocked, session_completed |
+| activity_type | song_added, song_learning, song_mastered, cover_posted, friend_added, song_wishlisted, setlist_created, band_created, band_joined, challenge_created, challenge_accepted, challenge_completed, challenge_won, album_reviewed, album_wishlisted, exercise_shared, gear_added, gear_wishlisted, badge_unlocked, session_completed, rehearsal_logged |
 | band_member_role | owner, admin, member |
 | band_invitation_status | pending, accepted, declined |
 | challenge_type | practice_time, streak, song_mastery |
@@ -998,7 +1003,7 @@ get_practice_leaderboard(p_user_id UUID, p_period TEXT, p_limit INTEGER DEFAULT 
 ## Notifications Push
 
 ### Types de notifications
-friend_request, friend_accepted, friend_playing, song_added, song_mastered, cover_posted, song_wishlisted, setlist_created, band_setlist_created, band_setlist_updated, band_setlist_deleted, band_created, band_joined, band_invitation, challenge_created, challenge_accepted, challenge_completed, challenge_won, jam_session_started, album_reviewed, activity_reaction, activity_comment, exercise_shared, rehearsal_created, rehearsal_reminder, rehearsal_cancelled, band_message
+friend_request, friend_accepted, friend_playing, rehearsal_logged, rehearsal_task, song_added, song_mastered, cover_posted, song_wishlisted, setlist_created, band_setlist_created, band_setlist_updated, band_setlist_deleted, band_created, band_joined, band_invitation, challenge_created, challenge_accepted, challenge_completed, challenge_won, jam_session_started, album_reviewed, activity_reaction, activity_comment, exercise_shared, rehearsal_created, rehearsal_reminder, rehearsal_cancelled, band_message
 
 ### Infrastructure
 - Service worker custom (`sw-push-handler.js`)

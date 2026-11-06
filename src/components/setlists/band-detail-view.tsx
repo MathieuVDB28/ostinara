@@ -12,6 +12,7 @@ import { StartJamModal } from "@/components/jam/start-jam-modal";
 import { CreateRehearsalModal } from "@/components/rehearsals/create-rehearsal-modal";
 import { RehearsalCard } from "@/components/rehearsals/rehearsal-card";
 import { RehearsalCalendar } from "@/components/rehearsals/rehearsal-calendar";
+import { BandRehearsalJournal } from "@/components/rehearsals/band-rehearsal-journal";
 import { BandMemberPoste } from "./band-member-poste";
 import { BandSetlistNotifications } from "./band-setlist-notifications";
 import { BandChatPanel } from "@/components/rehearsals/band-chat-panel";
@@ -22,6 +23,7 @@ import { BAND_MAX_MEMBERS, type BandStatus } from "@/lib/band-access";
 import { bandLineup } from "@/lib/instruments";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import type {
+  BandRehearsalJournal as RehearsalJournal,
   BandWithMembers,
   SetlistWithDetails,
   RehearsalWithDetails,
@@ -34,6 +36,7 @@ interface BandDetailViewProps {
   band: BandWithMembers;
   setlists: SetlistWithDetails[];
   rehearsals: RehearsalWithDetails[];
+  journal: RehearsalJournal;
   activeJam: JamSessionWithDetails | null;
   currentUserId: string;
   /** Le chat general du groupe : les derniers messages, pour le plan Band. */
@@ -57,6 +60,7 @@ export function BandDetailView({
   band,
   setlists,
   rehearsals,
+  journal,
   activeJam,
   currentUserId,
   messages,
@@ -142,6 +146,10 @@ export function BandDetailView({
         <div className="-mx-4 mt-4 flex gap-1.5 overflow-x-auto px-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
           {!readOnly && (
             <>
+              <Link href={`/commu/groupes/${band.id}/raconter`} className={CHIP}>
+                <Icon name="check" className="h-4 w-4" />
+                {t("tellRehearsal")}
+              </Link>
               <button onClick={() => setShowChat(true)} className={CHIP}>
                 <Icon name="chat_bubble_outline" className="h-4 w-4" />
                 {t("chat")}
@@ -300,6 +308,13 @@ export function BandDetailView({
           <p className="py-6 text-sm text-muted-foreground">{t("noRehearsal")}</p>
         )}
       </section>
+
+      <BandRehearsalJournal
+        bandId={band.id}
+        journal={journal}
+        currentUserId={currentUserId}
+        readOnly={readOnly}
+      />
 
       <section>
         <h2 className={`border-b border-border pb-2 ${SECTION_TITLE}`}>

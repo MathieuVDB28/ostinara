@@ -34,5 +34,6 @@
   "friendsFeed": "Chez tes amis",
   "noFriendNews": "Rien de neuf chez tes amis.",
   "findFriends": "Trouve des amis",
-  "recentCovers": "Dernières covers"
+  "recentCovers": "Dernières covers",
+  "rehearsalConfirmations": "{count, plural, one {# répète à confirmer} other {# répètes à confirmer}}"
 }

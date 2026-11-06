@@ -27,6 +27,7 @@ import { BadgeMedal } from "@/components/badges/badge-medal";
 import { badgeGoal, badgeLabel } from "@/lib/badges/catalog";
 import { profileHref } from "@/lib/navigation";
 import { activityMessage, formatActivityDate } from "@/lib/activity-messages";
+import { formatDuration } from "@/components/progress/stats-summary";
 import { MOOD_EMOJI } from "@/components/progress/mood-selector";
 import { songMeta } from "@/lib/song-meta";
 import type { ActivityWithDetails, GearType, Instrument, SessionActivityMetadata, SessionMood, SongSection } from "@/types";
@@ -50,6 +51,7 @@ const COMPACT_ICONS: Record<string, LucideIcon> = {
   setlist_created: ListMusic,
   band_created: Users,
   band_joined: Users,
+  rehearsal_logged: Users,
   gear_added: Guitar,
   gear_wishlisted: Bookmark,
   challenge_created: Trophy,
@@ -241,7 +243,8 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
   const isOwn = activity.user_id === currentUserId;
   const [playing, setPlaying] = useState(false);
   const name = isOwn ? t("you") : activity.user.display_name || activity.user.username;
-  const message = activityMessage(activity.type, t, isOwn);
+  const companions = activity.rehearsalCompanions ?? [];
+  const message = companions.length > 0 ? t("rehearsalTogether") : activityMessage(activity.type, t, isOwn);
   const meta = activity.metadata ?? {};
   const phrase = instrumentPhrase(meta.instrument, te);
   // Accordage, tempo vise, capo, difficulte : ce qu'un ami veut savoir avant de s'y mettre.
@@ -271,7 +274,13 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
             className="font-bold underline-offset-2 hover:underline"
           >
             {name}
-          </Link>{" "}
+          </Link>
+          {companions.length > 0 &&
+            t("rehearsalCompanions", {
+              names: new Intl.ListFormat(intlLocale, { type: "conjunction" }).format(
+                companions.map((person) => person.display_name || person.username)
+              ),
+            })}{" "}
           <span className="text-muted-foreground">{message}</span>
         </p>
         <time dateTime={activity.created_at} className="shrink-0 text-xs text-muted-foreground">
@@ -423,6 +432,17 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
         <Compact
           type={activity.type}
           label={activity.type === "band_created" ? t("newBand") : t("joinedBand")}
+          title={String(meta.band_name ?? t("band"))}
+        />
+      )}
+
+      {activity.type === "rehearsal_logged" && activity.metadata && (
+        <Compact
+          type={activity.type}
+          label={t("rehearsalMeta", {
+            duration: formatDuration(Number(meta.duration_minutes) || 0, tc),
+            songs: Number(meta.song_count) || 0,
+          })}
           title={String(meta.band_name ?? t("band"))}
         />
       )}

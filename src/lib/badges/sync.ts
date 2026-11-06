@@ -51,6 +51,7 @@ interface SessionRow {
   duration_minutes: number;
   song_id: string | null;
   bpm_achieved: number | null;
+  rehearsal_id: string | null;
 }
 
 /** La plus longue serie (un jour de creux tolere), et quand chaque longueur a ete atteinte. */
@@ -124,7 +125,7 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
       .eq("user_id", userId),
     supabase
       .from("practice_sessions")
-      .select("id, session_group_id, practiced_at, duration_minutes, song_id, bpm_achieved")
+      .select("id, session_group_id, practiced_at, duration_minutes, song_id, bpm_achieved, rehearsal_id")
       .eq("user_id", userId)
       // Une session datee dans le futur ne compte pas tant qu'elle n'a pas eu lieu.
       .lte("practiced_at", new Date().toISOString()),
@@ -193,6 +194,12 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
     if (!known || topic.solved_at < known) helpedAt.set(topic.author_id, topic.solved_at);
   }
 
+  // Une repete confirmee compte une fois, quel que soit le nombre de morceaux.
+  const rehearsalDates = new Map<string, string>();
+  for (const session of sessionRows) {
+    if (session.rehearsal_id) rehearsalDates.set(session.rehearsal_id, session.practiced_at);
+  }
+
   const metrics: Record<string, Metric> = {
     repertoire: countMetric(
       songRows
@@ -209,6 +216,7 @@ async function evaluateBadges(userId: string): Promise<Evaluation> {
     entoure: countMetric((friendships ?? []).map((f) => f.updated_at ?? f.created_at)),
     competiteur: countMetric((challenges ?? []).map((c) => c.updated_at)),
     entraide: countMetric([...helpedAt.values()]),
+    repete: countMetric([...rehearsalDates.values()]),
   };
 
   const earned: UserBadgeRow[] = [];

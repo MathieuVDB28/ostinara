@@ -3,6 +3,7 @@ import { getBand } from "@/lib/actions/bands";
 import { getBandSeats } from "@/lib/actions/band-seats";
 import { getSetlists } from "@/lib/actions/setlists";
 import { getBandRehearsals } from "@/lib/actions/rehearsals";
+import { getBandRehearsalJournal } from "@/lib/actions/rehearsal-logs";
 import { getActiveJamSession } from "@/lib/actions/jam-sessions";
 import { getBandMessages } from "@/lib/actions/band-messages";
 import { bandGraceEnd, bandStatus } from "@/lib/band-access";
@@ -22,7 +23,7 @@ export default async function BandDetailPage({
     return null;
   }
 
-  const [band, allSetlists, rehearsals, activeJam, messages, seats] = await Promise.all([
+  const [band, allSetlists, rehearsals, activeJam, messages, seats, journal] = await Promise.all([
     getBand(bandId),
     getSetlists(),
     getBandRehearsals(bandId),
@@ -30,6 +31,7 @@ export default async function BandDetailPage({
     // Sous RLS : vide quand le groupe est en lecture seule.
     getBandMessages(bandId),
     getBandSeats(),
+    getBandRehearsalJournal(bandId),
   ]);
 
   if (!band) {
@@ -49,6 +51,7 @@ export default async function BandDetailPage({
       graceEndsAt={bandGraceEnd(band)?.toISOString() ?? null}
       setlists={allSetlists.filter((setlist) => setlist.band_id === bandId)}
       rehearsals={rehearsals}
+      journal={journal}
       activeJam={activeJam}
       currentUserId={user.id}
       messages={messages}

@@ -206,6 +206,7 @@ export async function createPracticeSession(
     session_goals: input.session_goals || null,
     goals_achieved: input.goals_achieved || false,
     notes: input.notes || null,
+    ...(input.rehearsal_id ? { rehearsal_id: input.rehearsal_id } : {}),
   };
 
   /*

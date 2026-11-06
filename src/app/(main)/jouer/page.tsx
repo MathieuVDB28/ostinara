@@ -12,6 +12,7 @@ import { requirePaidPlan } from "@/lib/actions/plan";
 import { getWeeklyPlan } from "@/lib/actions/weekly-plan";
 import { getSetlists } from "@/lib/actions/setlists";
 import { getRoutines } from "@/lib/actions/routines";
+import { hasBandMembership } from "@/lib/actions/rehearsal-logs";
 import { PlayView } from "@/components/play/play-view";
 import { getTranslations } from "next-intl/server";
 
@@ -46,6 +47,7 @@ export default async function JouerPage({
     recentSessions,
     setlists,
     routines,
+    hasBand,
   ] = await Promise.all([
     getSongs(),
     getExercises(),
@@ -63,6 +65,7 @@ export default async function JouerPage({
     getPracticeSessions(undefined, 3),
     getSetlists(),
     getRoutines(),
+    hasBandMembership(),
   ]);
 
   // Le morceau en cours ouvre la page : c'est la raison pour laquelle
@@ -92,6 +95,7 @@ export default async function JouerPage({
       recentSessions={recentSessions}
       setlists={setlists}
       routines={routines}
+      hasBand={hasBand}
       userPlan={planCheck.plan}
       isPaid={planCheck.allowed}
     />

@@ -176,5 +176,9 @@
   "seatReleaseFailed": "The seat couldn't be released.",
   "seatLeaveFirst": "You hold a seat on a Band plan: leave it before subscribing.",
   "alreadyOnPlan": "You're already on this plan.",
-  "subscriptionPastDue": "Your last payment failed: update your payment method before changing plans."
+  "subscriptionPastDue": "Your last payment failed: update your payment method before changing plans.",
+  "rehearsalInFuture": "The rehearsal date is in the future",
+  "rehearsalDurationInvalid": "The rehearsal must last between 1 minute and 24 hours",
+  "rehearsalLogFailed": "The write-up couldn't be saved",
+  "rehearsalAttendanceNotFound": "You're not listed on this rehearsal"
 }

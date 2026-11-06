@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import type { CommonT } from "@/i18n/types";
-import { ArrowRight, ChevronRight, Play, Search, Star, Trophy, UserPlus, Users } from "lucide-react";
+import { ArrowRight, ChevronRight, Music, Play, Search, Star, Trophy, UserPlus, Users } from "lucide-react";
 import { Cover } from "@/components/ui/cover";
 import { Frets } from "@/components/ui/frets";
 import { songTempoProgress } from "@/lib/song-progress";
@@ -31,7 +31,14 @@ interface HomeViewProps {
     /** La derniere session, quand elle portait sur ce morceau. */
     lastSession: PracticeSessionWithSong | null;
   } | null;
-  pending: { friends: number; challenges: number; bands: number };
+  pending: {
+    friends: number;
+    challenges: number;
+    bands: number;
+    /** Les repetes ou l'on m'a tague : la plus recente ouvre la liste. */
+    rehearsals: number;
+    nextRehearsalId: string | null;
+  };
   recentSongs: Song[];
   recentAlbums: AlbumReview[];
   weeklyAlbums: WeeklyAlbum[];
@@ -343,6 +350,12 @@ function PendingBlock({ pending }: { pending: HomeViewProps["pending"] }) {
       label: (n: number) => t("bandInvitations", { count: n }),
       href: "/commu/groupes",
       icon: Users,
+    },
+    {
+      count: pending.rehearsals,
+      label: (n: number) => t("rehearsalConfirmations", { count: n }),
+      href: `/setlists/rehearsals/${pending.nextRehearsalId}`,
+      icon: Music,
     },
   ].filter((row) => row.count > 0);
 

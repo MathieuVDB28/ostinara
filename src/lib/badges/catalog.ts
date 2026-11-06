@@ -20,7 +20,7 @@ export type BadgesT = Translator<"badges">;
 export type BadgeId =
   | "repertoire" | "bibliotheque" | "tempo"
   | "sessions" | "serie" | "heures" | "mois-varie" | "mois-assidu" | "semaine-bouclee"
-  | "scene" | "melomane" | "entoure" | "competiteur" | "entraide";
+  | "scene" | "melomane" | "entoure" | "competiteur" | "entraide" | "repete";
 
 export type BadgeFamily = "repertoire" | "pratique" | "commu";
 
@@ -38,7 +38,8 @@ export type BadgeIcon =
   | "shuffle"
   | "calendar"
   | "circle_check"
-  | "handshake";
+  | "handshake"
+  | "speaker";
 
 interface BadgeBase {
   id: BadgeId;
@@ -171,6 +172,14 @@ export const BADGES: BadgeDef[] = [
     family: "commu",
     icon: "handshake",
     tiers: [1, 10, 25],
+  },
+  {
+    // Les repetes de groupe confirmees : une session reliee a une repete.
+    id: "repete",
+    kind: "tiered",
+    family: "commu",
+    icon: "speaker",
+    tiers: [1, 10, 50],
   },
 ];
 

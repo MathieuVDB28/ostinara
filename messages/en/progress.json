@@ -85,7 +85,8 @@
     "startTimer": "Start the timer",
     "logPast": "Log a past session",
     "emptyHint": "The timer follows you from screen to screen: start a session here and keep going in \"Play\".",
-    "sessionOf": "session on {date}"
+    "sessionOf": "session on {date}",
+    "rehearsal": "Rehearsal"
   },
   "view": {
     "tabsAria": "Progress view",

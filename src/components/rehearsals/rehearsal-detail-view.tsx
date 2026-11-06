@@ -8,15 +8,17 @@ import {
   respondToRehearsal,
   updateRehearsal,
   cancelRehearsal,
-  completeRehearsal,
   deleteRehearsal,
 } from "@/lib/actions/rehearsals";
 import { BandChatPanel } from "./band-chat-panel";
+import { RehearsalAttendanceCard } from "./rehearsal-attendance-card";
+import { RehearsalReport } from "./rehearsal-report";
 import { RSVP_COLORS } from "@/types";
 import type {
   RehearsalWithDetails,
   RehearsalRsvpStatus,
   BandMessageWithProfile,
+  RehearsalLogDetails,
 } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { bandPosteLabel, instrumentMeta } from "@/lib/instruments";
@@ -26,6 +28,8 @@ interface RehearsalDetailViewProps {
   rehearsal: RehearsalWithDetails;
   currentUserId: string;
   messages: BandMessageWithProfile[];
+  log: RehearsalLogDetails;
+  shareDefault: boolean;
   /** Groupe en lecture seule : le plan Band de son titulaire a pris fin. */
   readOnly?: boolean;
 }
@@ -34,9 +38,12 @@ export function RehearsalDetailView({
   rehearsal: initialRehearsal,
   currentUserId,
   messages,
+  log,
+  shareDefault,
   readOnly = false,
 }: RehearsalDetailViewProps) {
   const t = useTranslations("rehearsals.detail");
+  const tr = useTranslations("rehearsals.report");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
   const intlLocale = useIntlLocale();
@@ -53,6 +60,10 @@ export function RehearsalDetailView({
   const isCreator = rehearsal.created_by === currentUserId;
   const isPast = new Date(rehearsal.date) < new Date();
   const isActive = rehearsal.status === "scheduled";
+  const isLogged = Boolean(rehearsal.logged_at);
+  const logHref = `/commu/groupes/${rehearsal.band_id}/raconter?repete=${rehearsal.id}`;
+  const myMember = (rehearsal.band.members ?? []).find((member) => member.user_id === currentUserId) ?? null;
+  const myAttendance = log.attendees.find((attendee) => attendee.user_id === currentUserId) ?? null;
 
   const acceptedCount = rehearsal.participants.filter(
     (p) => p.status === "accepted"
@@ -95,11 +106,6 @@ export function RehearsalDetailView({
     if (!confirm(t("confirmCancel"))) return;
     await cancelRehearsal(rehearsal.id);
     setRehearsal((prev) => ({ ...prev, status: "cancelled" }));
-  };
-
-  const handleComplete = async () => {
-    await completeRehearsal(rehearsal.id, notesText || undefined);
-    setRehearsal((prev) => ({ ...prev, status: "completed" }));
   };
 
   const handleDelete = async (deleteAll: boolean) => {
@@ -180,6 +186,17 @@ export function RehearsalDetailView({
             )}
           </div>
         </div>
+      )}
+
+      {isLogged && (
+        <RehearsalAttendanceCard
+          rehearsalId={rehearsal.id}
+          attendance={myAttendance}
+          poste={myMember}
+          durationMinutes={rehearsal.duration_minutes ?? 60}
+          shareDefault={shareDefault}
+          readOnly={readOnly}
+        />
       )}
 
       {/* Tabs */}
@@ -294,8 +311,17 @@ export function RehearsalDetailView({
             )}
           </div>
 
-          {/* Line-up par poste */}
-          {lineup.length > 0 && (
+          {isLogged && (
+            <RehearsalReport
+              log={log}
+              durationMinutes={rehearsal.duration_minutes ?? null}
+              currentUserId={currentUserId}
+              readOnly={readOnly}
+            />
+          )}
+
+          {/* Line-up par poste : la question d'avant la repete. */}
+          {!isLogged && lineup.length > 0 && (
             <div>
               <h3 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 {t("lineup")}
@@ -326,7 +352,7 @@ export function RehearsalDetailView({
           )}
 
           {/* Participants */}
-          <div>
+          {!isLogged && <div>
             <div className="mb-1 flex items-center justify-between border-b border-border pb-1.5">
               <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 {t("participants", { count: rehearsal.participants.length })}
@@ -370,7 +396,7 @@ export function RehearsalDetailView({
                 </div>
               ))}
             </div>
-          </div>
+          </div>}
 
           {/* Notes (post-rehearsal) */}
           <div>
@@ -417,27 +443,40 @@ export function RehearsalDetailView({
           </div>
 
           {/* Actions */}
-          {isActive && !readOnly && (
+          {(isActive || rehearsal.status === "completed") && !readOnly && (
             <div className="flex flex-wrap gap-2">
-              {isPast && (
-                <button
-                  onClick={handleComplete}
+              {isActive && isPast && (
+                <Link
+                  href={logHref}
                   className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-foreground px-3.5 text-sm font-semibold text-background hover:opacity-90"
                 >
                   <Icon name="check" className="h-[16px] w-[16px]" />
                   {t("markDone")}
+                </Link>
+              )}
+              {rehearsal.status === "completed" && (
+                <Link
+                  href={logHref}
+                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-border px-3.5 text-sm font-semibold hover:bg-accent"
+                >
+                  {isLogged ? tr("edit") : t("addReport")}
+                </Link>
+              )}
+              {isActive && (
+                <button
+                  onClick={handleCancel}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10"
+                >
+                  {t("cancelRehearsal")}
                 </button>
               )}
-              <button
-                onClick={handleCancel}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10"
-              >
-                {t("cancelRehearsal")}
-              </button>
               {(isCreator || rehearsal.band.owner_id === currentUserId) && (
                 confirmDelete ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-destructive">{t("deleteLabel")}</span>
+                    <span className="text-sm text-destructive">
+                      {isLogged && `${tr("deleteKeepsSessions")} `}
+                      {t("deleteLabel")}
+                    </span>
                     <button
                       onClick={() => handleDelete(false)}
                       className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:opacity-90"

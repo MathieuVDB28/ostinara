@@ -18,7 +18,8 @@
     "gear_added": "added gear to their collection",
     "badge_unlocked": "unlocked a badge",
     "session_completed": "played a session",
-    "gear_wishlisted": "has their eye on new gear"
+    "gear_wishlisted": "has their eye on new gear",
+    "rehearsal_logged": "rehearsed with the band"
   },
   "typesSelf": {
     "song_added": "added a new song",
@@ -39,7 +40,8 @@
     "gear_added": "added gear to your collection",
     "badge_unlocked": "unlocked a badge",
     "session_completed": "played a session",
-    "gear_wishlisted": "have your eye on new gear"
+    "gear_wishlisted": "have your eye on new gear",
+    "rehearsal_logged": "rehearsed with the band"
   },
   "you": "You",
   "myProfile": "My profile",
@@ -82,5 +84,8 @@
     "moodLabel": "Mood: {mood}",
     "exercise": "Exercise"
   },
-  "gearWish": "Wish · {type}"
+  "gearWish": "Wish · {type}",
+  "rehearsalTogether": "rehearsed with the band",
+  "rehearsalCompanions": " and {names}",
+  "rehearsalMeta": "{duration}{songs, plural, =0 {} one { · # song} other { · # songs}}"
 }

@@ -25,6 +25,7 @@ import {
 } from "@dnd-kit/sortable";
 import { SetlistItemCard } from "./setlist-item-card";
 import { SetlistHistory, SetlistLastChange } from "./setlist-history";
+import { SetlistReadinessPanel } from "@/components/rehearsals/setlist-readiness-panel";
 import type { SetlistHistoryPage } from "@/lib/actions/setlists";
 import { AddItemModal } from "./add-item-modal";
 import { EditItemModal } from "./edit-item-modal";
@@ -48,6 +49,7 @@ import {
 } from "@/lib/actions/setlists";
 import { createJamSession } from "@/lib/actions/jam-sessions";
 import type {
+  SetlistReadiness,
   SetlistWithDetails,
   SetlistItemWithSongOwner,
   Profile,
@@ -63,6 +65,8 @@ interface SetlistDetailViewProps {
   readOnly?: boolean;
   /** Setlist de groupe seulement : qui a change quoi. */
   history?: SetlistHistoryPage | null;
+  /** Setlist de groupe seulement : ou en est chaque morceau, d'apres les repetes. */
+  readiness?: SetlistReadiness | null;
 }
 
 function formatDuration(seconds: number, t: CommonT): string {
@@ -105,6 +109,7 @@ export function SetlistDetailView({
   songSources,
   userPlan,
   history = null,
+  readiness = null,
   readOnly = false,
 }: SetlistDetailViewProps) {
   const t = useTranslations("setlists.detail");
@@ -435,6 +440,8 @@ export function SetlistDetailView({
           </div>
         )}
       </div>
+
+      {readiness && <SetlistReadinessPanel readiness={readiness} />}
 
       {setlist.band_id && <SetlistHistory setlistId={setlist.id} history={history} />}
 

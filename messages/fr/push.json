@@ -208,5 +208,13 @@
     "acceptedBody": "{name} a rejoint ton plan Band.",
     "removedTitle": "Fin de ta place Band",
     "removedBody": "Ta place sur le plan de {name} a pris fin : tu repasses au plan Free."
+  },
+  "rehearsalLogged": {
+    "title": "{band} : tu y étais ?",
+    "body": "{name} a raconté la répète « {title} ». Ajoute-la à ton carnet si tu y étais."
+  },
+  "rehearsalTask": {
+    "title": "{band} : à bosser",
+    "body": "{name} : {content}"
   }
 }

@@ -208,5 +208,13 @@
     "acceptedBody": "{name} joined your Band plan.",
     "removedTitle": "Your Band seat has ended",
     "removedBody": "Your seat on {name}'s plan has ended: you're back on the Free plan."
+  },
+  "rehearsalLogged": {
+    "title": "{band}: were you there?",
+    "body": "{name} wrote up the rehearsal \"{title}\". Add it to your log if you were there."
+  },
+  "rehearsalTask": {
+    "title": "{band}: to work on",
+    "body": "{name}: {content}"
   }
 }

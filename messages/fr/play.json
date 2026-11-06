@@ -73,7 +73,9 @@
     "routineCounts": "{songs, plural, one {# morceau} other {# morceaux}} · {exercises, plural, one {# exo} other {# exos}}",
     "deleteRoutine": "Supprimer la routine {name}",
     "noRoutine": "Aucune routine. Monte une session dans l'onglet Session et enregistre-la.",
-    "addPastSession": "Ajouter une session passée"
+    "addPastSession": "Ajouter une session passée",
+    "logRehearsal": "Raconter une répète",
+    "rehearsalTag": "Répète"
   },
   "queue": {
     "deletedSong": "Morceau supprimé",

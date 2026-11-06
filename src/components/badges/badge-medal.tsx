@@ -10,6 +10,7 @@ import {
   Handshake,
   Library,
   Shuffle,
+  Speaker,
   Trophy,
   Users,
   Video,
@@ -32,6 +33,7 @@ const ICONS: Record<BadgeIcon, LucideIcon> = {
   calendar: CalendarDays,
   circle_check: CircleCheck,
   handshake: Handshake,
+  speaker: Speaker,
 };
 
 interface BadgeMedalProps {

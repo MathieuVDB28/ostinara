@@ -176,5 +176,9 @@
   "seatReleaseFailed": "La place n'a pas pu être libérée.",
   "seatLeaveFirst": "Tu occupes une place sur un plan Band : quitte-la avant de t'abonner.",
   "alreadyOnPlan": "Tu es déjà sur ce plan.",
-  "subscriptionPastDue": "Ton dernier paiement a échoué : mets à jour ton moyen de paiement avant de changer de plan."
+  "subscriptionPastDue": "Ton dernier paiement a échoué : mets à jour ton moyen de paiement avant de changer de plan.",
+  "rehearsalInFuture": "La date de la répète est dans le futur",
+  "rehearsalDurationInvalid": "La durée de la répète doit être comprise entre 1 minute et 24 heures",
+  "rehearsalLogFailed": "Le compte rendu n'a pas pu être enregistré",
+  "rehearsalAttendanceNotFound": "Tu n'es pas noté sur cette répète"
 }

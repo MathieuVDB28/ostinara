@@ -73,7 +73,9 @@
     "routineCounts": "{songs, plural, one {# song} other {# songs}} · {exercises, plural, one {# exercise} other {# exercises}}",
     "deleteRoutine": "Delete the routine {name}",
     "noRoutine": "No routines yet. Put together a session in the Session tab and save it.",
-    "addPastSession": "Log a past session"
+    "addPastSession": "Log a past session",
+    "logRehearsal": "Write up a rehearsal",
+    "rehearsalTag": "Rehearsal"
   },
   "queue": {
     "deletedSong": "Deleted song",

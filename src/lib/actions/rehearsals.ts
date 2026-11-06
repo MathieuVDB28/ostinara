@@ -419,14 +419,6 @@ export async function cancelRehearsal(
   return updateRehearsal(rehearsalId, { status: "cancelled" });
 }
 
-// === Complete rehearsal ===
-export async function completeRehearsal(
-  rehearsalId: string,
-  notes?: string
-): Promise<{ success: boolean; error?: string }> {
-  return updateRehearsal(rehearsalId, { status: "completed", notes });
-}
-
 // === Delete rehearsal (and all children if recurrent) ===
 export async function deleteRehearsal(
   rehearsalId: string,

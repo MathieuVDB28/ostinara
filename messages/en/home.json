@@ -34,5 +34,6 @@
   "friendsFeed": "From your friends",
   "noFriendNews": "Nothing new from your friends.",
   "findFriends": "Find friends",
-  "recentCovers": "Latest covers"
+  "recentCovers": "Latest covers",
+  "rehearsalConfirmations": "{count, plural, one {# rehearsal to confirm} other {# rehearsals to confirm}}"
 }

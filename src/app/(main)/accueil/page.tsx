@@ -12,6 +12,7 @@ import { getCoversFeed } from "@/lib/actions/covers";
 import { getPendingRequestsCount } from "@/lib/actions/friends";
 import { getPendingChallengesCount } from "@/lib/actions/challenges";
 import { getPendingBandInvitations } from "@/lib/actions/bands";
+import { getPendingRehearsalConfirmations } from "@/lib/actions/rehearsal-logs";
 import { syncBadges } from "@/lib/badges/sync";
 import { getTranslations } from "next-intl/server";
 import { HomeView } from "@/components/home/home-view";
@@ -59,6 +60,7 @@ export default async function AccueilPage() {
     pendingFriends,
     pendingChallenges,
     bandInvitations,
+    rehearsalConfirmations,
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -76,6 +78,7 @@ export default async function AccueilPage() {
     getPendingRequestsCount(),
     getPendingChallengesCount(),
     getPendingBandInvitations(),
+    getPendingRehearsalConfirmations(),
     // Les badges ne s'affichent plus ici (ils sont dans Profil), mais
     // l'accueil verifie toujours ce qui a ete debloque sans action de sa
     // part — un ami qui accepte, un defi gagne a l'echeance — pour que le
@@ -127,6 +130,8 @@ export default async function AccueilPage() {
         friends: pendingFriends,
         challenges: pendingChallenges,
         bands: bandInvitations.length,
+        rehearsals: rehearsalConfirmations.length,
+        nextRehearsalId: rehearsalConfirmations[0]?.rehearsal_id ?? null,
       }}
       recentSongs={recentSongs}
       recentAlbums={recentAlbums}

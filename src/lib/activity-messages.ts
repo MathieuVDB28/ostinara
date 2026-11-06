@@ -11,7 +11,7 @@ const ACTIVITY_TYPES = [
   "song_wishlisted", "setlist_created", "band_created", "band_joined",
   "challenge_created", "challenge_accepted", "challenge_completed", "challenge_won",
   "album_reviewed", "album_wishlisted", "gear_added", "gear_wishlisted", "badge_unlocked",
-  "session_completed",
+  "session_completed", "rehearsal_logged",
 ] as const;
 
 type ActivityMessageType = (typeof ACTIVITY_TYPES)[number];

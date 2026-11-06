@@ -18,7 +18,8 @@
     "gear_added": "a ajouté du matos à sa collection",
     "badge_unlocked": "a débloqué un badge",
     "session_completed": "a joué une session",
-    "gear_wishlisted": "rêve d'un nouveau matos"
+    "gear_wishlisted": "rêve d'un nouveau matos",
+    "rehearsal_logged": "a répété en groupe"
   },
   "typesSelf": {
     "song_added": "a ajouté un nouveau morceau",
@@ -39,7 +40,8 @@
     "gear_added": "a ajouté du matos à sa collection",
     "badge_unlocked": "a débloqué un badge",
     "session_completed": "a joué une session",
-    "gear_wishlisted": "rêve d'un nouveau matos"
+    "gear_wishlisted": "rêve d'un nouveau matos",
+    "rehearsal_logged": "a répété en groupe"
   },
   "you": "Toi",
   "myProfile": "Mon profil",
@@ -82,5 +84,8 @@
     "moodLabel": "Humeur : {mood}",
     "exercise": "Exercice"
   },
-  "gearWish": "Envie · {type}"
+  "gearWish": "Envie · {type}",
+  "rehearsalTogether": "ont répété en groupe",
+  "rehearsalCompanions": " et {names}",
+  "rehearsalMeta": "{duration}{songs, plural, =0 {} one { · # morceau} other { · # morceaux}}"
 }
