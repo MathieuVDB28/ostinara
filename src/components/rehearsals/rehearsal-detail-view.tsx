@@ -13,12 +13,14 @@ import {
 import { BandChatPanel } from "./band-chat-panel";
 import { RehearsalAttendanceCard } from "./rehearsal-attendance-card";
 import { RehearsalReport } from "./rehearsal-report";
+import { SetlistMemberReadinessPanel } from "./setlist-member-readiness-panel";
 import { RSVP_COLORS } from "@/types";
 import type {
   RehearsalWithDetails,
   RehearsalRsvpStatus,
   BandMessageWithProfile,
   RehearsalLogDetails,
+  SetlistMemberReadiness,
 } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { bandPosteLabel, instrumentMeta } from "@/lib/instruments";
@@ -30,6 +32,7 @@ interface RehearsalDetailViewProps {
   messages: BandMessageWithProfile[];
   log: RehearsalLogDetails;
   shareDefault: boolean;
+  memberReadiness?: SetlistMemberReadiness | null;
   /** Groupe en lecture seule : le plan Band de son titulaire a pris fin. */
   readOnly?: boolean;
 }
@@ -40,6 +43,7 @@ export function RehearsalDetailView({
   messages,
   log,
   shareDefault,
+  memberReadiness = null,
   readOnly = false,
 }: RehearsalDetailViewProps) {
   const t = useTranslations("rehearsals.detail");
@@ -310,6 +314,11 @@ export function RehearsalDetailView({
               </div>
             )}
           </div>
+
+          {/* Une repete passee se raconte : l'etat du jour ne dirait rien d'elle. */}
+          {memberReadiness && isActive && !isPast && (
+            <SetlistMemberReadinessPanel readiness={memberReadiness} readOnly={readOnly} />
+          )}
 
           {isLogged && (
             <RehearsalReport

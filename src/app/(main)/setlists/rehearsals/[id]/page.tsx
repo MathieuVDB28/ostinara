@@ -4,6 +4,7 @@ import { getBand } from "@/lib/actions/bands";
 import { getBandMessages } from "@/lib/actions/band-messages";
 import { getShareSessionsDefault } from "@/lib/actions/practice";
 import { getRehearsalLog } from "@/lib/actions/rehearsal-logs";
+import { getSetlistMemberReadiness } from "@/lib/actions/setlist-member-readiness";
 import { bandStatus } from "@/lib/band-access";
 import { getAuthenticatedUser } from "@/lib/supabase/server";
 import { RehearsalDetailView } from "@/components/rehearsals/rehearsal-detail-view";
@@ -28,11 +29,12 @@ export default async function RehearsalPage({ params }: RehearsalPageProps) {
   }
 
   // Fetch messages for this rehearsal's discussion thread
-  const [messages, band, log, shareDefault] = await Promise.all([
+  const [messages, band, log, shareDefault, memberReadiness] = await Promise.all([
     getBandMessages(rehearsal.band_id, id),
     getBand(rehearsal.band_id),
     getRehearsalLog(id),
     getShareSessionsDefault(),
+    rehearsal.setlist_id ? getSetlistMemberReadiness(rehearsal.setlist_id) : null,
   ]);
 
   return (
@@ -42,6 +44,7 @@ export default async function RehearsalPage({ params }: RehearsalPageProps) {
       messages={messages}
       log={log}
       shareDefault={shareDefault}
+      memberReadiness={memberReadiness}
       readOnly={!band || bandStatus(band) === "read_only"}
     />
   );

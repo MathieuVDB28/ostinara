@@ -179,5 +179,18 @@
     "readyCount": "{ready}/{total} prêts",
     "summary": "{ready} prêts, {solid} qui tournent, {rework} à retravailler, {unplayed} pas encore joués",
     "unplayed": "Pas encore joué"
+  },
+  "memberReadiness": {
+    "title": "Prêts pour la répète",
+    "readyCount": "{ready}/{total} maîtrisés par tous",
+    "song": "Morceau",
+    "you": "Toi",
+    "notInLibrary": "Pas dans sa biblio",
+    "learningPercent": "En cours, {percent} %",
+    "cellLabel": "{name}, {song} : {status}",
+    "editTitle": "Ton statut sur {song}",
+    "addHint": "Le morceau sera ajouté à ta biblio.",
+    "legend": "Coche : maîtrisé. Pourcentage : en cours. Rond : à apprendre. Tiret : pas dans sa biblio.",
+    "hint": "Touche une case de ta colonne pour changer ton statut."
   }
 }

@@ -179,5 +179,18 @@
     "readyCount": "{ready}/{total} ready",
     "summary": "{ready} ready, {solid} getting there, {rework} needing work, {unplayed} not played yet",
     "unplayed": "Not played yet"
+  },
+  "memberReadiness": {
+    "title": "Ready for rehearsal",
+    "readyCount": "{ready}/{total} mastered by everyone",
+    "song": "Song",
+    "you": "You",
+    "notInLibrary": "Not in their library",
+    "learningPercent": "Learning, {percent}%",
+    "cellLabel": "{name}, {song}: {status}",
+    "editTitle": "Your status on {song}",
+    "addHint": "The song will be added to your library.",
+    "legend": "Check: mastered. Percentage: learning. Circle: to learn. Dash: not in their library.",
+    "hint": "Tap a cell in your column to change your status."
   }
 }

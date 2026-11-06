@@ -1943,6 +1943,33 @@ export interface SetlistReadiness {
   unplayed: number;
 }
 
+export interface SetlistMemberCell {
+  in_library: boolean;
+  status: SongStatus | null;
+  progress_percent: number | null;
+}
+
+/** « Prets pour la repete » : les morceaux en lignes, les musiciens en colonnes. */
+export interface SetlistMemberReadiness {
+  setlist_id: string;
+  current_user_id: string;
+  members: {
+    user_id: string;
+    name: string;
+    instrument: Instrument | null;
+    instrument_label: string | null;
+  }[];
+  rows: {
+    item_id: string;
+    title: string;
+    artist: string | null;
+    cells: Record<string, SetlistMemberCell>;
+  }[];
+  total: number;
+  /** Morceaux maitrises par tout le groupe. */
+  ready: number;
+}
+
 export const RSVP_COLORS: Record<RehearsalRsvpStatus, string> = {
   invited: 'bg-muted text-muted-foreground',
   accepted: 'bg-success/15 text-success',
