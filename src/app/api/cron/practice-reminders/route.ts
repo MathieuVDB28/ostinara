@@ -90,6 +90,14 @@ export async function GET(request: NextRequest) {
     .lt("updated_at", new Date(now.getTime() - JAM_SESSION_TTL_MS).toISOString());
   if (jamError) console.error("[practice-reminders] jam sessions:", jamError);
 
+  // Le compteur de reconnaissance audio ne sert que le jour meme.
+  const usageCutoff = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const { error: usageError } = await supabaseAdmin
+    .from("audio_identification_usage")
+    .delete()
+    .lt("day", usageCutoff);
+  if (usageError) console.error("[practice-reminders] audio usage:", usageError);
+
   const today = parisDate(now);
   const weekday = parisWeekday(now);
   const isPlanDay = weekday === 4;

@@ -7,7 +7,7 @@ export type PlansT = Translator<'plans'>;
 export type PlanFeature =
   | 'metronomeNotebook' | 'basicStats' | 'challengesForum' | 'joinBands'
   | 'songs10' | 'instruments2' | 'covers3' | 'friends5' | 'wishlist20' | 'gear5'
-  | 'unlimitedSongs' | 'unlimitedInstruments' | 'unlimitedCovers' | 'unlimitedFriends' | 'unlimitedWishlist' | 'unlimitedGear'
+  | 'unlimitedSongs' | 'unlimitedInstruments' | 'coverStorage20' | 'unlimitedFriends' | 'unlimitedWishlist' | 'unlimitedGear'
   | 'advancedStats' | 'deezerTabs' | 'audioRecognition' | 'albumRecommendations' | 'liveSessions' | 'proBadge'
   | 'fivePeople' | 'bandForAll' | 'everythingPro' | 'bandSpaces' | 'jamSessions' | 'rehearsals' | 'sharedSetlists' | 'bandChat' | 'techRider' | 'bandBadge';
 
@@ -35,6 +35,11 @@ export interface PlanConfig {
     price: number;
   };
 }
+
+/** Par personne, en base aussi : migration 20261122_usage_caps. */
+export const COVER_STORAGE_LIMIT_GB = 20;
+export const COVER_STORAGE_LIMIT_BYTES = COVER_STORAGE_LIMIT_GB * 1024 * 1024 * 1024;
+export const AUDIO_IDENTIFICATIONS_PER_DAY = 30;
 
 export const PLANS: Record<UserPlan, PlanConfig> = {
   free: {
@@ -68,7 +73,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
     features: [
       'unlimitedSongs',
       'unlimitedInstruments',
-      'unlimitedCovers',
+      'coverStorage20',
       'unlimitedFriends',
       'unlimitedWishlist',
       'unlimitedGear',

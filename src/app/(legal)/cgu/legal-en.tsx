@@ -206,7 +206,7 @@ export function CguEn() {
                   },
                   {
                     name: "Pro",
-                    desc: "Unlimited access, advanced statistics",
+                    desc: "Unlimited access (20 GB of covers and 30 audio recognitions per day, per person), advanced statistics",
                   },
                   {
                     name: "Band",

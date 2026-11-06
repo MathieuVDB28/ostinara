@@ -1,4 +1,5 @@
 import { tErr } from "@/i18n/server";
+import { AUDIO_IDENTIFICATIONS_PER_DAY } from "@/lib/stripe/config";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { AudioIdentificationResult } from "@/types";
@@ -22,6 +23,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: await tErr("proOnly") },
       { status: 403 }
+    );
+  }
+
+  // Chaque essai est facture par AudD. Si le compteur ne repond pas, on ne
+  // prive personne de la fonction : l'erreur est journalisee.
+  const { data: attemptAllowed, error: usageError } = await supabase.rpc("consume_audio_identification");
+  if (usageError) {
+    console.error("[Audio Identify] Usage counter error:", usageError);
+  } else if (!attemptAllowed) {
+    return NextResponse.json(
+      { error: await tErr("audioDailyLimit", { limit: AUDIO_IDENTIFICATIONS_PER_DAY }) },
+      { status: 429 }
     );
   }
 

@@ -245,7 +245,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - Visibilite : suit le profil (Public sur un profil public, Amis sur un profil prive), case « Reservee a mes amis » ; `private` (moi seul) reste pour les anciennes
 - Filtrage par visibilite
 - Modal de detail : lecture, telechargement, modification visibilite, suppression
-- Limite : 3 pour Free, illimite Pro/Band
+- Limite : 3 pour Free, 20 Go par personne en Pro/Band (taille lue dans `storage.objects`, RLS + trigger, migration `20261122_usage_caps`)
 
 ### Albums (`/albums`)
 - Reviews d'albums avec note 1-10 et texte (max 2000 caracteres)
@@ -1060,14 +1060,14 @@ EMAIL_FROM=                   # ex. "Ostinara <bonjour@mondomaine.fr>" (domaine 
 | Fonctionnalite | Free | Pro (9EUR/mois) | Band (24EUR/mois) |
 |----------------|------|-----------------|-------------------|
 | Morceaux | 10 | illimite | illimite |
-| Covers | 3 | illimite | illimite |
+| Covers | 3 | 20 Go par personne | 20 Go par personne |
 | Amis | 5 | illimite | illimite |
 | Wishlist | 20 | illimite | illimite |
 | Instruments | 2 | illimite | illimite |
 | Matos (equipements / setups / envies) | 5 / 1 / 10 | illimite | illimite |
 | Stats avancees | non | oui | oui |
 | Lecteur Deezer & tablatures | non | oui | oui |
-| Identification audio | non | oui | oui |
+| Identification audio | non | 30 essais par jour | 30 essais par jour |
 | Accordeur | oui | oui | oui |
 | Recommandations d'albums | non | oui | oui |
 | Groupes (bands) | non | non | oui |

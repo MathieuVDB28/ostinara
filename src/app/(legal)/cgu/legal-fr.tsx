@@ -223,7 +223,7 @@ export function CguFr() {
                   },
                   {
                     name: "Pro",
-                    desc: "Accès illimité, statistiques avancées",
+                    desc: "Accès illimité (20 Go de covers et 30 reconnaissances audio par jour et par personne), statistiques avancées",
                   },
                   {
                     name: "Band",

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import * as tus from "tus-js-client";
 import { createClient } from "@/lib/supabase/client";
 import { needsCompression } from "@/lib/video-compression";
+import { canUploadCover } from "@/lib/actions/covers";
 
 interface VideoUploadProps {
   songId: string;
@@ -73,6 +74,14 @@ export function VideoUpload({ songId, onUploadComplete, onError, disabled }: Vid
           },
           () => setStatusMessage(tm("compressionLoading"))
         );
+      }
+
+      // Le plafond de stockage, sur la taille reellement envoyee.
+      const quota = await canUploadCover(fileToUpload.size);
+      if (!quota.allowed) {
+        setPhase("idle");
+        onError(quota.reason ?? t("tooLarge"));
+        return;
       }
 
       // Upload

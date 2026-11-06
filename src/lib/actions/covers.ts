@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import { COVER_GEAR_SELECT, withCoverGear } from "@/lib/cover-gear";
+import { COVER_STORAGE_LIMIT_BYTES, COVER_STORAGE_LIMIT_GB } from "@/lib/stripe/config";
 import { coverStoragePath, signCoverMedia, signOneCoverMedia } from "@/lib/storage/cover-media";
 import type {
   Cover,
@@ -69,7 +70,8 @@ export async function getCoversBySong(songId: string): Promise<Cover[]> {
   return signCoverMedia(data as Cover[]);
 }
 
-export async function canUploadCover(): Promise<{
+/** `fileSize` : la taille du fichier sur le point d'etre envoye, pour le plafond de stockage. */
+export async function canUploadCover(fileSize?: number): Promise<{
   allowed: boolean;
   reason?: string;
   limit?: number;
@@ -87,6 +89,18 @@ export async function canUploadCover(): Promise<{
     .select("plan")
     .eq("id", user.id)
     .single();
+
+  if (fileSize !== undefined) {
+    const { data: used, error } = await supabase.rpc("my_cover_storage_used");
+    // La base garde le dernier mot (RLS et trigger) si cette lecture echoue.
+    if (error) console.error("Error reading cover storage:", error);
+    if (!error && Number(used) + fileSize > COVER_STORAGE_LIMIT_BYTES) {
+      return {
+        allowed: false,
+        reason: await tErr("coverStorageFull", { limit: COVER_STORAGE_LIMIT_GB }),
+      };
+    }
+  }
 
   if (profile?.plan !== "free") {
     return { allowed: true };
@@ -183,6 +197,9 @@ export async function createCover(input: CreateCoverInput): Promise<{
 
   if (error) {
     console.error("Error creating cover:", error);
+    if (error.code === "53100") {
+      return { success: false, error: await tErr("coverStorageFull", { limit: COVER_STORAGE_LIMIT_GB }) };
+    }
     return { success: false, error: await tErr("coverAddFailed") };
   }
 

@@ -139,6 +139,8 @@
   "instrumentLimit": "The Free plan is limited to {limit} instruments. Go Pro to add more!",
   "uploadFailed": "Upload failed: {message}",
   "friendLimit": "You've reached the limit of {limit} friends. Go Pro to add more!",
+  "coverStorageFull": "You've reached your {limit} GB of covers. Delete some to add more.",
+  "audioDailyLimit": "You've used your {limit} attempts for today. You can try again tomorrow.",
   "coverLimit": "You've reached the limit of {limit} covers. Go Pro to add more!",
   "ownerCannotLeave": "The owner can't leave the band. Transfer ownership or delete the band.",
   "adminOnlyPoste": "Only an admin can change another member's role.",

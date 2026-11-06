@@ -139,6 +139,8 @@
   "instrumentLimit": "Le plan Free est limité à {limit} instruments. Passe en Pro pour en ajouter plus !",
   "uploadFailed": "Erreur lors de l'upload : {message}",
   "friendLimit": "Tu as atteint la limite de {limit} amis. Passe en Pro pour en ajouter plus !",
+  "coverStorageFull": "Tu as atteint tes {limit} Go de covers. Supprimes-en pour en ajouter d'autres.",
+  "audioDailyLimit": "Tu as utilisé tes {limit} essais du jour. Tu pourras réessayer demain.",
   "coverLimit": "Tu as atteint la limite de {limit} covers. Passe en Pro pour en ajouter plus !",
   "ownerCannotLeave": "Le propriétaire ne peut pas quitter le groupe. Transfère la propriété ou supprime le groupe.",
   "adminOnlyPoste": "Seul un admin peut changer le poste d'un autre membre.",
