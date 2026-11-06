@@ -438,18 +438,53 @@ export async function deleteRehearsal(
 
     const parentId = rehearsal?.parent_rehearsal_id || rehearsalId;
 
-    // Delete children
-    await supabase
+    // Toute la serie, sauf ce qui a ete raconte : un compte rendu ne part que
+    // si on supprime cette repete-la.
+    const { error: childrenError } = await supabase
       .from("rehearsals")
       .delete()
-      .eq("parent_rehearsal_id", parentId);
+      .eq("parent_rehearsal_id", parentId)
+      .is("logged_at", null);
 
-    // Delete parent
-    await supabase
-      .from("rehearsals")
-      .delete()
-      .eq("id", parentId);
+    const { error: parentError } = childrenError
+      ? { error: null }
+      : await supabase
+          .from("rehearsals")
+          .delete()
+          .eq("id", parentId)
+          .is("logged_at", null);
+
+    if (childrenError || parentError) {
+      console.error("Error deleting rehearsal series:", childrenError ?? parentError);
+      return { success: false, error: await tErr("deleteFailed") };
+    }
   } else {
+    // La premiere repete d'une serie s'en va seule : la plus ancienne des
+    // suivantes prend sa place, sinon elles ne formeraient plus une serie.
+    const { data: followers } = await supabase
+      .from("rehearsals")
+      .select("id")
+      .eq("parent_rehearsal_id", rehearsalId)
+      .order("date", { ascending: true });
+
+    const [nextParent, ...others] = followers ?? [];
+    if (nextParent) {
+      const { error: promoteError } = await supabase
+        .from("rehearsals")
+        .update({ parent_rehearsal_id: null })
+        .eq("id", nextParent.id);
+      const { error: attachError } = others.length
+        ? await supabase
+            .from("rehearsals")
+            .update({ parent_rehearsal_id: nextParent.id })
+            .in("id", others.map((rehearsal) => rehearsal.id))
+        : { error: null };
+      // Sans ce rattachement, elles perdent leur lien entre elles, rien d'autre.
+      if (promoteError || attachError) {
+        console.error("Error reattaching rehearsal series:", promoteError ?? attachError);
+      }
+    }
+
     const { error } = await supabase
       .from("rehearsals")
       .delete()

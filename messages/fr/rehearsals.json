@@ -75,7 +75,7 @@
     "cancelRehearsal": "Annuler la répète",
     "deleteLabel": "Supprimer :",
     "thisOne": "Celle-ci",
-    "all": "Toutes",
+    "all": "Toutes, sauf les répètes racontées",
     "chatTitle": "Discussion - {title}",
     "addReport": "Ajouter un compte rendu"
   },
@@ -161,7 +161,7 @@
     "songs": "Morceaux joués · {count}",
     "tasks": "À bosser",
     "edit": "Modifier le compte rendu",
-    "deleteKeepsSessions": "Le temps déjà ajouté aux carnets reste."
+    "deleteKeepsSessions": "Le compte rendu sera effacé, le temps déjà ajouté aux carnets reste."
   },
   "journal": {
     "title": "Répètes passées",

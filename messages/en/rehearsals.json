@@ -75,7 +75,7 @@
     "cancelRehearsal": "Cancel rehearsal",
     "deleteLabel": "Delete:",
     "thisOne": "This one",
-    "all": "All of them",
+    "all": "All except logged rehearsals",
     "chatTitle": "Discussion - {title}",
     "addReport": "Add a write-up"
   },
@@ -161,7 +161,7 @@
     "songs": "Songs played · {count}",
     "tasks": "To work on",
     "edit": "Edit the write-up",
-    "deleteKeepsSessions": "Time already added to logs stays there."
+    "deleteKeepsSessions": "The report will be deleted. Time already added to logs stays there."
   },
   "journal": {
     "title": "Past rehearsals",
