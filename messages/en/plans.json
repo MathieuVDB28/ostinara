@@ -5,12 +5,12 @@
     "band": "For bands"
   },
   "features": {
-    "metronomeNotebook": "Metronome and practice log",
+    "metronomeNotebook": "Metronome, tuner and practice log",
+    "basicStats": "Streak, total time and practice calendar",
     "challengesForum": "Friend challenges and forum",
     "joinBands": "Join a band by invitation",
     "gear5": "Up to 5 gear items",
     "unlimitedGear": "Unlimited gear",
-    "tuner": "Guitar and bass tuner",
     "albumRecommendations": "Album recommendations",
     "liveSessions": "Your friends' live sessions, with chat",
     "jamSessions": "Live band jams",
@@ -27,7 +27,7 @@
     "unlimitedCovers": "Unlimited covers",
     "unlimitedFriends": "Unlimited friends",
     "unlimitedWishlist": "Unlimited wishlist",
-    "advancedStats": "Advanced stats",
+    "advancedStats": "Advanced stats: tempo curve, moods, time per song",
     "deezerTabs": "Deezer player & tabs",
     "audioRecognition": "Audio recognition",
     "proBadge": "Pro badge",

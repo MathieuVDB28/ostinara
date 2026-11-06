@@ -5,12 +5,12 @@
     "band": "Pour les groupes"
   },
   "features": {
-    "metronomeNotebook": "Métronome et carnet de pratique",
+    "metronomeNotebook": "Métronome, accordeur et carnet de pratique",
+    "basicStats": "Série, temps total et calendrier de pratique",
     "challengesForum": "Défis entre amis et forum",
     "joinBands": "Rejoindre un groupe sur invitation",
     "gear5": "5 équipements de matos max",
     "unlimitedGear": "Matos illimité",
-    "tuner": "Accordeur guitare et basse",
     "albumRecommendations": "Recommandations d'albums",
     "liveSessions": "Sessions en direct de tes amis, avec chat",
     "jamSessions": "Jams de groupe en direct",
@@ -27,7 +27,7 @@
     "unlimitedCovers": "Covers illimités",
     "unlimitedFriends": "Amis illimités",
     "unlimitedWishlist": "Wishlist illimitée",
-    "advancedStats": "Stats avancées",
+    "advancedStats": "Stats avancées : courbe de tempo, humeurs, temps par morceau",
     "deezerTabs": "Lecteur Deezer & tablatures",
     "audioRecognition": "Reconnaissance audio",
     "proBadge": "Badge Pro",

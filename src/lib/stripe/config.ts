@@ -5,10 +5,10 @@ import type { Translator } from '@/i18n/types';
 export type PlansT = Translator<'plans'>;
 
 export type PlanFeature =
-  | 'metronomeNotebook' | 'challengesForum' | 'joinBands'
+  | 'metronomeNotebook' | 'basicStats' | 'challengesForum' | 'joinBands'
   | 'songs10' | 'instruments2' | 'covers3' | 'friends5' | 'wishlist20' | 'gear5'
   | 'unlimitedSongs' | 'unlimitedInstruments' | 'unlimitedCovers' | 'unlimitedFriends' | 'unlimitedWishlist' | 'unlimitedGear'
-  | 'advancedStats' | 'deezerTabs' | 'audioRecognition' | 'tuner' | 'albumRecommendations' | 'liveSessions' | 'proBadge'
+  | 'advancedStats' | 'deezerTabs' | 'audioRecognition' | 'albumRecommendations' | 'liveSessions' | 'proBadge'
   | 'fivePeople' | 'bandForAll' | 'everythingPro' | 'bandSpaces' | 'jamSessions' | 'rehearsals' | 'sharedSetlists' | 'bandChat' | 'techRider' | 'bandBadge';
 
 export type BillingInterval = 'monthly' | 'yearly';
@@ -41,6 +41,7 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
     name: 'Free',
     features: [
       'metronomeNotebook',
+      'basicStats',
       'challengesForum',
       'joinBands',
       'songs10',
@@ -74,7 +75,6 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
       'advancedStats',
       'deezerTabs',
       'audioRecognition',
-      'tuner',
       'albumRecommendations',
       'liveSessions',
       'proBadge',

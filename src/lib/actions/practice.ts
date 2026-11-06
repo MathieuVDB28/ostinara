@@ -3,6 +3,7 @@
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import { requirePaidPlan } from "./plan";
 import { updateChallengeProgress } from "./challenges";
 import { createActivity } from "./activities";
 import { derivedProgressPercent } from "@/lib/song-progress";
@@ -1071,6 +1072,13 @@ export async function getChartData(daysBack: number = 365, instrument?: Instrume
 
   // Générer les données
   const heatmap = generateHeatmapData(scoped, daysBack);
+
+  // Le calendrier reste gratuit, les courbes et les repartitions sont Pro/Band.
+  const { allowed } = await requirePaidPlan();
+  if (!allowed) {
+    return { ...defaultData, heatmap };
+  }
+
   const bpmProgress = generateBpmProgressData(scoped);
   const moodDistribution = generateMoodDistribution(scoped);
   const songDistribution = generateSongDistribution(scoped);

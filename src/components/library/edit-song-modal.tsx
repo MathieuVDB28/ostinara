@@ -28,6 +28,7 @@ const AddToPlaylistModal = dynamic(() =>
   import("./add-to-playlist-modal").then((m) => m.AddToPlaylistModal)
 );
 import { DeezerPlayer } from "@/components/ui/deezer-player";
+import { ProUpsell } from "@/components/subscription/pro-upsell";
 import { TabsSearchPanel } from "./tabs-search-panel";
 import { TempoLadder } from "@/components/ui/tempo-ladder";
 import { SongBpmCurve } from "@/components/progress/song-bpm-curve";
@@ -538,6 +539,7 @@ export function EditSongModal({
                 : bestBpm
             }
             points={bpmPoints}
+            userPlan={userPlan}
           />
 
           {/* Basic info */}
@@ -898,6 +900,7 @@ interface TempoBlockProps {
   bestBpm: number | null;
   /** `null` tant que la courbe n'est pas revenue du serveur. */
   points: SongBpmPoint[] | null;
+  userPlan: UserPlan;
 }
 
 /**
@@ -913,6 +916,7 @@ function TempoBlock({
   onTargetBpmChange,
   bestBpm,
   points,
+  userPlan,
 }: TempoBlockProps) {
   const t = useTranslations("library.sheet");
   const parsed = targetBpm ? parseInt(targetBpm, 10) : NaN;
@@ -927,6 +931,7 @@ function TempoBlock({
       : null,
   ].filter(Boolean) as { bpm: number; label: string }[];
 
+  const tCurve = useTranslations("progress.curve");
   const fallbackTarget = songTargetBpm(song);
   const ladderTarget = effectiveTarget ?? fallbackTarget?.bpm ?? null;
 
@@ -949,11 +954,15 @@ function TempoBlock({
 
       {/* La courbe : l'histoire, pas l'instantane. */}
       {points !== null && points.length > 0 && (
-        <SongBpmCurve
-          points={points}
-          targetBpm={ladderTarget}
-          floorBpm={ladderTarget ? slowPracticeFloor(ladderTarget) : null}
-        />
+        userPlan !== "free" ? (
+          <SongBpmCurve
+            points={points}
+            targetBpm={ladderTarget}
+            floorBpm={ladderTarget ? slowPracticeFloor(ladderTarget) : null}
+          />
+        ) : (
+          <ProUpsell compact feature={tCurve("upsell")} description="" />
+        )
       )}
 
       <div>

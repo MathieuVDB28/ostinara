@@ -214,6 +214,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
   - Distribution des humeurs (pie chart)
   - Repartition du temps par morceau (bar chart)
   - Resume : total sessions, total minutes, streak, plus long streak, morceau le plus pratique
+  - Gratuit : heatmap, resume, serie. Pro/Band : courbes de tempo, humeurs, temps par morceau et par instrument (filtre serveur dans `getChartData`)
   - Serie : `computeStreak` (`src/lib/streak.ts`), seule regle de l'app, jours de Paris. Un jour manque ne la casse pas et ne l'augmente pas, deux la cassent. Stats, profil public, badges, rappels et defis passent par la.
 
 ### Sessions en direct (`/commu/direct/[id]`)
@@ -339,7 +340,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 ### Audio (`/audio`)
 - **Identification de morceaux** : enregistrement micro → API AudD.io → resultat avec infos du catalogue
 - **Accordeur guitare / basse** : detection de pitch en temps reel (autocorrelation ; FFT 4096 a partir de 50 Hz pour la guitare, 8192 a partir de 28 Hz pour la basse)
-- Pro/Band requis
+- Accordeur gratuit ; identification de morceaux Pro/Band
 
 ### Profil (`/profile/edit`)
 - **4 onglets** : Profil / Favoris / Confidentialite / Integrations / Abonnement
@@ -1067,7 +1068,7 @@ EMAIL_FROM=                   # ex. "Ostinara <bonjour@mondomaine.fr>" (domaine 
 | Stats avancees | non | oui | oui |
 | Lecteur Deezer & tablatures | non | oui | oui |
 | Identification audio | non | oui | oui |
-| Accordeur | non | oui | oui |
+| Accordeur | oui | oui | oui |
 | Recommandations d'albums | non | oui | oui |
 | Groupes (bands) | non | non | oui |
 | Creer un groupe | non | non | oui |

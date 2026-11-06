@@ -9,6 +9,7 @@ import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { InstrumentSwitch } from "@/components/instruments/instrument-switch";
 import { instrumentLabel, instrumentMeta } from "@/lib/instruments";
 import { Icon } from "@/components/ui/icon";
+import { ProUpsell } from "@/components/subscription/pro-upsell";
 import type { ChartData, Instrument } from "@/types";
 import { PracticeHeatmap } from "./practice-heatmap";
 // recharts (~380 Ko avec ses dependances) n'est tire que lorsque
@@ -32,9 +33,10 @@ const SongDistributionChart = dynamic(
 
 interface StatsTabProps {
   data: ChartData;
+  isPaid: boolean;
 }
 
-export function StatsTab({ data: initialData }: StatsTabProps) {
+export function StatsTab({ data: initialData, isPaid }: StatsTabProps) {
   // Plusieurs instruments : les stats d'un seul, ou de tous.
   const t = useTranslations("progress.statsTab");
   const te = useTranslations("enums");
@@ -99,17 +101,23 @@ export function StatsTab({ data: initialData }: StatsTabProps) {
       {/* Heatmap - prend toute la largeur */}
       <PracticeHeatmap data={data.heatmap} />
 
-      {/* Grille pour les autres graphiques */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Progression BPM */}
-        <BpmProgressChart data={data.bpmProgress} />
+      {isPaid ? (
+        <>
+          {/* Grille pour les autres graphiques */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Progression BPM */}
+            <BpmProgressChart data={data.bpmProgress} />
 
-        {/* Distribution des humeurs */}
-        <MoodDistributionChart data={data.moodDistribution} />
-      </div>
+            {/* Distribution des humeurs */}
+            <MoodDistributionChart data={data.moodDistribution} />
+          </div>
 
-      {/* Top morceaux - prend toute la largeur */}
-      <SongDistributionChart data={data.songDistribution} />
+          {/* Top morceaux - prend toute la largeur */}
+          <SongDistributionChart data={data.songDistribution} />
+        </>
+      ) : (
+        <ProUpsell feature={t("upsellTitle")} description={t("upsellBody")} />
+      )}
     </div>
   );
 }

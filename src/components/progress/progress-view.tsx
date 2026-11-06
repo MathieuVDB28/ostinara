@@ -32,6 +32,7 @@ interface ProgressViewProps {
   initialStats: PracticeStats;
   songs: Song[];
   chartData: ChartData;
+  isPaid: boolean;
   /** Les derniers albums notes — donc ecoutes. */
   recentAlbums: AlbumReview[];
 }
@@ -42,6 +43,7 @@ export function ProgressView({
   songs,
   chartData,
   recentAlbums,
+  isPaid,
 }: ProgressViewProps) {
   const t = useTranslations("progress.view");
   const tc = useTranslations("common");
@@ -287,7 +289,7 @@ export function ProgressView({
           </aside>
         </div>
       ) : (
-        <StatsTab data={chartData} />
+        <StatsTab data={chartData} isPaid={isPaid} />
       )}
 
       {/* Modal d'édition */}

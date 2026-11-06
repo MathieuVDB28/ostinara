@@ -24,7 +24,9 @@
   "statsTab": {
     "all": "Tous",
     "statsFor": "Statistiques pour",
-    "timePerInstrument": "Temps par instrument"
+    "timePerInstrument": "Temps par instrument",
+    "upsellTitle": "Comprends ta progression",
+    "upsellBody": "La courbe de ton tempo, tes humeurs et le temps passé par morceau et par instrument font partie des plans Pro et Band."
   },
   "recentAlbums": {
     "title": "Derniers albums écoutés",
@@ -58,6 +60,7 @@
     "sessions": "{count, plural, one {# session} other {# sessions}}"
   },
   "curve": {
+    "upsell": "La courbe de ton tempo, séance après séance",
     "none": "Aucun tempo enregistré pour ce morceau",
     "noneHint": "Note le BPM atteint à la fin d'une session : c'est ce qui trace la progression.",
     "since": "{gain} BPM depuis le {date}",
