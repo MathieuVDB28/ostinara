@@ -6,6 +6,7 @@
   },
   "metronome": {
     "synced": "Synced with the host",
+    "enableSound": "Turn on sound",
     "bpm": "BPM",
     "signature": "Time signature:",
     "tapTempo": "Tap tempo",

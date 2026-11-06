@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useMetronome } from "./use-metronome";
+import { useSharedClock } from "./use-shared-clock";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type {
   JamSession,
@@ -11,6 +12,10 @@ import type {
   JamPresenceState,
   Profile,
 } from "@/types";
+
+/** Le premier temps part apres ce delai : le temps que le message arrive partout. */
+const GRID_LEAD_MS = 1000;
+const GRID_REPEAT_MS = 5000;
 
 interface UseJamSessionOptions {
   sessionId: string;
@@ -37,6 +42,7 @@ interface UseJamSessionReturn {
 
   // Actions
   syncMetronome: () => void;
+  toggleMetronome: () => void;
   changeSong: (
     index: number,
     songId: string | null,
@@ -73,6 +79,12 @@ export function useJamSession({
     isHostRef.current = isHost;
   }, [isHost]);
 
+  const sharedNow = useSharedClock();
+  // La grille du metronome : l'instant du premier temps, pour ce tempo et cette mesure.
+  const startAtRef = useRef<number | null>(null);
+  const gridKeyRef = useRef<string | null>(null);
+  const signatureRef = useRef(`${session.time_signature_beats}/${session.time_signature_value}`);
+
   // Metronome hook - will be synced
   const metronome = useMetronome({
     initialBpm: session.bpm,
@@ -103,22 +115,24 @@ export function useJamSession({
       "broadcast",
       { event: "metronome_sync" },
       ({ payload }: { payload: Record<string, unknown> }) => {
-        // All clients (including host) apply the sync
-        if (payload.bpm) metronome.setBpm(payload.bpm as number);
-        if (payload.time_signature_beats && payload.time_signature_value) {
-          metronome.setTimeSignature({
-            beats: payload.time_signature_beats as number,
-            noteValue: payload.time_signature_value as number,
-          });
+        // L'hote tient deja sa propre grille.
+        if (isHostRef.current) return;
+
+        const bpm = payload.bpm as number;
+        const beats = payload.time_signature_beats as number;
+        const noteValue = payload.time_signature_value as number;
+
+        metronome.setBpm(bpm);
+        // Ce message revient toutes les 5 s : changer la mesure remet les accents a zero.
+        if (signatureRef.current !== `${beats}/${noteValue}`) {
+          signatureRef.current = `${beats}/${noteValue}`;
+          metronome.setTimeSignature({ beats, noteValue });
         }
 
-        // Handle play/stop sync (only non-hosts follow the broadcast)
-        if (!isHostRef.current) {
-          if (payload.is_playing && !metronome.isPlaying) {
-            metronome.start();
-          } else if (!payload.is_playing && metronome.isPlaying) {
-            metronome.stop();
-          }
+        if (payload.is_playing && typeof payload.start_at === "number") {
+          metronome.alignTo({ startAt: payload.start_at, now: sharedNow, bpm, beatsPerMeasure: beats });
+        } else {
+          metronome.stop();
         }
       }
     );
@@ -218,11 +232,8 @@ export function useJamSession({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, userId]);
 
-  // Sync metronome state (host broadcasts)
-  const syncMetronome = useCallback(() => {
-    if (!channelRef.current) return;
-
-    channelRef.current.send({
+  const broadcastMetronome = useCallback(() => {
+    channelRef.current?.send({
       type: "broadcast",
       event: "metronome_sync",
       payload: {
@@ -230,9 +241,53 @@ export function useJamSession({
         time_signature_beats: metronome.timeSignature.beats,
         time_signature_value: metronome.timeSignature.noteValue,
         is_playing: metronome.isPlaying,
-        start_time: Date.now(),
+        start_at: startAtRef.current,
       },
     });
+  }, [metronome.bpm, metronome.timeSignature.beats, metronome.timeSignature.noteValue, metronome.isPlaying]);
+
+  // Pose une nouvelle grille, assez loin pour que le message arrive a temps.
+  const startGrid = useCallback(() => {
+    const startAt = sharedNow() + GRID_LEAD_MS;
+    startAtRef.current = startAt;
+    gridKeyRef.current = `${metronome.bpm}/${metronome.timeSignature.beats}`;
+    metronome.alignTo({
+      startAt,
+      now: sharedNow,
+      bpm: metronome.bpm,
+      beatsPerMeasure: metronome.timeSignature.beats,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sharedNow, metronome.bpm, metronome.timeSignature.beats, metronome.alignTo]);
+
+  // Bouton de l'hote : le metronome part sur la grille, chez lui comme chez les autres.
+  const toggleMetronome = useCallback(() => {
+    if (metronome.isPlaying) {
+      startAtRef.current = null;
+      gridKeyRef.current = null;
+      metronome.stop();
+    } else {
+      startGrid();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metronome.isPlaying, metronome.stop, startGrid]);
+
+  // Les retardataires et la derive : l'hote redit la grille tant que ca joue.
+  useEffect(() => {
+    if (!isHost || !metronome.isPlaying) return;
+    const timer = setInterval(broadcastMetronome, GRID_REPEAT_MS);
+    return () => clearInterval(timer);
+  }, [isHost, metronome.isPlaying, broadcastMetronome]);
+
+  // Sync metronome state (host broadcasts)
+  const syncMetronome = useCallback(() => {
+    if (!channelRef.current) return;
+
+    // Tempo ou mesure changes en jouant : une nouvelle grille pour tout le monde.
+    const gridKey = `${metronome.bpm}/${metronome.timeSignature.beats}`;
+    if (metronome.isPlaying && gridKeyRef.current !== gridKey) startGrid();
+
+    broadcastMetronome();
 
     // Also persist to database
     supabase
@@ -252,6 +307,8 @@ export function useJamSession({
     metronome.isPlaying,
     sessionId,
     supabase,
+    startGrid,
+    broadcastMetronome,
   ]);
 
   // Change current song
@@ -340,6 +397,7 @@ export function useJamSession({
     messages,
     metronome,
     syncMetronome,
+    toggleMetronome,
     changeSong,
     updateSessionStatus,
     sendMessage,

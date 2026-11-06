@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { nextBeatFromStart, phaseError } from "@/lib/metronome-sync";
 import type { TimeSignature, Subdivision } from "@/types";
 
 // Configuration du scheduler Web Audio
 const LOOKAHEAD = 25.0; // ms - fréquence de vérification
 const SCHEDULE_AHEAD = 0.1; // sec - combien de temps à l'avance planifier les notes
+const ALIGN_TOLERANCE = 0.02; // sec - en dessous, on ne touche pas au métronome partagé
 
 interface UseMetronomeOptions {
   initialBpm?: number;
@@ -13,6 +15,16 @@ interface UseMetronomeOptions {
   initialSubdivision?: Subdivision;
   initialVolume?: number;
   onBeat?: (beat: number, isAccent: boolean) => void;
+}
+
+/** Un métronome calé sur une horloge commune (jam). */
+export interface MetronomeAlignment {
+  /** Instant du premier temps, sur l'horloge commune, en ms. */
+  startAt: number;
+  /** L'horloge commune. */
+  now: () => number;
+  bpm: number;
+  beatsPerMeasure: number;
 }
 
 interface UseMetronomeReturn {
@@ -32,6 +44,11 @@ interface UseMetronomeReturn {
   start: () => void;
   stop: () => void;
   toggle: () => void;
+  /** Démarre sur la grille commune, ou y revient si le métronome a dérivé. */
+  alignTo: (alignment: MetronomeAlignment) => void;
+  /** Le navigateur retient le son tant qu'on n'a pas touché la page. */
+  audioBlocked: boolean;
+  unlockAudio: () => void;
 
   // Config
   setBpm: (bpm: number) => void;
@@ -87,6 +104,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   const [silentMode, setSilentModeState] = useState(false);
   const [silentBeats, setSilentBeatsState] = useState<number[]>([]);
   const [tapBpm, setTapBpm] = useState<number | null>(null);
+  const [audioBlocked, setAudioBlocked] = useState(false);
 
   // Refs pour le scheduler Web Audio
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -95,6 +113,8 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   const currentBeatRef = useRef(0); // 0-indexed pour le scheduler
   const currentSubdivisionRef = useRef(0);
   const isPlayingRef = useRef(false);
+  const lastNoteTimeRef = useRef(0);
+  const lastAlignmentRef = useRef<MetronomeAlignment | null>(null);
 
   // Refs pour les valeurs actuelles (éviter les closures stales)
   const bpmRef = useRef(bpm);
@@ -227,6 +247,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
           currentSubdivisionRef.current,
           nextNoteTimeRef.current
         );
+        lastNoteTimeRef.current = nextNoteTimeRef.current;
 
         // Mettre à jour l'état pour l'UI (seulement sur beat principal)
         if (currentSubdivisionRef.current === 0) {
@@ -245,6 +266,8 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     };
     tick();
   }, [scheduleNote, nextNote]);
+
+  const schedulerRef = useRef(scheduler);
 
   // Démarrer le métronome
   const start = useCallback(() => {
@@ -280,10 +303,74 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     }
 
     isPlayingRef.current = false;
+    lastAlignmentRef.current = null;
     setIsPlaying(false);
     setCurrentBeat(1);
     setCurrentSubdivision(0);
   }, []);
+
+  const alignTo = useCallback((alignment: MetronomeAlignment) => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioContext();
+      audioContextRef.current.onstatechange = () => {
+        setAudioBlocked(audioContextRef.current?.state === "suspended");
+      };
+    }
+    const ctx = audioContextRef.current;
+    if (ctx.state === "suspended") void ctx.resume();
+    setAudioBlocked(ctx.state === "suspended");
+
+    lastAlignmentRef.current = alignment;
+    const { startAt, now, bpm: gridBpm, beatsPerMeasure } = alignment;
+    bpmRef.current = gridBpm;
+
+    const secondsPerBeat = 60 / gridBpm;
+    let { delaySeconds, beatIndex } = nextBeatFromStart(
+      (now() - startAt) / 1000,
+      gridBpm,
+      beatsPerMeasure
+    );
+
+    // Le son sort avec un retard propre a l'appareil (enceinte, Bluetooth) :
+    // on le lance d'autant plus tot, pour qu'il s'entende au meme moment.
+    const latency = ctx.outputLatency || ctx.baseLatency || 0;
+    let target = ctx.currentTime + delaySeconds - latency;
+    while (target < ctx.currentTime + 0.01) {
+      target += secondsPerBeat;
+      delaySeconds += secondsPerBeat;
+      beatIndex = (beatIndex + 1) % beatsPerMeasure;
+    }
+
+    if (isPlayingRef.current) {
+      const error = phaseError(nextNoteTimeRef.current, target, secondsPerBeat);
+      if (Math.abs(error) < ALIGN_TOLERANCE && currentSubdivisionRef.current === 0) return;
+      // Le temps deja planifie partira : pas de second clic juste apres lui.
+      if (target - lastNoteTimeRef.current < secondsPerBeat / 2) {
+        target += secondsPerBeat;
+        beatIndex = (beatIndex + 1) % beatsPerMeasure;
+      }
+    }
+
+    nextNoteTimeRef.current = target;
+    currentBeatRef.current = beatIndex;
+    currentSubdivisionRef.current = 0;
+
+    if (!isPlayingRef.current) {
+      isPlayingRef.current = true;
+      setIsPlaying(true);
+      schedulerRef.current();
+    }
+  }, []);
+
+  // Une fois le son debloque, l'horloge audio repart : on se recale aussitot.
+  const unlockAudio = useCallback(() => {
+    const ctx = audioContextRef.current;
+    if (!ctx) return;
+    void ctx.resume().then(() => {
+      setAudioBlocked(false);
+      if (lastAlignmentRef.current) alignTo(lastAlignmentRef.current);
+    });
+  }, [alignTo]);
 
   // Toggle play/stop
   const toggle = useCallback(() => {
@@ -437,6 +524,9 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     start,
     stop,
     toggle,
+    alignTo,
+    audioBlocked,
+    unlockAudio,
 
     // Config
     setBpm,

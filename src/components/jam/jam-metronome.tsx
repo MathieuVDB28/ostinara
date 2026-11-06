@@ -9,9 +9,10 @@ interface JamMetronomeProps {
   metronome: ReturnType<typeof useMetronome>;
   isHost: boolean;
   onSync: () => void;
+  onToggle: () => void;
 }
 
-export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
+export function JamMetronome({ metronome, isHost, onSync, onToggle }: JamMetronomeProps) {
   const t = useTranslations("jam.metronome");
   const {
     isPlaying,
@@ -21,7 +22,8 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
     setBpm,
     incrementBpm,
     setTimeSignature,
-    toggle,
+    audioBlocked,
+    unlockAudio,
     tap,
     tapBpm,
   } = metronome;
@@ -62,6 +64,16 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
           />
         ))}
       </div>
+
+      {audioBlocked && (
+        <button
+          type="button"
+          onClick={unlockAudio}
+          className="mb-4 w-full min-h-[44px] rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          {t("enableSound")}
+        </button>
+      )}
 
       {/* BPM Display */}
       <div className="text-center mb-4">
@@ -143,7 +155,7 @@ export function JamMetronome({ metronome, isHost, onSync }: JamMetronomeProps) {
           {/* Play/Stop */}
           <div className="flex justify-center">
             <button
-              onClick={toggle}
+              onClick={onToggle}
               className={`flex h-14 w-14 items-center justify-center rounded-full transition-all ${
                 isPlaying
                   ? "bg-destructive text-destructive-foreground hover:opacity-90"

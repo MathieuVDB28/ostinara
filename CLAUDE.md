@@ -326,7 +326,7 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 ### Jam Sessions (`/jam/[id]`)
 - Sessions collaboratives en temps reel (ouvertes a tout le groupe si son titulaire a le plan Band)
 - **Host controls** : demarrer/pause/terminer, changer de morceau, sync metronome
-- **Metronome synchronise** : broadcast BPM + time signature a tous les participants
+- **Metronome synchronise** : tous les appareils se calent sur l'horloge du serveur (`useSharedClock`, `/api/time`) et un meme instant de depart (`start_at`), redit par l'hote toutes les 5 s pour les retardataires et la derive (`alignTo`, `src/lib/metronome-sync.ts`). Si le navigateur retient le son, bouton « Activer le son »
 - **File de morceaux** : setlist associee avec navigation
 - **Viewer de tabs** : affichage tabs du morceau en cours
 - **Chat en direct** : messages dans la session (jam de groupe, plan Band), panneau `ChatSheet` avec compteur de non-lus sur telephone, efface a la fin de la jam par trigger (migration `20261116_group_chat`). Dans un groupe en lecture seule, la page de la jam explique pourquoi elle reste fermee

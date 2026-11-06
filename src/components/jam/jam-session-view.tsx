@@ -52,6 +52,7 @@ export function JamSessionView({
     messages,
     metronome,
     syncMetronome,
+    toggleMetronome,
     changeSong,
     updateSessionStatus,
     sendMessage,
@@ -246,6 +247,7 @@ export function JamSessionView({
             metronome={metronome}
             isHost={isHost}
             onSync={syncMetronome}
+            onToggle={toggleMetronome}
           />
 
           {/* Tabs viewer for current song */}
