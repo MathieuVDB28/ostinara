@@ -54,3 +54,43 @@ export function phaseError(a: number, b: number, period: number): number {
   if (difference < -period / 2) return difference + period;
   return difference;
 }
+
+/**
+ * Le numero du prochain temps depuis le depart de la grille (0 = le premier).
+ * Les `countInBeats` premiers sont le decompte.
+ */
+export function beatNumberFromStart(elapsedSeconds: number, bpm: number): number {
+  if (elapsedSeconds <= 0) return 0;
+  return Math.ceil(elapsedSeconds / (60 / bpm));
+}
+
+/** Ce qu'affiche le decompte sur ce temps : 4, 3, 2, 1 a chaque mesure ; null apres. */
+export function countInLabel(beatNumber: number, countInBeats: number, beatsPerMeasure: number): number | null {
+  if (beatNumber >= countInBeats) return null;
+  return beatsPerMeasure - (beatNumber % beatsPerMeasure);
+}
+
+/** L'instant ou le morceau commence vraiment : apres le decompte, en ms sur l'horloge commune. */
+export function songStartFrom(startAt: number, countInBeats: number, bpm: number): number {
+  return startAt + (countInBeats * 60000) / bpm;
+}
+
+export interface SectionPosition {
+  index: number;
+  /** Avancement dans la section, de 0 a 1. */
+  progress: number;
+}
+
+/** La section ou l'on est, `elapsedSeconds` apres le debut du morceau. */
+export function sectionAt(elapsedSeconds: number, durations: number[]): SectionPosition {
+  if (durations.length === 0 || elapsedSeconds <= 0) return { index: 0, progress: 0 };
+  let start = 0;
+  for (let index = 0; index < durations.length; index++) {
+    const duration = durations[index];
+    if (elapsedSeconds < start + duration) {
+      return { index, progress: duration > 0 ? (elapsedSeconds - start) / duration : 1 };
+    }
+    start += duration;
+  }
+  return { index: durations.length - 1, progress: 1 };
+}

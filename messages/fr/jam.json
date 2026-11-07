@@ -12,7 +12,13 @@
     "tapTempo": "Tap tempo",
     "signatureValue": "Signature : {value}",
     "playing": "En cours",
-    "paused": "En pause"
+    "paused": "En pause",
+    "title": "Métronome",
+    "countIn": "Décompte",
+    "countInOption": "{count, plural, =0 {Aucun} one {# mesure} other {# mesures}}",
+    "countInAria": "Décompte : {count}",
+    "play": "Lancer le métronome",
+    "stop": "Arrêter le métronome"
   },
   "participants": {
     "title": "Participants",
@@ -42,7 +48,9 @@
     "closeChat": "Fermer le chat",
     "unread": "{count, plural, one {# message non lu} other {# messages non lus}}",
     "bandRequiredTitle": "{band} est en lecture seule",
-    "bandRequiredBody": "La jam rouvre quand le titulaire du groupe reprend le plan Band, ou le transfère à un membre qui l'a."
+    "bandRequiredBody": "La jam rouvre quand le titulaire du groupe reprend le plan Band, ou le transfère à un membre qui l'a.",
+    "nextSong": "Morceau suivant",
+    "nextSongAria": "Passer au morceau suivant : {title}"
   },
   "queue": {
     "setlist": "Setlist : {name}",
@@ -54,7 +62,12 @@
     "measures": "Mesures {start}-{end}",
     "open": "Tab ouverte",
     "see": "Voir la tab",
-    "track": "Ta piste {instrument} dans Songsterr : <strong>« {name} »</strong>"
+    "track": "La tab s'ouvre sur ta piste {instrument} : <strong>« {name} »</strong>",
+    "auto": "Auto",
+    "manual": "Manuel",
+    "next": "Suivant : <strong>{name}</strong>",
+    "globalProgress": "Progression globale",
+    "available": "Tablature disponible"
   },
   "start": {
     "title": "Démarrer une jam",

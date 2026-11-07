@@ -15,7 +15,7 @@ import { ChatSheet } from "@/components/ui/chat-sheet";
 import { leaveJamSession, endJamSession } from "@/lib/actions/jam-sessions";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { bandPosteLabel } from "@/lib/instruments";
-import type { JamSessionWithDetails, JamSessionMessageWithProfile, Profile } from "@/types";
+import type { JamSessionWithDetails, JamSessionMessageWithProfile, Profile, SetlistItem } from "@/types";
 
 interface JamSessionViewProps {
   initialSession: JamSessionWithDetails;
@@ -51,8 +51,13 @@ export function JamSessionView({
     participants,
     messages,
     metronome,
+    sharedNow,
+    songStartAt,
+    countInMeasures,
+    setCountInMeasures,
     syncMetronome,
     toggleMetronome,
+    stopMetronome,
     changeSong,
     updateSessionStatus,
     sendMessage,
@@ -92,6 +97,41 @@ export function JamSessionView({
     await endJamSession(initialSession.id);
     router.push("/commu/groupes");
   };
+
+  // Ce qui se joue dans la setlist : morceaux et exercices, pas les sections.
+  const playable = (session.setlist?.items ?? []).filter(
+    (item) => item.item_type === "song" || item.item_type === "exercise"
+  );
+  const currentIndex = session.current_song_index;
+  const nextItem = currentIndex === null ? playable[0] : playable[currentIndex + 1];
+  const nextIndex = currentIndex === null ? 0 : currentIndex + 1;
+
+  /*
+   * Changer de morceau (hote) : le metronome s'arrete et prend le tempo du
+   * morceau. L'hote relance quand le groupe est pret, avec le decompte ; les
+   * autres suivent par la synchro du metronome.
+   */
+  const selectSong = (index: number, item: SetlistItem) => {
+    if (metronome.isPlaying) stopMetronome();
+    if (item.bpm) metronome.setBpm(item.bpm);
+    const isExercise = item.item_type === "exercise";
+    changeSong(
+      index,
+      item.song_id || null,
+      isExercise ? item.exercise_name || tc("exercise") : item.song_title || null,
+      isExercise
+        ? item.exercise_category
+          ? te(`exerciseCategory.${item.exercise_category}`)
+          : tc("exercise")
+        : item.song_artist || null
+    );
+  };
+
+  const nextTitle = nextItem
+    ? nextItem.item_type === "exercise"
+      ? nextItem.exercise_name || tc("exercise")
+      : nextItem.song_title || ""
+    : "";
 
   const handleStartSession = () => {
     updateSessionStatus("active");
@@ -166,6 +206,17 @@ export function JamSessionView({
               <p className="mt-1 text-sm text-muted-foreground">
                 {t("nowPlaying", { title: session.current_song_title, artist: session.current_song_artist ?? "" })}
               </p>
+            )}
+            {isHost && nextItem && (
+              <button
+                type="button"
+                onClick={() => selectSong(nextIndex, nextItem)}
+                aria-label={t("nextSongAria", { title: nextTitle })}
+                className="mt-2 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-semibold transition-colors hover:bg-accent"
+              >
+                {t("nextSong")}
+                <span className="max-w-[12rem] truncate font-normal text-muted-foreground">· {nextTitle}</span>
+              </button>
             )}
           </div>
 
@@ -248,19 +299,19 @@ export function JamSessionView({
             isHost={isHost}
             onSync={syncMetronome}
             onToggle={toggleMetronome}
+            countInMeasures={countInMeasures}
+            onCountInChange={setCountInMeasures}
           />
 
           {/* Tabs viewer for current song */}
           {session.setlist && session.current_song_index !== null && (
             <JamTabsViewer
-              currentItem={
-                session.setlist.items.filter(
-                  (i) => i.item_type === "song" || i.item_type === "exercise"
-                )[session.current_song_index] || null
-              }
+              currentItem={playable[session.current_song_index] || null}
               bpm={metronome.bpm}
               timeSignatureBeats={metronome.timeSignature.beats}
               isPlaying={metronome.isPlaying}
+              songStartAt={songStartAt}
+              now={sharedNow}
               instrument={myInstrument}
               isHost={isHost}
             />
@@ -272,21 +323,7 @@ export function JamSessionView({
               setlist={session.setlist}
               currentIndex={session.current_song_index}
               isHost={isHost}
-              onSongSelect={(index, item) => {
-                const isExercise = item.item_type === "exercise";
-                changeSong(
-                  index,
-                  item.song_id || null,
-                  isExercise
-                    ? item.exercise_name || tc("exercise")
-                    : item.song_title || null,
-                  isExercise
-                    ? item.exercise_category
-                      ? te(`exerciseCategory.${item.exercise_category}`)
-                      : tc("exercise")
-                    : item.song_artist || null
-                );
-              }}
+              onSongSelect={(index, item) => selectSong(index, item)}
             />
           )}
         </div>

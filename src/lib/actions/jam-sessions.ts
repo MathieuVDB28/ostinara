@@ -571,7 +571,7 @@ export async function getBandSetlistsForJam(
 export async function getJamTrackHint(
   tabsUrl: string,
   instrument: Instrument
-): Promise<{ name: string } | null> {
+): Promise<{ index: number; name: string } | null> {
   const user = await getAuthenticatedUser();
   if (!user) return null;
 
@@ -579,5 +579,5 @@ export async function getJamTrackHint(
   if (!songId) return null;
 
   const track = await findSongsterrTrack(songId, instrument);
-  return track ? { name: track.name } : null;
+  return track ? { index: track.index, name: track.name } : null;
 }

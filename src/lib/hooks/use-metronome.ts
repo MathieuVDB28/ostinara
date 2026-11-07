@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { nextBeatFromStart, phaseError } from "@/lib/metronome-sync";
+import { beatNumberFromStart, countInLabel, nextBeatFromStart, phaseError } from "@/lib/metronome-sync";
 import type { TimeSignature, Subdivision } from "@/types";
 
 // Configuration du scheduler Web Audio
@@ -25,11 +25,15 @@ export interface MetronomeAlignment {
   now: () => number;
   bpm: number;
   beatsPerMeasure: number;
+  /** Les premiers temps de la grille sont un decompte, avec un autre son. */
+  countInBeats?: number;
 }
 
 interface UseMetronomeReturn {
   // État
   isPlaying: boolean;
+  /** Pendant le decompte : 4, 3, 2, 1 a chaque mesure. Sinon null. */
+  countIn: number | null;
   currentBeat: number;
   currentSubdivision: number;
   bpm: number;
@@ -105,6 +109,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   const [silentBeats, setSilentBeatsState] = useState<number[]>([]);
   const [tapBpm, setTapBpm] = useState<number | null>(null);
   const [audioBlocked, setAudioBlocked] = useState(false);
+  const [countIn, setCountIn] = useState<number | null>(null);
 
   // Refs pour le scheduler Web Audio
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -115,6 +120,9 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   const isPlayingRef = useRef(false);
   const lastNoteTimeRef = useRef(0);
   const lastAlignmentRef = useRef<MetronomeAlignment | null>(null);
+  // Le numero du temps depuis le depart de la grille, pour reconnaitre le decompte.
+  const absoluteBeatRef = useRef(0);
+  const countInBeatsRef = useRef(0);
 
   // Refs pour les valeurs actuelles (éviter les closures stales)
   const bpmRef = useRef(bpm);
@@ -164,9 +172,26 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   }, [onBeat]);
 
   // Planifier une note
-  const scheduleNote = useCallback((beat: number, subdivisionIndex: number, time: number) => {
+  const scheduleNote = useCallback((beat: number, subdivisionIndex: number, time: number, isCountIn = false) => {
     const ctx = audioContextRef.current;
     if (!ctx) return;
+
+    // Le decompte sonne autrement, sur les temps seulement, meme en mode silence.
+    if (isCountIn) {
+      if (subdivisionIndex !== 0) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.value = beat === 0 ? 1568 : 1046;
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(volumeRef.current, time + 0.001);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(time);
+      osc.stop(time + 0.08);
+      return;
+    }
 
     const isMainBeat = subdivisionIndex === 0;
     const isAccent = isMainBeat && accentPatternRef.current[beat] === 1;
@@ -226,6 +251,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     if (currentSubdivisionRef.current >= subdivisionsPerBeat) {
       currentSubdivisionRef.current = 0;
       currentBeatRef.current++;
+      absoluteBeatRef.current++;
 
       if (currentBeatRef.current >= beatsPerMeasure) {
         currentBeatRef.current = 0;
@@ -242,10 +268,12 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
       if (!ctx || !isPlayingRef.current) return;
 
       while (nextNoteTimeRef.current < ctx.currentTime + SCHEDULE_AHEAD) {
+        const isCountIn = absoluteBeatRef.current < countInBeatsRef.current;
         scheduleNote(
           currentBeatRef.current,
           currentSubdivisionRef.current,
-          nextNoteTimeRef.current
+          nextNoteTimeRef.current,
+          isCountIn
         );
         lastNoteTimeRef.current = nextNoteTimeRef.current;
 
@@ -253,6 +281,9 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
         if (currentSubdivisionRef.current === 0) {
           const beatForUI = currentBeatRef.current + 1; // 1-indexed
           setCurrentBeat(beatForUI);
+          setCountIn(
+            countInLabel(absoluteBeatRef.current, countInBeatsRef.current, timeSignatureRef.current.beats)
+          );
 
           const isAccent = accentPatternRef.current[currentBeatRef.current] === 1;
           onBeatRef.current?.(beatForUI, isAccent);
@@ -285,6 +316,8 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     // Réinitialiser les compteurs
     currentBeatRef.current = 0;
     currentSubdivisionRef.current = 0;
+    absoluteBeatRef.current = 0;
+    countInBeatsRef.current = 0;
     nextNoteTimeRef.current = audioContextRef.current.currentTime + 0.05;
 
     isPlayingRef.current = true;
@@ -304,6 +337,8 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
 
     isPlayingRef.current = false;
     lastAlignmentRef.current = null;
+    countInBeatsRef.current = 0;
+    setCountIn(null);
     setIsPlaying(false);
     setCurrentBeat(1);
     setCurrentSubdivision(0);
@@ -325,11 +360,9 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     bpmRef.current = gridBpm;
 
     const secondsPerBeat = 60 / gridBpm;
-    let { delaySeconds, beatIndex } = nextBeatFromStart(
-      (now() - startAt) / 1000,
-      gridBpm,
-      beatsPerMeasure
-    );
+    const elapsedSeconds = (now() - startAt) / 1000;
+    let { delaySeconds, beatIndex } = nextBeatFromStart(elapsedSeconds, gridBpm, beatsPerMeasure);
+    let beatNumber = beatNumberFromStart(elapsedSeconds, gridBpm);
 
     // Le son sort avec un retard propre a l'appareil (enceinte, Bluetooth) :
     // on le lance d'autant plus tot, pour qu'il s'entende au meme moment.
@@ -339,7 +372,11 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
       target += secondsPerBeat;
       delaySeconds += secondsPerBeat;
       beatIndex = (beatIndex + 1) % beatsPerMeasure;
+      beatNumber++;
     }
+
+    // Une nouvelle grille sans decompte (tempo change en jouant) l'arrete aussitot.
+    countInBeatsRef.current = alignment.countInBeats ?? 0;
 
     if (isPlayingRef.current) {
       const error = phaseError(nextNoteTimeRef.current, target, secondsPerBeat);
@@ -348,12 +385,14 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
       if (target - lastNoteTimeRef.current < secondsPerBeat / 2) {
         target += secondsPerBeat;
         beatIndex = (beatIndex + 1) % beatsPerMeasure;
+        beatNumber++;
       }
     }
 
     nextNoteTimeRef.current = target;
     currentBeatRef.current = beatIndex;
     currentSubdivisionRef.current = 0;
+    absoluteBeatRef.current = beatNumber;
 
     if (!isPlayingRef.current) {
       isPlayingRef.current = true;
@@ -510,6 +549,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   return {
     // État
     isPlaying,
+    countIn,
     currentBeat,
     currentSubdivision,
     bpm,

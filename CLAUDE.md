@@ -330,8 +330,9 @@ Francais et anglais, avec **next-intl sans routage** : pas de prefixe dans les U
 - Sessions collaboratives en temps reel (ouvertes a tout le groupe si son titulaire a le plan Band)
 - **Host controls** : demarrer/pause/terminer, changer de morceau, sync metronome
 - **Metronome synchronise** : tous les appareils se calent sur l'horloge du serveur (`useSharedClock`, `/api/time`) et un meme instant de depart (`start_at`), redit par l'hote toutes les 5 s pour les retardataires et la derive (`alignTo`, `src/lib/metronome-sync.ts`). Si le navigateur retient le son, bouton « Activer le son »
-- **File de morceaux** : setlist associee avec navigation
-- **Viewer de tabs** : affichage tabs du morceau en cours
+- **Decompte** : l'hote choisit aucun, 1 ou 2 mesures (1 par defaut, `JAM_COUNT_IN_OPTIONS`). Les premiers temps de la grille sont le decompte (`count_in_beats` dans `metronome_sync`), avec un autre son et 4, 3, 2, 1 a la place du tempo (`metronome.countIn`). Le morceau commence apres lui (`song_start_at`) ; un tempo change en jouant repart sans decompte et garde ce debut
+- **File de morceaux** : setlist associee avec navigation. Changer de morceau (file ou bouton « Morceau suivant » de l'hote) arrete le metronome et prend le tempo de la ligne de setlist (`bpm`) ; l'hote relance avec le decompte
+- **Viewer de tabs** : sections calees sur l'horloge commune depuis `song_start_at` (`sectionAt`), les memes chez tout le monde ; toucher une section passe en manuel. « Voir la tab » ouvre Songsterr sur la piste de son poste (`getJamTrackHint` renvoie l'index, `songsterrTrackUrl` ajoute `t<index>`)
 - **Chat en direct** : messages dans la session (jam de groupe, plan Band), panneau `ChatSheet` avec compteur de non-lus sur telephone, efface a la fin de la jam par trigger (migration `20261116_group_chat`). Dans un groupe en lecture seule, la page de la jam explique pourquoi elle reste fermee
 - **Depuis Jouer** : une setlist de groupe propose de lancer ou rejoindre la jam (`BandJamCallout`), a cote du chrono solo
 - **Presence** : tracking des participants connectes via Supabase Presence

@@ -12,7 +12,13 @@
     "tapTempo": "Tap tempo",
     "signatureValue": "Time signature: {value}",
     "playing": "Playing",
-    "paused": "Paused"
+    "paused": "Paused",
+    "title": "Metronome",
+    "countIn": "Count-in",
+    "countInOption": "{count, plural, =0 {None} one {# bar} other {# bars}}",
+    "countInAria": "Count-in: {count}",
+    "play": "Start the metronome",
+    "stop": "Stop the metronome"
   },
   "participants": {
     "title": "Participants",
@@ -42,7 +48,9 @@
     "closeChat": "Close chat",
     "unread": "{count, plural, one {# unread message} other {# unread messages}}",
     "bandRequiredTitle": "{band} is read-only",
-    "bandRequiredBody": "Jams reopen when the band's holder gets the Band plan back, or transfers the band to a member who has it."
+    "bandRequiredBody": "Jams reopen when the band's holder gets the Band plan back, or transfers the band to a member who has it.",
+    "nextSong": "Next song",
+    "nextSongAria": "Go to the next song: {title}"
   },
   "queue": {
     "setlist": "Setlist: {name}",
@@ -54,7 +62,12 @@
     "measures": "Bars {start}-{end}",
     "open": "Tab open",
     "see": "View tab",
-    "track": "Your track {instrument} on Songsterr: <strong>\"{name}\"</strong>"
+    "track": "The tab opens on your {instrument} track: <strong>\"{name}\"</strong>",
+    "auto": "Auto",
+    "manual": "Manual",
+    "next": "Next: <strong>{name}</strong>",
+    "globalProgress": "Overall progress",
+    "available": "Tab available"
   },
   "start": {
     "title": "Start a jam",

@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { getJamTrackHint } from "@/lib/actions/jam-sessions";
 import { instrumentPhrase } from "@/lib/instruments";
+import { sectionAt } from "@/lib/metronome-sync";
+import { songsterrTrackUrl } from "@/lib/songsterr-url";
 import type { Instrument, SetlistItemWithSongOwner, PlayedSection } from "@/types";
 
 interface JamTabsViewerProps {
@@ -12,8 +14,17 @@ interface JamTabsViewerProps {
   timeSignatureBeats: number;
   isPlaying: boolean;
   isHost: boolean;
-  /** Le poste de celui qui regarde : sa piste est signalee. */
+  /** Le poste de celui qui regarde : la tab s'ouvre sur sa piste. */
   instrument: Instrument;
+  /** Premier temps du morceau sur l'horloge commune : les sections defilent ensemble. */
+  songStartAt: number | null;
+  now: () => number;
+}
+
+interface Track {
+  tabsUrl: string;
+  index: number;
+  name: string;
 }
 
 export function JamTabsViewer({
@@ -22,14 +33,17 @@ export function JamTabsViewer({
   timeSignatureBeats,
   isPlaying,
   instrument,
+  songStartAt,
+  now,
 }: JamTabsViewerProps) {
   const t = useTranslations("jam.tabs");
+  const te = useTranslations("enums");
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [sectionProgress, setSectionProgress] = useState(0);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [tabWindowOpen, setTabWindowOpen] = useState(false);
+  const [track, setTrack] = useState<Track | null>(null);
   const animationRef = useRef<number | null>(null);
-  const sectionStartTimeRef = useRef<number | null>(null);
   const tabWindowRef = useRef<Window | null>(null);
   const activeRef = useRef<HTMLButtonElement | null>(null);
 
@@ -60,13 +74,23 @@ export function JamTabsViewer({
     setSectionProgress(0);
   }
 
+  // La piste de son poste dans Songsterr, pour ouvrir la tab dessus.
   useEffect(() => {
-    sectionStartTimeRef.current = null;
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
-    }
-  }, [currentItem?.id]);
+    if (!tabsUrl) return;
+    let cancelled = false;
+    getJamTrackHint(tabsUrl, instrument)
+      .then((result) => {
+        if (!cancelled) setTrack(result ? { tabsUrl, index: result.index, name: result.name } : null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [tabsUrl, instrument]);
+
+  // La piste d'un morceau precedent ne vaut pas pour le suivant.
+  const myTrack = track && track.tabsUrl === tabsUrl ? track : null;
+  const tabTarget = tabsUrl && myTrack ? songsterrTrackUrl(tabsUrl, myTrack.index) : tabsUrl;
 
   // Auto-scroll active section into view
   useEffect(() => {
@@ -85,81 +109,48 @@ export function JamTabsViewer({
     return () => clearInterval(interval);
   }, [tabWindowOpen]);
 
-  // Animation loop
+  /*
+   * Les sections suivent l'horloge commune depuis le premier temps du
+   * morceau (apres le decompte) : tout le monde voit la meme au meme moment.
+   */
   useEffect(() => {
-    if (!isPlaying || !isAutoScrolling || sections.length === 0 || songBpm <= 0) {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-        animationRef.current = null;
-      }
+    if (!isPlaying || !isAutoScrolling || sections.length === 0 || songBpm <= 0 || songStartAt === null) {
       return;
     }
 
-    const animate = (timestamp: number) => {
-      if (!sectionStartTimeRef.current) {
-        sectionStartTimeRef.current = timestamp;
-      }
-
-      const currentSection = sections[currentSectionIndex];
-      if (!currentSection) return;
-
-      const sectionDuration = getSectionDuration(currentSection) * 1000;
-      const elapsed = timestamp - sectionStartTimeRef.current;
-      const progress = Math.min(elapsed / sectionDuration, 1);
-
-      setSectionProgress(progress);
-
-      if (progress >= 1) {
-        if (currentSectionIndex < sections.length - 1) {
-          setCurrentSectionIndex((prev) => prev + 1);
-          sectionStartTimeRef.current = timestamp;
-          setSectionProgress(0);
-        } else {
-          setSectionProgress(1);
-          return;
-        }
-      }
-
+    const durations = sections.map(getSectionDuration);
+    const animate = () => {
+      const position = sectionAt((now() - songStartAt) / 1000, durations);
+      setCurrentSectionIndex(position.index);
+      setSectionProgress(position.progress);
       animationRef.current = requestAnimationFrame(animate);
     };
-
     animationRef.current = requestAnimationFrame(animate);
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     };
-  }, [isPlaying, isAutoScrolling, sections, currentSectionIndex, songBpm, getSectionDuration]);
+  }, [isPlaying, isAutoScrolling, sections, songBpm, getSectionDuration, songStartAt, now]);
 
-  useEffect(() => {
-    if (!isPlaying) {
-      sectionStartTimeRef.current = null;
-    }
-  }, [isPlaying]);
-
+  // Choisir une section a la main passe en manuel : sinon la grille la reprendrait aussitot.
   const handleSectionClick = (index: number) => {
+    setIsAutoScrolling(false);
     setCurrentSectionIndex(index);
     setSectionProgress(0);
-    sectionStartTimeRef.current = null;
   };
 
   const openTabWindow = () => {
-    if (!tabsUrl) return;
+    if (!tabTarget) return;
 
-    // If already open, focus it
-    if (tabWindowRef.current && !tabWindowRef.current.closed) {
-      tabWindowRef.current.focus();
-      return;
-    }
-
-    // Open in a side popup (right half of screen)
+    // Open in a side popup (right half of screen). La fenetre nommee est
+    // reprise d'un morceau a l'autre et change de page avec lui.
     const width = Math.min(800, Math.floor(window.screen.width * 0.45));
     const height = window.screen.height;
     const left = window.screen.width - width;
 
     const win = window.open(
-      tabsUrl,
+      tabTarget,
       "songsterr_tabs",
       `width=${width},height=${height},left=${left},top=0,menubar=no,toolbar=no,status=no`
     );
@@ -223,7 +214,7 @@ export function JamTabsViewer({
                     : "bg-muted text-muted-foreground"
                 }`}
               >
-                {isAutoScrolling ? "Auto" : "Manuel"}
+                {isAutoScrolling ? t("auto") : t("manual")}
               </button>
 
               {/* Open tab button */}
@@ -256,14 +247,17 @@ export function JamTabsViewer({
           {/* Next section preview */}
           {currentSectionIndex < sections.length - 1 && (
             <p className="text-xs text-muted-foreground mb-3">
-              Suivant : <span className="font-medium text-foreground">{sections[currentSectionIndex + 1].name}</span>
+              {t.rich("next", {
+                name: sections[currentSectionIndex + 1].name,
+                strong: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+              })}
             </p>
           )}
 
           {/* Global progress */}
           <div className="mb-2">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[11px] text-muted-foreground">Progression globale</span>
+              <span className="text-[11px] text-muted-foreground">{t("globalProgress")}</span>
               <span className="text-[11px] text-muted-foreground">
                 {Math.floor(totalDuration / 60)}:{Math.round(totalDuration % 60).toString().padStart(2, "0")}
               </span>
@@ -331,7 +325,7 @@ export function JamTabsViewer({
             <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span className="text-sm font-medium">Tablature disponible</span>
+            <span className="text-sm font-medium">{t("available")}</span>
           </div>
           <button
             onClick={openTabWindow}
@@ -346,43 +340,16 @@ export function JamTabsViewer({
         </div>
       )}
 
-      {tabsUrl && <TrackHint tabsUrl={tabsUrl} instrument={instrument} />}
+      {/* Chacun sa piste, sur le meme morceau : la tab s'ouvre dessus. */}
+      {myTrack && (
+        <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+          {t.rich("track", {
+            instrument: instrumentPhrase(instrument, te),
+            name: myTrack.name,
+            strong: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
+          })}
+        </p>
+      )}
     </div>
-  );
-}
-
-/**
- * La piste a prendre dans Songsterr pour son poste : chacun la sienne, sur
- * le meme morceau. Songsterr ne s'ouvre pas directement sur une piste, on
- * en donne le nom.
- */
-function TrackHint({ tabsUrl, instrument }: { tabsUrl: string; instrument: Instrument }) {
-  const t = useTranslations("jam.tabs");
-  const te = useTranslations("enums");
-  const [hint, setHint] = useState<{ url: string; name: string } | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    getJamTrackHint(tabsUrl, instrument)
-      .then((result) => {
-        if (!cancelled) setHint(result ? { url: tabsUrl, name: result.name } : null);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [tabsUrl, instrument]);
-
-  // L'indice d'un morceau precedent ne s'affiche pas sur le suivant.
-  if (!hint || hint.url !== tabsUrl) return null;
-
-  return (
-    <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-      {t.rich("track", {
-        instrument: instrumentPhrase(instrument, te),
-        name: hint.name,
-        strong: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
-      })}
-    </p>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useMetronome } from "./use-metronome";
 import { useSharedClock } from "./use-shared-clock";
+import { songStartFrom } from "@/lib/metronome-sync";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type {
   JamSession,
@@ -16,6 +17,10 @@ import type {
 /** Le premier temps part apres ce delai : le temps que le message arrive partout. */
 const GRID_LEAD_MS = 1000;
 const GRID_REPEAT_MS = 5000;
+
+/** Decompte avant le premier temps du morceau, en mesures, au choix de l'hote. */
+export const JAM_COUNT_IN_OPTIONS = [0, 1, 2] as const;
+export type JamCountIn = (typeof JAM_COUNT_IN_OPTIONS)[number];
 
 interface UseJamSessionOptions {
   sessionId: string;
@@ -39,10 +44,17 @@ interface UseJamSessionReturn {
 
   // Metronome (synced)
   metronome: ReturnType<typeof useMetronome>;
+  /** L'horloge commune, en ms. */
+  sharedNow: () => number;
+  /** Premier temps du morceau apres le decompte, sur l'horloge commune ; null a l'arret. */
+  songStartAt: number | null;
+  countInMeasures: JamCountIn;
+  setCountInMeasures: (measures: JamCountIn) => void;
 
   // Actions
   syncMetronome: () => void;
   toggleMetronome: () => void;
+  stopMetronome: () => void;
   changeSong: (
     index: number,
     songId: string | null,
@@ -84,6 +96,10 @@ export function useJamSession({
   const startAtRef = useRef<number | null>(null);
   const gridKeyRef = useRef<string | null>(null);
   const signatureRef = useRef(`${session.time_signature_beats}/${session.time_signature_value}`);
+  const countInBeatsRef = useRef(0);
+  const songStartRef = useRef<number | null>(null);
+  const [songStartAt, setSongStartAt] = useState<number | null>(null);
+  const [countInMeasures, setCountInMeasures] = useState<JamCountIn>(1);
 
   // Metronome hook - will be synced
   const metronome = useMetronome({
@@ -130,9 +146,16 @@ export function useJamSession({
         }
 
         if (payload.is_playing && typeof payload.start_at === "number") {
-          metronome.alignTo({ startAt: payload.start_at, now: sharedNow, bpm, beatsPerMeasure: beats });
+          const countInBeats = typeof payload.count_in_beats === "number" ? payload.count_in_beats : 0;
+          metronome.alignTo({ startAt: payload.start_at, now: sharedNow, bpm, beatsPerMeasure: beats, countInBeats });
+          const songStart =
+            typeof payload.song_start_at === "number"
+              ? payload.song_start_at
+              : songStartFrom(payload.start_at, countInBeats, bpm);
+          setSongStartAt((current) => (current === songStart ? current : songStart));
         } else {
           metronome.stop();
+          setSongStartAt(null);
         }
       }
     );
@@ -242,35 +265,56 @@ export function useJamSession({
         time_signature_value: metronome.timeSignature.noteValue,
         is_playing: metronome.isPlaying,
         start_at: startAtRef.current,
+        count_in_beats: countInBeatsRef.current,
+        song_start_at: songStartRef.current,
       },
     });
   }, [metronome.bpm, metronome.timeSignature.beats, metronome.timeSignature.noteValue, metronome.isPlaying]);
 
-  // Pose une nouvelle grille, assez loin pour que le message arrive a temps.
-  const startGrid = useCallback(() => {
-    const startAt = sharedNow() + GRID_LEAD_MS;
-    startAtRef.current = startAt;
-    gridKeyRef.current = `${metronome.bpm}/${metronome.timeSignature.beats}`;
-    metronome.alignTo({
-      startAt,
-      now: sharedNow,
-      bpm: metronome.bpm,
-      beatsPerMeasure: metronome.timeSignature.beats,
-    });
+  /*
+   * Pose une nouvelle grille, assez loin pour que le message arrive a temps.
+   * Au depart, le decompte ouvre la grille et le morceau commence apres lui.
+   * Un tempo change en jouant repart sans decompte, et le morceau garde son
+   * debut : les sections ne reviennent pas au debut.
+   */
+  const startGrid = useCallback(
+    (withCountIn: boolean) => {
+      const startAt = sharedNow() + GRID_LEAD_MS;
+      const countInBeats = withCountIn ? countInMeasures * metronome.timeSignature.beats : 0;
+      startAtRef.current = startAt;
+      countInBeatsRef.current = countInBeats;
+      gridKeyRef.current = `${metronome.bpm}/${metronome.timeSignature.beats}`;
+      if (withCountIn || songStartRef.current === null) {
+        songStartRef.current = songStartFrom(startAt, countInBeats, metronome.bpm);
+        setSongStartAt(songStartRef.current);
+      }
+      metronome.alignTo({
+        startAt,
+        now: sharedNow,
+        bpm: metronome.bpm,
+        beatsPerMeasure: metronome.timeSignature.beats,
+        countInBeats,
+      });
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sharedNow, metronome.bpm, metronome.timeSignature.beats, metronome.alignTo]);
+    [sharedNow, countInMeasures, metronome.bpm, metronome.timeSignature.beats, metronome.alignTo]
+  );
+
+  const stopMetronome = useCallback(() => {
+    startAtRef.current = null;
+    gridKeyRef.current = null;
+    countInBeatsRef.current = 0;
+    songStartRef.current = null;
+    setSongStartAt(null);
+    metronome.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metronome.stop]);
 
   // Bouton de l'hote : le metronome part sur la grille, chez lui comme chez les autres.
   const toggleMetronome = useCallback(() => {
-    if (metronome.isPlaying) {
-      startAtRef.current = null;
-      gridKeyRef.current = null;
-      metronome.stop();
-    } else {
-      startGrid();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metronome.isPlaying, metronome.stop, startGrid]);
+    if (metronome.isPlaying) stopMetronome();
+    else startGrid(true);
+  }, [metronome.isPlaying, stopMetronome, startGrid]);
 
   // Les retardataires et la derive : l'hote redit la grille tant que ca joue.
   useEffect(() => {
@@ -285,7 +329,7 @@ export function useJamSession({
 
     // Tempo ou mesure changes en jouant : une nouvelle grille pour tout le monde.
     const gridKey = `${metronome.bpm}/${metronome.timeSignature.beats}`;
-    if (metronome.isPlaying && gridKeyRef.current !== gridKey) startGrid();
+    if (metronome.isPlaying && gridKeyRef.current !== gridKey) startGrid(false);
 
     broadcastMetronome();
 
@@ -396,8 +440,13 @@ export function useJamSession({
     participants,
     messages,
     metronome,
+    sharedNow,
+    songStartAt,
+    countInMeasures,
+    setCountInMeasures,
     syncMetronome,
     toggleMetronome,
+    stopMetronome,
     changeSong,
     updateSessionStatus,
     sendMessage,

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import type { useMetronome } from "@/lib/hooks/use-metronome";
+import { JAM_COUNT_IN_OPTIONS, type JamCountIn } from "@/lib/hooks/use-jam-session";
 import { TIME_SIGNATURES, type TimeSignature } from "@/types";
 
 interface JamMetronomeProps {
@@ -10,12 +11,22 @@ interface JamMetronomeProps {
   isHost: boolean;
   onSync: () => void;
   onToggle: () => void;
+  countInMeasures: JamCountIn;
+  onCountInChange: (measures: JamCountIn) => void;
 }
 
-export function JamMetronome({ metronome, isHost, onSync, onToggle }: JamMetronomeProps) {
+export function JamMetronome({
+  metronome,
+  isHost,
+  onSync,
+  onToggle,
+  countInMeasures,
+  onCountInChange,
+}: JamMetronomeProps) {
   const t = useTranslations("jam.metronome");
   const {
     isPlaying,
+    countIn,
     currentBeat,
     bpm,
     timeSignature,
@@ -41,7 +52,7 @@ export function JamMetronome({ metronome, isHost, onSync, onToggle }: JamMetrono
     <div className="rounded-xl border border-border bg-card p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold">Metronome</h3>
+        <h3 className="font-semibold">{t("title")}</h3>
         {!isHost && (
           <span className="text-xs text-muted-foreground">
             {t("synced")}
@@ -75,10 +86,26 @@ export function JamMetronome({ metronome, isHost, onSync, onToggle }: JamMetrono
         </button>
       )}
 
-      {/* BPM Display */}
-      <div className="text-center mb-4">
-        <div className="tabular font-display text-7xl font-extrabold leading-none">{bpm}</div>
-        <div className="mt-1 font-mono text-[11px] font-semibold tracking-[0.12em] text-muted-foreground">{t("bpm")}</div>
+      {/* Le decompte prend la place du tempo : c'est lui qu'on regarde a ce moment-la. */}
+      <div className="text-center mb-4" aria-live="polite">
+        {countIn !== null ? (
+          <>
+            <div
+              className="tabular font-display text-7xl font-extrabold leading-none text-primary"
+              aria-label={t("countInAria", { count: countIn })}
+            >
+              {countIn}
+            </div>
+            <div className="mt-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              {t("countIn")}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="tabular font-display text-7xl font-extrabold leading-none">{bpm}</div>
+            <div className="mt-1 font-mono text-[11px] font-semibold tracking-[0.12em] text-muted-foreground">{t("bpm")}</div>
+          </>
+        )}
       </div>
 
       {/* Controls - Host only */}
@@ -142,6 +169,28 @@ export function JamMetronome({ metronome, isHost, onSync, onToggle }: JamMetrono
             </select>
           </div>
 
+          {/* Decompte : vaut pour le prochain depart */}
+          <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
+            <span id="jam-count-in" className="text-sm text-muted-foreground">{t("countIn")}</span>
+            <div role="group" aria-labelledby="jam-count-in" className="flex gap-1">
+              {JAM_COUNT_IN_OPTIONS.map((measures) => (
+                <button
+                  key={measures}
+                  type="button"
+                  aria-pressed={countInMeasures === measures}
+                  onClick={() => onCountInChange(measures)}
+                  className={`min-h-[36px] rounded-lg px-3 text-xs font-semibold transition-colors ${
+                    countInMeasures === measures
+                      ? "bg-foreground text-background"
+                      : "border border-border hover:bg-accent"
+                  }`}
+                >
+                  {t("countInOption", { count: measures })}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Tap tempo */}
           <div className="flex items-center justify-center gap-3 mb-4">
             <button
@@ -156,6 +205,7 @@ export function JamMetronome({ metronome, isHost, onSync, onToggle }: JamMetrono
           <div className="flex justify-center">
             <button
               onClick={onToggle}
+              aria-label={isPlaying ? t("stop") : t("play")}
               className={`flex h-14 w-14 items-center justify-center rounded-full transition-all ${
                 isPlaying
                   ? "bg-destructive text-destructive-foreground hover:opacity-90"
