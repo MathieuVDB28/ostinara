@@ -216,5 +216,13 @@
   "rehearsalTask": {
     "title": "{band}: to work on",
     "body": "{name}: {content}"
+  },
+  "rehearsalPoll": {
+    "title": "{band}: when do we rehearse?",
+    "body": "{name} suggests {count, plural, one {# slot} other {# slots}} for “{title}”. Say when you're free."
+  },
+  "rehearsalPollReminder": {
+    "title": "{band}: waiting for your availability",
+    "body": "The poll “{title}” is still missing your answer."
   }
 }

@@ -1849,6 +1849,37 @@ export interface RehearsalSong {
   verdict: RehearsalVerdict | null;
 }
 
+/** Sondage de dates : la reponse d'un musicien a un creneau. */
+export type RehearsalPollAnswer = "yes" | "maybe" | "no";
+
+export interface RehearsalPollOption {
+  id: string;
+  starts_at: string;
+  ends_at: string | null;
+  position: number;
+  votes: { user_id: string; answer: RehearsalPollAnswer }[];
+}
+
+export interface RehearsalPoll {
+  id: string;
+  band_id: string;
+  created_by: string | null;
+  title: string;
+  location: string | null;
+  setlist_id: string | null;
+  status: "open" | "closed";
+  created_at: string;
+  options: RehearsalPollOption[];
+}
+
+export interface CreateRehearsalPollInput {
+  band_id: string;
+  title: string;
+  location?: string;
+  setlist_id?: string;
+  options: { starts_at: string; ends_at: string | null }[];
+}
+
 /** Un point a bosser. Sans `assignee_id`, c'est pour tout le groupe. */
 export interface RehearsalTask {
   id: string;

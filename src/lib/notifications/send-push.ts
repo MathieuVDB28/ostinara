@@ -84,6 +84,8 @@ export type NotificationType =
   | 'rehearsal_today'
   | 'rehearsal_logged'
   | 'rehearsal_task'
+  | 'rehearsal_poll'
+  | 'rehearsal_poll_reminder'
   | 'band_message'
   | 'gear_added'
   | 'gear_wishlisted'

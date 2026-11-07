@@ -182,5 +182,11 @@
   "rehearsalInFuture": "La date de la répète est dans le futur",
   "rehearsalDurationInvalid": "La durée de la répète doit être comprise entre 1 minute et 24 heures",
   "rehearsalLogFailed": "Le compte rendu n'a pas pu être enregistré",
-  "rehearsalAttendanceNotFound": "Tu n'es pas noté sur cette répète"
+  "rehearsalAttendanceNotFound": "Tu n'es pas noté sur cette répète",
+  "pollOptionCount": "Propose entre 2 et 8 créneaux",
+  "pollOptionPast": "Un des créneaux est déjà passé",
+  "pollClosed": "Ce sondage est déjà fermé",
+  "pollNotAllowed": "Seuls l'auteur du sondage, le titulaire et les admins du groupe peuvent faire ça",
+  "pollSaveFailed": "Le sondage n'a pas pu être enregistré",
+  "pollVoteFailed": "Ta réponse n'a pas pu être enregistrée"
 }

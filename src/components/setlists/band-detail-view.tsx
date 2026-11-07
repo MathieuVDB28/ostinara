@@ -10,6 +10,8 @@ import { CreateSetlistModal } from "./create-setlist-modal";
 import { InviteMemberModal } from "./invite-member-modal";
 import { StartJamModal } from "@/components/jam/start-jam-modal";
 import { CreateRehearsalModal } from "@/components/rehearsals/create-rehearsal-modal";
+import { CreateRehearsalPollModal } from "@/components/rehearsals/create-rehearsal-poll-modal";
+import { RehearsalPollsSection } from "@/components/rehearsals/rehearsal-polls-section";
 import { RehearsalCard } from "@/components/rehearsals/rehearsal-card";
 import { RehearsalCalendar } from "@/components/rehearsals/rehearsal-calendar";
 import { BandRehearsalJournal } from "@/components/rehearsals/band-rehearsal-journal";
@@ -29,6 +31,7 @@ import type {
   RehearsalWithDetails,
   JamSessionWithDetails,
   BandMessageWithProfile,
+  RehearsalPoll,
 } from "@/types";
 import { Icon } from "@/components/ui/icon";
 
@@ -38,6 +41,8 @@ interface BandDetailViewProps {
   rehearsals: RehearsalWithDetails[];
   journal: RehearsalJournal;
   activeJam: JamSessionWithDetails | null;
+  /** Les sondages de dates encore ouverts. */
+  polls: RehearsalPoll[];
   currentUserId: string;
   /** Le chat general du groupe : les derniers messages, pour le plan Band. */
   messages: BandMessageWithProfile[];
@@ -62,6 +67,7 @@ export function BandDetailView({
   rehearsals,
   journal,
   activeJam,
+  polls,
   currentUserId,
   messages,
   status,
@@ -71,11 +77,13 @@ export function BandDetailView({
 }: BandDetailViewProps) {
   const t = useTranslations("setlists.band");
   const te = useTranslations("enums");
+  const tp = useTranslations("rehearsals.poll");
   const intlLocale = useIntlLocale();
   const router = useRouter();
   const [showInvite, setShowInvite] = useState(false);
   const [showCreateSetlist, setShowCreateSetlist] = useState(false);
   const [showCreateRehearsal, setShowCreateRehearsal] = useState(false);
+  const [showCreatePoll, setShowCreatePoll] = useState(false);
   const [showJam, setShowJam] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [rehearsalView, setRehearsalView] = useState<"list" | "calendar">("list");
@@ -161,6 +169,10 @@ export function BandDetailView({
               <button onClick={() => setShowCreateRehearsal(true)} className={CHIP}>
                 <Icon name="event" className="h-4 w-4" />
                 {t("planRehearsal")}
+              </button>
+              <button onClick={() => setShowCreatePoll(true)} className={CHIP}>
+                <Icon name="calendar_month" className="h-4 w-4" />
+                {tp("suggest")}
               </button>
             </>
           )}
@@ -255,6 +267,14 @@ export function BandDetailView({
           />
         )}
       </section>
+
+      <RehearsalPollsSection
+        polls={polls}
+        members={band.members}
+        currentUserId={currentUserId}
+        isAdmin={isAdmin}
+        readOnly={readOnly}
+      />
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-2">
@@ -409,6 +429,14 @@ export function BandDetailView({
       <CreateRehearsalModal
         isOpen={showCreateRehearsal}
         onClose={() => setShowCreateRehearsal(false)}
+        onSuccess={handleRefresh}
+        band={band}
+        setlists={setlists}
+      />
+
+      <CreateRehearsalPollModal
+        isOpen={showCreatePoll}
+        onClose={() => setShowCreatePoll(false)}
         onSuccess={handleRefresh}
         band={band}
         setlists={setlists}

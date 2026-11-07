@@ -192,5 +192,40 @@
     "addHint": "Le morceau sera ajouté à ta biblio.",
     "legend": "Coche : maîtrisé. Pourcentage : en cours. Rond : à apprendre. Tiret : pas dans sa biblio.",
     "hint": "Touche une case de ta colonne pour changer ton statut."
+  },
+  "poll": {
+    "suggest": "Proposer des dates",
+    "sectionTitle": "Sondages de dates",
+    "defaultTitle": "Répète",
+    "slots": "Créneaux",
+    "slotsHint": "Entre 2 et 8. Les horaires du dernier créneau se recopient sur le suivant.",
+    "slotLabel": "Créneau {n}",
+    "addSlot": "Ajouter un créneau",
+    "removeSlot": "Retirer le créneau {n}",
+    "submit": "Envoyer le sondage",
+    "required": "Donne un titre, et une date et une heure à chaque créneau.",
+    "by": "Proposé par {name}",
+    "answers": {
+      "yes": "Oui",
+      "maybe": "Si besoin",
+      "no": "Non"
+    },
+    "yourAnswer": "Ta réponse pour {date}",
+    "counts": "{yes} oui · {maybe} si besoin · {no} non",
+    "whoYes": "Oui : {names}",
+    "whoMaybe": "Si besoin : {names}",
+    "whoNo": "Non : {names}",
+    "waiting": "Pas encore répondu : {names}",
+    "best": "Le plus de oui",
+    "past": "Passé",
+    "allPast": "Tous les créneaux sont passés.",
+    "validate": "Valider ce créneau",
+    "validateText": "La répète sera créée pour {date}. Les réponses deviennent les présences.",
+    "validateConfirm": "Créer la répète",
+    "delete": "Supprimer le sondage",
+    "deleteText": "Supprimer ce sondage et toutes ses réponses ?",
+    "deleteConfirm": "Supprimer",
+    "you": "toi",
+    "readOnly": "Le groupe est en lecture seule : on ne répond plus aux sondages."
   }
 }

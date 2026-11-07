@@ -216,5 +216,13 @@
   "rehearsalTask": {
     "title": "{band} : à bosser",
     "body": "{name} : {content}"
+  },
+  "rehearsalPoll": {
+    "title": "{band} : quand est-ce qu'on répète ?",
+    "body": "{name} propose {count, plural, one {# créneau} other {# créneaux}} pour « {title} ». Dis quand tu es dispo."
+  },
+  "rehearsalPollReminder": {
+    "title": "{band} : on attend tes dispos",
+    "body": "Le sondage « {title} » n'a pas encore ta réponse."
   }
 }

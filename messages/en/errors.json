@@ -182,5 +182,11 @@
   "rehearsalInFuture": "The rehearsal date is in the future",
   "rehearsalDurationInvalid": "The rehearsal must last between 1 minute and 24 hours",
   "rehearsalLogFailed": "The write-up couldn't be saved",
-  "rehearsalAttendanceNotFound": "You're not listed on this rehearsal"
+  "rehearsalAttendanceNotFound": "You're not listed on this rehearsal",
+  "pollOptionCount": "Suggest between 2 and 8 slots",
+  "pollOptionPast": "One of the slots is already in the past",
+  "pollClosed": "This poll is already closed",
+  "pollNotAllowed": "Only the poll's author, the band owner and admins can do that",
+  "pollSaveFailed": "The poll couldn't be saved",
+  "pollVoteFailed": "Your answer couldn't be saved"
 }

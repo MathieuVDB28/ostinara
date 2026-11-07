@@ -71,6 +71,69 @@ async function sendReminders(
   return { sent, errors };
 }
 
+/**
+ * Sondages de dates : une seule relance, 48 h apres, a ceux qui n'ont repondu
+ * a aucun creneau. Un sondage dont tous les creneaux sont passes ne relance pas.
+ */
+async function sendPollReminders(now: Date): Promise<{ sent: number; errors: number }> {
+  const cutoff = new Date(now.getTime() - 48 * 60 * 60 * 1000).toISOString();
+  const { data: polls, error } = await supabaseAdmin
+    .from("rehearsal_polls")
+    .select("id, band_id, title, created_by, band:bands(name), options:rehearsal_poll_options!rehearsal_poll_options_poll_id_fkey(starts_at, votes:rehearsal_poll_votes(user_id))")
+    .eq("status", "open")
+    .is("reminded_at", null)
+    .lte("created_at", cutoff);
+
+  if (error) {
+    console.error("Error fetching polls to remind:", error);
+    return { sent: 0, errors: 1 };
+  }
+
+  let sent = 0;
+  let errors = 0;
+  for (const poll of polls ?? []) {
+    const options = poll.options as unknown as { starts_at: string; votes: { user_id: string }[] }[];
+    const stillOpen = options.some((option) => new Date(option.starts_at) > now);
+
+    if (stillOpen) {
+      const { data: members } = await supabaseAdmin
+        .from("band_members")
+        .select("user_id")
+        .eq("band_id", poll.band_id);
+      const answered = new Set(options.flatMap((option) => option.votes.map((vote) => vote.user_id)));
+      const waiting = (members ?? [])
+        .map((member) => member.user_id as string)
+        .filter((id) => id !== poll.created_by && !answered.has(id));
+      const bandName = (poll.band as unknown as { name: string } | null)?.name ?? null;
+
+      if (waiting.length > 0) {
+        try {
+          await sendPushNotificationToMultipleUsers(
+            waiting.map((userId) => ({
+              userId,
+              payload: (t: PushT) => ({
+                title: t("rehearsalPollReminder.title", { band: bandName ?? t("yourBand") }),
+                body: t("rehearsalPollReminder.body", { title: poll.title }),
+                data: { url: `/commu/groupes/${poll.band_id}#poll-${poll.id}` },
+              }),
+              notificationType: "rehearsal_poll_reminder",
+            }))
+          );
+          sent += waiting.length;
+        } catch (err) {
+          console.error("Error sending poll reminders:", err);
+          errors++;
+          continue;
+        }
+      }
+    }
+
+    await supabaseAdmin.from("rehearsal_polls").update({ reminded_at: now.toISOString() }).eq("id", poll.id);
+  }
+
+  return { sent, errors };
+}
+
 // Runs once daily at ~9h UTC. Sends both "today" and "tomorrow" reminders.
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
@@ -78,7 +141,7 @@ export async function GET(request: NextRequest) {
   }
 
   const now = new Date();
-  const results = { reminders: 0, today: 0, errors: 0 };
+  const results = { reminders: 0, today: 0, polls: 0, errors: 0 };
 
   // === Today's rehearsals (anything today that hasn't passed yet) ===
   const todayStart = new Date(now);
@@ -138,6 +201,10 @@ export async function GET(request: NextRequest) {
     results.reminders = r.sent;
     results.errors += r.errors;
   }
+
+  const pollResults = await sendPollReminders(now);
+  results.polls = pollResults.sent;
+  results.errors += pollResults.errors;
 
   return NextResponse.json({
     success: true,
