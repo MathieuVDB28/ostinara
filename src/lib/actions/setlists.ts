@@ -2,6 +2,7 @@
 
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
+import { BAND_SONG_DEFAULT_COLUMNS } from "@/lib/band-songs";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import {
@@ -111,7 +112,8 @@ export async function getSetlist(
       band:bands(id, name, cover_url),
       items:setlist_items(
         *,
-        song_owner:profiles!setlist_items_song_owner_id_fkey(id, username, display_name, avatar_url)
+        song_owner:profiles!setlist_items_song_owner_id_fkey(id, username, display_name, avatar_url),
+        band_song:band_songs(${BAND_SONG_DEFAULT_COLUMNS})
       )
     `
     )

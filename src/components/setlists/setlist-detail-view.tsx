@@ -421,6 +421,7 @@ export function SetlistDetailView({
                     key={item.id}
                     item={item}
                     index={index}
+                    bandId={setlist.band_id}
                     onEdit={() => setEditingItem(item)}
                     onDelete={() => handleDeleteItem(item.id)}
                     readOnly={readOnly}

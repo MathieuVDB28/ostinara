@@ -7,6 +7,7 @@ import { extractSongsterrId, findSongsterrTrack } from "@/lib/services/songsterr
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { bandStatus } from "@/lib/band-access";
 import { isJamSessionStale } from "@/lib/jam-session";
+import { BAND_SONG_DEFAULT_COLUMNS, withBandSongDefaults } from "@/lib/band-songs";
 import { getBand } from "./bands";
 import { sendPushNotificationToMultipleUsers, type PushT } from "@/lib/notifications";
 import { getTranslations } from "next-intl/server";
@@ -17,6 +18,7 @@ import type {
   JamSessionWithDetails,
   JamSessionMessage,
   JamSessionMessageWithProfile,
+  SetlistItemWithSongOwner,
   SetlistWithDetails,
 } from "@/types";
 
@@ -262,6 +264,30 @@ export async function getActiveJamSession(
   } as JamSessionWithDetails;
 }
 
+/**
+ * La jam joue les valeurs de la fiche du repertoire quand la ligne n'en a pas
+ * (tempo, sections, lien de tab), et montre a chacun la note de son poste.
+ */
+async function withMyBandSongNotes(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  items: SetlistItemWithSongOwner[]
+): Promise<SetlistItemWithSongOwner[]> {
+  const ids = [...new Set(items.map((item) => item.band_song?.id).filter((id): id is string => Boolean(id)))];
+  const { data: notes } = ids.length
+    ? await supabase.from("band_song_notes").select("band_song_id, content").eq("user_id", userId).in("band_song_id", ids)
+    : { data: [] };
+  const noteBySong = new Map((notes ?? []).map((note) => [note.band_song_id, note.content as string]));
+
+  return items.map((item) =>
+    withBandSongDefaults(
+      item.band_song
+        ? { ...item, band_song: { ...item.band_song, my_note: noteBySong.get(item.band_song.id) ?? null } }
+        : item
+    )
+  );
+}
+
 // === Get jam session by ID ===
 export async function getJamSession(
   sessionId: string
@@ -304,7 +330,7 @@ export async function getJamSession(
       .select(
         `
         *,
-        items:setlist_items(*)
+        items:setlist_items(*, band_song:band_songs(${BAND_SONG_DEFAULT_COLUMNS}))
       `
       )
       .eq("id", data.setlist_id)
@@ -313,7 +339,7 @@ export async function getJamSession(
     if (setlistData) {
       setlist = {
         ...setlistData,
-        items: setlistData.items || [],
+        items: await withMyBandSongNotes(supabase, user.id, setlistData.items || []),
         total_duration_seconds: 0,
         song_count: (setlistData.items || []).filter(
           (i: { item_type: string }) => i.item_type === "song"

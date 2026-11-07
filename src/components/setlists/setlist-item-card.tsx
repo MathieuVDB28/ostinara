@@ -2,12 +2,17 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { bandSongHref, formatMusicalKey, withBandSongDefaults } from "@/lib/band-songs";
+import { Icon } from "@/components/ui/icon";
 import type { SetlistItemWithSongOwner } from "@/types";
 
 interface SetlistItemCardProps {
   item: SetlistItemWithSongOwner;
   index: number;
+  /** Le groupe de la setlist : de quoi ouvrir la fiche du repertoire. */
+  bandId?: string | null;
   onEdit: () => void;
   onDelete: () => void;
   readOnly?: boolean;
@@ -131,14 +136,21 @@ function getSectionColor(name?: string) {
 }
 
 export function SetlistItemCard({
-  item,
+  item: rawItem,
   index,
+  bandId,
   onEdit,
   onDelete,
   readOnly = false,
 }: SetlistItemCardProps) {
   const t = useTranslations("setlists.item");
   const te = useTranslations("enums");
+  const tr = useTranslations("repertoire");
+  // Ce qui sera joue : la ligne, sinon la fiche du repertoire.
+  const item = withBandSongDefaults(rawItem);
+  const musicalKey = rawItem.band_song
+    ? formatMusicalKey(rawItem.band_song.key_note, rawItem.band_song.key_mode, tr)
+    : null;
   const {
     attributes,
     listeners,
@@ -228,9 +240,20 @@ export function SetlistItemCard({
           <div className="flex-1 min-w-0">
             <p className="truncate font-semibold">{item.song_title}</p>
             <p className="truncate text-sm text-muted-foreground">
-              {item.song_artist}
+              {[item.song_artist, musicalKey].filter(Boolean).join(" · ")}
             </p>
           </div>
+
+          {bandId && rawItem.band_song_id && (
+            <Link
+              href={bandSongHref(bandId, rawItem.band_song_id)}
+              aria-label={tr("setlist.fiche")}
+              title={tr("setlist.fiche")}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <Icon name="library_music" className="h-4 w-4" />
+            </Link>
+          )}
         </>
       ) : isExercise ? (
         <>

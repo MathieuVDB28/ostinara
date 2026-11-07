@@ -367,7 +367,8 @@ export function EditItemModal({
                       type="number"
                       value={bpm || ""}
                       onChange={(e) => setBpm(parseInt(e.target.value) || 0)}
-                      placeholder="120"
+                      // Vide : la ligne joue le tempo de la fiche du repertoire.
+                      placeholder={item?.band_song?.bpm ? String(item.band_song.bpm) : "120"}
                       min="20"
                       max="300"
                       className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"

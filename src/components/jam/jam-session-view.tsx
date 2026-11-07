@@ -10,6 +10,7 @@ import { JamMetronome } from "./jam-metronome";
 import { JamChat } from "./jam-chat";
 import { JamParticipants } from "./jam-participants";
 import { JamSongQueue } from "./jam-song-queue";
+import { JamSongSheet } from "./jam-song-sheet";
 import { JamTabsViewer } from "./jam-tabs-viewer";
 import { ChatSheet } from "@/components/ui/chat-sheet";
 import { leaveJamSession, endJamSession } from "@/lib/actions/jam-sessions";
@@ -302,6 +303,11 @@ export function JamSessionView({
             countInMeasures={countInMeasures}
             onCountInChange={setCountInMeasures}
           />
+
+          {/* La fiche du repertoire : tonalite et note de mon poste */}
+          {session.setlist && session.current_song_index !== null && (
+            <JamSongSheet item={playable[session.current_song_index] || null} bandId={session.band_id} />
+          )}
 
           {/* Tabs viewer for current song */}
           {session.setlist && session.current_song_index !== null && (

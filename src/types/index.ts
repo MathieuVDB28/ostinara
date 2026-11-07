@@ -1156,12 +1156,94 @@ export interface SetlistItem {
   bpm?: number;
   played_sections?: PlayedSection[];
 
+  /** La fiche du repertoire du groupe (setlist de groupe), reliee par la base. */
+  band_song_id?: string | null;
+
   created_at: string;
   updated_at: string;
 }
 
 export interface SetlistItemWithSongOwner extends SetlistItem {
   song_owner?: Profile;
+  /** Les valeurs par defaut de la fiche : la ligne les surcharge. */
+  band_song?: BandSongDefaults | null;
+}
+
+// === Repertoire du groupe ===
+export type MusicalMode = "major" | "minor";
+
+export interface BandSong {
+  id: string;
+  band_id: string;
+  song_key: string;
+  title: string;
+  artist?: string | null;
+  cover_url?: string | null;
+  deezer_id?: string | null;
+  /** 0 = do ... 11 = si. */
+  key_note?: number | null;
+  key_mode?: MusicalMode | null;
+  bpm?: number | null;
+  tuning?: string | null;
+  capo?: number | null;
+  /** Meme forme que les sections d'une ligne de setlist. */
+  structure: PlayedSection[];
+  notes?: string | null;
+  tabs_url?: string | null;
+  reference_url?: string | null;
+  created_by?: string | null;
+  updated_by?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Ce qu'une ligne de setlist reprend de sa fiche quand elle ne dit rien. */
+export type BandSongDefaults = Pick<
+  BandSong,
+  "id" | "key_note" | "key_mode" | "bpm" | "tuning" | "capo" | "structure" | "tabs_url"
+> & {
+  /** Ma note de poste, chargee pour la jam. */
+  my_note?: string | null;
+};
+
+export type BandSongListItem = Pick<
+  BandSong,
+  "id" | "title" | "artist" | "cover_url" | "key_note" | "key_mode" | "bpm" | "updated_at"
+>;
+
+export interface BandSongMember {
+  user_id: string;
+  profile: Pick<Profile, "id" | "username" | "display_name" | "avatar_url"> | null;
+  instrument?: Instrument | null;
+  instrument_label?: string | null;
+  note: string | null;
+  note_updated_at: string | null;
+  in_library: boolean;
+  status: SongStatus | null;
+  progress_percent: number | null;
+}
+
+export interface BandSongDetails {
+  song: BandSong;
+  updatedBy: Pick<Profile, "id" | "username" | "display_name"> | null;
+  members: BandSongMember[];
+  lastVerdict: { verdict: RehearsalVerdict; date: string } | null;
+  setlists: { id: string; name: string }[];
+}
+
+/** `null` efface la valeur ; une cle absente n'y touche pas. */
+export interface BandSongInput {
+  title?: string;
+  artist?: string | null;
+  key_note?: number | null;
+  key_mode?: MusicalMode | null;
+  bpm?: number | null;
+  tuning?: string | null;
+  capo?: number | null;
+  structure?: PlayedSection[];
+  notes?: string | null;
+  tabs_url?: string | null;
+  reference_url?: string | null;
 }
 
 export interface SetlistWithDetails extends Setlist {

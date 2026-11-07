@@ -36,6 +36,7 @@ import profile from "./profile.json";
 import progress from "./progress.json";
 import push from "./push.json";
 import rehearsals from "./rehearsals.json";
+import repertoire from "./repertoire.json";
 import search from "./search.json";
 import setlists from "./setlists.json";
 import social from "./social.json";
@@ -82,6 +83,7 @@ const messages = {
   "progress": progress,
   "push": push,
   "rehearsals": rehearsals,
+  "repertoire": repertoire,
   "search": search,
   "setlists": setlists,
   "social": social,
