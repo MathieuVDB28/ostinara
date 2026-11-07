@@ -104,18 +104,20 @@ export function EditItemModal({
     setSaving(true);
     setError(null);
 
+    // Un champ vide s'envoie a null : undefined disparait a l'envoi, et la
+    // base garderait l'ancienne valeur.
     const result = await updateSetlistItem(item.id, {
-      notes: notes.trim() || undefined,
+      notes: notes.trim() || null,
       transition_seconds: transitionSeconds,
       duration_seconds:
-        durationMinutes > 0 ? durationMinutes * 60 : undefined,
+        durationMinutes > 0 ? durationMinutes * 60 : null,
       section_name:
         item.item_type === "section" ? sectionName.trim() : undefined,
       exercise_name:
         item.item_type === "exercise" ? exerciseName.trim() : undefined,
-      tabs_url: tabsUrl.trim() || undefined,
-      bpm: bpm > 0 ? bpm : undefined,
-      played_sections: playedSections.length > 0 ? playedSections : undefined,
+      tabs_url: tabsUrl.trim() || null,
+      bpm: bpm > 0 ? bpm : null,
+      played_sections: playedSections,
     });
 
     setSaving(false);

@@ -132,38 +132,3 @@ export function rehearsalStats(logs: StatsLog[], topCount = 3) {
       .slice(0, topCount),
   };
 }
-
-interface FeedActivity {
-  id: string;
-  type: string;
-  reference_id?: string | null;
-  user: { id: string; username: string; display_name?: string | null };
-  rehearsalCompanions?: { id: string; username: string; display_name?: string | null }[];
-}
-
-/**
- * Une meme repete, partagee par plusieurs amis, tient en une entree du feed :
- * « Lea et Tom ont repete ». Le feed ne lit que ce que le lecteur a le droit de
- * voir, donc seuls des amis qui ont choisi de partager y sont nommes.
- */
-export function mergeRehearsalActivities<T extends FeedActivity>(activities: T[]): T[] {
-  const heads = new Map<string, T>();
-  const merged: T[] = [];
-
-  for (const activity of activities) {
-    if (activity.type !== "rehearsal_logged" || !activity.reference_id) {
-      merged.push(activity);
-      continue;
-    }
-    const head = heads.get(activity.reference_id);
-    if (!head) {
-      const copy = { ...activity };
-      heads.set(activity.reference_id, copy);
-      merged.push(copy);
-    } else if (head.user.id !== activity.user.id) {
-      head.rehearsalCompanions = [...(head.rehearsalCompanions ?? []), activity.user];
-    }
-  }
-
-  return merged;
-}

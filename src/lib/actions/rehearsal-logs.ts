@@ -9,6 +9,7 @@ import { isInFuture } from "@/lib/datetime-local";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { sendPushNotificationToMultipleUsers, type PushT } from "@/lib/notifications";
 import { createActivity } from "./activities";
+import { updateChallengeProgress } from "./challenges";
 import { createPracticeSession } from "./practice";
 import {
   REHEARSAL_MAX_MINUTES,
@@ -65,9 +66,9 @@ export async function getRehearsalLog(rehearsalId: string): Promise<RehearsalLog
 }
 
 /**
- * Note la presence du musicien et cree sa session. Le passage a « confirmed »
- * vient d'abord et ne reussit qu'une fois : un double appui ne compte pas le
- * temps deux fois.
+ * Cree la session du musicien, ce qui confirme sa presence (trigger). La base
+ * refuse une seconde session pour la meme repete : un double appui ne compte
+ * pas le temps deux fois.
  */
 async function recordAttendance(
   supabase: SupabaseClient,
@@ -75,31 +76,19 @@ async function recordAttendance(
   rehearsal: { id: string; title: string; date: string; band_name: string },
   input: ConfirmRehearsalInput
 ): Promise<{ success: boolean; error?: string }> {
-  const { data: previous } = await supabase
-    .from("rehearsal_attendees")
-    .select("status")
-    .eq("rehearsal_id", rehearsal.id)
-    .eq("user_id", userId)
-    .maybeSingle();
+  const attendanceStatus = async () => {
+    const { data } = await supabase
+      .from("rehearsal_attendees")
+      .select("status")
+      .eq("rehearsal_id", rehearsal.id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    return data?.status as string | undefined;
+  };
 
+  const previous = await attendanceStatus();
   if (!previous) return { success: false, error: await tErr("rehearsalAttendanceNotFound") };
-  if (previous.status === "confirmed") return { success: true };
-
-  const { data: claimed, error: claimError } = await supabase
-    .from("rehearsal_attendees")
-    .update({ status: "confirmed", responded_at: new Date().toISOString() })
-    .eq("rehearsal_id", rehearsal.id)
-    .eq("user_id", userId)
-    .eq("status", previous.status)
-    .select("user_id")
-    .maybeSingle();
-
-  if (claimError) {
-    console.error("Error confirming rehearsal attendance:", claimError);
-    return { success: false, error: await tErr("rehearsalLogFailed") };
-  }
-  // Un autre appui est passe entre-temps : sa session existe deja.
-  if (!claimed) return { success: true };
+  if (previous === "confirmed") return { success: true };
 
   // Ce qui a ete joue, en face de ma biblio.
   const [{ data: played }, { data: library }] = await Promise.all([
@@ -124,11 +113,8 @@ async function recordAttendance(
   });
 
   if (!session.success) {
-    await supabase
-      .from("rehearsal_attendees")
-      .update({ status: previous.status, responded_at: null })
-      .eq("rehearsal_id", rehearsal.id)
-      .eq("user_id", userId);
+    // Un autre appui est passe entre-temps : sa session existe deja.
+    if ((await attendanceStatus()) === "confirmed") return { success: true };
     return { success: false, error: session.error };
   }
 
@@ -157,7 +143,7 @@ function validDuration(minutes: number): boolean {
 /** Enregistre un compte rendu : une repete planifiee, ou une repete jamais planifiee. */
 export async function saveRehearsalLog(
   input: SaveRehearsalLogInput
-): Promise<{ success: boolean; error?: string; rehearsalId?: string }> {
+): Promise<{ success: boolean; error?: string; rehearsalId?: string; conflict?: boolean }> {
   const supabase = await createClient();
   const user = await getAuthenticatedUser();
   if (!user) return { success: false, error: await tErr("notAuthenticated") };
@@ -175,6 +161,12 @@ export async function saveRehearsalLog(
     .maybeSingle();
   if (!membership) return { success: false, error: await tErr("notBandMember") };
   const bandName = (membership.band as unknown as { name: string } | null)?.name ?? "";
+
+  // La date d'avant : si elle change, les sessions suivent (trigger) et mes defis
+  // se recalculent ; ceux des autres, a leur prochaine session.
+  const { data: before } = input.rehearsal_id
+    ? await supabase.from("rehearsals").select("date").eq("id", input.rehearsal_id).maybeSingle()
+    : { data: null };
 
   const t = await getTranslations("rehearsals.log");
   const title =
@@ -214,6 +206,7 @@ export async function saveRehearsalLog(
     p_attendee_ids: input.attendee_ids,
     p_songs: songs,
     p_tasks: tasks,
+    p_expected_updated_at: input.expected_updated_at ?? null,
   });
 
   if (error || !data) {
@@ -223,9 +216,29 @@ export async function saveRehearsalLog(
 
   const saved = data as {
     id: string;
+    conflict?: boolean;
+    updated_by?: string | null;
     new_attendees: string[];
     new_tasks: { assignee_id: string; content: string }[];
   };
+
+  // Un autre membre a enregistre depuis l'ouverture du formulaire : rien n'est ecrit.
+  if (saved.conflict) {
+    const { data: author } = saved.updated_by
+      ? await supabase.from("profiles").select("username, display_name").eq("id", saved.updated_by).maybeSingle()
+      : { data: null };
+    const name = author?.display_name || author?.username;
+    return {
+      success: false,
+      conflict: true,
+      error: name ? await tErr("rehearsalLogConflict", { name }) : await tErr("rehearsalLogConflictAnonymous"),
+    };
+  }
+
+  if (before && new Date(before.date).getTime() !== new Date(input.date).getTime()) {
+    await updateChallengeProgress().catch(console.error);
+    revalidatePath("/progress");
+  }
 
   // Le temps du musicien qui raconte, s'il l'a demande. Le compte rendu est
   // enregistre : une erreur ici ne le perd pas, il pourra confirmer depuis la fiche.
@@ -489,7 +502,8 @@ export async function getBandRehearsalJournal(bandId: string): Promise<BandRehea
     logs: rows.map(({ songs, attendees, ...row }) => ({
       ...row,
       song_count: songs.length,
-      attendee_count: attendees.filter((attendee) => attendee.status !== "declined").length,
+      // Ceux qui ont confirme : un tague qui n'a pas repondu n'est pas compte.
+      attendee_count: attendees.filter((attendee) => attendee.status === "confirmed").length,
     })),
     unlogged: unlogged ?? [],
     openTasks: (openTasks ?? []) as RehearsalTask[],

@@ -134,6 +134,7 @@
     "nobody": "Coche au moins une personne.",
     "failed": "Le compte rendu n'a pas pu être enregistré.",
     "saving": "Enregistrement…",
+    "reload": "Recharger",
     "submit": "Enregistrer la répète",
     "saveChanges": "Enregistrer les modifications"
   },

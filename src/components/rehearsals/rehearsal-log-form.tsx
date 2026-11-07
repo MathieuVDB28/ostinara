@@ -183,6 +183,8 @@ export function RehearsalLogForm({
   const [results, setResults] = useState<CatalogResult[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Un autre membre a enregistre entre-temps : on repart de sa version.
+  const [conflict, setConflict] = useState(false);
 
   const trimmedQuery = query.trim();
   useEffect(() => {
@@ -238,6 +240,7 @@ export function RehearsalLogForm({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setConflict(false);
 
     if (!date || isInFuture(new Date(date))) {
       setError(t("futureDate"));
@@ -255,6 +258,7 @@ export function RehearsalLogForm({
     setSaving(true);
     const result = await saveRehearsalLog({
       rehearsal_id: rehearsal?.id ?? null,
+      expected_updated_at: rehearsal?.updated_at ?? null,
       band_id: band.id,
       title,
       date: new Date(date).toISOString(),
@@ -277,6 +281,7 @@ export function RehearsalLogForm({
 
     if (!result.success || !result.rehearsalId) {
       setError(result.error ?? t("failed"));
+      setConflict(Boolean(result.conflict));
       setSaving(false);
       return;
     }
@@ -657,9 +662,18 @@ export function RehearsalLogForm({
       )}
 
       {error && (
-        <p role="alert" className="text-sm font-semibold text-destructive">
-          {error}
-        </p>
+        <div role="alert" className="space-y-2">
+          <p className="text-sm font-semibold text-destructive">{error}</p>
+          {conflict && (
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="min-h-[44px] rounded-xl border border-border px-4 text-sm font-bold transition-colors hover:bg-muted"
+            >
+              {t("reload")}
+            </button>
+          )}
+        </div>
       )}
 
       <button

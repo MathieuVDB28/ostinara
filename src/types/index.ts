@@ -690,8 +690,6 @@ export interface ActivityWithProfile extends Activity {
 }
 
 export interface ActivityWithDetails extends ActivityWithProfile {
-  /** Les autres amis qui ont partage la meme repete. */
-  rehearsalCompanions?: Pick<Profile, "id" | "username" | "display_name">[];
   song?: Song;
   cover?: CoverWithSong;
   friend?: Profile;
@@ -842,7 +840,7 @@ export interface PracticeSessionSongEntry {
 }
 
 export interface CreatePracticeSessionInput {
-  /** La repete d'ou vient ce temps. */
+  /** La repete d'ou vient ce temps : il faut y etre tague, une session par repete (base). */
   rehearsal_id?: string;
   /**
    * Plusieurs morceaux : une ligne par morceau, groupees. Quand il est
@@ -1218,16 +1216,17 @@ export interface CreateSetlistItemInput {
   played_sections?: PlayedSection[];
 }
 
+/** `null` efface la valeur ; une cle absente n'y touche pas. */
 export interface UpdateSetlistItemInput {
   position?: number;
-  notes?: string;
+  notes?: string | null;
   transition_seconds?: number;
-  duration_seconds?: number;
+  duration_seconds?: number | null;
   section_name?: string;
   exercise_name?: string;
   exercise_category?: ExerciseCategory;
-  tabs_url?: string;
-  bpm?: number;
+  tabs_url?: string | null;
+  bpm?: number | null;
   played_sections?: PlayedSection[];
 }
 
@@ -1911,6 +1910,8 @@ export interface ConfirmRehearsalInput {
 export interface SaveRehearsalLogInput {
   /** Absent : une repete qui n'avait pas ete planifiee. */
   rehearsal_id?: string | null;
+  /** `updated_at` lu a l'ouverture du formulaire : refuse si la repete a change depuis. */
+  expected_updated_at?: string | null;
   band_id: string;
   /** Vide : « Répète du 5 novembre ». */
   title?: string;

@@ -36,7 +36,7 @@ export interface PlanConfig {
   };
 }
 
-/** Par personne, en base aussi : migration 20261122_usage_caps. */
+/** Par personne, en base aussi : migration 20261126_usage_caps. */
 export const COVER_STORAGE_LIMIT_GB = 20;
 export const COVER_STORAGE_LIMIT_BYTES = COVER_STORAGE_LIMIT_GB * 1024 * 1024 * 1024;
 export const AUDIO_IDENTIFICATIONS_PER_DAY = 30;

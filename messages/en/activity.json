@@ -85,7 +85,5 @@
     "exercise": "Exercise"
   },
   "gearWish": "Wish · {type}",
-  "rehearsalTogether": "rehearsed with the band",
-  "rehearsalCompanions": " and {names}",
   "rehearsalMeta": "{duration}{songs, plural, =0 {} one { · # song} other { · # songs}}"
 }

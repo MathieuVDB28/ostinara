@@ -134,6 +134,7 @@
     "nobody": "Tick at least one person.",
     "failed": "The write-up couldn't be saved.",
     "saving": "Saving…",
+    "reload": "Reload",
     "submit": "Save the rehearsal",
     "saveChanges": "Save changes"
   },

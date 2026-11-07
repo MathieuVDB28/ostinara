@@ -6,6 +6,8 @@ import { INTL_LOCALE, type Locale } from "@/i18n/config";
 import { revalidatePath } from "next/cache";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { sendPushNotificationToMultipleUsers, type PushT } from "@/lib/notifications";
+import { isInFuture } from "@/lib/datetime-local";
+import { updateChallengeProgress } from "./challenges";
 import type {
   Rehearsal,
   RehearsalWithDetails,
@@ -359,7 +361,7 @@ export async function updateRehearsal(
   // Get current rehearsal to check band membership
   const { data: current } = await supabase
     .from("rehearsals")
-    .select("band_id, title, date")
+    .select("band_id, title, date, logged_at")
     .eq("id", rehearsalId)
     .single();
 
@@ -367,6 +369,12 @@ export async function updateRehearsal(
 
   const { isMember } = await isBandMember(current.band_id);
   if (!isMember) return { success: false, error: await tErr("notBandMember") };
+
+  // Une repete racontee a eu lieu : ses sessions suivent sa date (trigger), pas dans le futur.
+  const dateChanged = Boolean(input.date) && new Date(input.date!).getTime() !== new Date(current.date).getTime();
+  if (current.logged_at && dateChanged && isInFuture(input.date!)) {
+    return { success: false, error: await tErr("rehearsalInFuture") };
+  }
 
   const { error } = await supabase
     .from("rehearsals")
@@ -376,6 +384,12 @@ export async function updateRehearsal(
   if (error) {
     console.error("Error updating rehearsal:", error);
     return { success: false, error: await tErr("updateFailed") };
+  }
+
+  if (current.logged_at && dateChanged) {
+    // Mes defis comptent ma session a sa nouvelle date ; ceux des autres, a leur prochaine session.
+    await updateChallengeProgress().catch(console.error);
+    revalidatePath("/progress");
   }
 
   // Notify participants of changes (except the one who made the change)

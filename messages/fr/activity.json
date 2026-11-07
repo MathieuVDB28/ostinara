@@ -85,7 +85,5 @@
     "exercise": "Exercice"
   },
   "gearWish": "Envie · {type}",
-  "rehearsalTogether": "ont répété en groupe",
-  "rehearsalCompanions": " et {names}",
   "rehearsalMeta": "{duration}{songs, plural, =0 {} one { · # morceau} other { · # morceaux}}"
 }

@@ -182,6 +182,8 @@
   "rehearsalInFuture": "The rehearsal date is in the future",
   "rehearsalDurationInvalid": "The rehearsal must last between 1 minute and 24 hours",
   "rehearsalLogFailed": "The write-up couldn't be saved",
+  "rehearsalLogConflict": "{name} changed this write-up in the meantime. Reload the page to start from their version.",
+  "rehearsalLogConflictAnonymous": "This write-up was changed in the meantime. Reload the page to start from the latest version.",
   "rehearsalAttendanceNotFound": "You're not listed on this rehearsal",
   "pollOptionCount": "Suggest between 2 and 8 slots",
   "pollOptionPast": "One of the slots is already in the past",

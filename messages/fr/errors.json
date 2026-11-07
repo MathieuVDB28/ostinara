@@ -182,6 +182,8 @@
   "rehearsalInFuture": "La date de la répète est dans le futur",
   "rehearsalDurationInvalid": "La durée de la répète doit être comprise entre 1 minute et 24 heures",
   "rehearsalLogFailed": "Le compte rendu n'a pas pu être enregistré",
+  "rehearsalLogConflict": "{name} a modifié ce compte rendu entre-temps. Recharge la page pour repartir de sa version.",
+  "rehearsalLogConflictAnonymous": "Ce compte rendu a été modifié entre-temps. Recharge la page pour repartir de la dernière version.",
   "rehearsalAttendanceNotFound": "Tu n'es pas noté sur cette répète",
   "pollOptionCount": "Propose entre 2 et 8 créneaux",
   "pollOptionPast": "Un des créneaux est déjà passé",

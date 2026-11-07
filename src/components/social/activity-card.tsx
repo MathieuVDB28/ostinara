@@ -243,8 +243,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
   const isOwn = activity.user_id === currentUserId;
   const [playing, setPlaying] = useState(false);
   const name = isOwn ? t("you") : activity.user.display_name || activity.user.username;
-  const companions = activity.rehearsalCompanions ?? [];
-  const message = companions.length > 0 ? t("rehearsalTogether") : activityMessage(activity.type, t, isOwn);
+  const message = activityMessage(activity.type, t, isOwn);
   const meta = activity.metadata ?? {};
   const phrase = instrumentPhrase(meta.instrument, te);
   // Accordage, tempo vise, capo, difficulte : ce qu'un ami veut savoir avant de s'y mettre.
@@ -275,12 +274,7 @@ export function ActivityCard({ activity, currentUserId }: ActivityCardProps) {
           >
             {name}
           </Link>
-          {companions.length > 0 &&
-            t("rehearsalCompanions", {
-              names: new Intl.ListFormat(intlLocale, { type: "conjunction" }).format(
-                companions.map((person) => person.display_name || person.username)
-              ),
-            })}{" "}
+{" "}
           <span className="text-muted-foreground">{message}</span>
         </p>
         <time dateTime={activity.created_at} className="shrink-0 text-xs text-muted-foreground">
