@@ -200,6 +200,8 @@
     "song": "Song",
     "section": "Section",
     "exercise": "Exercise",
+    "fromRepertoire": "From the band's repertoire",
+    "alreadyInSetlist": "Already in the setlist",
     "fromLibrary": "From your library",
     "searchSong": "Search for a song...",
     "noSong": "No songs found",

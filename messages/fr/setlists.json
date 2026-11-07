@@ -200,6 +200,8 @@
     "song": "Morceau",
     "section": "Section",
     "exercise": "Exercice",
+    "fromRepertoire": "Depuis le répertoire du groupe",
+    "alreadyInSetlist": "Déjà dans la setlist",
     "fromLibrary": "Depuis ta bibliothèque",
     "searchSong": "Rechercher un morceau...",
     "noSong": "Aucun morceau trouvé",

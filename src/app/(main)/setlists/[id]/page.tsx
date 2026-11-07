@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getSetlist, getSetlistHistory } from "@/lib/actions/setlists";
 import { getBand, getBandMembersSongs } from "@/lib/actions/bands";
+import { getBandSongs } from "@/lib/actions/band-songs";
 import { getSetlistReadiness } from "@/lib/actions/rehearsal-logs";
 import { getSetlistMemberReadiness } from "@/lib/actions/setlist-member-readiness";
 import { bandStatus } from "@/lib/band-access";
@@ -46,14 +47,16 @@ export default async function SetlistPage({ params }: SetlistPageProps) {
   let readOnly = false;
   let readiness = null;
   let memberReadiness = null;
+  let bandSongs = null;
   if (setlist.band_id) {
     let band;
-    [songSources, history, band, readiness, memberReadiness] = await Promise.all([
+    [songSources, history, band, readiness, memberReadiness, bandSongs] = await Promise.all([
       getBandMembersSongs(setlist.band_id),
       getSetlistHistory(setlist.id),
       getBand(setlist.band_id),
       getSetlistReadiness(setlist.band_id, setlist.items ?? []),
       getSetlistMemberReadiness(setlist.id),
+      getBandSongs(setlist.band_id),
     ]);
     readOnly = !band || bandStatus(band) === "read_only";
   } else {
@@ -69,6 +72,7 @@ export default async function SetlistPage({ params }: SetlistPageProps) {
       history={history}
       readiness={readiness}
       memberReadiness={memberReadiness}
+      bandSongs={bandSongs}
       readOnly={readOnly}
     />
   );

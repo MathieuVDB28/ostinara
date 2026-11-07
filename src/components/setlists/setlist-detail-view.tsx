@@ -57,6 +57,7 @@ import type {
   Profile,
   Song,
   UserPlan,
+  BandSongListItem,
 } from "@/types";
 
 interface SetlistDetailViewProps {
@@ -70,6 +71,8 @@ interface SetlistDetailViewProps {
   /** Setlist de groupe seulement : ou en est chaque morceau, d'apres les repetes. */
   readiness?: SetlistReadiness | null;
   memberReadiness?: SetlistMemberReadiness | null;
+  /** Setlist de groupe seulement : le repertoire, pour y piocher. */
+  bandSongs?: BandSongListItem[] | null;
 }
 
 function formatDuration(seconds: number, t: CommonT): string {
@@ -114,6 +117,7 @@ export function SetlistDetailView({
   history = null,
   readiness = null,
   memberReadiness = null,
+  bandSongs = null,
   readOnly = false,
 }: SetlistDetailViewProps) {
   const t = useTranslations("setlists.detail");
@@ -460,6 +464,8 @@ export function SetlistDetailView({
         setlistId={setlist.id}
         position={items.length + 1}
         songSources={songSources}
+        bandSongs={bandSongs ?? []}
+        bandSongIdsInSetlist={items.map((item) => item.band_song_id).filter((id): id is string => Boolean(id))}
       />
 
       <EditItemModal

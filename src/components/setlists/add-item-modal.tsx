@@ -5,8 +5,12 @@ import { useTranslations } from "next-intl";
 import { ALL_EXERCISE_CATEGORIES } from "@/lib/instruments";
 import { addSetlistItem } from "@/lib/actions/setlists";
 import { getExercises } from "@/lib/actions/exercises";
+import { formatMusicalKey } from "@/lib/band-songs";
+import { rehearsalSongKey } from "@/lib/rehearsal-log";
+import { Cover } from "@/components/ui/cover";
 import {
   SECTION_PRESETS,
+  type BandSongListItem,
   type Song,
   type Profile,
   type ExerciseWithProgress,
@@ -20,6 +24,10 @@ interface AddItemModalProps {
   setlistId: string;
   position: number;
   songSources: { member: Profile | null; songs: Song[] }[];
+  /** Setlist de groupe : le repertoire, propose en premier. */
+  bandSongs?: BandSongListItem[];
+  /** Les fiches deja presentes dans la setlist. */
+  bandSongIdsInSetlist?: string[];
 }
 
 type Tab = "song" | "section" | "exercise";
@@ -31,11 +39,14 @@ export function AddItemModal({
   setlistId,
   position,
   songSources,
+  bandSongs = [],
+  bandSongIdsInSetlist = [],
 }: AddItemModalProps) {
   const t = useTranslations("setlists.add");
   const tp = useTranslations("setlists.presets");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
+  const tr = useTranslations("repertoire");
   const [tab, setTab] = useState<Tab>("song");
   const [query, setQuery] = useState("");
   const [catalogQuery, setCatalogQuery] = useState("");
@@ -192,6 +203,37 @@ export function AddItemModal({
           song.artist.toLowerCase().includes(query.toLowerCase())
       )
     : allSongs;
+
+  // Sans accents ni ponctuation, comme le repertoire lui-meme.
+  const needle = rehearsalSongKey(query, "").replace(/\|$/, "");
+  const filteredBandSongs = needle
+    ? bandSongs.filter((song) => rehearsalSongKey(song.title, song.artist).includes(needle))
+    : bandSongs;
+
+  // La ligne reste vide : elle joue les valeurs de la fiche (tempo, sections, tab).
+  const handleAddBandSong = async (song: BandSongListItem) => {
+    setAdding(true);
+    setError(null);
+
+    const result = await addSetlistItem({
+      setlist_id: setlistId,
+      position,
+      item_type: "song",
+      band_song_id: song.id,
+      song_title: song.title,
+      song_artist: song.artist ?? undefined,
+      song_cover_url: song.cover_url ?? undefined,
+    });
+
+    setAdding(false);
+
+    if (result.success) {
+      onSuccess();
+      onClose();
+    } else {
+      setError(result.error || tc("genericError"));
+    }
+  };
 
   const handleAddSong = async (
     song: Song & { owner: Profile | null }
@@ -451,8 +493,8 @@ export function AddItemModal({
             <div className="space-y-4">
               {/* Library search */}
               <div>
-                <label className="mb-2 block text-sm font-medium">
-                  {t("fromLibrary")}
+                <label htmlFor="add-item-song-search" className="mb-2 block text-sm font-medium">
+                  {bandSongs.length > 0 ? t("fromRepertoire") : t("fromLibrary")}
                 </label>
                 <div className="relative">
                   <svg
@@ -469,6 +511,7 @@ export function AddItemModal({
                     />
                   </svg>
                   <input
+                    id="add-item-song-search"
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -476,6 +519,41 @@ export function AddItemModal({
                     className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary"
                   />
                 </div>
+                {bandSongs.length > 0 && (
+                  <div className="mt-2 max-h-56 space-y-1 overflow-y-auto">
+                    {filteredBandSongs.slice(0, 20).map((song) => {
+                      const already = bandSongIdsInSetlist.includes(song.id);
+                      const details = [
+                        song.artist,
+                        formatMusicalKey(song.key_note, song.key_mode, tr),
+                        song.bpm ? tr("bpm", { bpm: song.bpm }) : null,
+                      ].filter(Boolean);
+                      return (
+                        <button
+                          key={song.id}
+                          onClick={() => handleAddBandSong(song)}
+                          disabled={adding}
+                          className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-accent disabled:opacity-50"
+                        >
+                          <Cover src={song.cover_url} className="h-10 w-10 rounded" />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">{song.title}</p>
+                            <p className="truncate text-xs text-muted-foreground">{details.join(" · ")}</p>
+                          </div>
+                          {already && (
+                            <span className="shrink-0 text-[11px] text-muted-foreground">{t("alreadyInSetlist")}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                    {filteredBandSongs.length === 0 && query && (
+                      <p className="py-2 text-center text-sm text-muted-foreground">{t("noSong")}</p>
+                    )}
+                  </div>
+                )}
+                {bandSongs.length > 0 && (
+                  <p className="mt-4 mb-1 text-sm font-medium">{t("fromLibrary")}</p>
+                )}
                 <div className="mt-2 max-h-40 space-y-1 overflow-y-auto">
                   {filteredSongs.slice(0, 10).map((song) => (
                     <button

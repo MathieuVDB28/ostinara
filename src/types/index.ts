@@ -1281,6 +1281,8 @@ export interface CreateSetlistItemInput {
   song_artist?: string;
   song_cover_url?: string;
   song_owner_id?: string;
+  /** Un morceau choisi dans le repertoire du groupe (verifie par la base). */
+  band_song_id?: string;
 
   // For sections
   section_name?: string;
