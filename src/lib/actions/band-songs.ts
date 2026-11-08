@@ -23,7 +23,7 @@ import type {
   SongStatus,
 } from "@/types";
 
-const LIST_COLUMNS = "id, title, artist, cover_url, key_note, key_mode, bpm, updated_at";
+const LIST_COLUMNS = "id, title, artist, cover_url, deezer_id, key_note, key_mode, bpm, updated_at";
 
 function revalidateRepertoire(bandId: string, bandSongId?: string) {
   revalidatePath(`/commu/groupes/${bandId}`);

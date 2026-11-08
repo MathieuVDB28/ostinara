@@ -411,6 +411,8 @@ export function SetlistDetailView({
 
         {items.length > 0 ? (
           <DndContext
+            // Id fixe : sinon les attributs aria generes different entre serveur et client.
+            id="setlist-items"
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}

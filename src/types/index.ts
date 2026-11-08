@@ -1208,7 +1208,7 @@ export type BandSongDefaults = Pick<
 
 export type BandSongListItem = Pick<
   BandSong,
-  "id" | "title" | "artist" | "cover_url" | "key_note" | "key_mode" | "bpm" | "updated_at"
+  "id" | "title" | "artist" | "cover_url" | "deezer_id" | "key_note" | "key_mode" | "bpm" | "updated_at"
 >;
 
 export interface BandSongMember {

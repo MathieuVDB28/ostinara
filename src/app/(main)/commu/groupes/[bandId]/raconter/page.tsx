@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getBand } from "@/lib/actions/bands";
+import { getBandSongs } from "@/lib/actions/band-songs";
 import { getShareSessionsDefault } from "@/lib/actions/practice";
 import { getBandRehearsalJournal, getRehearsalLog } from "@/lib/actions/rehearsal-logs";
 import { getRehearsal } from "@/lib/actions/rehearsals";
@@ -36,9 +37,10 @@ export default async function RaconterRepetePage({
     redirect(`/setlists/rehearsals/${rehearsal.id}`);
   }
 
-  const [log, journal] = await Promise.all([
+  const [log, journal, repertoire] = await Promise.all([
     rehearsal ? getRehearsalLog(rehearsal.id) : null,
     rehearsal ? null : getBandRehearsalJournal(bandId),
+    getBandSongs(bandId),
   ]);
 
   return (
@@ -50,6 +52,7 @@ export default async function RaconterRepetePage({
       log={log}
       unlogged={journal?.unlogged ?? []}
       shareDefault={shareDefault}
+      repertoire={repertoire}
     />
   );
 }

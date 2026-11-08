@@ -9,6 +9,7 @@ import { Cover } from "@/components/ui/cover";
 import { useMyInstruments } from "@/components/providers/instruments-provider";
 import { saveRehearsalLog } from "@/lib/actions/rehearsal-logs";
 import { isInFuture, toLocalInput } from "@/lib/datetime-local";
+import { formatMusicalKey } from "@/lib/band-songs";
 import { bandPosteLabel } from "@/lib/instruments";
 import {
   REHEARSAL_DEFAULT_MINUTES,
@@ -26,6 +27,7 @@ import {
 } from "./rehearsal-carnet-fields";
 import { RehearsalVerdictPicker } from "./rehearsal-verdict-picker";
 import type {
+  BandSongListItem,
   BandWithMembers,
   Instrument,
   RehearsalLogDetails,
@@ -45,6 +47,8 @@ interface RehearsalLogFormProps {
   /** Passees et pas encore racontees : pour ne pas raconter deux fois la meme. */
   unlogged: { id: string; title: string; date: string }[];
   shareDefault: boolean;
+  /** Le repertoire du groupe, propose avant le catalogue. */
+  repertoire: BandSongListItem[];
 }
 
 interface FormSong {
@@ -114,8 +118,10 @@ export function RehearsalLogForm({
   log,
   unlogged,
   shareDefault,
+  repertoire,
 }: RehearsalLogFormProps) {
   const t = useTranslations("rehearsals.log");
+  const tr = useTranslations("repertoire");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
   const intlLocale = useIntlLocale();
@@ -205,6 +211,13 @@ export function RehearsalLogForm({
       controller.abort();
     };
   }, [trimmedQuery]);
+
+  // Le repertoire, filtre comme il se range : sans accents ni ponctuation.
+  const needle = rehearsalSongKey(trimmedQuery).replace(/\|$/, "");
+  const repertoireMatches = needle
+    ? repertoire.filter((song) => rehearsalSongKey(song.title, song.artist).includes(needle))
+    : repertoire;
+  const songKeys = new Set(songs.map((song) => song.key));
 
   const toggleAttendee = (userId: string) => {
     setAttendeeIds((current) =>
@@ -512,6 +525,53 @@ export function RehearsalLogForm({
             autoComplete="off"
             className={INPUT}
           />
+          {repertoire.length > 0 && (
+            <div className="mt-2">
+              <p className="text-xs font-semibold text-muted-foreground">{t("fromRepertoire")}</p>
+              <ul className="mt-1 max-h-72 divide-y divide-border overflow-y-auto">
+                {repertoireMatches.slice(0, 20).map((song) => {
+                  const already = songKeys.has(rehearsalSongKey(song.title, song.artist));
+                  const details = [
+                    song.artist,
+                    formatMusicalKey(song.key_note, song.key_mode, tr),
+                    song.bpm ? tr("bpm", { bpm: song.bpm }) : null,
+                  ].filter(Boolean);
+                  return (
+                    <li key={song.id}>
+                      <button
+                        type="button"
+                        disabled={already}
+                        onClick={() =>
+                          addSong({
+                            title: song.title,
+                            artist: song.artist ?? null,
+                            cover_url: song.cover_url ?? null,
+                            deezer_id: song.deezer_id ?? null,
+                          })
+                        }
+                        className="flex min-h-[52px] w-full items-center gap-3 py-2 text-left hover:bg-accent/50 disabled:cursor-default disabled:hover:bg-transparent"
+                      >
+                        <Cover src={song.cover_url} className="h-9 w-9 shrink-0 rounded-[3px]" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold">{song.title}</span>
+                          <span className="block truncate text-xs text-muted-foreground">{details.join(" · ")}</span>
+                        </span>
+                        {already && (
+                          <span className="shrink-0 text-[11px] text-muted-foreground">{t("alreadyInList")}</span>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+                {repertoireMatches.length === 0 && (
+                  <li className="py-2 text-sm text-muted-foreground">{t("noRepertoireMatch")}</li>
+                )}
+              </ul>
+            </div>
+          )}
+          {trimmedQuery.length >= 2 && repertoire.length > 0 && (
+            <p className="mt-3 text-xs font-semibold text-muted-foreground">{t("fromCatalog")}</p>
+          )}
           {trimmedQuery.length >= 2 && (
             <ul className="mt-1 max-h-72 divide-y divide-border overflow-y-auto">
               {results.slice(0, 6).map((result) => (
