@@ -170,6 +170,6 @@
     "title": "Mes stats et données",
     "hint": "Tes stats de pratique en CSV, prêtes pour un tableur (résumé, temps par morceau, par mois et par instrument, sessions, morceaux, exercices), et toutes tes données en JSON. Sans les fichiers audio et vidéo.",
     "download": "Télécharger mes stats",
-    "upsell": "Export de tes données"
+    "upsell": "Export de tes stats et données"
   }
 }

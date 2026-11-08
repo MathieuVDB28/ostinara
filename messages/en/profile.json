@@ -170,6 +170,6 @@
     "title": "My stats and data",
     "hint": "Your practice stats as CSV, ready for a spreadsheet (summary, time per song, per month and per instrument, sessions, songs, exercises), plus all your data as JSON. Audio and video files aren't included.",
     "download": "Download my stats",
-    "upsell": "Export your data"
+    "upsell": "Export your stats and data"
   }
 }
