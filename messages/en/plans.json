@@ -34,6 +34,7 @@
     "everythingPro": "Everything in Pro",
     "bandSpaces": "Create and run your bands",
     "sharedSetlists": "Shared setlists",
+    "bandRecordings": "Demos and recordings, with comments down to the second (20 GB per band)",
     "bandBadge": "Band badge",
     "fivePeople": "5 people on one plan",
     "bandForAll": "Jams and chat open to the whole band (5 members max)"
@@ -85,7 +86,7 @@
     "faqTitle": "FAQ",
     "faq": {
       "shared": {
-        "q": "How do the 3 Band plan seats work?",
+        "q": "How do the 4 Band plan seats work?",
         "a": "The account holder offers 4 seats to friends or members of their bands. Each guest accepts and gets the full Band plan. If the holder cancels, guests go back to the Free plan at the end of the holder's billing period, and their bands become read-only 30 days later."
       },
       "change": {

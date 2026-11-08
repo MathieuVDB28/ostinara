@@ -77,7 +77,7 @@
       },
       "bands": {
         "name": "Bands",
-        "detail": "Rehearsals, RSVPs, reminders, chat, shared setlists"
+        "detail": "Rehearsals, RSVPs, reminders, chat, shared setlists, demos with comments"
       },
       "recognition": {
         "name": "Recognition",
@@ -115,7 +115,7 @@
       },
       "band": {
         "q": "What about my band?",
-        "a": "The Band plan adds band spaces: rehearsals with RSVPs and reminders, chat, shared setlists and synced jam sessions."
+        "a": "The Band plan adds band spaces: rehearsals with RSVPs and reminders, chat, shared setlists, demos and recordings with comments, and synced jam sessions."
       }
     },
     "footer": {

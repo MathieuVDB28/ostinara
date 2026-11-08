@@ -34,6 +34,7 @@
     "everythingPro": "Tout ce qui est dans Pro",
     "bandSpaces": "Créer et animer tes groupes",
     "sharedSetlists": "Setlists partagées",
+    "bandRecordings": "Démos et enregistrements, commentés à la seconde près (20 Go par groupe)",
     "bandBadge": "Badge Band",
     "fivePeople": "5 personnes sur un même plan",
     "bandForAll": "Jam et chat ouverts à tout le groupe (5 membres max)"
@@ -85,7 +86,7 @@
     "faqTitle": "Questions fréquentes",
     "faq": {
       "shared": {
-        "q": "Comment fonctionnent les 3 places du plan Band ?",
+        "q": "Comment fonctionnent les 4 places du plan Band ?",
         "a": "Le titulaire offre 4 places à des amis ou à des membres de ses groupes. Chaque invité accepte et profite de tout le plan Band. Si le titulaire résilie, les invités repassent au plan Free à la fin de sa période de facturation, et ses groupes passent en lecture seule 30 jours plus tard."
       },
       "change": {

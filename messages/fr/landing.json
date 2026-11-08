@@ -77,7 +77,7 @@
       },
       "bands": {
         "name": "Groupes",
-        "detail": "Répétitions, RSVP, rappels, chat, setlists partagées"
+        "detail": "Répétitions, RSVP, rappels, chat, setlists partagées, démos commentées"
       },
       "recognition": {
         "name": "Reconnaissance",
@@ -115,7 +115,7 @@
       },
       "band": {
         "q": "Et mon groupe ?",
-        "a": "Le plan Band ajoute les espaces groupe : répétitions avec RSVP et rappels, chat, setlists partagées et sessions de jam synchronisées."
+        "a": "Le plan Band ajoute les espaces groupe : répétitions avec RSVP et rappels, chat, setlists partagées, démos et enregistrements commentés, et sessions de jam synchronisées."
       }
     },
     "footer": {
