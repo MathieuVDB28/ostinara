@@ -4,9 +4,11 @@ import albums from "./albums.json";
 import audio from "./audio.json";
 import auth from "./auth.json";
 import badges from "./badges.json";
+import bandPublic from "./bandPublic.json";
 import blog from "./blog.json";
 import challenges from "./challenges.json";
 import common from "./common.json";
+import concerts from "./concerts.json";
 import covers from "./covers.json";
 import email from "./email.json";
 import enums from "./enums.json";
@@ -52,9 +54,11 @@ const messages = {
   "audio": audio,
   "auth": auth,
   "badges": badges,
+  "bandPublic": bandPublic,
   "blog": blog,
   "challenges": challenges,
   "common": common,
+  "concerts": concerts,
   "covers": covers,
   "email": email,
   "enums": enums,

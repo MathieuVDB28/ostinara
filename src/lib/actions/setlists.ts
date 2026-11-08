@@ -3,9 +3,11 @@
 import { tErr } from "@/i18n/server";
 import { revalidatePath } from "next/cache";
 import { BAND_SONG_DEFAULT_COLUMNS } from "@/lib/band-songs";
+import { CONCERT_CITY_MAX, cleanTicketUrl, isUpcomingConcert } from "@/lib/concerts";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import {
+  notifyBandConcert,
   notifyBandSetlistCreated,
   notifyBandSetlistDeleted,
   recordSetlistChange,
@@ -230,6 +232,21 @@ export async function createSetlistWithItems(
   return { success: true, setlistId: setlist.id };
 }
 
+/** Heure, ville et billetterie nettoyees ; une cle absente n'est pas touchee. */
+function concertFields(input: {
+  concert_time?: string | null;
+  city?: string | null;
+  ticket_url?: string | null;
+}): Record<string, string | null> {
+  const fields: Record<string, string | null> = {};
+  if (input.concert_time !== undefined) {
+    fields.concert_time = input.concert_time && /^\d{2}:\d{2}/.test(input.concert_time) ? input.concert_time.slice(0, 5) : null;
+  }
+  if (input.city !== undefined) fields.city = input.city?.trim().slice(0, CONCERT_CITY_MAX) || null;
+  if (input.ticket_url !== undefined) fields.ticket_url = cleanTicketUrl(input.ticket_url);
+  return fields;
+}
+
 // === Create a setlist ===
 export async function createSetlist(
   input: CreateSetlistInput
@@ -259,6 +276,7 @@ export async function createSetlist(
     .from("setlists")
     .insert({
       ...input,
+      ...concertFields(input),
       user_id: user.id,
       is_personal: !input.band_id,
     })
@@ -277,7 +295,19 @@ export async function createSetlist(
     metadata: { name: data.name, is_band: !!input.band_id },
   });
 
-  if (input.band_id) {
+  if (input.band_id && data.concert_date && isUpcomingConcert(data.concert_date)) {
+    // Une setlist qui nait avec sa date a venir : on annonce le concert, pas la setlist.
+    notifyBandConcert({
+      setlistId: data.id,
+      bandId: input.band_id,
+      authorId: user.id,
+      setlistName: data.name,
+      concertDate: data.concert_date,
+      concertTime: data.concert_time,
+      venue: data.venue,
+      city: data.city,
+    });
+  } else if (input.band_id) {
     notifyBandSetlistCreated({
       setlistId: data.id,
       bandId: input.band_id,
@@ -287,6 +317,7 @@ export async function createSetlist(
   }
 
   revalidatePath("/setlists");
+  if (input.band_id) revalidatePath(`/commu/groupes/${input.band_id}`);
   return { success: true, setlist: data as Setlist };
 }
 
@@ -302,20 +333,48 @@ export async function updateSetlist(
     return { success: false, error: await tErr("notAuthenticated") };
   }
 
-  const { error } = await supabase
+  // Avant : pour savoir si une date de concert vient d'etre posee.
+  const { data: before } = await supabase
     .from("setlists")
-    .update(input)
-    .eq("id", setlistId);
+    .select("band_id, concert_date")
+    .eq("id", setlistId)
+    .maybeSingle();
 
-  if (error) {
-    console.error("Error updating setlist:", error);
+  const { data, error } = await supabase
+    .from("setlists")
+    .update({ ...input, ...concertFields(input) })
+    .eq("id", setlistId)
+    .select("id, name, band_id, concert_date, concert_time, venue, city")
+    .maybeSingle();
+
+  if (error || !data) {
+    if (error) console.error("Error updating setlist:", error);
     return { success: false, error: await tErr("updateFailed") };
   }
 
   recordSetlistChange({ setlistId, authorId: user.id, kind: "details_updated" });
 
+  if (
+    data.band_id &&
+    data.concert_date &&
+    data.concert_date !== before?.concert_date &&
+    isUpcomingConcert(data.concert_date)
+  ) {
+    notifyBandConcert({
+      setlistId,
+      bandId: data.band_id,
+      authorId: user.id,
+      setlistName: data.name,
+      concertDate: data.concert_date,
+      concertTime: data.concert_time,
+      venue: data.venue,
+      city: data.city,
+    });
+  }
+
   revalidatePath("/setlists");
   revalidatePath(`/setlists/${setlistId}`);
+  if (data.band_id) revalidatePath(`/commu/groupes/${data.band_id}`);
   return { success: true };
 }
 

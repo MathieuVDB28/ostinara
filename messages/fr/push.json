@@ -236,5 +236,14 @@
   "bandRecordingReply": {
     "title": "{name} t'a répondu",
     "body": "« {title} », à {time} : {text}"
+  },
+  "bandConcert": {
+    "title": "{band} : nouveau concert",
+    "body": "{name} a ajouté un concert le {when} (« {setlist} »).",
+    "bodyPlace": "{name} a ajouté un concert le {when} à {place}."
+  },
+  "bandConcertReminder": {
+    "title": "{band} : concert demain",
+    "body": "« {setlist} »{hasTime, select, yes { à {time}} other {}}{hasPlace, select, yes {, {place}} other {}}. Bon concert !"
   }
 }

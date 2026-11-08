@@ -1,0 +1,40 @@
+{
+  "card": {
+    "title": "Public page",
+    "online": "Online",
+    "hidden": "Hidden",
+    "onlineHint": "Anyone can see the band's intro, line-up, gigs and what you played at them. The tech rider and everything else stay between you.",
+    "hiddenHint": "The page is hidden: nobody outside the band can see it.",
+    "readOnlyHint": "Hidden while the band is read-only.",
+    "address": "Address",
+    "addressHint": "Letters, numbers and hyphens. The old address will stop working.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "open": "View page",
+    "hide": "Hide the page",
+    "show": "Put it back online",
+    "changeAddress": "Change address"
+  },
+  "intro": {
+    "title": "Your band now has a public page",
+    "bodyAdmin": "Intro, line-up and gigs, visible to everyone. You can hide it or change its address further down this page.",
+    "bodyMember": "Intro, line-up (everyone's username and role) and gigs, visible to everyone. The owner and admins can hide it.",
+    "see": "View page",
+    "dismiss": "Close"
+  },
+  "page": {
+    "eyebrow": "Band",
+    "upcoming": "Upcoming gigs",
+    "noUpcoming": "No gigs announced yet.",
+    "tickets": "Tickets",
+    "lineup": "Line-up",
+    "past": "Past gigs",
+    "songCount": "{count, plural, one {# song} other {# songs}}",
+    "poweredBy": "This band gets organised with Ostinara: rehearsals, setlists and everyone's progress.",
+    "discover": "Discover Ostinara",
+    "metaTitle": "{name}: gigs and line-up | Ostinara",
+    "metaDescription": "{count, plural, =0 {{name} on Ostinara: line-up and gigs.} one {{name}: # upcoming gig, line-up and setlists.} other {{name}: # upcoming gigs, line-up and setlists.}}"
+  }
+}

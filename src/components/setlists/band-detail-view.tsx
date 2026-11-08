@@ -21,6 +21,8 @@ import { BandChatPanel } from "@/components/rehearsals/band-chat-panel";
 import { BandTransfer } from "./band-transfer";
 import { BandRepertoireSection } from "@/components/repertoire/band-repertoire-section";
 import { BandRecordingsSection } from "@/components/recordings/band-recordings-section";
+import { BandConcertsSection } from "@/components/concerts/band-concerts-section";
+import { BandPublicPageCard, BandPublicPageIntro } from "@/components/concerts/band-public-page-card";
 import { OfferSeatButton } from "./offer-seat-button";
 import { ChatSheet } from "@/components/ui/chat-sheet";
 import { BAND_MAX_MEMBERS, type BandStatus } from "@/lib/band-access";
@@ -34,6 +36,7 @@ import type {
   JamSessionWithDetails,
   BandMessageWithProfile,
   RehearsalPoll,
+  BandConcert,
   BandRecordingListItem,
   BandSongListItem,
 } from "@/types";
@@ -51,6 +54,8 @@ interface BandDetailViewProps {
   repertoire: BandSongListItem[];
   /** Demos et enregistrements, du plus recent au plus ancien. */
   recordings: BandRecordingListItem[];
+  /** Les concerts (setlists datees), du plus ancien au plus recent. */
+  concerts: BandConcert[];
   currentUserId: string;
   /** Le chat general du groupe : les derniers messages, pour le plan Band. */
   messages: BandMessageWithProfile[];
@@ -78,6 +83,7 @@ export function BandDetailView({
   polls,
   repertoire,
   recordings,
+  concerts,
   currentUserId,
   messages,
   status,
@@ -223,6 +229,10 @@ export function BandDetailView({
         </div>
       )}
 
+      {!readOnly && band.public_page !== false && band.slug && (
+        <BandPublicPageIntro bandId={band.id} slug={band.slug} canManage={isAdmin} />
+      )}
+
       {activeJam && (
         <div className="flex items-center gap-3 border-y border-border py-3">
           <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-destructive" />
@@ -277,6 +287,8 @@ export function BandDetailView({
           />
         )}
       </section>
+
+      <BandConcertsSection bandId={band.id} concerts={concerts} readOnly={readOnly} />
 
       <BandRepertoireSection bandId={band.id} songs={repertoire} readOnly={readOnly} />
 
@@ -349,6 +361,16 @@ export function BandDetailView({
         currentUserId={currentUserId}
         readOnly={readOnly}
       />
+
+      {band.slug && (
+        <BandPublicPageCard
+          bandId={band.id}
+          slug={band.slug}
+          visible={band.public_page !== false}
+          canManage={isAdmin}
+          readOnly={readOnly}
+        />
+      )}
 
       <section>
         <h2 className={`border-b border-border pb-2 ${SECTION_TITLE}`}>

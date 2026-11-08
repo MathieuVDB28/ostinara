@@ -1,0 +1,40 @@
+{
+  "card": {
+    "title": "Page publique",
+    "online": "En ligne",
+    "hidden": "Masquée",
+    "onlineHint": "Tout le monde peut voir la présentation du groupe, son line-up, ses concerts et ce que vous y avez joué. La fiche technique et le reste restent entre vous.",
+    "hiddenHint": "La page est masquée : personne ne la voit en dehors du groupe.",
+    "readOnlyHint": "Masquée tant que le groupe est en lecture seule.",
+    "address": "Adresse",
+    "addressHint": "Lettres, chiffres et tirets. L'ancienne adresse ne mènera plus nulle part.",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "copy": "Copier le lien",
+    "copied": "Lien copié",
+    "open": "Voir la page",
+    "hide": "Masquer la page",
+    "show": "Remettre en ligne",
+    "changeAddress": "Changer l'adresse"
+  },
+  "intro": {
+    "title": "Ton groupe a maintenant une page publique",
+    "bodyAdmin": "Présentation, line-up et concerts, visibles par tout le monde. Tu peux la masquer ou changer son adresse plus bas sur cette page.",
+    "bodyMember": "Présentation, line-up (pseudo et poste de chacun) et concerts, visibles par tout le monde. Le titulaire et les admins peuvent la masquer.",
+    "see": "Voir la page",
+    "dismiss": "Fermer"
+  },
+  "page": {
+    "eyebrow": "Groupe",
+    "upcoming": "Concerts à venir",
+    "noUpcoming": "Pas de concert annoncé pour l'instant.",
+    "tickets": "Billets",
+    "lineup": "Line-up",
+    "past": "Concerts passés",
+    "songCount": "{count, plural, one {# morceau} other {# morceaux}}",
+    "poweredBy": "Ce groupe s'organise avec Ostinara : répètes, setlists et progression de chacun.",
+    "discover": "Découvrir Ostinara",
+    "metaTitle": "{name} : concerts et line-up | Ostinara",
+    "metaDescription": "{count, plural, =0 {Le groupe {name} sur Ostinara : line-up et concerts.} one {{name} : # concert à venir, line-up et setlists.} other {{name} : # concerts à venir, line-up et setlists.}}"
+  }
+}

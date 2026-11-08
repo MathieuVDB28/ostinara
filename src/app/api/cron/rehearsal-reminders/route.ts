@@ -135,13 +135,67 @@ async function sendPollReminders(now: Date): Promise<{ sent: number; errors: num
 }
 
 // Runs once daily at ~9h UTC. Sends both "today" and "tomorrow" reminders.
+/**
+ * La veille d'un concert (jour de Paris) : tous les membres du groupe sont
+ * prevenus. Le cron tourne une fois par jour.
+ */
+async function sendConcertReminders(now: Date): Promise<{ sent: number; errors: number }> {
+  const tomorrow = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(
+    new Date(now.getTime() + 24 * 60 * 60 * 1000)
+  );
+  const { data: concerts, error } = await supabaseAdmin
+    .from("setlists")
+    .select("id, name, band_id, concert_time, venue, city, band:bands(name, members:band_members(user_id))")
+    .not("band_id", "is", null)
+    .eq("concert_date", tomorrow);
+  if (error) {
+    console.error("Error fetching concerts to remind:", error);
+    return { sent: 0, errors: 1 };
+  }
+
+  let sent = 0;
+  let errors = 0;
+  for (const concert of concerts ?? []) {
+    const band = concert.band as unknown as { name: string; members: { user_id: string }[] } | null;
+    const ids = (band?.members ?? []).map((member) => member.user_id);
+    if (ids.length === 0) continue;
+    const place = [concert.venue, concert.city].filter(Boolean).join(", ");
+    const time = concert.concert_time ? String(concert.concert_time).slice(0, 5) : null;
+    try {
+      const result = await sendPushNotificationToMultipleUsers(
+        ids.map((userId) => ({
+          userId,
+          payload: (t: PushT) => ({
+            title: t("bandConcertReminder.title", { band: band?.name ?? "" }),
+            body: t("bandConcertReminder.body", {
+              setlist: concert.name,
+              time: time ?? "",
+              place,
+              hasTime: time ? "yes" : "no",
+              hasPlace: place ? "yes" : "no",
+            }),
+            tag: `band-concert-reminder-${concert.id}`,
+            data: { url: `/setlists/${concert.id}` },
+          }),
+          notificationType: "band_concert_reminder",
+        }))
+      );
+      sent += result.totalSuccess;
+    } catch (err) {
+      console.error("Error sending concert reminders:", err);
+      errors += 1;
+    }
+  }
+  return { sent, errors };
+}
+
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const now = new Date();
-  const results = { reminders: 0, today: 0, polls: 0, errors: 0 };
+  const results = { reminders: 0, today: 0, polls: 0, concerts: 0, errors: 0 };
 
   // === Today's rehearsals (anything today that hasn't passed yet) ===
   const todayStart = new Date(now);
@@ -205,6 +259,10 @@ export async function GET(request: NextRequest) {
   const pollResults = await sendPollReminders(now);
   results.polls = pollResults.sent;
   results.errors += pollResults.errors;
+
+  const concertResults = await sendConcertReminders(now);
+  results.concerts = concertResults.sent;
+  results.errors += concertResults.errors;
 
   return NextResponse.json({
     success: true,

@@ -7,6 +7,7 @@ import { getBandRehearsalJournal } from "@/lib/actions/rehearsal-logs";
 import { getBandPolls } from "@/lib/actions/rehearsal-polls";
 import { getBandSongs } from "@/lib/actions/band-songs";
 import { getBandRecordings } from "@/lib/actions/band-recordings";
+import { getBandConcerts } from "@/lib/actions/band-public";
 import { getActiveJamSession } from "@/lib/actions/jam-sessions";
 import { getBandMessages } from "@/lib/actions/band-messages";
 import { bandGraceEnd, bandStatus } from "@/lib/band-access";
@@ -26,7 +27,7 @@ export default async function BandDetailPage({
     return null;
   }
 
-  const [band, allSetlists, rehearsals, activeJam, messages, seats, journal, polls, repertoire, recordings] = await Promise.all([
+  const [band, allSetlists, rehearsals, activeJam, messages, seats, journal, polls, repertoire, recordings, concerts] = await Promise.all([
     getBand(bandId),
     getSetlists(),
     getBandRehearsals(bandId),
@@ -38,6 +39,7 @@ export default async function BandDetailPage({
     getBandPolls(bandId),
     getBandSongs(bandId),
     getBandRecordings(bandId),
+    getBandConcerts(bandId),
   ]);
 
   if (!band) {
@@ -62,6 +64,7 @@ export default async function BandDetailPage({
       polls={polls}
       repertoire={repertoire}
       recordings={recordings}
+      concerts={concerts}
       currentUserId={user.id}
       messages={messages}
       canOfferSeat={canOfferSeat}

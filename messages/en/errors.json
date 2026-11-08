@@ -202,5 +202,9 @@
   "bandRecordingFileTooLarge": "File too large: 500 MB max.",
   "bandRecordingTitleRequired": "Give the recording a title.",
   "recordingCommentRequired": "Write your comment.",
-  "recordingCommentTime": "Pick a moment in the recording."
+  "recordingCommentTime": "Pick a moment in the recording.",
+  "concertNotFound": "Gig not found",
+  "bandSlugInvalid": "Invalid address: 3 to 60 characters, letters, numbers and hyphens.",
+  "bandSlugTaken": "This address is already taken.",
+  "bandPublicPageForbidden": "Only the owner and admins of an active band can manage its public page."
 }

@@ -1039,6 +1039,10 @@ export interface Band {
   owner_id: string;
   /** Depuis quand le titulaire n'a plus le plan Band. Tenu par la base. */
   plan_lapsed_at?: string | null;
+  /** Adresse de la page publique (/groupe/<slug>), tenue par la base. */
+  slug?: string;
+  /** Page publique visible (masquee aussi en lecture seule, cote base). */
+  public_page?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -1117,7 +1121,11 @@ export interface Setlist {
   name: string;
   description?: string;
   concert_date?: string;
+  /** « HH:MM:SS », heure locale du concert. */
+  concert_time?: string | null;
   venue?: string;
+  city?: string | null;
+  ticket_url?: string | null;
   band_id?: string;
   user_id: string;
   is_personal: boolean;
@@ -1318,16 +1326,65 @@ export interface CreateSetlistInput {
   name: string;
   description?: string;
   concert_date?: string;
+  concert_time?: string | null;
   venue?: string;
+  city?: string | null;
+  ticket_url?: string | null;
   band_id?: string;
   is_personal?: boolean;
 }
 
+/** `null` efface la valeur ; une cle absente n'y touche pas. */
 export interface UpdateSetlistInput {
   name?: string;
-  description?: string;
-  concert_date?: string;
-  venue?: string;
+  description?: string | null;
+  concert_date?: string | null;
+  concert_time?: string | null;
+  venue?: string | null;
+  city?: string | null;
+  ticket_url?: string | null;
+}
+
+// === Concerts et page publique du groupe (F7) ===
+export interface BandConcert {
+  id: string;
+  name: string;
+  concert_date: string;
+  concert_time: string | null;
+  venue: string | null;
+  city: string | null;
+  ticket_url: string | null;
+}
+
+export interface PublicBandMember {
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  is_private: boolean;
+  instrument: Instrument | null;
+  instrument_label: string | null;
+  role: BandMemberRole;
+}
+
+export interface PublicBandConcert {
+  name: string;
+  date: string;
+  time: string | null;
+  venue: string | null;
+  city: string | null;
+  ticket_url?: string | null;
+  songs?: { title: string; artist: string | null }[];
+}
+
+export interface PublicBand {
+  name: string;
+  description: string | null;
+  cover_url: string | null;
+  slug: string;
+  updated_at: string;
+  members: PublicBandMember[];
+  upcoming: PublicBandConcert[];
+  past: PublicBandConcert[];
 }
 
 export interface CreateSetlistItemInput {

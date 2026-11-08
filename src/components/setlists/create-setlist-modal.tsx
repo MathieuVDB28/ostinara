@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { createSetlist } from "@/lib/actions/setlists";
+import { ConcertExtraFields, type ConcertExtraValues } from "@/components/concerts/concert-extra-fields";
 import type { BandWithMembers } from "@/types";
 
 interface CreateSetlistModalProps {
@@ -10,6 +11,10 @@ interface CreateSetlistModalProps {
   onClose: () => void;
   onSuccess: () => void;
   bands: BandWithMembers[];
+  /** Depuis la page d'un groupe : la setlist lui appartient d'office. */
+  presetBandId?: string;
+  /** « Ajouter un concert » : la date est demandee. */
+  concert?: boolean;
 }
 
 export function CreateSetlistModal({
@@ -17,14 +22,18 @@ export function CreateSetlistModal({
   onClose,
   onSuccess,
   bands,
+  presetBandId,
+  concert = false,
 }: CreateSetlistModalProps) {
   const t = useTranslations("setlists.createSetlist");
+  const tcon = useTranslations("concerts");
   const tc = useTranslations("common");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [concertDate, setConcertDate] = useState("");
   const [venue, setVenue] = useState("");
-  const [bandId, setBandId] = useState<string>("");
+  const [bandId, setBandId] = useState<string>(presetBandId ?? "");
+  const [extra, setExtra] = useState<ConcertExtraValues>({ time: "", city: "", ticketUrl: "" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +46,8 @@ export function CreateSetlistModal({
       setDescription("");
       setConcertDate("");
       setVenue("");
-      setBandId("");
+      setBandId(presetBandId ?? "");
+      setExtra({ time: "", city: "", ticketUrl: "" });
       setError(null);
     }
   }
@@ -73,6 +83,14 @@ export function CreateSetlistModal({
       setError(tc("nameRequired"));
       return;
     }
+    if (concert && !concertDate) {
+      setError(tcon("dateRequired"));
+      return;
+    }
+    if (extra.ticketUrl.trim() && !/^https?:\/\//i.test(extra.ticketUrl.trim())) {
+      setError(tcon("fields.ticketInvalid"));
+      return;
+    }
 
     setSaving(true);
     setError(null);
@@ -82,6 +100,9 @@ export function CreateSetlistModal({
       description: description.trim() || undefined,
       concert_date: concertDate || undefined,
       venue: venue.trim() || undefined,
+      concert_time: concertDate ? extra.time || null : null,
+      city: concertDate ? extra.city.trim() || null : null,
+      ticket_url: concertDate ? extra.ticketUrl.trim() || null : null,
       band_id: bandId || undefined,
     });
 
@@ -104,10 +125,12 @@ export function CreateSetlistModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-md">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-md">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">{t("title")}</h2>
+          <h2 className="font-display text-3xl font-extrabold uppercase leading-none">
+            {concert ? tcon("newConcert") : t("title")}
+          </h2>
           <button aria-label={tc("close")}
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
@@ -168,6 +191,7 @@ export function CreateSetlistModal({
               </label>
               <input
                 type="date"
+                required={concert}
                 value={concertDate}
                 onChange={(e) => setConcertDate(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary"
@@ -187,8 +211,10 @@ export function CreateSetlistModal({
             </div>
           </div>
 
+          {concertDate && <ConcertExtraFields values={extra} onChange={setExtra} idPrefix="create-setlist" />}
+
           {/* Band selection (if user has bands) */}
-          {bands.length > 0 && (
+          {bands.length > 0 && !presetBandId && (
             <div>
               <label className="mb-1 block text-sm font-medium">
                 {t("band")}

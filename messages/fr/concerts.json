@@ -1,0 +1,21 @@
+{
+  "title": "Concerts",
+  "add": "Ajouter un concert",
+  "newConcert": "Nouveau concert",
+  "noUpcoming": "Aucun concert à venir. Pose une date sur une setlist du groupe, ou ajoute un concert.",
+  "past": "Passés",
+  "showAllPast": "Voir les {count} concerts passés",
+  "showLess": "Voir moins",
+  "tickets": "Billetterie",
+  "ticketsFor": "Billetterie de {name}",
+  "addToCalendar": "Ajouter à l'agenda",
+  "addToCalendarFor": "Ajouter {name} à l'agenda",
+  "dateRequired": "Indique la date du concert.",
+  "fields": {
+    "time": "Heure",
+    "city": "Ville",
+    "cityPlaceholder": "Ex : Lille",
+    "ticket": "Lien de billetterie",
+    "ticketInvalid": "Le lien doit commencer par https://"
+  }
+}

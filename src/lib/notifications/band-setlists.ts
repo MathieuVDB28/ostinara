@@ -110,6 +110,64 @@ export function notifyBandSetlistCreated(input: {
   });
 }
 
+// === Concert ===
+
+/**
+ * Une date posee sur une setlist de groupe : « nouveau concert », a la place
+ * de l'annonce de creation quand la setlist nait avec sa date.
+ */
+export function notifyBandConcert(input: {
+  setlistId: string;
+  bandId: string;
+  authorId: string;
+  setlistName: string;
+  concertDate: string;
+  concertTime?: string | null;
+  venue?: string | null;
+  city?: string | null;
+}) {
+  after(async () => {
+    try {
+      const db = admin();
+      const ids = await recipients(db, input.bandId, input.authorId);
+      if (ids.length === 0) return;
+      const [author, band] = await Promise.all([
+        displayName(db, input.authorId),
+        bandName(db, input.bandId),
+      ]);
+      const [y, m, d] = input.concertDate.split("-").map(Number);
+      const day = new Date(Date.UTC(y, m - 1, d));
+      const place = [input.venue, input.city].filter(Boolean).join(", ");
+
+      await sendPushNotificationToMultipleUsers(
+        ids.map((userId) => ({
+          userId,
+          notificationType: "band_concert",
+          payload: (t: PushT, locale: Locale) => {
+            const date = new Intl.DateTimeFormat(INTL_LOCALE[locale], {
+              timeZone: "UTC",
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            }).format(day);
+            const when = input.concertTime ? `${date}, ${input.concertTime.slice(0, 5)}` : date;
+            return {
+              title: t("bandConcert.title", { band }),
+              body: place
+                ? t("bandConcert.bodyPlace", { name: author ?? t("someone"), when, place })
+                : t("bandConcert.body", { name: author ?? t("someone"), when, setlist: input.setlistName }),
+              tag: `band-setlist-${input.setlistId}`,
+              data: { url: `/setlists/${input.setlistId}` },
+            };
+          },
+        }))
+      );
+    } catch (error) {
+      console.error("Error notifying band of new concert:", error);
+    }
+  });
+}
+
 // === Suppression ===
 
 export function notifyBandSetlistDeleted(input: {

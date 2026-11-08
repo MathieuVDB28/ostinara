@@ -202,5 +202,9 @@
   "bandRecordingFileTooLarge": "Fichier trop lourd : 500 Mo au plus.",
   "bandRecordingTitleRequired": "Donne un titre à l'enregistrement.",
   "recordingCommentRequired": "Écris ton commentaire.",
-  "recordingCommentTime": "Choisis un moment de l'enregistrement."
+  "recordingCommentTime": "Choisis un moment de l'enregistrement.",
+  "concertNotFound": "Concert introuvable",
+  "bandSlugInvalid": "Adresse invalide : 3 à 60 caractères, lettres, chiffres et tirets.",
+  "bandSlugTaken": "Cette adresse est déjà prise.",
+  "bandPublicPageForbidden": "Seuls le titulaire et les admins d'un groupe actif gèrent sa page publique."
 }

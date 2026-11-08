@@ -1,17 +1,19 @@
 import type { MetadataRoute } from "next";
 import { getPublishedSlugs } from "@/lib/actions/blog";
 import { getPublicTopicSlugs } from "@/lib/actions/forum";
+import { getPublicBandSlugs } from "@/lib/actions/band-public";
+import { bandPublicHref } from "@/lib/concerts";
 import { forumTopicUrl } from "@/lib/forum";
 import { blogPostUrl, siteUrl } from "@/lib/blog/categories";
 
 /**
  * Les pages publiques, pour les moteurs de recherche : l'accueil, la liste
  * d'attente, le blog et ses articles (avec leurs traductions), le forum et
- * ses sujets, le legal.
+ * ses sujets, les pages publiques des groupes, le legal.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
-  const [posts, topics] = await Promise.all([getPublishedSlugs(), getPublicTopicSlugs()]);
+  const [posts, topics, bands] = await Promise.all([getPublishedSlugs(), getPublicTopicSlugs(), getPublicBandSlugs()]);
 
   const byGroup = new Map<string, typeof posts>();
   for (const post of posts) {
@@ -39,6 +41,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(topic.last_activity_at),
       changeFrequency: "weekly" as const,
       priority: 0.6,
+    })),
+    ...bands.map((band) => ({
+      url: `${base}${bandPublicHref(band.slug)}`,
+      lastModified: new Date(band.updated_at),
+      changeFrequency: "weekly" as const,
+      priority: 0.5,
     })),
     { url: `${base}/cgu`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${base}/mentions-legales`, changeFrequency: "yearly", priority: 0.2 },

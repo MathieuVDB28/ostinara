@@ -3,5 +3,7 @@
   "participants": "Participants : {names}",
   "inOneHour": "Répète dans 1h : {title}",
   "tomorrow": "Répète demain : {title}",
-  "filename": "repete"
+  "filename": "repete",
+  "concertTomorrow": "Concert demain : {title}",
+  "concertFilename": "concert"
 }

@@ -23,6 +23,8 @@ const PUBLIC_PREFIXES = [
   '/blog',
   // Le forum aussi : on lit sans compte, il en faut un pour ecrire.
   '/forum',
+  // La page publique d'un groupe : sa vitrine, concerts compris.
+  '/groupe',
 ]
 
 const AUTH_ROUTES = ['/login', '/register']

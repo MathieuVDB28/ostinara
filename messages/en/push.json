@@ -236,5 +236,14 @@
   "bandRecordingReply": {
     "title": "{name} replied to you",
     "body": "\"{title}\", at {time}: {text}"
+  },
+  "bandConcert": {
+    "title": "{band}: new gig",
+    "body": "{name} added a gig on {when} (\"{setlist}\").",
+    "bodyPlace": "{name} added a gig on {when} at {place}."
+  },
+  "bandConcertReminder": {
+    "title": "{band}: gig tomorrow",
+    "body": "\"{setlist}\"{hasTime, select, yes { at {time}} other {}}{hasPlace, select, yes {, {place}} other {}}. Have a great show!"
   }
 }

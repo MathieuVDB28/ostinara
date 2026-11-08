@@ -6,6 +6,8 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { ConcertExtraFields, type ConcertExtraValues } from "@/components/concerts/concert-extra-fields";
+import { shortTime } from "@/lib/concerts";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import type { CommonT } from "@/i18n/types";
 import {
@@ -122,6 +124,7 @@ export function SetlistDetailView({
 }: SetlistDetailViewProps) {
   const t = useTranslations("setlists.detail");
   const tc = useTranslations("common");
+  const tcon = useTranslations("concerts");
   const intlLocale = useIntlLocale();
   const router = useRouter();
   const [setlist, setSetlist] = useState(initialSetlist);
@@ -139,6 +142,7 @@ export function SetlistDetailView({
     initialSetlist.concert_date || ""
   );
   const [venue, setVenue] = useState(initialSetlist.venue || "");
+  const [extra, setExtra] = useState<ConcertExtraValues>(() => concertExtra(initialSetlist));
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, setSaving] = useState(false);
   const [launchingJam, setLaunchingJam] = useState(false);
@@ -153,6 +157,7 @@ export function SetlistDetailView({
     setDescription(initialSetlist.description || "");
     setConcertDate(initialSetlist.concert_date || "");
     setVenue(initialSetlist.venue || "");
+    setExtra(concertExtra(initialSetlist));
   }
 
   // DnD sensors
@@ -190,11 +195,15 @@ export function SetlistDetailView({
 
   const handleSaveHeader = async () => {
     setSaving(true);
+    // null efface : vider la date retire le concert.
     await updateSetlist(setlist.id, {
       name: name.trim(),
-      description: description.trim() || undefined,
-      concert_date: concertDate || undefined,
-      venue: venue.trim() || undefined,
+      description: description.trim() || null,
+      concert_date: concertDate || null,
+      venue: venue.trim() || null,
+      concert_time: concertDate ? extra.time || null : null,
+      city: concertDate ? extra.city.trim() || null : null,
+      ticket_url: concertDate ? extra.ticketUrl.trim() || null : null,
     });
     setSaving(false);
     setIsEditingHeader(false);
@@ -301,6 +310,7 @@ export function SetlistDetailView({
                 />
               </div>
             </div>
+            {concertDate && <ConcertExtraFields values={extra} onChange={setExtra} idPrefix="edit-setlist" />}
             <div className="flex gap-2">
               <button
                 onClick={() => setIsEditingHeader(false)}
@@ -338,9 +348,37 @@ export function SetlistDetailView({
             <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-border py-3 sm:grid-cols-4">
               <SetStat label={t("statSongs")} value={String(songCount)} />
               <SetStat label={t("statDuration")} value={formatDuration(totalDuration, tc)} />
-              {setlist.concert_date && <SetStat label={t("statConcert")} value={formatDate(setlist.concert_date, intlLocale)} small />}
-              {setlist.venue && <SetStat label={t("statVenue")} value={setlist.venue} small />}
+              {setlist.concert_date && (
+                <SetStat
+                  label={t("statConcert")}
+                  value={
+                    setlist.concert_time
+                      ? `${formatDate(setlist.concert_date, intlLocale)} · ${shortTime(setlist.concert_time)}`
+                      : formatDate(setlist.concert_date, intlLocale)
+                  }
+                  small
+                />
+              )}
+              {(setlist.venue || setlist.city) && (
+                <SetStat label={t("statVenue")} value={[setlist.venue, setlist.city].filter(Boolean).join(", ")} small />
+              )}
             </dl>
+            {setlist.concert_date && (setlist.ticket_url || setlist.band_id) && (
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                {setlist.ticket_url && (
+                  <a href={setlist.ticket_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold hover:underline">
+                    <Icon name="open_in_new" className="h-3.5 w-3.5" />
+                    {tcon("tickets")}
+                  </a>
+                )}
+                {setlist.band_id && (
+                  <a href={`/api/setlists/${setlist.id}/ics`} className="inline-flex items-center gap-1 font-semibold hover:underline">
+                    <Icon name="calendar_add_on" className="h-3.5 w-3.5" />
+                    {tcon("addToCalendar")}
+                  </a>
+                )}
+              </div>
+            )}
 
             <div className="mt-4 flex flex-wrap gap-1.5">
               {!readOnly && (
@@ -479,4 +517,12 @@ export function SetlistDetailView({
       />
     </div>
   );
+}
+
+function concertExtra(setlist: { concert_time?: string | null; city?: string | null; ticket_url?: string | null }): ConcertExtraValues {
+  return {
+    time: shortTime(setlist.concert_time) ?? "",
+    city: setlist.city ?? "",
+    ticketUrl: setlist.ticket_url ?? "",
+  };
 }

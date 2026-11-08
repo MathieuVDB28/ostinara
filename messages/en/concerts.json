@@ -1,0 +1,21 @@
+{
+  "title": "Gigs",
+  "add": "Add a gig",
+  "newConcert": "New gig",
+  "noUpcoming": "No upcoming gigs. Put a date on a band setlist, or add a gig.",
+  "past": "Past",
+  "showAllPast": "See all {count} past gigs",
+  "showLess": "Show less",
+  "tickets": "Tickets",
+  "ticketsFor": "Tickets for {name}",
+  "addToCalendar": "Add to calendar",
+  "addToCalendarFor": "Add {name} to your calendar",
+  "dateRequired": "Enter the date of the gig.",
+  "fields": {
+    "time": "Time",
+    "city": "City",
+    "cityPlaceholder": "E.g. Manchester",
+    "ticket": "Ticket link",
+    "ticketInvalid": "The link must start with https://"
+  }
+}
