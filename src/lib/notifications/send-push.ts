@@ -102,6 +102,9 @@ export type NotificationType =
   | 'forum_reply'
   | 'forum_solved'
   | 'forum_mention'
+  | 'band_recording'
+  | 'band_recording_comment'
+  | 'band_recording_reply'
   | ReminderType;
 
 export async function sendPushNotification(

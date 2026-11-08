@@ -1246,6 +1246,67 @@ export interface BandSongInput {
   reference_url?: string | null;
 }
 
+// === Demos et enregistrements du groupe (F6) ===
+export type BandRecordingKind = "demo" | "rehearsal" | "concert" | "other";
+
+type RecordingAuthor = Pick<Profile, "id" | "username" | "display_name" | "avatar_url">;
+
+export interface BandRecording {
+  id: string;
+  band_id: string;
+  user_id: string | null;
+  title: string;
+  kind: BandRecordingKind;
+  note: string | null;
+  band_song_id: string | null;
+  rehearsal_id: string | null;
+  media_path: string;
+  media_type: "audio" | "video";
+  mime_type: string | null;
+  duration_seconds: number | null;
+  file_size_bytes: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BandRecordingListItem extends BandRecording {
+  author: RecordingAuthor | null;
+  band_song: { id: string; title: string; artist: string | null } | null;
+  rehearsal: { id: string; title: string | null; date: string } | null;
+  comment_count: number;
+}
+
+export interface BandRecordingComment {
+  id: string;
+  recording_id: string;
+  user_id: string | null;
+  parent_id: string | null;
+  start_seconds: number | null;
+  end_seconds: number | null;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  author: RecordingAuthor | null;
+}
+
+export interface BandRecordingDetails {
+  recording: BandRecordingListItem;
+  /** Lien signe pour la lecture, et un autre qui force le telechargement. */
+  mediaUrl: string | null;
+  downloadUrl: string | null;
+  comments: BandRecordingComment[];
+  /** Titulaire ou admin : peut supprimer ce que les autres ont poste. */
+  canModerate: boolean;
+}
+
+export interface BandRecordingInput {
+  title: string;
+  kind: BandRecordingKind;
+  note?: string | null;
+  band_song_id?: string | null;
+  rehearsal_id?: string | null;
+}
+
 export interface SetlistWithDetails extends Setlist {
   band?: Band;
   items: SetlistItemWithSongOwner[];

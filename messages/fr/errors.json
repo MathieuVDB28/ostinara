@@ -197,5 +197,10 @@
   "pollClosed": "Ce sondage est déjà fermé",
   "pollNotAllowed": "Seuls l'auteur du sondage, le titulaire et les admins du groupe peuvent faire ça",
   "pollSaveFailed": "Le sondage n'a pas pu être enregistré",
-  "pollVoteFailed": "Ta réponse n'a pas pu être enregistrée"
+  "pollVoteFailed": "Ta réponse n'a pas pu être enregistrée",
+  "bandRecordingStorageFull": "Le groupe a atteint ses 20 Go d'enregistrements. Supprimez-en pour faire de la place.",
+  "bandRecordingFileTooLarge": "Fichier trop lourd : 500 Mo au plus.",
+  "bandRecordingTitleRequired": "Donne un titre à l'enregistrement.",
+  "recordingCommentRequired": "Écris ton commentaire.",
+  "recordingCommentTime": "Choisis un moment de l'enregistrement."
 }

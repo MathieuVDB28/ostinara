@@ -197,5 +197,10 @@
   "pollClosed": "This poll is already closed",
   "pollNotAllowed": "Only the poll's author, the band owner and admins can do that",
   "pollSaveFailed": "The poll couldn't be saved",
-  "pollVoteFailed": "Your answer couldn't be saved"
+  "pollVoteFailed": "Your answer couldn't be saved",
+  "bandRecordingStorageFull": "The band has reached its 20 GB of recordings. Delete some to make room.",
+  "bandRecordingFileTooLarge": "File too large: 500 MB max.",
+  "bandRecordingTitleRequired": "Give the recording a title.",
+  "recordingCommentRequired": "Write your comment.",
+  "recordingCommentTime": "Pick a moment in the recording."
 }

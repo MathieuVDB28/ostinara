@@ -35,6 +35,7 @@ import practice from "./practice.json";
 import profile from "./profile.json";
 import progress from "./progress.json";
 import push from "./push.json";
+import recordings from "./recordings.json";
 import rehearsals from "./rehearsals.json";
 import repertoire from "./repertoire.json";
 import search from "./search.json";
@@ -82,6 +83,7 @@ const messages = {
   "profile": profile,
   "progress": progress,
   "push": push,
+  "recordings": recordings,
   "rehearsals": rehearsals,
   "repertoire": repertoire,
   "search": search,

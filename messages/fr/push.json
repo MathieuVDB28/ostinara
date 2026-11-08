@@ -224,5 +224,17 @@
   "rehearsalPollReminder": {
     "title": "{band} : on attend tes dispos",
     "body": "Le sondage « {title} » n'a pas encore ta réponse."
+  },
+  "bandRecording": {
+    "title": "{band} : nouvel enregistrement",
+    "body": "{name} a ajouté « {title} ». Écoute et dis ce que tu en penses."
+  },
+  "bandRecordingComment": {
+    "title": "{name} a commenté « {title} »",
+    "body": "À {time} : {text}"
+  },
+  "bandRecordingReply": {
+    "title": "{name} t'a répondu",
+    "body": "« {title} », à {time} : {text}"
   }
 }

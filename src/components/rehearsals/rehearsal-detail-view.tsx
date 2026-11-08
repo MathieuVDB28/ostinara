@@ -13,6 +13,7 @@ import {
 import { BandChatPanel } from "./band-chat-panel";
 import { RehearsalAttendanceCard } from "./rehearsal-attendance-card";
 import { RehearsalReport } from "./rehearsal-report";
+import { BandRecordingsSection } from "@/components/recordings/band-recordings-section";
 import { SetlistMemberReadinessPanel } from "./setlist-member-readiness-panel";
 import { RSVP_COLORS } from "@/types";
 import type {
@@ -21,6 +22,7 @@ import type {
   BandMessageWithProfile,
   RehearsalLogDetails,
   SetlistMemberReadiness,
+  BandRecordingListItem,
 } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { bandPosteLabel, instrumentMeta } from "@/lib/instruments";
@@ -35,6 +37,8 @@ interface RehearsalDetailViewProps {
   memberReadiness?: SetlistMemberReadiness | null;
   /** Groupe en lecture seule : le plan Band de son titulaire a pris fin. */
   readOnly?: boolean;
+  /** Les enregistrements relies a cette repete. */
+  recordings?: BandRecordingListItem[];
 }
 
 export function RehearsalDetailView({
@@ -45,6 +49,7 @@ export function RehearsalDetailView({
   shareDefault,
   memberReadiness = null,
   readOnly = false,
+  recordings = [],
 }: RehearsalDetailViewProps) {
   const t = useTranslations("rehearsals.detail");
   const tr = useTranslations("rehearsals.report");
@@ -326,6 +331,18 @@ export function RehearsalDetailView({
               durationMinutes={rehearsal.duration_minutes ?? null}
               currentUserId={currentUserId}
               readOnly={readOnly}
+            />
+          )}
+
+          {/* Une repete passee s'enregistre ; une repete a venir montre seulement ce qui y est deja relie. */}
+          {(isPast || isLogged || recordings.length > 0) && rehearsal.status !== "cancelled" && (
+            <BandRecordingsSection
+              bandId={rehearsal.band_id}
+              recordings={recordings}
+              readOnly={readOnly || !(isPast || isLogged)}
+              preview={50}
+              showSeeAll={false}
+              defaults={{ rehearsalId: rehearsal.id, title: rehearsal.title ?? undefined, kind: "rehearsal" }}
             />
           )}
 

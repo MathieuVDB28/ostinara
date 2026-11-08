@@ -224,5 +224,17 @@
   "rehearsalPollReminder": {
     "title": "{band}: waiting for your availability",
     "body": "The poll “{title}” is still missing your answer."
+  },
+  "bandRecording": {
+    "title": "{band}: new recording",
+    "body": "{name} added \"{title}\". Have a listen and say what you think."
+  },
+  "bandRecordingComment": {
+    "title": "{name} commented on \"{title}\"",
+    "body": "At {time}: {text}"
+  },
+  "bandRecordingReply": {
+    "title": "{name} replied to you",
+    "body": "\"{title}\", at {time}: {text}"
   }
 }

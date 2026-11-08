@@ -20,6 +20,7 @@ import { BandSetlistNotifications } from "./band-setlist-notifications";
 import { BandChatPanel } from "@/components/rehearsals/band-chat-panel";
 import { BandTransfer } from "./band-transfer";
 import { BandRepertoireSection } from "@/components/repertoire/band-repertoire-section";
+import { BandRecordingsSection } from "@/components/recordings/band-recordings-section";
 import { OfferSeatButton } from "./offer-seat-button";
 import { ChatSheet } from "@/components/ui/chat-sheet";
 import { BAND_MAX_MEMBERS, type BandStatus } from "@/lib/band-access";
@@ -33,6 +34,7 @@ import type {
   JamSessionWithDetails,
   BandMessageWithProfile,
   RehearsalPoll,
+  BandRecordingListItem,
   BandSongListItem,
 } from "@/types";
 import { Icon } from "@/components/ui/icon";
@@ -47,6 +49,8 @@ interface BandDetailViewProps {
   polls: RehearsalPoll[];
   /** Le repertoire du groupe, par titre. */
   repertoire: BandSongListItem[];
+  /** Demos et enregistrements, du plus recent au plus ancien. */
+  recordings: BandRecordingListItem[];
   currentUserId: string;
   /** Le chat general du groupe : les derniers messages, pour le plan Band. */
   messages: BandMessageWithProfile[];
@@ -73,6 +77,7 @@ export function BandDetailView({
   activeJam,
   polls,
   repertoire,
+  recordings,
   currentUserId,
   messages,
   status,
@@ -274,6 +279,8 @@ export function BandDetailView({
       </section>
 
       <BandRepertoireSection bandId={band.id} songs={repertoire} readOnly={readOnly} />
+
+      <BandRecordingsSection bandId={band.id} recordings={recordings} readOnly={readOnly} />
 
       <RehearsalPollsSection
         polls={polls}

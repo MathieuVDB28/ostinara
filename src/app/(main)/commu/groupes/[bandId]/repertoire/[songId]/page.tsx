@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getBand } from "@/lib/actions/bands";
 import { getBandSong } from "@/lib/actions/band-songs";
+import { getBandRecordings } from "@/lib/actions/band-recordings";
 import { bandStatus } from "@/lib/band-access";
 import { getAuthenticatedUser } from "@/lib/supabase/server";
 import { BandSongView } from "@/components/repertoire/band-song-view";
@@ -15,7 +16,11 @@ export default async function BandSongPage({
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
 
-  const [band, details] = await Promise.all([getBand(bandId), getBandSong(bandId, songId)]);
+  const [band, details, recordings] = await Promise.all([
+    getBand(bandId),
+    getBandSong(bandId, songId),
+    getBandRecordings(bandId, { bandSongId: songId }),
+  ]);
   if (!band || !details || !band.members.some((member) => member.user_id === user.id)) notFound();
 
   return (
@@ -27,6 +32,7 @@ export default async function BandSongPage({
       details={details}
       currentUserId={user.id}
       readOnly={bandStatus(band) === "read_only"}
+      recordings={recordings}
     />
   );
 }

@@ -86,6 +86,10 @@ import {
   Video,
   X,
   type LucideIcon,
+  Mic,
+  Pause,
+  Square,
+  Download,
 } from "lucide-react";
 
 /**
@@ -158,6 +162,10 @@ const ICONS: Record<string, LucideIcon> = {
   lock: Lock,
   menu_book: BookOpen,
   metronome: Metronome,
+  mic: Mic,
+  pause: Pause,
+  stop: Square,
+  download: Download,
   more_vert: EllipsisVertical,
   music_note: Music,
   notifications: Bell,

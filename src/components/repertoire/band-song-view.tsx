@@ -12,7 +12,8 @@ import { instrumentLabel } from "@/lib/instruments";
 import { formatTimeAgo } from "@/lib/setlist-changes";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import { BandSongForm } from "./band-song-form";
-import type { BandSongDetails, BandSongMember } from "@/types";
+import { BandRecordingsSection } from "@/components/recordings/band-recordings-section";
+import type { BandRecordingListItem, BandSongDetails, BandSongMember } from "@/types";
 
 const SECTION_TITLE =
   "border-b border-border pb-2 font-display text-[13px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground";
@@ -24,10 +25,12 @@ interface BandSongViewProps {
   details: BandSongDetails;
   currentUserId: string;
   readOnly: boolean;
+  /** Les enregistrements relies a ce morceau. */
+  recordings: BandRecordingListItem[];
 }
 
 /** La fiche d'un morceau du repertoire : ce que le groupe joue, et ou en est chacun. */
-export function BandSongView({ bandId, bandName, details, currentUserId, readOnly }: BandSongViewProps) {
+export function BandSongView({ bandId, bandName, details, currentUserId, readOnly, recordings }: BandSongViewProps) {
   const t = useTranslations("repertoire.fiche");
   const tr = useTranslations("repertoire");
   const tv = useTranslations("rehearsals.verdict");
@@ -174,6 +177,15 @@ export function BandSongView({ bandId, bandName, details, currentUserId, readOnl
           ))}
         </ul>
       </section>
+
+      <BandRecordingsSection
+        bandId={bandId}
+        recordings={recordings}
+        readOnly={readOnly}
+        preview={50}
+        showSeeAll={false}
+        defaults={{ bandSongId: song.id, title: song.title, kind: "demo" }}
+      />
 
       <section>
         <h2 className={SECTION_TITLE}>{t("inSetlists")}</h2>

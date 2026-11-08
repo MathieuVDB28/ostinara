@@ -7,6 +7,7 @@ import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import { createActivity } from "./activities";
 import { sendPushNotification } from "@/lib/notifications";
 import { bandStatus, type BandStatus } from "@/lib/band-access";
+import { removeBandRecordingFolder } from "@/lib/storage/band-recording-media";
 import type {
   Instrument,
   Band,
@@ -257,16 +258,20 @@ export async function deleteBand(
     return { success: false, error: await tErr("notAuthenticated") };
   }
 
-  const { error } = await supabase
+  const { data: deleted, error } = await supabase
     .from("bands")
     .delete()
     .eq("id", bandId)
-    .eq("owner_id", user.id);
+    .eq("owner_id", user.id)
+    .select("id");
 
-  if (error) {
-    console.error("Error deleting band:", error);
+  if (error || !deleted || deleted.length === 0) {
+    if (error) console.error("Error deleting band:", error);
     return { success: false, error: await tErr("deleteFailed") };
   }
+
+  // Le groupe est bien parti, ses enregistrements avec : leurs fichiers suivent.
+  await removeBandRecordingFolder(bandId);
 
   revalidatePath("/setlists");
   return { success: true };
