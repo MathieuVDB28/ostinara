@@ -37,7 +37,11 @@
     "bandRecordings": "Demos and recordings, with comments down to the second (20 GB per band)",
     "bandBadge": "Band badge",
     "fivePeople": "5 people on one plan",
-    "bandForAll": "Jams and chat open to the whole band (5 members max)"
+    "bandForAll": "Jams and chat open to the whole band (5 members max)",
+    "autoTempo": "Automatic tempo ramp on the metronome",
+    "tempoGoals": "Dated tempo goals, per instrument",
+    "compareTakes": "Private takes, to compare over time",
+    "dataExport": "Export your stats and data"
   },
   "upsell": {
     "proTag": "Pro",

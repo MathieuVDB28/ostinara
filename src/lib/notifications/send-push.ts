@@ -107,6 +107,7 @@ export type NotificationType =
   | 'band_recording_reply'
   | 'band_concert'
   | 'band_concert_reminder'
+  | 'tempo_goal_reminder'
   | ReminderType;
 
 export async function sendPushNotification(

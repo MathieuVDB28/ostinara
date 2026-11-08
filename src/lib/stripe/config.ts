@@ -8,7 +8,7 @@ export type PlanFeature =
   | 'metronomeNotebook' | 'basicStats' | 'challengesForum' | 'joinBands'
   | 'songs10' | 'instruments2' | 'covers3' | 'friends5' | 'wishlist20' | 'gear5'
   | 'unlimitedSongs' | 'unlimitedInstruments' | 'coverStorage20' | 'unlimitedFriends' | 'unlimitedWishlist' | 'unlimitedGear'
-  | 'advancedStats' | 'deezerTabs' | 'audioRecognition' | 'albumRecommendations' | 'liveSessions' | 'proBadge'
+  | 'advancedStats' | 'autoTempo' | 'tempoGoals' | 'compareTakes' | 'dataExport' | 'deezerTabs' | 'audioRecognition' | 'albumRecommendations' | 'liveSessions' | 'proBadge'
   | 'fivePeople' | 'bandForAll' | 'everythingPro' | 'bandSpaces' | 'jamSessions' | 'rehearsals' | 'sharedSetlists' | 'bandRecordings' | 'bandChat' | 'techRider' | 'bandBadge';
 
 export type BillingInterval = 'monthly' | 'yearly';
@@ -78,6 +78,10 @@ export const PLANS: Record<UserPlan, PlanConfig> = {
       'unlimitedWishlist',
       'unlimitedGear',
       'advancedStats',
+      'autoTempo',
+      'tempoGoals',
+      'compareTakes',
+      'dataExport',
       'deezerTabs',
       'audioRecognition',
       'albumRecommendations',

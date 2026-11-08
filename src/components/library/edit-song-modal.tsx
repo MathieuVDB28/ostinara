@@ -31,6 +31,8 @@ import { DeezerPlayer } from "@/components/ui/deezer-player";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
 import { TabsSearchPanel } from "./tabs-search-panel";
 import { TempoLadder } from "@/components/ui/tempo-ladder";
+import { TempoGoalBlock } from "./pro/tempo-goal-block";
+import { SongTakesPanel } from "./pro/song-takes-panel";
 import { SongBpmCurve } from "@/components/progress/song-bpm-curve";
 import { getSongBpmProgress } from "@/lib/actions/practice";
 import { saveSongTabStructure } from "@/lib/actions/songs";
@@ -43,6 +45,7 @@ import type {
   Instrument,
   Song,
   SongBpmPoint,
+  SongPart,
   SongDifficulty,
   SongStatus,
   SongsterrTabStructure,
@@ -93,7 +96,7 @@ export function EditSongModal({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"details" | "tablatures" | "covers" | "sessions">("details");
+  const [activeTab, setActiveTab] = useState<"details" | "tablatures" | "covers" | "takes" | "sessions">("details");
 
   // Covers state
   const [covers, setCovers] = useState<Cover[]>([]);
@@ -129,6 +132,8 @@ export function EditSongModal({
   // Plusieurs instruments : la courbe et le meilleur tempo d'un seul a la
   // fois, le principal d'abord.
   const [tempoInstrument, setTempoInstrument] = useState<Instrument>(myInstruments.primary);
+  // L'objectif date et les prises suivent l'instrument affiche (le principal sinon).
+  const goalInstrument = myInstruments.isMulti ? tempoInstrument : myInstruments.primary;
   const [tabStructure, setTabStructure] = useState<SongsterrTabStructure | null>(
     null
   );
@@ -440,6 +445,7 @@ export function EditSongModal({
               ["details", t("tabDetails")],
               ["tablatures", t("tabTabs")],
               ["covers", t("tabCovers")],
+              ["takes", t("tabTakes")],
               ["sessions", t("tabSessions")],
             ] as const
           ).map(([value, label]) => (
@@ -540,6 +546,17 @@ export function EditSongModal({
             }
             points={bpmPoints}
             userPlan={userPlan}
+          />
+          <TempoGoalBlock
+            // Un objectif par instrument : changer d'instrument repart du sien.
+            key={`${song.id}-${goalInstrument}`}
+            songId={song.id}
+            instrument={goalInstrument}
+            goal={goalFor(song.parts, goalInstrument)}
+            points={bpmPoints}
+            suggestedBpm={targetBpm ? parseInt(targetBpm, 10) || null : null}
+            userPlan={userPlan}
+            onSaved={onUpdate}
           />
 
           {/* Basic info */}
@@ -817,6 +834,18 @@ export function EditSongModal({
               </div>
             )}
           </div>
+        )}
+
+        {/* Prises (Pro) : les siennes et ses covers, a comparer */}
+        {activeTab === "takes" && (
+          <SongTakesPanel
+            songId={song.id}
+            songTitle={song.title}
+            instrument={goalInstrument}
+            covers={covers}
+            points={bpmPoints}
+            userPlan={userPlan}
+          />
         )}
 
         {/* Sessions Tab */}
@@ -1099,4 +1128,9 @@ function TabStructureSummary({
       </button>
     </div>
   );
+}
+
+function goalFor(parts: SongPart[] | undefined, instrument: Instrument): { bpm: number; date: string } | null {
+  const part = parts?.find((entry) => entry.instrument === instrument);
+  return part?.goal_bpm && part.goal_date ? { bpm: part.goal_bpm, date: part.goal_date } : null;
 }

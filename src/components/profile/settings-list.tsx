@@ -7,6 +7,7 @@ import { LogoutButton } from "@/components/layout/logout-button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { FriendsPlayingSetting, NotificationSetting, PracticeRemindersSetting, ShareSessionsSetting } from "./notification-setting";
 import { SubscriptionStatusBadge } from "@/components/subscription";
+import { ProUpsell } from "@/components/subscription/pro-upsell";
 import type { UserProfile } from "@/types";
 import { Icon } from "@/components/ui/icon";
 import { instrumentLabel, sortInstruments } from "@/lib/instruments";
@@ -54,6 +55,7 @@ function Row({ row }: { row: SettingsRow }) {
 export function SettingsList({ profile }: SettingsListProps) {
   const t = useTranslations("profile.settings");
   const te = useTranslations("enums");
+  const tx = useTranslations("profile.export");
   const instruments = sortInstruments(profile.instruments ?? []);
 
   const account: SettingsRow[] = [
@@ -160,6 +162,27 @@ export function SettingsList({ profile }: SettingsListProps) {
         <div className="space-y-2 py-3">
           <LocaleSwitcher variant="full" />
           <p className="text-xs text-muted-foreground">{t("languageHint")}</p>
+        </div>
+      </section>
+
+      {/* Mes donnees : l'export (Pro) */}
+      <section>
+        <h2 className="mb-1 border-b border-border pb-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          {tx("title")}
+        </h2>
+        <div className="space-y-2 py-3">
+          <p className="text-sm text-muted-foreground">{tx("hint")}</p>
+          {profile.plan === "free" ? (
+            <ProUpsell compact feature={tx("upsell")} description="" />
+          ) : (
+            <a
+              href="/api/export"
+              className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-accent"
+            >
+              <Icon name="download" className="h-4 w-4" />
+              {tx("download")}
+            </a>
+          )}
         </div>
       </section>
 

@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Play, Square } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMetronome } from "@/lib/hooks/use-metronome";
 import { MetronomeControls } from "./metronome-controls";
 import { MetronomeVisualizer } from "./metronome-visualizer";
 import { TapTempo } from "./tap-tempo";
+import { TempoRampPanel, useRampSettings, useTempoRamp } from "./tempo-ramp";
+import type { UserPlan } from "@/types";
 
 interface MetronomeProps {
   initialBpm?: number;
@@ -21,6 +23,8 @@ interface MetronomeProps {
   bpmRequest?: { bpm: number; id: number } | null;
   onBpmChange?: (bpm: number) => void;
   onPlayingChange?: (isPlaying: boolean) => void;
+  /** La montee de tempo automatique est reservee a Pro et Band. */
+  userPlan?: UserPlan;
   className?: string;
 }
 
@@ -29,12 +33,37 @@ export function Metronome({
   bpmRequest = null,
   onBpmChange,
   onPlayingChange,
+  userPlan,
   className = "",
 }: MetronomeProps) {
   const t = useTranslations("metronome");
-  const metronome = useMetronome({ initialBpm });
+  const [rampEnabled, setRampEnabled] = useState(false);
+  const ramp = useRampSettings(initialBpm);
+  // La montee compte les premiers temps : le hook du metronome les signale.
+  const downbeatRef = useRef<(() => void) | null>(null);
+  const metronome = useMetronome({
+    initialBpm,
+    onBeat: (beat) => {
+      if (beat === 1) downbeatRef.current?.();
+    },
+  });
 
   const { setBpm } = metronome;
+  const rampSetBpm = (bpm: number) => {
+    setBpm(bpm);
+    onBpmChange?.(bpm);
+  };
+  const rampState = useTempoRamp({
+    enabled: rampEnabled,
+    settings: ramp.settings,
+    isPlaying: metronome.isPlaying,
+    bpm: metronome.bpm,
+    setBpm: rampSetBpm,
+  });
+  const { onDownbeat } = rampState;
+  useEffect(() => {
+    downbeatRef.current = onDownbeat;
+  }, [onDownbeat]);
 
   useEffect(() => {
     if (!bpmRequest) return;
@@ -53,6 +82,7 @@ export function Metronome({
   };
 
   const handleToggle = () => {
+    if (!metronome.isPlaying && rampEnabled) rampState.onStart();
     metronome.toggle();
     onPlayingChange?.(!metronome.isPlaying);
   };
@@ -114,6 +144,21 @@ export function Metronome({
           <Play className="ml-1 h-7 w-7 fill-current" strokeWidth={0} aria-hidden="true" />
         )}
       </button>
+
+      {userPlan && (
+        <TempoRampPanel
+          isPro={userPlan !== "free"}
+          enabled={rampEnabled}
+          onEnabledChange={setRampEnabled}
+          settings={ramp.settings}
+          onSettingsChange={ramp.setSettings}
+          isPlaying={metronome.isPlaying}
+          remaining={rampState.remaining}
+          atCeiling={rampState.atCeiling}
+          currentBpm={metronome.bpm}
+          onOpen={ramp.load}
+        />
+      )}
     </div>
   );
 }

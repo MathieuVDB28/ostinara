@@ -22,14 +22,12 @@ export function recordingExtension(name: string | null, mimeType: string): strin
   return known[base] ?? "bin";
 }
 
-/**
- * Envoie un fichier dans le dossier <groupe>/<moi>/ du bucket prive, par Tus
- * (reprise possible). Renvoie le chemin, a enregistrer sur la ligne.
- */
-export async function uploadBandRecordingFile(
-  bandId: string,
+/** Envoi resumable (Tus) d'un fichier vers un bucket, au chemin donne. */
+async function uploadResumable(
+  bucket: string,
   file: Blob,
-  options: { name: string | null; mimeType: string; onProgress: (percent: number) => void }
+  buildPath: (userId: string) => string,
+  options: { mimeType: string; onProgress: (percent: number) => void }
 ): Promise<string> {
   const supabase = createClient();
   const {
@@ -37,7 +35,7 @@ export async function uploadBandRecordingFile(
   } = await supabase.auth.getSession();
   if (!session) throw new Error("not_authenticated");
 
-  const path = bandRecordingPath(bandId, session.user.id, recordingExtension(options.name, options.mimeType));
+  const path = buildPath(session.user.id);
   const endpoint = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/upload/resumable`;
 
   await new Promise<void>((resolve, reject) => {
@@ -48,7 +46,7 @@ export async function uploadBandRecordingFile(
       uploadDataDuringCreation: true,
       removeFingerprintOnSuccess: true,
       metadata: {
-        bucketName: BAND_RECORDING_BUCKET,
+        bucketName: bucket,
         objectName: path,
         // Sans parametres : le bucket compare le type a sa liste.
         contentType: baseMimeType(options.mimeType),
@@ -63,6 +61,29 @@ export async function uploadBandRecordingFile(
   });
 
   return path;
+}
+
+/**
+ * Envoie un fichier dans le dossier <groupe>/<moi>/ du bucket prive des
+ * enregistrements de groupe. Renvoie le chemin, a enregistrer sur la ligne.
+ */
+export function uploadBandRecordingFile(
+  bandId: string,
+  file: Blob,
+  options: { name: string | null; mimeType: string; onProgress: (percent: number) => void }
+): Promise<string> {
+  const extension = recordingExtension(options.name, options.mimeType);
+  return uploadResumable(BAND_RECORDING_BUCKET, file, (userId) => bandRecordingPath(bandId, userId, extension), options);
+}
+
+/** Une prise privee : <moi>/takes/<morceau>/<horodatage>.<ext> du bucket covers (20 Go). */
+export function uploadSongTakeFile(
+  songId: string,
+  file: Blob,
+  options: { name: string | null; mimeType: string; onProgress: (percent: number) => void }
+): Promise<string> {
+  const extension = recordingExtension(options.name, options.mimeType).replace(/[^a-z0-9]/gi, "").toLowerCase() || "bin";
+  return uploadResumable("covers", file, (userId) => `${userId}/takes/${songId}/${Date.now()}.${extension}`, options);
 }
 
 /** La duree d'un fichier, lue par le navigateur ; null s'il ne sait pas. */

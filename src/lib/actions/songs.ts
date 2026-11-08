@@ -20,7 +20,7 @@ import { findSongTempo } from "@/lib/services/tempo";
 import { getMyPrimaryInstrument } from "@/lib/instruments-server";
 
 /** Les parties d'un morceau, a joindre a une requete sur songs. */
-const SONG_PARTS_SELECT = "parts:song_parts(instrument, status, progress_percent)";
+const SONG_PARTS_SELECT = "parts:song_parts(instrument, status, progress_percent, goal_bpm, goal_date)";
 
 export async function getSongs(): Promise<Song[]> {
   const supabase = await createClient();

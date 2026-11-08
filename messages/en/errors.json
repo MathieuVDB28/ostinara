@@ -206,5 +206,6 @@
   "concertNotFound": "Gig not found",
   "bandSlugInvalid": "Invalid address: 3 to 60 characters, letters, numbers and hyphens.",
   "bandSlugTaken": "This address is already taken.",
-  "bandPublicPageForbidden": "Only the owner and admins of an active band can manage its public page."
+  "bandPublicPageForbidden": "Only the owner and admins of an active band can manage its public page.",
+  "tempoGoalInvalid": "Invalid goal: a tempo between 20 and 300 BPM and a date."
 }

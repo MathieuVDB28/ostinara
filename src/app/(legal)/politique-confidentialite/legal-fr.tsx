@@ -44,7 +44,7 @@ export function PolitiqueConfidentialiteFr() {
             données sont collectées, utilisées et protégées.
           </p>
           <p className="mt-3 text-sm text-muted-foreground/70">
-            Dernière mise à jour : 19 octobre 2026
+            Dernière mise à jour : 8 novembre 2026
           </p>
         </div>
       </div>
@@ -582,6 +582,15 @@ export function PolitiqueConfidentialiteFr() {
                   contact@ostinara.app
                 </a>
                 . Nous répondrons à votre demande dans un délai de 30 jours.
+              </p>
+              <p>
+                Une copie de vos données (droits d&apos;accès et à la
+                portabilité) vous est envoyée gratuitement sur simple demande à
+                cette adresse, quel que soit votre abonnement, dans un format
+                lisible par une machine (JSON et CSV). Les abonnés Pro et Band
+                peuvent aussi la télécharger eux-mêmes à tout moment, avec leurs
+                statistiques de pratique, depuis Profil &gt; Réglages &gt; Mes
+                stats et données.
               </p>
               <p>
                 Si vous êtes inscrit·e sur la liste d&apos;attente, chaque email

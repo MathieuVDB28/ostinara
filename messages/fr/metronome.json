@@ -16,5 +16,22 @@
   "start": "Lancer le métronome",
   "tapTempo": "Taper le tempo",
   "tap": "Tap",
-  "resetTap": "Réinitialiser le tap tempo"
+  "resetTap": "Réinitialiser le tap tempo",
+  "ramp": {
+    "title": "Montée de tempo",
+    "on": "active",
+    "upsell": "Montée de tempo automatique",
+    "enable": "Monter le tempo automatiquement",
+    "start": "Départ (BPM)",
+    "ceiling": "Plafond (BPM)",
+    "step": "Pas (+BPM)",
+    "every": "Toutes les",
+    "unit": "Unité",
+    "bars": "mesures",
+    "seconds": "secondes",
+    "hint": "Départ à {start}, +{step} BPM toutes les {every} {unit, select, bars {mesures} other {secondes}}, jusqu'à {ceiling}.",
+    "ready": "Au lancement, le métronome repart à {start} BPM.",
+    "next": "Prochain palier dans {count} {unit, select, bars {{count, plural, one {mesure} other {mesures}}} other {{count, plural, one {seconde} other {secondes}}}} : {bpm} BPM.",
+    "ceilingReached": "Plafond atteint : {bpm} BPM."
+  }
 }

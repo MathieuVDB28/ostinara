@@ -517,6 +517,7 @@ export function PlayView({
           bpmRequest={bpmRequest}
           onBpmChange={setCurrentBpm}
           onPlayingChange={() => {}}
+          userPlan={userPlan}
         />
 
         <div className="min-w-0">

@@ -48,6 +48,28 @@ export interface SongPart {
   instrument: Instrument;
   status: SongStatus;
   progress_percent: number;
+  /** Objectif date (Pro) : tel tempo a telle date, pour cet instrument. */
+  goal_bpm?: number | null;
+  goal_date?: string | null;
+}
+
+/** Une prise privee d'un morceau (Pro), dans le bucket covers. */
+export interface SongTake {
+  id: string;
+  user_id: string;
+  song_id: string;
+  instrument: Instrument | null;
+  title: string | null;
+  note: string | null;
+  media_path: string;
+  media_type: "audio" | "video";
+  mime_type: string | null;
+  duration_seconds: number | null;
+  file_size_bytes: number | null;
+  recorded_at: string;
+  created_at: string;
+  /** Lien signe (6 h). */
+  media_url: string | null;
 }
 
 export type SongOrigin = "album" | "friend" | "challenge";

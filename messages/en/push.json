@@ -245,5 +245,10 @@
   "bandConcertReminder": {
     "title": "{band}: gig tomorrow",
     "body": "\"{setlist}\"{hasTime, select, yes { at {time}} other {}}{hasPlace, select, yes {, {place}} other {}}. Have a great show!"
+  },
+  "tempoGoalReminder": {
+    "title": "\"{song}\": one week to go",
+    "body": "Goal {goal} BPM, your best tempo is {best}. Time for a session?",
+    "bodyNoSession": "Goal {goal} BPM in 7 days. A session to log where you are?"
   }
 }

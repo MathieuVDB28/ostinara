@@ -42,7 +42,7 @@ export function PolitiqueConfidentialiteEn() {
             We take the protection of your personal data very seriously. This policy explains how your data is collected, used and protected.
           </p>
           <p className="mt-3 text-sm text-muted-foreground/70">
-            Last updated: October 19, 2026
+            Last updated: November 8, 2026
           </p>
         </div>
       </div>
@@ -570,6 +570,9 @@ export function PolitiqueConfidentialiteEn() {
                   contact@ostinara.app
                 </a>
                 . We will reply to your request within 30 days.
+              </p>
+              <p>
+                A copy of your data (rights of access and to data portability) is sent to you free of charge on simple request to this address, whatever your plan, in a machine-readable format (JSON and CSV). Pro and Band subscribers can also download it themselves at any time, with their practice statistics, from Profile &gt; Settings &gt; My stats and data.
               </p>
               <p>
                 If you are on the waitlist, every email we send you contains an unsubscribe link: it removes your address from the list immediately.

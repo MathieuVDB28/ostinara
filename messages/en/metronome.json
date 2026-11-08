@@ -16,5 +16,22 @@
   "start": "Start the metronome",
   "tapTempo": "Tap the tempo",
   "tap": "Tap",
-  "resetTap": "Reset tap tempo"
+  "resetTap": "Reset tap tempo",
+  "ramp": {
+    "title": "Tempo ramp",
+    "on": "on",
+    "upsell": "Automatic tempo ramp",
+    "enable": "Raise the tempo automatically",
+    "start": "Start (BPM)",
+    "ceiling": "Ceiling (BPM)",
+    "step": "Step (+BPM)",
+    "every": "Every",
+    "unit": "Unit",
+    "bars": "bars",
+    "seconds": "seconds",
+    "hint": "Start at {start}, +{step} BPM every {every} {unit, select, bars {bars} other {seconds}}, up to {ceiling}.",
+    "ready": "When you hit play, the metronome restarts at {start} BPM.",
+    "next": "Next step in {count} {unit, select, bars {{count, plural, one {bar} other {bars}}} other {{count, plural, one {second} other {seconds}}}}: {bpm} BPM.",
+    "ceilingReached": "Ceiling reached: {bpm} BPM."
+  }
 }

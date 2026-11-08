@@ -165,5 +165,11 @@
     "seeShowcase": "Ta bio, tes liens, tes favoris et tes badges",
     "seePublicItems": "Ton matos, tes envies de matos et tes covers marqués « Public », tes chiffres de pratique, tes sujets du forum",
     "seeLibrary": "Ta biblio, tes albums notés, ta wishlist, tes playlists et tes sessions"
+  },
+  "export": {
+    "title": "Mes stats et données",
+    "hint": "Tes stats de pratique en CSV, prêtes pour un tableur (résumé, temps par morceau, par mois et par instrument, sessions, morceaux, exercices), et toutes tes données en JSON. Sans les fichiers audio et vidéo.",
+    "download": "Télécharger mes stats",
+    "upsell": "Export de tes données"
   }
 }

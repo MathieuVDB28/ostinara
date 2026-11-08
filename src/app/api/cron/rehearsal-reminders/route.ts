@@ -189,13 +189,79 @@ async function sendConcertReminders(now: Date): Promise<{ sent: number; errors: 
   return { sent, errors };
 }
 
+/**
+ * Objectif de tempo date (Pro) : 7 jours avant l'echeance, si le tempo
+ * n'est pas atteint sur cet instrument, un rappel. Une seule fois par
+ * objectif (goal_reminded_at, remis a zero quand l'objectif change). Qui a
+ * coupe les rappels de pratique ne le recoit pas.
+ */
+async function sendTempoGoalReminders(now: Date): Promise<{ sent: number; errors: number }> {
+  const inAWeek = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(
+    new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+  );
+  const { data: parts, error } = await supabaseAdmin
+    .from("song_parts")
+    .select("id, user_id, song_id, instrument, goal_bpm, song:songs(title)")
+    .eq("goal_date", inAWeek)
+    .is("goal_reminded_at", null);
+  if (error) {
+    console.error("Error fetching tempo goals to remind:", error);
+    return { sent: 0, errors: 1 };
+  }
+
+  let sent = 0;
+  let errors = 0;
+  for (const part of parts ?? []) {
+    try {
+      const [{ data: prefs }, { data: best }] = await Promise.all([
+        supabaseAdmin.from("profile_private").select("practice_reminders").eq("user_id", part.user_id).maybeSingle(),
+        supabaseAdmin
+          .from("practice_sessions")
+          .select("bpm_achieved")
+          .eq("user_id", part.user_id)
+          .eq("song_id", part.song_id)
+          .eq("instrument", part.instrument)
+          .not("bpm_achieved", "is", null)
+          .order("bpm_achieved", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      const bestBpm = (best?.bpm_achieved as number | undefined) ?? null;
+      const goal = part.goal_bpm as number;
+      if (prefs?.practice_reminders !== false && (bestBpm === null || bestBpm < goal)) {
+        const title = (part.song as unknown as { title: string } | null)?.title ?? "";
+        const result = await sendPushNotificationToMultipleUsers([
+          {
+            userId: part.user_id as string,
+            payload: (t: PushT) => ({
+              title: t("tempoGoalReminder.title", { song: title }),
+              body: bestBpm
+                ? t("tempoGoalReminder.body", { goal, best: bestBpm })
+                : t("tempoGoalReminder.bodyNoSession", { goal }),
+              tag: `tempo-goal-${part.id}`,
+              data: { url: `/biblio?song=${part.song_id}` },
+            }),
+            notificationType: "tempo_goal_reminder",
+          },
+        ]);
+        sent += result.totalSuccess;
+      }
+      await supabaseAdmin.from("song_parts").update({ goal_reminded_at: now.toISOString() }).eq("id", part.id);
+    } catch (err) {
+      console.error("Error sending tempo goal reminder:", err);
+      errors += 1;
+    }
+  }
+  return { sent, errors };
+}
+
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const now = new Date();
-  const results = { reminders: 0, today: 0, polls: 0, concerts: 0, errors: 0 };
+  const results = { reminders: 0, today: 0, polls: 0, concerts: 0, tempoGoals: 0, errors: 0 };
 
   // === Today's rehearsals (anything today that hasn't passed yet) ===
   const todayStart = new Date(now);
@@ -263,6 +329,10 @@ export async function GET(request: NextRequest) {
   const concertResults = await sendConcertReminders(now);
   results.concerts = concertResults.sent;
   results.errors += concertResults.errors;
+
+  const goalResults = await sendTempoGoalReminders(now);
+  results.tempoGoals = goalResults.sent;
+  results.errors += goalResults.errors;
 
   return NextResponse.json({
     success: true,
