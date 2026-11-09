@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { Icon } from "@/components/ui/icon";
-import { Frets } from "@/components/ui/frets";
+import { BandSection, HeroFragment } from "@/components/landing/band-section";
 
 /*
  * Les trois onglets de l'app, dans leurs mots (cf. src/lib/navigation.ts).
@@ -25,7 +25,14 @@ export default function Home() {
   const t = useTranslations("landing");
   const accent = (chunks: React.ReactNode) => <span className="text-primary">{chunks}</span>;
   const footerLinks = [
-    { title: t("early.footer.product"), links: [{ label: t("early.footer.features"), href: "#features" }] },
+    {
+      title: t("early.footer.product"),
+      links: [
+        { label: t("early.footer.features"), href: "#features" },
+        { label: t("early.footer.blog"), href: "/blog" },
+        { label: t("early.footer.forum"), href: "/forum" },
+      ],
+    },
     {
       title: t("early.footer.legal"),
       links: [
@@ -98,24 +105,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/*
-          Un fragment de l'app plutot qu'une illustration : le tempo tenu
-          sur un morceau, en frettes, comme dans le Carnet.
-        */}
-        <figure aria-hidden="true" className="border-y border-border py-6 lg:mb-3">
-          <p className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-            {t("early.hero.tempoHeld")}
-          </p>
-          <p className="tabular mt-2 font-display text-[112px] font-extrabold leading-[0.85]">
-            92<span className="text-4xl text-muted-foreground">/104</span>
-          </p>
-          <div className="mt-4 flex items-center justify-between gap-4">
-            <span className="font-display text-sm font-bold uppercase tracking-[0.06em] text-muted-foreground">
-              {t("home.bpm")}
-            </span>
-            <Frets value={73} className="scale-150 origin-right" />
-          </div>
-        </figure>
+        {/* Seul et en groupe, a egalite : le tempo tenu et la prochaine repete. */}
+        <HeroFragment className="lg:mb-3" />
       </section>
 
       {/* Ce que fait l'app */}
@@ -141,6 +132,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <BandSection />
 
       {/* Appel final */}
       <section className="border-t border-border bg-secondary">

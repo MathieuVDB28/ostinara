@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/icon";
 import { Frets } from "@/components/ui/frets";
 import { PLANS } from "@/lib/stripe/config";
 import { PickPlanButton, WaitlistForm, WaitlistProvider } from "@/components/landing/waitlist";
+import { BandSection, HeroFragment } from "@/components/landing/band-section";
 import { getWaitlistCount } from "@/lib/actions/waitlist";
 import { EARLY_BIRD } from "@/lib/waitlist";
 import type { UserPlan } from "@/types";
@@ -52,7 +53,9 @@ const toolbox = [
   { key: "setlists", icon: "setlist" },
   { key: "bands", icon: "groups" },
   { key: "recognition", icon: "audiotrack" },
+  { key: "goals", icon: "trending_up" },
   { key: "challenges", icon: "trophy" },
+  { key: "forum", icon: "chat_bubble_outline" },
 ] as const;
 
 /* Le calendrier de pratique du Carnet : 15 semaines, intensite 0-3. */
@@ -68,7 +71,7 @@ const shelf = [
   { title: "Little Wing", artist: "Jimi Hendrix", status: "wantToLearn", bpm: "—/70", value: 8 },
 ] as const;
 
-const faq = ["offer", "when", "pay", "phone", "beginner", "band"] as const;
+const faq = ["offer", "when", "pay", "phone", "beginner", "band", "bandStop"] as const;
 
 const planOrder: UserPlan[] = ["free", "pro", "band"];
 
@@ -92,6 +95,8 @@ export default async function AccesAnticipe() {
       links: [
         { label: t("footer.features"), href: "#features" },
         { label: t("footer.pricing"), href: "#tarifs" },
+        { label: t("footer.blog"), href: "/blog" },
+        { label: t("footer.forum"), href: "/forum" },
       ],
     },
     {
@@ -193,38 +198,8 @@ export default async function AccesAnticipe() {
             </div>
           </div>
 
-          {/*
-            Un fragment de l'app plutot qu'une illustration : le tempo tenu
-            sur un morceau, en frettes, comme dans le Carnet.
-          */}
-          <figure aria-hidden="true" className="border-y border-border py-6 lg:mb-24">
-            <p className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              {t("hero.tempoHeld")}
-            </p>
-            <p className="tabular mt-2 font-display text-[112px] font-extrabold leading-[0.85]">
-              92<span className="text-4xl text-muted-foreground">/104</span>
-            </p>
-            <div className="mt-4 flex items-center justify-between gap-4">
-              <span className="font-display text-sm font-bold uppercase tracking-[0.06em] text-muted-foreground">
-                {t("hero.bpmSong")}
-              </span>
-              <Frets value={73} className="origin-right scale-150" />
-            </div>
-            <dl className="mt-6 grid grid-cols-3 border-t border-border pt-4">
-              {[
-                [t("hero.streaks"), t("hero.streakValue")],
-                [t("hero.thisMonth"), t("hero.monthValue")],
-                [t("hero.mastered"), "23"],
-              ].map(([label, value]) => (
-                <div key={label}>
-                  <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                    {label}
-                  </dt>
-                  <dd className="tabular font-display text-3xl font-extrabold leading-none">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </figure>
+          {/* Seul et en groupe, a egalite : le tempo tenu et la prochaine repete. */}
+          <HeroFragment className="lg:mb-24" />
         </section>
 
         {/* Le probleme, en une phrase */}
@@ -267,6 +242,8 @@ export default async function AccesAnticipe() {
             </div>
           </div>
         </section>
+
+        <BandSection />
 
         {/* La boite a outils */}
         <section className="border-t border-border">

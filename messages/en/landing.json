@@ -25,9 +25,9 @@
   "early": {
     "meta": {
       "title": "Ostinara — The musician's app · Early access",
-      "description": "Metronome, tuner, practice log, setlists, covers and challenges with friends. Guitar, bass, drums or keys, solo or with your band. Sign up for early access.",
+      "description": "Metronome, tuner, practice log, covers and challenges with friends. And for your band: rehearsals, setlists, synced jams, demos with comments. Guitar, bass, drums or keys. Sign up for early access.",
       "ogTitle": "Ostinara — Play. Measure. Share.",
-      "ogDescription": "The musician's app: your progress measured in tempo, your repertoire, your covers and your band. Early access is open."
+      "ogDescription": "The musician's app, solo or with your band: your progress measured in tempo, your repertoire, your covers and your band's rehearsals. Early access is open."
     },
     "domains": {
       "play": {
@@ -77,7 +77,7 @@
       },
       "bands": {
         "name": "Bands",
-        "detail": "Rehearsals, RSVPs, reminders, chat, shared setlists, demos with comments"
+        "detail": "Shared repertoire, setlists, rehearsals, synced jams, demos with comments"
       },
       "recognition": {
         "name": "Recognition",
@@ -86,6 +86,14 @@
       "challenges": {
         "name": "Challenges",
         "detail": "Practice time, streaks, a song to master with friends"
+      },
+      "goals": {
+        "name": "Goals",
+        "detail": "Automatic tempo ramp, a tempo to hit by a date, takes compared over time"
+      },
+      "forum": {
+        "name": "Forum",
+        "detail": "Questions, gear and tips between musicians"
       }
     },
     "shelf": {
@@ -95,7 +103,7 @@
     "faq": {
       "offer": {
         "q": "What's the launch offer?",
-        "a": "The first {spots} people to sign up get {months} months free on the plan they picked when their access opens: Band for Band, Pro for Pro, and Pro too for those who picked Free. No credit card, no commitment: at the end, you keep your plan or go back to Free."
+        "a": "The first {spots} sign-ups get {months} months free on the plan they picked when their access opens: Band for Band, with its 4 spots so the whole band benefits, Pro for Pro, and Pro too for those who picked Free. No credit card, no commitment: at the end, keep your plan or go back to Free."
       },
       "when": {
         "q": "When?",
@@ -115,7 +123,11 @@
       },
       "band": {
         "q": "What about my band?",
-        "a": "The Band plan adds band spaces: rehearsals with RSVPs and reminders, chat, shared setlists, demos and recordings with comments, and synced jam sessions."
+        "a": "The Band plan works like a family plan: one person pays, gives away 4 spots, and the 5 of you get the whole plan, Pro included. The whole band, up to 5 musicians, gets the shared repertoire, rehearsals with date polls, synced jams, chat, demos with comments and a gig calendar with a public page. A member can also join the band with a free account."
+      },
+      "bandStop": {
+        "q": "What if the person paying stops?",
+        "a": "The spots they gave away end with their billing period. The band keeps everything for 30 days, then becomes read-only: nothing is deleted, and it all reopens if they take the plan again or hand the band over to a member who has it."
       }
     },
     "footer": {
@@ -127,7 +139,9 @@
       "terms": "Terms of use",
       "privacy": "Privacy",
       "tagline": "The all-in-one app for musicians who want to improve and share.",
-      "rights": "© {year} Ostinara. All rights reserved."
+      "rights": "© {year} Ostinara. All rights reserved.",
+      "blog": "Blog",
+      "forum": "Forum"
     },
     "nav": {
       "pricing": "Pricing",
@@ -139,23 +153,19 @@
       "play": "Play.",
       "measure": "Measure.",
       "share": "Share.",
-      "lead": "The musician's app. Track your songs, measure your progress in tempo and share your covers with your friends. All in one place.",
+      "lead": "The musician's app, solo or with your band. Measure your progress in tempo, get rehearsals ready with your band and share your covers. All in one place.",
       "offer": "Launch offer",
       "spots": "{left, plural, one {# spot} other {# spots}} of {total}",
       "offerTitle": "{months} months free for the first {spots}",
-      "offerHint": "On the plan you pick — Pro if you go with Free.",
+      "offerHint": "On the plan you pick: Band for your whole band, Pro if you go with Free.",
       "spotsLeft": "{left} spots left of {total}",
       "tempoHeld": "Tempo held · this week",
       "bpmSong": "Bpm · Blackbird",
-      "streaks": "Streaks",
-      "streakValue": "12 d",
-      "thisMonth": "This month",
-      "monthValue": "14 h",
-      "mastered": "Mastered"
+      "you": "You"
     },
     "problem": {
-      "title": "Your tabs in twelve browser tabs. Your metronome in another app. Your covers lost in your camera roll. <accent>And no idea whether you're improving.</accent>",
-      "lead": "Ostinara puts all of it in one place, and shows you, with numbers, that your practice hours pay off."
+      "title": "Your tabs in twelve browser tabs. Your metronome in another app. Rehearsal dates lost in the band group chat. <accent>And no idea whether you're getting better.</accent>",
+      "lead": "Ostinara puts all of it in one place, for you and for your band, and shows you, numbers in hand, that your practice hours pay off."
     },
     "features": {
       "title": "Everything to improve, <accent>nothing extra</accent>"
@@ -202,12 +212,53 @@
     "login": "Log in",
     "start": "Get started",
     "eyebrow": "The musician's app · Stay tuned",
-    "lead": "Track your songs, measure your progress in tempo and share your covers with your friends. Everything a musician needs, in one place.",
+    "lead": "Solo or with your band. Track your songs, measure your progress in tempo, get rehearsals ready and share your covers. Everything a musician needs, in one place.",
     "createAccount": "Create my account",
     "discover": "Discover",
-    "bpm": "Bpm",
     "finalTitle": "Ready to track<br></br>your <accent>progress</accent>?",
     "startFree": "Start for free",
     "freeHint": "Free up to 10 songs. No credit card."
+  },
+  "band": {
+    "eyebrow": "Band plan · one subscription for 5",
+    "title": "Your band, <accent>finally in time</accent>",
+    "lead": "From picking a rehearsal date to the gig, your band has everything in one place. One person pays, and up to 5 musicians get it.",
+    "steps": {
+      "repertoire": {
+        "name": "Shared repertoire",
+        "detail": "Key, tempo, structure and a note per part for every song"
+      },
+      "poll": {
+        "name": "Pick a date",
+        "detail": "Everyone answers yes, if needed or no, and the best slot becomes the rehearsal"
+      },
+      "ready": {
+        "name": "See who's ready",
+        "detail": "For every song on the setlist, where each player stands on their part"
+      },
+      "jam": {
+        "name": "Play in time",
+        "detail": "A metronome synced across every phone, count-in, next song for everyone"
+      },
+      "recordings": {
+        "name": "Replay the demo",
+        "detail": "Demos and rehearsal takes, with comments down to the second"
+      },
+      "concerts": {
+        "name": "Announce the gig",
+        "detail": "Gig calendar, a reminder the day before and a public page for the band"
+      }
+    },
+    "fragment": {
+      "title": "Rehearsal readiness",
+      "when": "Friday · 8 pm",
+      "ready": "{ready} of {total} ready",
+      "readyShort": "ready",
+      "status": {
+        "ready": "Ready",
+        "learning": "Learning",
+        "toLearn": "To learn"
+      }
+    }
   }
 }

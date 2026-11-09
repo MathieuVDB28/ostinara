@@ -25,9 +25,9 @@
   "early": {
     "meta": {
       "title": "Ostinara — L'app des musiciens · Accès anticipé",
-      "description": "Métronome, accordeur, carnet de pratique, setlists, covers et défis entre amis. Guitare, basse, batterie ou clavier, seul ou en groupe. Inscris-toi pour l'accès anticipé.",
+      "description": "Métronome, accordeur, carnet de pratique, covers et défis entre amis. Et pour ton groupe : répètes, setlists, jam synchronisée, démos commentées. Guitare, basse, batterie ou clavier. Inscris-toi pour l'accès anticipé.",
       "ogTitle": "Ostinara — Joue. Mesure. Partage.",
-      "ogDescription": "L'app des musiciens : ta progression mesurée au tempo, ton répertoire, tes covers et ton groupe. Accès anticipé ouvert."
+      "ogDescription": "L'app des musiciens, seul ou en groupe : ta progression mesurée au tempo, ton répertoire, tes covers et les répètes de ton groupe. Accès anticipé ouvert."
     },
     "domains": {
       "play": {
@@ -77,7 +77,7 @@
       },
       "bands": {
         "name": "Groupes",
-        "detail": "Répétitions, RSVP, rappels, chat, setlists partagées, démos commentées"
+        "detail": "Répertoire commun, setlists, répètes, jam synchronisée, démos commentées"
       },
       "recognition": {
         "name": "Reconnaissance",
@@ -86,6 +86,14 @@
       "challenges": {
         "name": "Défis",
         "detail": "Temps de pratique, séries, morceau à maîtriser entre amis"
+      },
+      "goals": {
+        "name": "Objectifs",
+        "detail": "Montée de tempo automatique, tempo à tenir à une date, prises comparées dans le temps"
+      },
+      "forum": {
+        "name": "Forum",
+        "detail": "Questions, matos et conseils entre musiciens"
       }
     },
     "shelf": {
@@ -95,7 +103,7 @@
     "faq": {
       "offer": {
         "q": "C'est quoi l'offre de lancement ?",
-        "a": "Les {spots} premiers inscrits reçoivent {months} mois offerts sur le plan qu'ils ont choisi à l'ouverture de leur accès : Band pour Band, Pro pour Pro, et Pro aussi pour ceux qui ont choisi Free. Sans carte bancaire, sans engagement : à la fin, tu gardes ton plan ou tu repasses en Free."
+        "a": "Les {spots} premiers inscrits reçoivent {months} mois offerts sur le plan qu'ils ont choisi à l'ouverture de leur accès : Band pour Band, avec ses 4 places pour que tout le groupe en profite, Pro pour Pro, et Pro aussi pour ceux qui ont choisi Free. Sans carte bancaire, sans engagement : à la fin, tu gardes ton plan ou tu repasses en Free."
       },
       "when": {
         "q": "C'est quand ?",
@@ -115,7 +123,11 @@
       },
       "band": {
         "q": "Et mon groupe ?",
-        "a": "Le plan Band ajoute les espaces groupe : répétitions avec RSVP et rappels, chat, setlists partagées, démos et enregistrements commentés, et sessions de jam synchronisées."
+        "a": "Le plan Band marche comme un abonnement famille : une personne paie, offre 4 places, et vous êtes 5 à avoir tout le plan, Pro compris. Tout le groupe, 5 musiciens au plus, a le répertoire commun, les répètes avec sondage de dates, la jam synchronisée, le chat, les démos commentées et l'agenda des concerts avec une page publique. Un membre peut aussi rejoindre le groupe avec un compte gratuit."
+      },
+      "bandStop": {
+        "q": "Et si celui qui paie arrête ?",
+        "a": "Les places offertes s'arrêtent à la fin de sa période. Le groupe garde tout pendant 30 jours, puis passe en lecture seule : rien n'est effacé, et tout rouvre s'il reprend le plan ou confie le groupe à un membre qui l'a."
       }
     },
     "footer": {
@@ -127,7 +139,9 @@
       "terms": "CGU",
       "privacy": "Confidentialité",
       "tagline": "L'application tout-en-un pour les musiciens qui veulent progresser et partager.",
-      "rights": "© {year} Ostinara. Tous droits réservés."
+      "rights": "© {year} Ostinara. Tous droits réservés.",
+      "blog": "Blog",
+      "forum": "Forum"
     },
     "nav": {
       "pricing": "Tarifs",
@@ -139,23 +153,19 @@
       "play": "Joue.",
       "measure": "Mesure.",
       "share": "Partage.",
-      "lead": "L'app des musiciens. Suis tes morceaux, mesure ta progression au tempo et partage tes covers avec tes amis. Tout au même endroit.",
+      "lead": "L'app des musiciens, seul ou en groupe. Mesure ta progression au tempo, prépare les répètes avec ton groupe et partage tes covers. Tout au même endroit.",
       "offer": "Offre de lancement",
       "spots": "{left, plural, one {# place} other {# places}} sur {total}",
       "offerTitle": "{months} mois offerts aux {spots} premiers",
-      "offerHint": "Sur le plan que tu choisis — Pro si tu pars sur Free.",
+      "offerHint": "Sur le plan que tu choisis : Band pour tout ton groupe, Pro si tu pars sur Free.",
       "spotsLeft": "{left} places restantes sur {total}",
       "tempoHeld": "Tempo tenu · cette semaine",
       "bpmSong": "Bpm · Blackbird",
-      "streaks": "Séries",
-      "streakValue": "12 j",
-      "thisMonth": "Ce mois",
-      "monthValue": "14 h",
-      "mastered": "Maîtrisés"
+      "you": "Toi"
     },
     "problem": {
-      "title": "Tes tabs dans douze onglets. Ton métronome dans une autre app. Tes covers perdues dans la pellicule. <accent>Et aucune idée de si tu progresses.</accent>",
-      "lead": "Ostinara range tout ça au même endroit, et te montre, chiffres à l'appui, que tes heures de pratique paient."
+      "title": "Tes tabs dans douze onglets. Ton métronome dans une autre app. La date de répète noyée dans la conversation du groupe. <accent>Et aucune idée de si tu progresses.</accent>",
+      "lead": "Ostinara range tout ça au même endroit, pour toi comme pour ton groupe, et te montre, chiffres à l'appui, que tes heures de pratique paient."
     },
     "features": {
       "title": "Tout pour progresser, <accent>rien de superflu</accent>"
@@ -202,12 +212,53 @@
     "login": "Connexion",
     "start": "Commencer",
     "eyebrow": "L'app des musiciens · Stay tuned",
-    "lead": "Suis tes morceaux, mesure ta progression au tempo et partage tes covers avec tes amis. Tout ce dont un musicien a besoin, au même endroit.",
+    "lead": "Seul ou en groupe. Suis tes morceaux, mesure ta progression au tempo, prépare les répètes et partage tes covers. Tout ce dont un musicien a besoin, au même endroit.",
     "createAccount": "Créer mon compte",
     "discover": "Découvrir",
-    "bpm": "Bpm",
     "finalTitle": "Prêt à tracker<br></br>ta <accent>progression</accent> ?",
     "startFree": "Commencer gratuitement",
     "freeHint": "Gratuit jusqu'à 10 morceaux. Sans carte bancaire."
+  },
+  "band": {
+    "eyebrow": "Plan Band · un abonnement pour 5",
+    "title": "Ton groupe, <accent>enfin calé</accent>",
+    "lead": "De la date de répète jusqu'au concert, le groupe a tout au même endroit. Une personne paie, et jusqu'à 5 musiciens en profitent.",
+    "steps": {
+      "repertoire": {
+        "name": "Répertoire commun",
+        "detail": "Tonalité, tempo, structure et une note par poste pour chaque morceau"
+      },
+      "poll": {
+        "name": "Trouver une date",
+        "detail": "Chacun répond oui, si besoin ou non, le bon créneau devient la répète"
+      },
+      "ready": {
+        "name": "Savoir qui est prêt",
+        "detail": "Pour chaque morceau de la setlist, où en est chacun sur son poste"
+      },
+      "jam": {
+        "name": "Jouer calés",
+        "detail": "Métronome synchronisé sur tous les téléphones, décompte, morceau suivant pour tout le monde"
+      },
+      "recordings": {
+        "name": "Réécouter la démo",
+        "detail": "Démos et prises de répète, commentées à la seconde près"
+      },
+      "concerts": {
+        "name": "Annoncer le concert",
+        "detail": "Agenda des concerts, rappel la veille et une page publique pour le groupe"
+      }
+    },
+    "fragment": {
+      "title": "Prêts pour la répète",
+      "when": "Vendredi · 20 h",
+      "ready": "{ready} sur {total} prêts",
+      "readyShort": "prêts",
+      "status": {
+        "ready": "Prêt",
+        "learning": "En cours",
+        "toLearn": "À apprendre"
+      }
+    }
   }
 }
