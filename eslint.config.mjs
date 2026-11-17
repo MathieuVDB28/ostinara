@@ -25,6 +25,8 @@ const eslintConfig = defineConfig([
     "public/sw.js",
     "public/workbox-*.js",
     "public/fallback-*.js",
+    // Projet Remotion a part (videos de la landing), avec ses propres dependances.
+    "video/**",
   ]),
 ]);
 

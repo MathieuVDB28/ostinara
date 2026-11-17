@@ -1,0 +1,290 @@
+{
+ "me": {
+  "username": "MathieuVDB",
+  "avatar": "img/01.jpg",
+  "instrument": "guitar"
+ },
+ "stats": {
+  "sessions": 35,
+  "minutes": 1416,
+  "record": 5,
+  "songsTotal": 61,
+  "learningCount": 18,
+  "masteredCount": 11,
+  "wantCount": 32
+ },
+ "days": {
+  "2026-11-05": 90,
+  "2026-11-04": 30,
+  "2026-11-03": 45,
+  "2026-10-28": 30,
+  "2026-10-27": 60,
+  "2026-10-25": 40,
+  "2026-10-23": 30,
+  "2026-10-19": 30,
+  "2026-10-17": 1,
+  "2026-07-19": 30,
+  "2026-07-17": 90,
+  "2026-03-31": 30,
+  "2026-03-30": 60,
+  "2026-03-29": 60,
+  "2026-03-26": 50,
+  "2026-03-24": 45,
+  "2026-03-21": 30,
+  "2026-03-20": 20,
+  "2026-03-18": 30,
+  "2026-03-14": 30,
+  "2026-03-08": 30,
+  "2026-02-11": 15,
+  "2026-02-10": 30,
+  "2026-02-05": 30,
+  "2026-02-02": 30,
+  "2026-01-30": 45,
+  "2026-01-15": 30,
+  "2026-01-14": 120,
+  "2026-01-08": 30,
+  "2026-01-07": 60,
+  "2026-01-05": 90,
+  "2026-01-04": 45,
+  "2026-01-02": 30
+ },
+ "learning": [
+  {
+   "title": "Enter Sandman",
+   "artist": "Metallica",
+   "cover": "img/02.jpg",
+   "progress": 75,
+   "target": 123,
+   "tuning": "Standard",
+   "capo": 0
+  },
+  {
+   "title": "Don't Stay",
+   "artist": "Linkin Park",
+   "cover": "img/03.jpg",
+   "progress": 90,
+   "target": 90,
+   "tuning": "Drop C#",
+   "capo": 0
+  },
+  {
+   "title": "Stinkfist",
+   "artist": "TOOL",
+   "cover": "img/06.jpg",
+   "progress": 25,
+   "target": 87,
+   "tuning": "Drop D",
+   "capo": 0
+  },
+  {
+   "title": "Riders on the Storm",
+   "artist": "The Doors",
+   "cover": "img/07.jpg",
+   "progress": 25,
+   "target": 104,
+   "tuning": "Standard",
+   "capo": 0
+  },
+  {
+   "title": "Mutter",
+   "artist": "Rammstein",
+   "cover": "img/04.jpg",
+   "progress": 50,
+   "target": 112,
+   "tuning": "Standard",
+   "capo": 0
+  },
+  {
+   "title": "Zwitter",
+   "artist": "Rammstein",
+   "cover": "img/05.jpg",
+   "progress": 50,
+   "target": 160,
+   "tuning": "Drop D",
+   "capo": 0
+  }
+ ],
+ "mastered": [
+  {
+   "title": "Ça c'est vraiment toi",
+   "artist": "Téléphone",
+   "cover": "img/08.jpg",
+   "progress": 100,
+   "target": 140,
+   "tuning": "Standard",
+   "capo": 0
+  },
+  {
+   "title": "L'aventurier",
+   "artist": "Indochine",
+   "cover": "img/09.jpg",
+   "progress": 100,
+   "target": 167,
+   "tuning": "Standard",
+   "capo": 0
+  },
+  {
+   "title": "Allumer le feu",
+   "artist": "Johnny Hallyday",
+   "cover": "img/10.jpg",
+   "progress": 100,
+   "target": 140,
+   "tuning": "Standard",
+   "capo": 0
+  }
+ ],
+ "want": [
+  {
+   "title": "Seven Nation Army",
+   "artist": "The White Stripes",
+   "cover": "img/11.jpg",
+   "progress": 0,
+   "target": 124,
+   "tuning": "Standard",
+   "capo": 0
+  },
+  {
+   "title": "Killing In The Name",
+   "artist": "Rage Against The Machine",
+   "cover": "img/12.jpg",
+   "progress": 0,
+   "target": 109,
+   "tuning": "Standard",
+   "capo": 0
+  },
+  {
+   "title": "Back To Black",
+   "artist": "Amy Winehouse",
+   "cover": "img/13.jpg",
+   "progress": 0,
+   "target": 125,
+   "tuning": "Standard",
+   "capo": 0
+  },
+  {
+   "title": "Aerials",
+   "artist": "System Of A Down",
+   "cover": "img/14.jpg",
+   "progress": 0,
+   "target": 74,
+   "tuning": "Standard",
+   "capo": 0
+  }
+ ],
+ "reviews": [
+  {
+   "album": "Dopamine Chamber",
+   "artist": "Fontaines D.C.",
+   "cover": "img/15.jpg",
+   "rating": 10,
+   "review": "Un dinguerie simplement"
+  },
+  {
+   "album": "Paranoid",
+   "artist": "Black Sabbath",
+   "cover": "img/16.jpg",
+   "rating": 10,
+   "review": null
+  },
+  {
+   "album": "Sehnsucht",
+   "artist": "Rammstein",
+   "cover": "img/17.jpg",
+   "rating": 8,
+   "review": "Du métal brut, industriel. Les riffs sont lourds, mais des fois trop similaires entre eux… mais ça reste un classique du métal et de leur discographie"
+  },
+  {
+   "album": "Rust In Peace",
+   "artist": "Megadeth",
+   "cover": "img/18.jpg",
+   "rating": 9,
+   "review": null
+  },
+  {
+   "album": "Romance",
+   "artist": "Fontaines D.C.",
+   "cover": "img/19.jpg",
+   "rating": 9,
+   "review": null
+  },
+  {
+   "album": "Reign In Blood",
+   "artist": "Slayer",
+   "cover": "img/20.jpg",
+   "rating": 8,
+   "review": "Ça c’est du trash, la batterie est rapide, les aigus de la guitare sont stridents. Hâte d’écouter les autres albums"
+  }
+ ],
+ "friend": {
+  "username": "el_solferin0",
+  "display": "El Solferino 🌊",
+  "avatar": "img/21.jpg"
+ },
+ "feed": {
+  "friendReview": {
+   "album": "Homework",
+   "artist": "Daft Punk",
+   "cover": "img/22.jpg",
+   "rating": 8,
+   "review": "Premier album certes brutaliste dans l'approche mais tellement riche dans sa proposition, malgré quelques longueurs (peut être 10 min de trop à mon goût) Daft Punk réussit le pari d'apporter une musique techno moderne et innovante en mixant leurs influences disco, funk, acid house et techno londonienne/ de Detroit pour proposer un album percutant. Pas grand chose à dire, juste à se prendre plein les tympans.",
+   "tracks": [
+    "Phoenix",
+    "Fresh",
+    "Around the World"
+   ]
+  },
+  "friendSession": {
+   "minutes": 80,
+   "goal": "Travailler sur le backing track",
+   "notes": "On fire pour la setlist"
+  }
+ },
+ "band": {
+  "name": "Creamy Boys",
+  "tagline": "The Creamy’s band",
+  "setlist": {
+   "name": "Anniv de la gourmande",
+   "date": "2026-11-14",
+   "city": "Hoymille City",
+   "items": [
+    {
+     "title": "Supermassive Black Hole",
+     "artist": "Muse",
+     "cover": "img/23.jpg",
+     "bpm": null
+    },
+    {
+     "title": "The Unforgiven (Remastered)",
+     "artist": "Metallica",
+     "cover": "img/24.jpg",
+     "bpm": null
+    },
+    {
+     "title": "L'aventurier",
+     "artist": "Indochine",
+     "cover": "img/25.jpg",
+     "bpm": null
+    },
+    {
+     "title": "Ça c'est vraiment toi",
+     "artist": "Téléphone",
+     "cover": "img/26.jpg",
+     "bpm": null
+    },
+    {
+     "title": "Allumer le feu",
+     "artist": "Johnny Hallyday",
+     "cover": "img/27.jpg",
+     "bpm": null
+    }
+   ]
+  },
+  "rehearsal": {
+   "title": "Première répète pour le concert",
+   "date": "2026-11-05",
+   "location": "Lambersart",
+   "minutes": 90,
+   "songs": 6
+  }
+ }
+}
