@@ -25,6 +25,8 @@ const PUBLIC_PREFIXES = [
   '/forum',
   // La page publique d'un groupe : sa vitrine, concerts compris.
   '/groupe',
+  // Le tuto d'installation : le lien qu'on envoie avant meme d'avoir un compte.
+  '/installer',
 ]
 
 const AUTH_ROUTES = ['/login', '/register']

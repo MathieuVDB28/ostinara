@@ -19,6 +19,7 @@ import friends from "./friends.json";
 import gear from "./gear.json";
 import home from "./home.json";
 import ics from "./ics.json";
+import install from "./install.json";
 import instruments from "./instruments.json";
 import jam from "./jam.json";
 import landing from "./landing.json";
@@ -69,6 +70,7 @@ const messages = {
   "gear": gear,
   "home": home,
   "ics": ics,
+  "install": install,
   "instruments": instruments,
   "jam": jam,
   "landing": landing,

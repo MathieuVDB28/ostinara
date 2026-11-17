@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "title": "Installer Ostinara sur ton téléphone",
+    "description": "Ajoute Ostinara sur l'écran d'accueil de ton iPhone ou de ton Android en une minute, et active les notifications."
+  },
+  "back": "Accueil",
+  "eyebrow": "Installation · 1 minute",
+  "title": "Ostinara sur ton <accent>téléphone</accent>",
+  "lead": "Pas de store : l'app s'ajoute depuis le navigateur sur ton écran d'accueil, avec son icône et ses notifications.",
+  "tabs": {
+    "label": "Ton téléphone",
+    "ios": "iPhone",
+    "android": "Android"
+  },
+  "detected": "On a reconnu ton téléphone.",
+  "installed": {
+    "title": "C'est déjà installé",
+    "body": "Tu es dans l'app. Pour les notifications, ouvre toujours Ostinara depuis son icône.",
+    "open": "Ouvrir l'accueil"
+  },
+  "desktop": {
+    "title": "Tu es sur un ordinateur",
+    "body": "Ouvre cette adresse sur ton téléphone, puis suis les étapes ci-dessous :"
+  },
+  "notSafari": {
+    "title": "Ouvre cette page dans Safari",
+    "body": "Sur iPhone, seul Safari sait ajouter Ostinara à l'écran d'accueil. Copie le lien et colle-le dans Safari.",
+    "copy": "Copier le lien",
+    "copied": "Lien copié"
+  },
+  "video": {
+    "label": "Le tuto en vidéo",
+    "caption": "Les 7 étapes en 43 secondes."
+  },
+  "ios": {
+    "title": "Sur iPhone",
+    "steps": {
+      "safari": {
+        "title": "Ouvre le lien dans Safari",
+        "body": "Safari obligatoirement, pas Chrome ni le navigateur d'une autre appli."
+      },
+      "dots": {
+        "title": "Touche les trois points",
+        "body": "À droite de la barre d'adresse, en bas de l'écran."
+      },
+      "share": {
+        "title": "Touche Partager",
+        "body": "Sur les iPhone plus anciens, le bouton Partager est directement en bas de l'écran."
+      },
+      "home": {
+        "title": "Choisis « Sur l'écran d'accueil »",
+        "body": "Descends un peu dans la liste si tu ne le vois pas."
+      },
+      "add": {
+        "title": "Touche Ajouter",
+        "body": "Laisse « Ouvrir comme app web » activé."
+      },
+      "open": {
+        "title": "Ouvre Ostinara depuis l'icône",
+        "body": "Toujours depuis l'icône, pas depuis Safari : c'est là que les notifications marchent."
+      },
+      "notif": {
+        "title": "Active les notifications",
+        "body": "Touche Activer sur « Activer les rappels ? », puis Autoriser."
+      }
+    }
+  },
+  "android": {
+    "title": "Sur Android",
+    "button": "Installer Ostinara",
+    "buttonHint": "Ton navigateur propose l'installation en un geste.",
+    "steps": {
+      "chrome": {
+        "title": "Ouvre le lien dans Chrome",
+        "body": "Ou dans le navigateur de ton téléphone (Samsung Internet marche aussi)."
+      },
+      "menu": {
+        "title": "Touche le menu ⋮",
+        "body": "En haut à droite de l'écran."
+      },
+      "install": {
+        "title": "Choisis « Installer l'application »",
+        "body": "Selon le téléphone, c'est « Ajouter à l'écran d'accueil », puis « Installer »."
+      },
+      "notif": {
+        "title": "Ouvre l'app et active les notifications",
+        "body": "Depuis l'icône, touche Activer sur « Activer les rappels ? », puis Autoriser."
+      }
+    }
+  },
+  "after": {
+    "title": "Et après ?",
+    "body": "Connecte-toi, ajoute un morceau ou un album écouté, et invite tes potes. Tu pourras couper ou rallumer les notifications dans Profil › Réglages.",
+    "cta": "Créer mon compte",
+    "login": "J'ai déjà un compte"
+  },
+  "landing": {
+    "eyebrow": "Ostinara en 1 minute",
+    "title": "Tout voir <accent>en vidéo</accent>",
+    "body": "Jouer, suivre tes progrès, ta biblio, tes albums, tes potes et ton groupe : le tour de l'app en une minute.",
+    "installTitle": "Installe-la sur ton téléphone",
+    "installBody": "Pas de store : elle s'ajoute à ton écran d'accueil en une minute, notifications comprises.",
+    "installCta": "Voir comment faire"
+  }
+}

@@ -23,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: `${base}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${base}/acces-anticipe`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/installer`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/blog`, changeFrequency: "daily", priority: 0.8 },
     ...posts.map((post) => ({
       url: `${base}${blogPostUrl(post.slug)}`,

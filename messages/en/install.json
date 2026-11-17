@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "title": "Install Ostinara on your phone",
+    "description": "Add Ostinara to your iPhone or Android home screen in a minute, and turn on notifications."
+  },
+  "back": "Home",
+  "eyebrow": "Install · 1 minute",
+  "title": "Ostinara on your <accent>phone</accent>",
+  "lead": "No app store: you add it from your browser to your home screen, with its icon and its notifications.",
+  "tabs": {
+    "label": "Your phone",
+    "ios": "iPhone",
+    "android": "Android"
+  },
+  "detected": "We recognized your phone.",
+  "installed": {
+    "title": "It's already installed",
+    "body": "You're in the app. For notifications, always open Ostinara from its icon.",
+    "open": "Open home"
+  },
+  "desktop": {
+    "title": "You're on a computer",
+    "body": "Open this address on your phone, then follow the steps below:"
+  },
+  "notSafari": {
+    "title": "Open this page in Safari",
+    "body": "On iPhone, only Safari can add Ostinara to the home screen. Copy the link and paste it into Safari.",
+    "copy": "Copy link",
+    "copied": "Link copied"
+  },
+  "video": {
+    "label": "Video walkthrough",
+    "caption": "The 7 steps in 43 seconds."
+  },
+  "ios": {
+    "title": "On iPhone",
+    "steps": {
+      "safari": {
+        "title": "Open the link in Safari",
+        "body": "It has to be Safari, not Chrome or another app's built-in browser."
+      },
+      "dots": {
+        "title": "Tap the three dots",
+        "body": "On the right of the address bar, at the bottom of the screen."
+      },
+      "share": {
+        "title": "Tap Share",
+        "body": "On older iPhones, the Share button sits right at the bottom of the screen."
+      },
+      "home": {
+        "title": "Pick “Add to Home Screen”",
+        "body": "Scroll down the list a bit if you don't see it."
+      },
+      "add": {
+        "title": "Tap Add",
+        "body": "Keep “Open as Web App” switched on."
+      },
+      "open": {
+        "title": "Open Ostinara from the icon",
+        "body": "Always from the icon, not from Safari: that's where notifications work."
+      },
+      "notif": {
+        "title": "Turn on notifications",
+        "body": "Tap Turn on under “Turn on reminders?”, then Allow."
+      }
+    }
+  },
+  "android": {
+    "title": "On Android",
+    "button": "Install Ostinara",
+    "buttonHint": "Your browser offers a one-tap install.",
+    "steps": {
+      "chrome": {
+        "title": "Open the link in Chrome",
+        "body": "Or in your phone's browser (Samsung Internet works too)."
+      },
+      "menu": {
+        "title": "Tap the ⋮ menu",
+        "body": "Top right of the screen."
+      },
+      "install": {
+        "title": "Pick “Install app”",
+        "body": "Depending on the phone, it's “Add to Home screen”, then “Install”."
+      },
+      "notif": {
+        "title": "Open the app and turn on notifications",
+        "body": "From the icon, tap Turn on under “Turn on reminders?”, then Allow."
+      }
+    }
+  },
+  "after": {
+    "title": "What's next?",
+    "body": "Sign in, add a song or an album you listened to, and invite your friends. You can turn notifications on or off in Profile › Settings.",
+    "cta": "Create my account",
+    "login": "I already have an account"
+  },
+  "landing": {
+    "eyebrow": "Ostinara in 1 minute",
+    "title": "See it <accent>in action</accent>",
+    "body": "Play, track your progress, your library, your albums, your friends and your band: the whole app in one minute.",
+    "installTitle": "Install it on your phone",
+    "installBody": "No app store: it goes on your home screen in a minute, notifications included.",
+    "installCta": "Show me how"
+  }
+}

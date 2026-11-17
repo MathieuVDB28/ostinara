@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { Icon } from "@/components/ui/icon";
 import { BandSection, HeroFragment } from "@/components/landing/band-section";
+import { DemoVideoSection } from "@/components/landing/demo-video";
 
 /*
  * Les trois onglets de l'app, dans leurs mots (cf. src/lib/navigation.ts).
@@ -108,6 +109,9 @@ export default function Home() {
         {/* Seul et en groupe, a egalite : le tempo tenu et la prochaine repete. */}
         <HeroFragment className="lg:mb-3" />
       </section>
+
+      {/* Le tour de l'app en video, et le lien vers l'installation */}
+      <DemoVideoSection />
 
       {/* Ce que fait l'app */}
       <section id="features" className="border-t border-border">

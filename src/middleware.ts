@@ -34,7 +34,8 @@ export const config = {
      * - fichiers publics du PWA et des robots (sw.js, workbox, manifest,
      *   robots.txt) : redirige vers /login, un visiteur sans session ne
      *   pouvait ni enregistrer le service worker ni installer l'app
+     * - videos de public/videos (landing et /installer), vues sans compte
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|json|txt|xml)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|json|txt|xml|mp4)$).*)',
   ],
 }

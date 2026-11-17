@@ -45,7 +45,9 @@ export default withNextIntl(withPWA({
   disable: process.env.NODE_ENV === 'development', // Disable in dev, enable in production
   importScripts: ['/sw-push-handler.js'],
   buildExcludes: [/app-build-manifest\.json$/],
-  publicExcludes: ['!robots.txt', '!sitemap.xml'],
+  // Les videos (public/videos) ne partent pas dans le precache : plusieurs
+  // Mo telecharges a l'installation du service worker, pour rien.
+  publicExcludes: ['!robots.txt', '!sitemap.xml', '!videos/**/*'],
   /*
    * Le repli hors ligne.
    *
