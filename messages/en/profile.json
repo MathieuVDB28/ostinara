@@ -103,7 +103,9 @@
     "emptyLibrary": "Your library is empty",
     "noAlbum": "No albums found",
     "typeToSearch": "Start typing to search Deezer",
-    "add": "Add"
+    "add": "Add",
+    "replace": "Replace",
+    "remove": "Remove"
   },
   "notifPrompt": {
     "title": "Turn on reminders?",

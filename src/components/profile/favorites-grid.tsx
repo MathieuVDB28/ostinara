@@ -10,6 +10,8 @@ interface FavoritesGridProps {
   items: FavoriteItem[];
   mode: 'view' | 'edit';
   onAdd?: (position: number) => void;
+  /** Toucher un favori deja pose le remplace (sans survol sur telephone). */
+  onReplace?: (position: number) => void;
   onRemove?: (position: number) => void;
   onReorder?: (fromPosition: number, toPosition: number) => void;
 }
@@ -18,7 +20,7 @@ function isFavoriteSong(item: FavoriteItem): item is FavoriteSong {
   return 'song' in item;
 }
 
-export function FavoritesGrid({ items, mode, onAdd, onRemove, onReorder }: FavoritesGridProps) {
+export function FavoritesGrid({ items, mode, onAdd, onReplace, onRemove, onReorder }: FavoritesGridProps) {
   const t = useTranslations("profile.favorites");
   const positions = [1, 2, 3, 4];
   const [draggedPosition, setDraggedPosition] = useState<number | null>(null);
@@ -97,8 +99,20 @@ export function FavoritesGrid({ items, mode, onAdd, onRemove, onReorder }: Favor
                     : "border-border"
                 } ${mode === 'edit' ? 'cursor-grab' : ''}`}
               >
-                {/* Cover */}
-                <div className="relative aspect-square bg-muted">
+                {/* Cover : en edition, la toucher remplace le favori */}
+                <div
+                  className={`relative aspect-square bg-muted ${mode === 'edit' && onReplace ? 'cursor-pointer' : ''}`}
+                  role={mode === 'edit' && onReplace ? 'button' : undefined}
+                  tabIndex={mode === 'edit' && onReplace ? 0 : undefined}
+                  aria-label={mode === 'edit' && onReplace ? `${t("replace")} : ${display.title}` : undefined}
+                  onClick={mode === 'edit' && onReplace ? () => onReplace(position) : undefined}
+                  onKeyDown={mode === 'edit' && onReplace ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onReplace(position);
+                    }
+                  } : undefined}
+                >
                   {display.coverUrl ? (
                     <img
                       src={display.coverUrl}
@@ -131,8 +145,13 @@ export function FavoritesGrid({ items, mode, onAdd, onRemove, onReorder }: Favor
                 {/* Remove button in edit mode */}
                 {mode === 'edit' && onRemove && (
                   <button
-                    onClick={() => onRemove(position)}
-                    className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-background/90 text-muted-foreground opacity-0 transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100"
+                    type="button"
+                    aria-label={t("remove")}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemove(position);
+                    }}
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-background/90 text-muted-foreground transition-opacity hover:bg-destructive hover:text-destructive-foreground [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

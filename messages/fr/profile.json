@@ -103,7 +103,9 @@
     "emptyLibrary": "Ta bibliothèque est vide",
     "noAlbum": "Aucun album trouvé",
     "typeToSearch": "Commence à taper pour rechercher sur Deezer",
-    "add": "Ajouter"
+    "add": "Ajouter",
+    "replace": "Remplacer",
+    "remove": "Retirer"
   },
   "notifPrompt": {
     "title": "Activer les rappels ?",

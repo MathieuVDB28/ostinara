@@ -48,19 +48,27 @@ export function FavoriteSelectorModal({
   const [catalogAlbums, setCatalogAlbums] = useState<CatalogResultAlbum[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Charger les morceaux de la bibliothèque
+  // Charger les morceaux de MA bibliothèque. Sans filtre, la RLS rendait
+  // aussi ceux des amis, que setFavoriteSong refusait ensuite.
   useEffect(() => {
-    if (isOpen && activeTab === "library" && type === "song") {
-      const supabase = createClient();
+    if (!isOpen || type !== "song") return;
+    let cancelled = false;
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user || cancelled) return;
       supabase
         .from("songs")
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .then(({ data }) => {
-          if (data) setLibrarySongs(data);
+          if (data && !cancelled) setLibrarySongs(data);
         });
-    }
-  }, [isOpen, activeTab, type]);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, type]);
 
   const searchCatalog = useCallback(async (query: string) => {
     setLoading(true);
@@ -100,8 +108,13 @@ export function FavoriteSelectorModal({
 
   const handleSelectSong = (song: Song | CatalogResultTrack) => {
     if (onSelectSong) {
+      // Un titre Deezer deja dans ma biblio : on reprend ce morceau plutot
+      // que d'en creer un doublon.
+      const owned = "user_id" in song
+        ? null
+        : librarySongs.find((s) => s.deezer_id && s.deezer_id === song.deezer_id) ?? null;
       // Convertir un titre Deezer en Song si nécessaire
-      const songData: Song = "user_id" in song ? song : {
+      const songData: Song = "user_id" in song ? song : owned ?? {
         id: song.id,
         user_id: "",
         title: song.title,

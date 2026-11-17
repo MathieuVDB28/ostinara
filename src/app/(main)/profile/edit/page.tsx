@@ -12,6 +12,7 @@ import { SubscriptionStatusBadge } from "@/components/subscription";
 import { PLANS } from "@/lib/stripe/config";
 import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
+import { resizeImage } from "@/lib/image-resize";
 
 type Tab = "profile" | "favorites" | "privacy" | "subscription";
 
@@ -135,6 +136,7 @@ function EditProfilePageContent() {
     // Ajouter le morceau comme favori
     const result = await setFavoriteSong({ song_id: songId, position: selectedPosition });
     if (result.success) {
+      setError(null);
       // Recharger le profil
       const updatedProfile = await getMyProfile();
       if (updatedProfile) setProfile(updatedProfile);
@@ -146,8 +148,11 @@ function EditProfilePageContent() {
   const handleRemoveFavoriteSong = async (position: number) => {
     const result = await removeFavoriteSong(position);
     if (result.success) {
+      setError(null);
       const updatedProfile = await getMyProfile();
       if (updatedProfile) setProfile(updatedProfile);
+    } else {
+      setError(result.error || t("addFavoriteFailed"));
     }
   };
 
@@ -157,12 +162,17 @@ function EditProfilePageContent() {
     const fromItem = profile.favorite_songs.find(s => s.position === fromPosition);
     const toItem = profile.favorite_songs.find(s => s.position === toPosition);
 
+    // setFavoriteSong deplace un morceau deja favori : poser A a la place
+    // de B retire A de sa place, puis B s'installe a l'ancienne place de A.
+    const results = [];
     if (fromItem) {
-      await setFavoriteSong({ song_id: fromItem.song_id, position: toPosition });
+      results.push(await setFavoriteSong({ song_id: fromItem.song_id, position: toPosition }));
     }
     if (toItem) {
-      await setFavoriteSong({ song_id: toItem.song_id, position: fromPosition });
+      results.push(await setFavoriteSong({ song_id: toItem.song_id, position: fromPosition }));
     }
+    const failed = results.find((r) => !r.success);
+    setError(failed ? failed.error || t("addFavoriteFailed") : null);
 
     // Recharger le profil
     const updatedProfile = await getMyProfile();
@@ -179,16 +189,22 @@ function EditProfilePageContent() {
   const handleSelectAlbum = async (album: { album_name: string; artist_name: string; cover_url?: string; deezer_id?: string }) => {
     const result = await setFavoriteAlbum({ ...album, position: selectedPosition });
     if (result.success) {
+      setError(null);
       const updatedProfile = await getMyProfile();
       if (updatedProfile) setProfile(updatedProfile);
+    } else {
+      setError(result.error || t("addFavoriteFailed"));
     }
   };
 
   const handleRemoveFavoriteAlbum = async (position: number) => {
     const result = await removeFavoriteAlbum(position);
     if (result.success) {
+      setError(null);
       const updatedProfile = await getMyProfile();
       if (updatedProfile) setProfile(updatedProfile);
+    } else {
+      setError(result.error || t("addFavoriteFailed"));
     }
   };
 
@@ -198,24 +214,27 @@ function EditProfilePageContent() {
     const fromItem = profile.favorite_albums.find(a => a.position === fromPosition);
     const toItem = profile.favorite_albums.find(a => a.position === toPosition);
 
+    const results = [];
     if (fromItem) {
-      await setFavoriteAlbum({
+      results.push(await setFavoriteAlbum({
         album_name: fromItem.album_name,
         artist_name: fromItem.artist_name,
         cover_url: fromItem.cover_url,
         deezer_id: fromItem.deezer_id,
         position: toPosition,
-      });
+      }));
     }
     if (toItem) {
-      await setFavoriteAlbum({
+      results.push(await setFavoriteAlbum({
         album_name: toItem.album_name,
         artist_name: toItem.artist_name,
         cover_url: toItem.cover_url,
         deezer_id: toItem.deezer_id,
         position: fromPosition,
-      });
+      }));
     }
+    const failed = results.find((r) => !r.success);
+    setError(failed ? failed.error || t("addFavoriteFailed") : null);
 
     // Recharger le profil
     const updatedProfile = await getMyProfile();
@@ -236,12 +255,18 @@ function EditProfilePageContent() {
       // Upload immédiatement
       handleAvatarUpload(file);
     }
+    // Permet de reprendre la meme photo apres un echec.
+    e.target.value = "";
   };
 
   const handleAvatarUpload = async (file: File) => {
     setUploadingAvatar(true);
+    setError(null);
+    // Une photo de telephone depasse souvent la limite de 2 Mo : on la
+    // reduit avant l'envoi.
+    const resized = await resizeImage(file);
     const formData = new FormData();
-    formData.append("avatar", file);
+    formData.append("avatar", resized);
 
     const result = await uploadAvatar(formData);
 
@@ -253,6 +278,7 @@ function EditProfilePageContent() {
         setAvatarPreview(null); // Reset preview car l'avatar est maintenant dans le profil
       }
     } else {
+      setAvatarPreview(null);
       setError(result.error || t("avatarFailed"));
     }
     setUploadingAvatar(false);
@@ -454,6 +480,7 @@ function EditProfilePageContent() {
                 items={profile.favorite_songs}
                 mode="edit"
                 onAdd={handleAddFavoriteSong}
+                onReplace={handleAddFavoriteSong}
                 onRemove={handleRemoveFavoriteSong}
                 onReorder={handleReorderFavoriteSongs}
               />
@@ -468,6 +495,7 @@ function EditProfilePageContent() {
                 items={profile.favorite_albums}
                 mode="edit"
                 onAdd={handleAddFavoriteAlbum}
+                onReplace={handleAddFavoriteAlbum}
                 onRemove={handleRemoveFavoriteAlbum}
                 onReorder={handleReorderFavoriteAlbums}
               />

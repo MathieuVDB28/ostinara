@@ -64,9 +64,11 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: boole
     return { success: false, error: await tErr("imageTooLarge") };
   }
 
-  // Nom du fichier : userId/avatar.ext
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${user.id}/avatar.${fileExt}`;
+  // Nom du fichier : userId/avatar-<horodatage>.ext. Un nom fixe gardait la
+  // meme URL publique d'un envoi a l'autre : le cache (CDN Supabase et
+  // navigateur, 1 h) continuait de montrer l'ancienne photo.
+  const fileExt = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`;
 
   // Supprimer l'ancien avatar s'il existe
   const { data: existingFiles } = await supabase.storage
@@ -109,6 +111,7 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: boole
   }
 
   revalidatePath("/profile");
+  revalidatePath("/profil");
   revalidatePath("/profile/edit");
   revalidatePath("/", "layout");
 
@@ -523,6 +526,7 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ succes
   }
 
   revalidatePath("/profile");
+  revalidatePath("/profil");
   revalidatePath("/profile/edit");
   revalidatePath("/", "layout"); // Revalider le layout pour mettre à jour la sidebar
   return { success: true };
@@ -552,6 +556,21 @@ export async function setFavoriteSong(input: SetFavoriteSongInput): Promise<{ su
     return { success: false, error: await tErr("songNotFound") };
   }
 
+  // Un morceau ne peut etre favori qu'une fois (UNIQUE user_id, song_id) :
+  // s'il l'est deja a une autre place, il la quitte pour la nouvelle. Sans
+  // ca, le choisir a nouveau ou echanger deux favoris echouait.
+  const { error: moveError } = await supabase
+    .from("favorite_songs")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("song_id", input.song_id)
+    .neq("position", input.position);
+
+  if (moveError) {
+    console.error("Error moving favorite song:", moveError);
+    return { success: false, error: await tErr("favoriteFailed") };
+  }
+
   // Upsert : remplace si position existante, sinon insère
   const { error } = await supabase
     .from("favorite_songs")
@@ -569,6 +588,7 @@ export async function setFavoriteSong(input: SetFavoriteSongInput): Promise<{ su
   }
 
   revalidatePath("/profile");
+  revalidatePath("/profil");
   revalidatePath("/profile/edit");
   return { success: true };
 }
@@ -597,6 +617,7 @@ export async function removeFavoriteSong(position: number): Promise<{ success: b
   }
 
   revalidatePath("/profile");
+  revalidatePath("/profil");
   revalidatePath("/profile/edit");
   return { success: true };
 }
@@ -629,6 +650,7 @@ export async function setFavoriteAlbum(input: SetFavoriteAlbumInput): Promise<{ 
   }
 
   revalidatePath("/profile");
+  revalidatePath("/profil");
   revalidatePath("/profile/edit");
   return { success: true };
 }
@@ -657,6 +679,7 @@ export async function removeFavoriteAlbum(position: number): Promise<{ success: 
   }
 
   revalidatePath("/profile");
+  revalidatePath("/profil");
   revalidatePath("/profile/edit");
   return { success: true };
 }
