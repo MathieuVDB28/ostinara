@@ -64,6 +64,7 @@ export async function GET() {
     playlists,
     weeklyGoals,
     badges,
+    plannedSessions,
   ] = await Promise.all([
     own("profiles", "id", "id, username, display_name, bio, avatar_url, plan, is_private, instagram_url, tiktok_url, twitter_url, facebook_url, created_at"),
     own("profile_private", "user_id", "subscription_status, subscription_period_end, locale, practice_reminders, share_sessions"),
@@ -87,6 +88,7 @@ export async function GET() {
     own("playlists", "user_id", "*, songs:playlist_songs(*)"),
     own("weekly_goals"),
     own("user_badges"),
+    own("planned_sessions"),
   ]);
 
   const songTitle = new Map(songs.map((song) => [song.id as string, `${song.title}${song.artist ? ` - ${song.artist}` : ""}`]));
@@ -112,6 +114,7 @@ export async function GET() {
     favorite_albums: favoriteAlbums,
     playlists,
     weekly_goals: weeklyGoals,
+    planned_sessions: plannedSessions,
     badges,
   };
 

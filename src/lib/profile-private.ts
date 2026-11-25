@@ -5,7 +5,7 @@
 
 /** Les colonnes privees qu'on joint a son propre profil (getMyProfile). */
 export const PROFILE_PRIVATE_SELECT =
-  "private:profile_private(stripe_customer_id, stripe_subscription_id, subscription_status, subscription_period_end, locale, practice_reminders, share_sessions, notify_friends_playing)";
+  "private:profile_private(stripe_customer_id, stripe_subscription_id, subscription_status, subscription_period_end, locale, practice_reminders, share_sessions, notify_friends_playing, notify_planned, notify_planned_missed, notify_rehearsals)";
 
 /**
  * La jointure rend un objet (relation 1-1) ; certaines versions de

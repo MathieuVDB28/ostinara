@@ -10,6 +10,8 @@ import { songTempoProgress } from "@/lib/song-progress";
 import { calendarDaysAgo } from "@/lib/streak";
 import { profileHref } from "@/lib/navigation";
 import { activityMessage, formatActivityDate } from "@/lib/activity-messages";
+import type { AgendaEvent } from "@/lib/agenda";
+import { EventTime } from "./event-time";
 import type {
   ActivityWithDetails,
   AlbumReview,
@@ -39,6 +41,8 @@ interface HomeViewProps {
     rehearsals: number;
     nextRehearsalId: string | null;
   };
+  /** Sessions planifiees, repetes et concerts a venir. */
+  upcoming: AgendaEvent[];
   recentSongs: Song[];
   recentAlbums: AlbumReview[];
   weeklyAlbums: WeeklyAlbum[];
@@ -61,6 +65,7 @@ export function HomeView({
   weeklyPlan,
   resume,
   pending,
+  upcoming,
   recentSongs,
   recentAlbums,
   weeklyAlbums,
@@ -106,6 +111,7 @@ export function HomeView({
         <div className="min-w-0 space-y-8">
           <WeekStats stats={practiceStats} plan={weeklyPlan} />
           <ResumeBlock resume={resume} />
+          <UpcomingBlock events={upcoming} />
           <PendingBlock pending={pending} />
           <RecentSongsShelf songs={recentSongs} />
           <RecentAlbumsShelf albums={recentAlbums} />
@@ -325,6 +331,38 @@ function ResumeBlock({ resume }: { resume: HomeViewProps["resume"] }) {
         <Play className="h-4 w-4 fill-current" strokeWidth={0} aria-hidden="true" />
         {t("playThisSong")}
       </Link>
+    </section>
+  );
+}
+
+/** Les prochains rendez-vous, tous genres confondus. */
+function UpcomingBlock({ events }: { events: AgendaEvent[] }) {
+  const t = useTranslations("home");
+  return (
+    <section aria-labelledby="home-upcoming">
+      <BlockHeading id="home-upcoming" title={t("upcoming")} href="/jouer?vue=agenda" linkLabel={t("agenda")} />
+      {events.length === 0 ? (
+        <EmptyLine href="/jouer?vue=agenda" action={t("planSession")}>
+          {t("nothingPlanned")}
+        </EmptyLine>
+      ) : (
+        <ul>
+          {events.map((event) => (
+            <li key={event.key} className="border-b border-border last:border-b-0">
+              <Link href={event.href} className="flex min-h-[48px] items-center gap-3 py-2 transition-colors hover:text-primary">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">{event.title}</span>
+                  <span className="tabular block truncate text-xs text-muted-foreground">
+                    <EventTime event={event} />
+                    {[event.withName, event.location].filter(Boolean).map((part) => ` · ${part}`)}
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

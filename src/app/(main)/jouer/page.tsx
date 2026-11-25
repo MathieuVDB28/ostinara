@@ -12,6 +12,9 @@ import { requirePaidPlan } from "@/lib/actions/plan";
 import { getWeeklyPlan } from "@/lib/actions/weekly-plan";
 import { getSetlists } from "@/lib/actions/setlists";
 import { getRoutines } from "@/lib/actions/routines";
+import { getPlannedSessions } from "@/lib/actions/planned-sessions";
+import { getAgenda, getCalendarToken } from "@/lib/actions/agenda";
+import { getFriends } from "@/lib/actions/friends";
 import { hasBandMembership } from "@/lib/actions/rehearsal-logs";
 import { PlayView } from "@/components/play/play-view";
 import { getTranslations } from "next-intl/server";
@@ -24,9 +27,9 @@ export async function generateMetadata() {
 export default async function JouerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ exercise?: string; song?: string }>;
+  searchParams: Promise<{ exercise?: string; song?: string; planned?: string; plan?: string; vue?: string }>;
 }) {
-  const { exercise: initialExerciseId, song: initialSongId } = await searchParams;
+  const { exercise: initialExerciseId, song: initialSongId, planned: initialPlannedId, plan: planSongId, vue } = await searchParams;
   const user = await getAuthenticatedUser();
 
   if (!user) {
@@ -48,6 +51,10 @@ export default async function JouerPage({
     setlists,
     routines,
     hasBand,
+    plannedSessions,
+    friends,
+    agenda,
+    calendarToken,
   ] = await Promise.all([
     getSongs(),
     getExercises(),
@@ -66,6 +73,10 @@ export default async function JouerPage({
     getSetlists(),
     getRoutines(),
     hasBandMembership(),
+    getPlannedSessions(),
+    getFriends(),
+    getAgenda(),
+    getCalendarToken(),
   ]);
 
   // Le morceau en cours ouvre la page : c'est la raison pour laquelle
@@ -96,6 +107,16 @@ export default async function JouerPage({
       setlists={setlists}
       routines={routines}
       hasBand={hasBand}
+      plannedSessions={plannedSessions}
+      friends={friends.map(({ profile }) => ({
+        id: profile.id,
+        name: profile.display_name || profile.username,
+      }))}
+      initialPlannedId={initialPlannedId}
+      planSongId={planSongId}
+      agenda={agenda}
+      calendarToken={calendarToken}
+      openAgenda={vue === "agenda"}
       userPlan={planCheck.plan}
       isPaid={planCheck.allowed}
     />

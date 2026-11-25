@@ -207,5 +207,15 @@
   "bandSlugInvalid": "Invalid address: 3 to 60 characters, letters, numbers and hyphens.",
   "bandSlugTaken": "This address is already taken.",
   "bandPublicPageForbidden": "Only the owner and admins of an active band can manage its public page.",
-  "tempoGoalInvalid": "Invalid goal: a tempo between 20 and 300 BPM and a date."
+  "tempoGoalInvalid": "Invalid goal: a tempo between 20 and 300 BPM and a date.",
+  "rehearsalEditNotAllowed": "Only the person who created the rehearsal, the band owner and admins can edit it",
+  "rehearsalInPast": "The new date is already in the past",
+  "rehearsalSeriesTooLong": "This series is too long: two years of weekly rehearsals at most",
+  "plannedLimit": "Three upcoming sessions at most on the Free plan",
+  "plannedSeriesPaid": "Repeating sessions are for Pro and Band plans",
+  "plannedGuestPaid": "Inviting a friend is for Pro and Band plans",
+  "plannedGuestFriend": "You can only invite a friend",
+  "plannedPast": "This date is already in the past",
+  "plannedInvalid": "A title, a date and a duration from 5 minutes to 12 hours are required",
+  "plannedSeriesTooLong": "This series is too long: 104 sessions at most"
 }

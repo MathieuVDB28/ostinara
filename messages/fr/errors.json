@@ -207,5 +207,15 @@
   "bandSlugInvalid": "Adresse invalide : 3 à 60 caractères, lettres, chiffres et tirets.",
   "bandSlugTaken": "Cette adresse est déjà prise.",
   "bandPublicPageForbidden": "Seuls le titulaire et les admins d'un groupe actif gèrent sa page publique.",
-  "tempoGoalInvalid": "Objectif invalide : un tempo entre 20 et 300 BPM et une date."
+  "tempoGoalInvalid": "Objectif invalide : un tempo entre 20 et 300 BPM et une date.",
+  "rehearsalEditNotAllowed": "Seuls la personne qui a créé la répète, le titulaire et les admins peuvent la modifier",
+  "rehearsalInPast": "La nouvelle date est déjà passée",
+  "rehearsalSeriesTooLong": "La série est trop longue : deux ans de répètes hebdomadaires au maximum",
+  "plannedLimit": "Trois sessions à venir au maximum avec le plan Free",
+  "plannedSeriesPaid": "La répétition est réservée aux plans Pro et Band",
+  "plannedGuestPaid": "Inviter un ami est réservé aux plans Pro et Band",
+  "plannedGuestFriend": "Tu ne peux inviter qu'un ami",
+  "plannedPast": "Cette date est déjà passée",
+  "plannedInvalid": "Il faut un titre, une date et une durée de 5 minutes à 12 heures",
+  "plannedSeriesTooLong": "La série est trop longue : 104 sessions au maximum"
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { deviceTimeZone } from "@/lib/time-zone";
 import { createRehearsal } from "@/lib/actions/rehearsals";
 import { useTranslations } from "next-intl";
 import type { BandWithMembers, Setlist, RecurrenceType } from "@/types";
@@ -109,6 +110,7 @@ export function CreateRehearsalModal({
       description: description.trim() || undefined,
       date: startDateTime.toISOString(),
       end_date: endDateTime?.toISOString(),
+      time_zone: deviceTimeZone(),
       location: location.trim() || undefined,
       location_url: locationUrl.trim() || undefined,
       setlist_id: setlistId || undefined,

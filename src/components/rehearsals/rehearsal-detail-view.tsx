@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import {
   respondToRehearsal,
-  updateRehearsal,
+  updateRehearsalNotes,
   cancelRehearsal,
   deleteRehearsal,
 } from "@/lib/actions/rehearsals";
+import { EditRehearsalModal } from "./edit-rehearsal-modal";
 import { BandChatPanel } from "./band-chat-panel";
 import { RehearsalAttendanceCard } from "./rehearsal-attendance-card";
 import { RehearsalReport } from "./rehearsal-report";
@@ -24,6 +26,7 @@ import type {
   SetlistMemberReadiness,
   BandRecordingListItem,
 } from "@/types";
+import { useDepsChanged } from "@/lib/hooks/use-deps-changed";
 import { Icon } from "@/components/ui/icon";
 import { bandPosteLabel, instrumentMeta } from "@/lib/instruments";
 import { rehearsalLineup } from "@/lib/rehearsal-lineup";
@@ -39,6 +42,10 @@ interface RehearsalDetailViewProps {
   readOnly?: boolean;
   /** Les enregistrements relies a cette repete. */
   recordings?: BandRecordingListItem[];
+  /** Auteur, titulaire ou admin : modifier et annuler. */
+  canManage?: boolean;
+  /** Les setlists du groupe, pour en changer. */
+  bandSetlists?: { id: string; name: string }[];
 }
 
 export function RehearsalDetailView({
@@ -50,13 +57,20 @@ export function RehearsalDetailView({
   memberReadiness = null,
   readOnly = false,
   recordings = [],
+  canManage = false,
+  bandSetlists = [],
 }: RehearsalDetailViewProps) {
   const t = useTranslations("rehearsals.detail");
   const tr = useTranslations("rehearsals.report");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
   const intlLocale = useIntlLocale();
+  const router = useRouter();
   const [rehearsal, setRehearsal] = useState(initialRehearsal);
+  // Apres une modification, la page recharge la repete et les presences.
+  if (useDepsChanged([initialRehearsal])) setRehearsal(initialRehearsal);
+  const [editing, setEditing] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"details" | "chat">("details");
   const [rsvpLoading, setRsvpLoading] = useState(false);
   const [notesText, setNotesText] = useState(rehearsal.notes || "");
@@ -106,19 +120,25 @@ export function RehearsalDetailView({
   };
 
   const handleSaveNotes = async () => {
-    await updateRehearsal(rehearsal.id, { notes: notesText });
+    setActionError(null);
+    const result = await updateRehearsalNotes(rehearsal.id, notesText);
+    if (!result.success) return setActionError(result.error ?? tc("genericError"));
     setRehearsal((prev) => ({ ...prev, notes: notesText }));
     setEditingNotes(false);
   };
 
   const handleCancel = async () => {
     if (!confirm(t("confirmCancel"))) return;
-    await cancelRehearsal(rehearsal.id);
+    setActionError(null);
+    const result = await cancelRehearsal(rehearsal.id);
+    if (!result.success) return setActionError(result.error ?? tc("genericError"));
     setRehearsal((prev) => ({ ...prev, status: "cancelled" }));
   };
 
   const handleDelete = async (deleteAll: boolean) => {
-    await deleteRehearsal(rehearsal.id, deleteAll);
+    setActionError(null);
+    const result = await deleteRehearsal(rehearsal.id, deleteAll);
+    if (!result.success) return setActionError(result.error ?? tc("genericError"));
     window.location.href = "/setlists";
   };
 
@@ -468,6 +488,12 @@ export function RehearsalDetailView({
             )}
           </div>
 
+          {actionError && (
+            <p role="alert" className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {actionError}
+            </p>
+          )}
+
           {/* Actions */}
           {(isActive || rehearsal.status === "completed") && !readOnly && (
             <div className="flex flex-wrap gap-2">
@@ -488,7 +514,16 @@ export function RehearsalDetailView({
                   {isLogged ? tr("edit") : t("addReport")}
                 </Link>
               )}
-              {isActive && (
+              {isActive && !isPast && canManage && (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-accent"
+                >
+                  <Icon name="edit" className="h-4 w-4" />
+                  {tc("edit")}
+                </button>
+              )}
+              {isActive && canManage && (
                 <button
                   onClick={handleCancel}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10"
@@ -536,6 +571,15 @@ export function RehearsalDetailView({
             </div>
           )}
         </div>
+      )}
+
+      {editing && (
+        <EditRehearsalModal
+          rehearsal={rehearsal}
+          setlists={bandSetlists}
+          onClose={() => setEditing(false)}
+          onSuccess={() => router.refresh()}
+        />
       )}
 
       {/* Chat Tab */}

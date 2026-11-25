@@ -37,7 +37,13 @@
     "shareSessionsOn": "Your friends are told when you play, can follow you live and see your sessions in their feed",
     "shareSessionsOff": "Your sessions stay private unless you tick the box when you save one",
     "friendsPlaying": "When a friend starts playing",
-    "friendsPlayingOn": "A notification when a friend starts a session"
+    "friendsPlayingOn": "A notification when a friend starts a session",
+    "planned": "Planned sessions",
+    "plannedOn": "Reminders, invitations and changes",
+    "plannedMissed": "Planned session not played",
+    "plannedMissedOn": "A single nudge, around 8 pm",
+    "rehearsals": "Rehearsals",
+    "rehearsalsOn": "Reminders, changes and answers, in all your bands"
   },
   "privateAccount": "Private account",
   "showcase": {

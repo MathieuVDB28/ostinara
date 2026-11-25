@@ -37,7 +37,13 @@
     "shareSessionsOn": "Tes amis sont prévenus quand tu joues, peuvent te suivre en direct et voient tes sessions dans le feed",
     "shareSessionsOff": "Tes sessions restent pour toi, sauf si tu coches la case en fin de session",
     "friendsPlaying": "Quand un ami se met à jouer",
-    "friendsPlayingOn": "Une notification quand un ami lance une session"
+    "friendsPlayingOn": "Une notification quand un ami lance une session",
+    "planned": "Sessions planifiées",
+    "plannedOn": "Rappels, invitations et changements",
+    "plannedMissed": "Session prévue pas jouée",
+    "plannedMissedOn": "Une seule relance, vers 20 h",
+    "rehearsals": "Répètes",
+    "rehearsalsOn": "Rappels, changements et réponses, dans tous tes groupes"
   },
   "privateAccount": "Compte privé",
   "showcase": {

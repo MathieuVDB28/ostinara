@@ -35,5 +35,9 @@
   "noFriendNews": "Rien de neuf chez tes amis.",
   "findFriends": "Trouve des amis",
   "recentCovers": "Dernières covers",
-  "rehearsalConfirmations": "{count, plural, one {# répète à confirmer} other {# répètes à confirmer}}"
+  "rehearsalConfirmations": "{count, plural, one {# répète à confirmer} other {# répètes à confirmer}}",
+  "upcoming": "À venir",
+  "agenda": "Agenda",
+  "nothingPlanned": "Rien de prévu.",
+  "planSession": "Planifier une session"
 }

@@ -232,5 +232,14 @@
     "deleteConfirm": "Delete",
     "you": "you",
     "readOnly": "The band is read-only: polls can't be answered anymore."
+  },
+  "edit": {
+    "title": "Edit rehearsal",
+    "rsvpHint": "If the date or time changes, everyone will have to answer again.",
+    "zoneHint": "{zone} time",
+    "scope": "Apply to",
+    "one": "This one",
+    "following": "This one and the following",
+    "required": "Title, date and time are required"
   }
 }

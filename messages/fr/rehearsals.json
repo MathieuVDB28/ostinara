@@ -232,5 +232,14 @@
     "deleteConfirm": "Supprimer",
     "you": "toi",
     "readOnly": "Le groupe est en lecture seule : on ne répond plus aux sondages."
+  },
+  "edit": {
+    "title": "Modifier la répète",
+    "rsvpHint": "Si la date ou l'heure change, chacun devra redire s'il vient.",
+    "zoneHint": "Heure de {zone}",
+    "scope": "Appliquer à",
+    "one": "Celle-ci",
+    "following": "Celle-ci et les suivantes",
+    "required": "Le titre, la date et l'heure sont requis"
   }
 }

@@ -38,6 +38,8 @@ interface WeeklyPlanCardProps {
   plan: WeeklyPlan;
   /** Deep-link vers l'ecran de travail d'un morceau. */
   onWorkOnSong?: (songId: string) => void;
+  /** Planifier une session sur le morceau d'un objectif. */
+  onPlanSong?: (songId: string) => void;
   className?: string;
 }
 
@@ -82,6 +84,7 @@ function daysLeft(weekEnd: string): number {
 export function WeeklyPlanCard({
   plan,
   onWorkOnSong,
+  onPlanSong,
   className = "",
 }: WeeklyPlanCardProps) {
   const t = useTranslations("weeklyPlan.card");
@@ -170,6 +173,7 @@ export function WeeklyPlanCard({
             disabled={isPending}
             onToggle={() => handleToggle(goal.id)}
             onWorkOnSong={onWorkOnSong}
+            onPlanSong={onPlanSong}
           />
         ))}
       </ul>
@@ -189,6 +193,7 @@ interface WeeklyGoalRowProps {
   disabled: boolean;
   onToggle: () => void;
   onWorkOnSong?: (songId: string) => void;
+  onPlanSong?: (songId: string) => void;
 }
 
 function WeeklyGoalRow({
@@ -196,6 +201,7 @@ function WeeklyGoalRow({
   disabled,
   onToggle,
   onWorkOnSong,
+  onPlanSong,
 }: WeeklyGoalRowProps) {
   const t = useTranslations("weeklyPlan");
   const target = goal.target_value ?? 1;
@@ -277,6 +283,16 @@ function WeeklyGoalRow({
               <Play className="h-3 w-3 fill-current" strokeWidth={0} aria-hidden="true" />
               {t("card.work")}
 
+            </button>
+          )}
+          {goal.song_id && onPlanSong && !goal.done && (
+            <button
+              type="button"
+              onClick={() => onPlanSong(goal.song_id!)}
+              className="ml-2 mt-2 inline-flex min-h-[32px] items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <CalendarDays className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
+              {t("card.plan")}
             </button>
           )}
         </div>

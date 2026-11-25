@@ -14,6 +14,11 @@ import { BpmTargetIndicator } from "@/components/practice/song-practice/bpm-targ
 import { TunerSheet } from "@/components/audio/tuner-sheet";
 import { SongTabPanel } from "@/components/practice/song-practice/song-tab-panel";
 import { ResumeCard } from "./resume-card";
+import { plannedProgram } from "@/lib/planned-program";
+import { PlannedSessionsSection } from "./planned-sessions-section";
+import { PlanSessionModal, type PlanPreset } from "./plan-session-modal";
+import type { AgendaEvent } from "@/lib/agenda";
+import { AgendaView } from "./agenda-view";
 import { CarnetView } from "./carnet-view";
 import { PlaySetlistPanel } from "./play-setlist-panel";
 import { PlayQueuePanel, STORAGE_KEY } from "./play-queue-panel";
@@ -33,12 +38,13 @@ import type {
   PracticeSessionWithSong,
   PracticeStats,
   SetlistWithDetails,
+  PlannedSession,
   RoutineWithItems,
   UserPlan,
   WeeklyPlan,
 } from "@/types";
 
-type PlayTab = "carnet" | "song" | "exercises" | "file" | "setlist";
+type PlayTab = "carnet" | "agenda" | "song" | "exercises" | "file" | "setlist";
 
 /*
  * Deux segments, pas trois. L'accordeur etait le seul onglet qui ne
@@ -50,6 +56,8 @@ type PlayTab = "carnet" | "song" | "exercises" | "file" | "setlist";
 const TABS: PlayTab[] = [
   // Le Carnet ouvre l'onglet : ce qu'on a joue, et ce qu'on va jouer.
   "carnet",
+  // Sessions planifiees, repetes et concerts.
+  "agenda",
   // Monter une session (morceaux + exos) à la volée et la dérouler.
   "file",
   "song",
@@ -98,6 +106,17 @@ interface PlayViewProps {
   routines: RoutineWithItems[];
   /** Membre d'un groupe : le Carnet propose de raconter une repete. */
   hasBand: boolean;
+  plannedSessions: PlannedSession[];
+  /** Mes amis, pour en inviter un. */
+  friends: { id: string; name: string }[];
+  /** Session planifiee a charger a l'arrivee (`/jouer?planned=<id>`, les rappels). */
+  initialPlannedId?: string;
+  /** Planifier ce morceau a l'arrivee (`/jouer?plan=<id>`). */
+  planSongId?: string;
+  agenda: AgendaEvent[];
+  calendarToken: string | null;
+  /** `/jouer?vue=agenda`, depuis l'accueil. */
+  openAgenda?: boolean;
   userPlan: UserPlan;
   isPaid: boolean;
 }
@@ -147,6 +166,13 @@ export function PlayView({
   userPlan,
   isPaid,
   hasBand,
+  plannedSessions,
+  friends,
+  initialPlannedId,
+  planSongId,
+  agenda,
+  calendarToken,
+  openAgenda = false,
 }: PlayViewProps) {
   const t = useTranslations("play.view");
   const router = useRouter();
@@ -158,11 +184,20 @@ export function PlayView({
 
   // Les segments de "Jouer" sont du state, pas des routes : le metronome
   // et le chrono doivent survivre au passage d'un segment a l'autre.
+  // Le rappel « c'est l'heure » : la session planifiee, deja chargee.
+  const initialPlanned =
+    plannedSessions.find((s) => s.id === initialPlannedId && s.me.rsvp === "accepted" && s.me.state === "planned") ?? null;
+  const [initialProgram] = useState(() =>
+    initialPlanned ? plannedProgram(initialPlanned, { songs, exercises, routines, setlists }) : null
+  );
+
   const [activeTab, setActiveTab] = useState<PlayTab>(() => {
+    if (initialProgram?.routine.items.length) return "file";
     if (initialExercise) return "exercises";
     // `/jouer?song=<id>` vient de la bibliotheque ou du plan : on veut
     // jouer ce morceau, pas relire le carnet.
     if (initialSongId && songs.some((song) => song.id === initialSongId)) return "song";
+    if (openAgenda) return "agenda";
     return "carnet";
   });
 
@@ -222,7 +257,23 @@ export function PlayView({
   const [routineLoad, setRoutineLoad] = useState<{
     routine: RoutineWithItems;
     token: number;
-  } | null>(null);
+  } | null>(initialProgram?.routine.items.length ? { routine: initialProgram.routine, token: 0 } : null);
+
+  // Planifier : la modale, pre-remplie selon d'ou l'on vient.
+  const [planning, setPlanning] = useState<PlanPreset | null>(() => {
+    const song = songs.find((item) => item.id === planSongId);
+    return song ? { kind: "song", song } : null;
+  });
+  const handleLaunchPlanned = (session: PlannedSession): number => {
+    const { routine, missing } = plannedProgram(session, { songs, exercises, routines, setlists });
+    if (routine.items.length > 0) {
+      setRoutineLoad({ routine, token: Date.now() });
+      setActiveTab("file");
+    } else if (missing === 0) {
+      setActiveTab("song");
+    }
+    return missing;
+  };
   // La derniere session montee (retenue en localStorage), pour « Reprendre ».
   // Relue a chaque rendu (un changement d'onglet suffit a la rafraichir),
   // et a chaque ecriture depuis un autre onglet du navigateur.
@@ -436,6 +487,7 @@ export function PlayView({
             ) : (
               // Les onglets File et Setlist ont leur propre bouton de démarrage (sur l'élément courant).
               activeTab !== "carnet" &&
+              activeTab !== "agenda" &&
               activeTab !== "setlist" &&
               activeTab !== "file" && (
                 <button
@@ -492,6 +544,35 @@ export function PlayView({
           onDeleteRoutine={handleDeleteRoutine}
           lastSessionCount={lastSessionCount}
           onResumeSession={handleResumeSession}
+          planned={
+            <PlannedSessionsSection
+              sessions={plannedSessions}
+              highlightId={initialPlannedId}
+              onPlan={() => setPlanning({ kind: "empty" })}
+              onEdit={(session) => setPlanning({ kind: "edit", session })}
+              onLaunch={handleLaunchPlanned}
+            />
+          }
+          onPlanSong={(songId) => {
+            const song = songs.find((item) => item.id === songId);
+            if (song) setPlanning({ kind: "song", song });
+          }}
+          onPlanRoutine={(routine) => setPlanning({ kind: "routine", routine })}
+        />
+      )}
+
+      {activeTab === "agenda" && (
+        <AgendaView
+          events={agenda}
+          isPaid={isPaid}
+          calendarToken={calendarToken}
+          onPlan={(day) => setPlanning({ kind: "empty", day })}
+          onOpenPlanned={(id) => {
+            const session = plannedSessions.find((item) => item.id === id);
+            if (!session || session.me.state !== "planned") return;
+            if (session.me.role === "owner") setPlanning({ kind: "edit", session });
+            else handleLaunchPlanned(session);
+          }}
         />
       )}
 
@@ -500,7 +581,7 @@ export function PlayView({
         seulement masque : il continue de battre d'un onglet a l'autre.
       */}
       <div
-        hidden={activeTab === "carnet"}
+        hidden={activeTab === "carnet" || activeTab === "agenda"}
         className="grid gap-x-10 gap-y-6 lg:grid-cols-[400px_1fr]"
       >
         {!isPracticing && activeTab !== "setlist" && activeTab !== "file" && (
@@ -612,6 +693,20 @@ export function PlayView({
           isOpen={exerciseModalOpen}
           onClose={() => setExerciseModalOpen(false)}
           onStartPractice={handleStartExercisePractice}
+        />
+      )}
+
+      {planning && (
+        <PlanSessionModal
+          preset={planning}
+          songs={songs}
+          exercises={exercises}
+          routines={routines}
+          setlists={setlists}
+          friends={friends}
+          isPaid={isPaid}
+          agenda={agenda}
+          onClose={() => setPlanning(null)}
         />
       )}
 

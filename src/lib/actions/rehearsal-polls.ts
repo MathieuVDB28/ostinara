@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { rehearsalRecipients } from "@/lib/notifications/rehearsals";
+import { safeTimeZone } from "@/lib/time-zone";
 import { tErr } from "@/i18n/server";
 import { INTL_LOCALE, type Locale } from "@/i18n/config";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
@@ -126,7 +128,8 @@ export async function voteRehearsalPoll(
 /** Valider un creneau : la repete est creee, les reponses deviennent les RSVP. */
 export async function closeRehearsalPoll(
   pollId: string,
-  optionId: string
+  optionId: string,
+  timeZone?: string
 ): Promise<{ success: boolean; error?: string; rehearsalId?: string }> {
   const user = await getAuthenticatedUser();
   if (!user) return { success: false, error: await tErr("notAuthenticated") };
@@ -142,6 +145,13 @@ export async function closeRehearsalPoll(
     return { success: false, error: await pollError(error) };
   }
 
+  // La repete prend le fuseau de qui valide le creneau.
+  const { error: zoneError } = await supabase
+    .from("rehearsals")
+    .update({ time_zone: safeTimeZone(timeZone) })
+    .eq("id", rehearsalId);
+  if (zoneError) console.error("Error setting rehearsal time zone:", zoneError);
+
   const { data: rehearsal } = await supabase
     .from("rehearsals")
     .select("band_id, title, date")
@@ -151,23 +161,24 @@ export async function closeRehearsalPoll(
   if (rehearsal) {
     const { others, myName } = await bandContext(rehearsal.band_id, user.id);
     const date = new Date(rehearsal.date);
-    if (others.length > 0) {
+    const recipients = await rehearsalRecipients(rehearsal.band_id, others);
+    if (recipients.length > 0) {
       await sendPushNotificationToMultipleUsers(
-        others.map((id) => ({
+        recipients.map((id) => ({
           userId: id,
           payload: (t: PushT, locale: Locale) => ({
             title: t("rehearsalCreated.title"),
             body: t("rehearsalCreated.body", {
               name: myName ?? t("someone"),
               title: rehearsal.title,
-              // L'heure du groupe, pas celle du serveur.
+              // L'heure de la repete, pas celle du serveur.
               date: new Intl.DateTimeFormat(INTL_LOCALE[locale], {
                 weekday: "long",
                 day: "numeric",
                 month: "long",
                 hour: "2-digit",
                 minute: "2-digit",
-                timeZone: "Europe/Paris",
+                timeZone: safeTimeZone(timeZone),
               }).format(date),
             }),
             data: { url: `/setlists/rehearsals/${rehearsalId}` },

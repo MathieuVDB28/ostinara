@@ -35,5 +35,9 @@
   "noFriendNews": "Nothing new from your friends.",
   "findFriends": "Find friends",
   "recentCovers": "Latest covers",
-  "rehearsalConfirmations": "{count, plural, one {# rehearsal to confirm} other {# rehearsals to confirm}}"
+  "rehearsalConfirmations": "{count, plural, one {# rehearsal to confirm} other {# rehearsals to confirm}}",
+  "upcoming": "Coming up",
+  "agenda": "Agenda",
+  "nothingPlanned": "Nothing planned.",
+  "planSession": "Plan a session"
 }

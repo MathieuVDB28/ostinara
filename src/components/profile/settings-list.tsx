@@ -5,7 +5,10 @@ import { useTranslations } from "next-intl";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { LogoutButton } from "@/components/layout/logout-button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { FriendsPlayingSetting, NotificationSetting, PracticeRemindersSetting, ShareSessionsSetting } from "./notification-setting";
+import { FriendsPlayingSetting, NotificationSetting, PlannedMissedSetting,
+  PlannedRemindersSetting,
+  PracticeRemindersSetting,
+  RehearsalsSetting, ShareSessionsSetting } from "./notification-setting";
 import { SubscriptionStatusBadge } from "@/components/subscription";
 import { ProUpsell } from "@/components/subscription/pro-upsell";
 import type { UserProfile } from "@/types";
@@ -139,6 +142,9 @@ export function SettingsList({ profile }: SettingsListProps) {
         <div className="divide-y divide-border border-b border-border">
           <NotificationSetting />
           <PracticeRemindersSetting initialOn={profile.practice_reminders !== false} />
+          <PlannedRemindersSetting initialOn={profile.notify_planned !== false} />
+          <PlannedMissedSetting initialOn={profile.notify_planned_missed !== false} />
+          <RehearsalsSetting initialOn={profile.notify_rehearsals !== false} />
           <ShareSessionsSetting initialOn={profile.share_sessions !== false} />
           <FriendsPlayingSetting initialOn={profile.notify_friends_playing !== false} />
         </div>

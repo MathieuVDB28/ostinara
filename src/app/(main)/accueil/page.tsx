@@ -13,6 +13,7 @@ import { getPendingRequestsCount } from "@/lib/actions/friends";
 import { getPendingChallengesCount } from "@/lib/actions/challenges";
 import { getPendingBandInvitations } from "@/lib/actions/bands";
 import { getPendingRehearsalConfirmations } from "@/lib/actions/rehearsal-logs";
+import { getUpcomingAgenda } from "@/lib/actions/agenda";
 import { syncBadges } from "@/lib/badges/sync";
 import { getTranslations } from "next-intl/server";
 import { HomeView } from "@/components/home/home-view";
@@ -28,6 +29,7 @@ const RECENT_ALBUMS = 8;
 const WEEKLY_ALBUMS = 6;
 const FEED_ITEMS = 5;
 const COVERS = 4;
+const UPCOMING = 4;
 
 /**
  * L'accueil : la page d'arrivee de l'app.
@@ -61,6 +63,7 @@ export default async function AccueilPage() {
     pendingChallenges,
     bandInvitations,
     rehearsalConfirmations,
+    upcoming,
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -79,6 +82,7 @@ export default async function AccueilPage() {
     getPendingChallengesCount(),
     getPendingBandInvitations(),
     getPendingRehearsalConfirmations(),
+    getUpcomingAgenda(UPCOMING),
     // Les badges ne s'affichent plus ici (ils sont dans Profil), mais
     // l'accueil verifie toujours ce qui a ete debloque sans action de sa
     // part — un ami qui accepte, un defi gagne a l'echeance — pour que le
@@ -133,6 +137,7 @@ export default async function AccueilPage() {
         rehearsals: rehearsalConfirmations.length,
         nextRehearsalId: rehearsalConfirmations[0]?.rehearsal_id ?? null,
       }}
+      upcoming={upcoming}
       recentSongs={recentSongs}
       recentAlbums={recentAlbums}
       weeklyAlbums={weeklyAlbums?.albums.slice(0, WEEKLY_ALBUMS) ?? []}

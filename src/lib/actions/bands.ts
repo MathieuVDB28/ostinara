@@ -717,3 +717,29 @@ export async function setBandSetlistNotifications(
   revalidatePath(`/commu/groupes/${bandId}`);
   return { success: true };
 }
+
+/** Couper ou remettre, pour soi, les notifications des repetes d'un groupe. */
+export async function setBandRehearsalNotifications(
+  bandId: string,
+  enabled: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return { success: false, error: await tErr("notAuthenticated") };
+  }
+
+  const { error } = await supabase.rpc("set_band_rehearsal_notifications", {
+    p_band_id: bandId,
+    p_enabled: enabled,
+  });
+
+  if (error) {
+    console.error("Error setting band rehearsal notifications:", error);
+    return { success: false, error: await tErr("updateFailed") };
+  }
+
+  revalidatePath(`/commu/groupes/${bandId}`);
+  return { success: true };
+}

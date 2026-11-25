@@ -87,7 +87,7 @@
   },
   "rehearsalUpdated": {
     "title": "Répétition modifiée",
-    "body": "{name} a modifié la répète « {title} »"
+    "body": "{name} a modifié la répète « {title} »{count, plural, one {} other { et les suivantes}}"
   },
   "rehearsalAdded": {
     "title": "Ajout à une répétition",
@@ -250,5 +250,63 @@
     "title": "« {song} » : plus qu'une semaine",
     "body": "Objectif {goal} BPM, ton meilleur tempo est à {best}. Une séance ?",
     "bodyNoSession": "Objectif {goal} BPM dans 7 jours. Une séance pour noter où tu en es ?"
+  },
+  "rehearsalMoved": {
+    "title": "Répète déplacée",
+    "body": "{title} : {date}{count, plural, one {} other { (les suivantes bougent aussi)}}. Dis si tu viens."
+  },
+  "rehearsalCancelled": {
+    "title": "Répète annulée",
+    "body": "{name} a annulé « {title} » ({date})"
+  },
+  "rehearsalDeleted": {
+    "title": "Répète supprimée",
+    "body": "{count, plural, one {{name} a supprimé « {title} » ({date})} other {{name} a supprimé « {title} » : # répètes à venir}}"
+  },
+  "rehearsalDeclined": {
+    "title": "Il manquera quelqu'un",
+    "body": "{name} ne vient pas à « {title} » ({date})"
+  },
+  "plannedReminder": {
+    "now": "C'est l'heure de jouer",
+    "soon": "Ta session approche",
+    "tomorrow": "Session demain",
+    "body": "{title} à {time}"
+  },
+  "plannedMissed": {
+    "title": "Pas joué ce soir ?",
+    "body": "« {title} » était prévu aujourd'hui. Il est encore temps, ou reporte-la."
+  },
+  "plannedInvited": {
+    "title": "{name} veut jouer avec toi",
+    "body": "{title} : {date}{count, plural, one {} other { (# sessions)}}"
+  },
+  "plannedAccepted": {
+    "title": "Invitation acceptée",
+    "body": "{name} vient à « {title} » ({date})"
+  },
+  "plannedDeclined": {
+    "title": "Invitation refusée",
+    "body": "{name} ne vient pas à « {title} » ({date})"
+  },
+  "plannedMoved": {
+    "title": "Session déplacée",
+    "body": "{title} : {date}{count, plural, one {} other { (les suivantes bougent aussi)}}. Dis si tu viens."
+  },
+  "plannedCancelled": {
+    "title": "Session annulée",
+    "body": "{name} a annulé « {title} » ({date})"
+  },
+  "rehearsalSoon": {
+    "title": "Répète dans moins d'une heure",
+    "body": "{title} à {time}{location, select, none {} other { - {location}}}"
+  },
+  "rehearsalUnanswered": {
+    "title": "Tu viens à la répète ?",
+    "body": "{title} : {date}. Ton groupe attend ta réponse."
+  },
+  "rehearsalLogReminder": {
+    "title": "Raconte la répète",
+    "body": "{title} : ce que vous avez joué, et ce qu'il reste à bosser."
   }
 }

@@ -103,7 +103,11 @@
     "transferFailed": "The transfer failed.",
     "offerSeat": "Offer a seat",
     "offerSeatFailed": "The invitation failed.",
-    "tellRehearsal": "Write up a rehearsal"
+    "tellRehearsal": "Write up a rehearsal",
+    "rehearsalNotifs": "Notify me about rehearsals",
+    "rehearsalNotifsOn": "Reminders, changes and answers for this band",
+    "rehearsalNotifsOff": "You no longer get anything about this band's rehearsals",
+    "rehearsalNotifsFailed": "The setting could not be saved"
   },
   "bandCard": {
     "confirmLeave": "Are you sure you want to leave this band?",

@@ -87,7 +87,7 @@
   },
   "rehearsalUpdated": {
     "title": "Rehearsal updated",
-    "body": "{name} updated the rehearsal \"{title}\""
+    "body": "{name} updated the rehearsal \"{title}\"{count, plural, one {} other { and the following ones}}"
   },
   "rehearsalAdded": {
     "title": "Added to a rehearsal",
@@ -250,5 +250,63 @@
     "title": "\"{song}\": one week to go",
     "body": "Goal {goal} BPM, your best tempo is {best}. Time for a session?",
     "bodyNoSession": "Goal {goal} BPM in 7 days. A session to log where you are?"
+  },
+  "rehearsalMoved": {
+    "title": "Rehearsal moved",
+    "body": "{title}: {date}{count, plural, one {} other { (the following ones move too)}}. Let them know if you're coming."
+  },
+  "rehearsalCancelled": {
+    "title": "Rehearsal cancelled",
+    "body": "{name} cancelled \"{title}\" ({date})"
+  },
+  "rehearsalDeleted": {
+    "title": "Rehearsal deleted",
+    "body": "{count, plural, one {{name} deleted \"{title}\" ({date})} other {{name} deleted \"{title}\": # upcoming rehearsals}}"
+  },
+  "rehearsalDeclined": {
+    "title": "Someone will be missing",
+    "body": "{name} is not coming to \"{title}\" ({date})"
+  },
+  "plannedReminder": {
+    "now": "Time to play",
+    "soon": "Your session is coming up",
+    "tomorrow": "Session tomorrow",
+    "body": "{title} at {time}"
+  },
+  "plannedMissed": {
+    "title": "Not played tonight?",
+    "body": "\"{title}\" was planned for today. There is still time, or move it."
+  },
+  "plannedInvited": {
+    "title": "{name} wants to play with you",
+    "body": "{title}: {date}{count, plural, one {} other { (# sessions)}}"
+  },
+  "plannedAccepted": {
+    "title": "Invitation accepted",
+    "body": "{name} is coming to \"{title}\" ({date})"
+  },
+  "plannedDeclined": {
+    "title": "Invitation declined",
+    "body": "{name} is not coming to \"{title}\" ({date})"
+  },
+  "plannedMoved": {
+    "title": "Session moved",
+    "body": "{title}: {date}{count, plural, one {} other { (the following ones move too)}}. Let them know if you're coming."
+  },
+  "plannedCancelled": {
+    "title": "Session cancelled",
+    "body": "{name} cancelled \"{title}\" ({date})"
+  },
+  "rehearsalSoon": {
+    "title": "Rehearsal in less than an hour",
+    "body": "{title} at {time}{location, select, none {} other { - {location}}}"
+  },
+  "rehearsalUnanswered": {
+    "title": "Coming to rehearsal?",
+    "body": "{title}: {date}. Your band is waiting for your answer."
+  },
+  "rehearsalLogReminder": {
+    "title": "Log the rehearsal",
+    "body": "{title}: what you played, and what still needs work."
   }
 }

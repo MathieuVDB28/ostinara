@@ -359,6 +359,12 @@ export interface ProfilePrivate {
   share_sessions?: boolean;
   /** Etre prevenu quand un ami lance une session. Vrai par defaut. */
   notify_friends_playing?: boolean;
+  /** Rappels de ses sessions planifiees, invitations comprises. Vrai par defaut. */
+  notify_planned?: boolean;
+  /** Relance le soir d'une session planifiee pas jouee. Vrai par defaut. */
+  notify_planned_missed?: boolean;
+  /** Repetes : rappels et changements. Vrai par defaut. */
+  notify_rehearsals?: boolean;
 }
 
 // Equipe editoriale : admin (nomme les autres) ou editor (blog + moderation)
@@ -602,6 +608,9 @@ export interface UpdateProfileInput {
   practice_reminders?: boolean;
   share_sessions?: boolean;
   notify_friends_playing?: boolean;
+  notify_planned?: boolean;
+  notify_planned_missed?: boolean;
+  notify_rehearsals?: boolean;
 }
 
 // Inputs pour gestion des favoris
@@ -1081,6 +1090,8 @@ export interface BandMember {
   instrument_label?: string | null;
   /** Recevoir les notifications des setlists du groupe (reglage de chacun). */
   setlist_notifications?: boolean;
+  /** Notifications des repetes de ce groupe. */
+  rehearsal_notifications?: boolean;
 }
 
 export interface BandMemberWithProfile extends BandMember {
@@ -1500,6 +1511,60 @@ export interface RoutineItem {
   duration_seconds?: number;
 
   created_at: string;
+}
+
+/** Un element prevu : la copie gardee dans la session planifiee. */
+export type PlannedItem = Pick<
+  RoutineItem,
+  "item_type" | "song_id" | "song_title" | "song_artist" | "song_cover_url" | "exercise_id" | "exercise_name" | "exercise_category" | "bpm"
+>;
+
+export type PlannedRemind = 0 | 15 | 60 | 1440 | null;
+
+export interface PlannedSessionPerson {
+  user_id: string;
+  role: "owner" | "guest";
+  rsvp: "invited" | "accepted" | "declined";
+  state: "planned" | "done" | "skipped";
+  remind_minutes: PlannedRemind;
+  profile: Pick<Profile, "id" | "username" | "display_name" | "avatar_url">;
+}
+
+export interface PlannedSession {
+  id: string;
+  user_id: string;
+  series_id: string | null;
+  starts_at: string;
+  duration_minutes: number;
+  time_zone: string;
+  title: string;
+  note: string | null;
+  location: string | null;
+  instrument: Instrument | null;
+  routine_id: string | null;
+  setlist_id: string | null;
+  items: PlannedItem[];
+  /** Ma ligne, et celle de l'autre s'il y en a un. */
+  me: PlannedSessionPerson;
+  other: PlannedSessionPerson | null;
+}
+
+export interface PlannedSessionInput {
+  title: string;
+  starts_at: string;
+  duration_minutes: number;
+  time_zone: string;
+  note?: string;
+  location?: string;
+  instrument?: Instrument | null;
+  routine_id?: string | null;
+  setlist_id?: string | null;
+  items: PlannedItem[];
+  guest_id?: string | null;
+  remind_minutes: PlannedRemind;
+  /** Recurrence (Pro et Band) : jours (0 = dimanche) jusqu'a une date incluse. */
+  weekdays?: number[];
+  until?: string;
 }
 
 export interface RoutineWithItems extends Routine {
@@ -1979,6 +2044,8 @@ export interface Rehearsal {
   location_url?: string;
   date: string;
   end_date?: string;
+  /** Le fuseau de qui l'a creee : l'heure des push et de la serie. */
+  time_zone?: string;
   status: RehearsalStatus;
   recurrence: RecurrenceType;
   recurrence_day_of_week?: number;
@@ -2024,21 +2091,20 @@ export interface CreateRehearsalInput {
   location_url?: string;
   date: string;
   end_date?: string;
+  time_zone?: string;
   participant_ids: string[];
   recurrence: RecurrenceType;
   recurrence_end_date?: string;
 }
 
 export interface UpdateRehearsalInput {
-  title?: string;
+  title: string;
   description?: string;
   location?: string;
   location_url?: string;
-  date?: string;
+  date: string;
   end_date?: string;
   setlist_id?: string | null;
-  notes?: string;
-  status?: RehearsalStatus;
 }
 
 export type RehearsalVerdict = 'rework' | 'solid' | 'ready';

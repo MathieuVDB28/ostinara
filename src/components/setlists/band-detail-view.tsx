@@ -16,6 +16,7 @@ import { RehearsalCard } from "@/components/rehearsals/rehearsal-card";
 import { RehearsalCalendar } from "@/components/rehearsals/rehearsal-calendar";
 import { BandRehearsalJournal } from "@/components/rehearsals/band-rehearsal-journal";
 import { BandMemberPoste } from "./band-member-poste";
+import { BandRehearsalNotifications } from "./band-rehearsal-notifications";
 import { BandSetlistNotifications } from "./band-setlist-notifications";
 import { BandChatPanel } from "@/components/rehearsals/band-chat-panel";
 import { BandTransfer } from "./band-transfer";
@@ -331,6 +332,13 @@ export function BandDetailView({
             ))}
           </div>
         </div>
+
+        {myMembership && (
+          <BandRehearsalNotifications
+            bandId={band.id}
+            initialOn={myMembership.rehearsal_notifications ?? true}
+          />
+        )}
 
         {rehearsalView === "calendar" ? (
           <div className="pt-3">

@@ -45,6 +45,7 @@
     "done": "Week done. The next plan arrives on Monday.",
     "progress": "Progress: {percent}%",
     "work": "Work on it",
-    "reached": "Reached according to your log"
+    "reached": "Reached according to your log",
+    "plan": "Plan"
   }
 }

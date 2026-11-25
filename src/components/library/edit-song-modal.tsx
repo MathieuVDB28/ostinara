@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
-import { ListPlus, Music, Play, X } from "lucide-react";
+import { CalendarPlus, ListPlus, Music, Play, X } from "lucide-react";
 import { updateSong, deleteSong } from "@/lib/actions/songs";
 import { getCoversBySong, canUploadCover } from "@/lib/actions/covers";
 // AddCoverModal entraine video-upload → tus-js-client, et video-upload
@@ -81,6 +81,7 @@ export function EditSongModal({
   bestBpm = null,
 }: EditSongModalProps) {
   const t = useTranslations("library.sheet");
+  const tp = useTranslations("play.planned");
   const tl = useTranslations("library");
   const tc = useTranslations("common");
   const te = useTranslations("enums");
@@ -415,6 +416,18 @@ export function EditSongModal({
             >
               <Play className="h-4 w-4 fill-current" strokeWidth={0} aria-hidden="true" />
               {t("play")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                router.push(`/jouer?plan=${song.id}`);
+              }}
+              aria-label={tp("newTitle")}
+              title={tp("newTitle")}
+              className="inline-flex min-h-[46px] w-[46px] items-center justify-center rounded-xl border border-border transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <CalendarPlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
             </button>
             <button
               type="button"

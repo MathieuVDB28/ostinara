@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlarmClock, Bell, BellOff, Guitar, Users, type LucideIcon } from "lucide-react";
+import { AlarmClock, Bell, BellOff, CalendarCheck, CalendarClock, Guitar, Moon, Users, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePushNotifications } from "@/lib/hooks/use-push-notifications";
 import { updateProfile } from "@/lib/actions/profile";
@@ -207,6 +207,54 @@ export function FriendsPlayingSetting({ initialOn }: { initialOn: boolean }) {
       offDescription={t("off")}
       initialOn={initialOn}
       save={(on) => updateProfile({ notify_friends_playing: on })}
+    />
+  );
+}
+
+/** Sessions planifiees : rappels, invitations et changements. */
+export function PlannedRemindersSetting({ initialOn }: { initialOn: boolean }) {
+  const t = useTranslations("profile.notifications");
+  return (
+    <ProfileToggle
+      id="planned-label"
+      icon={CalendarClock}
+      label={t("planned")}
+      onDescription={t("plannedOn")}
+      offDescription={t("off")}
+      initialOn={initialOn}
+      save={(on) => updateProfile({ notify_planned: on })}
+    />
+  );
+}
+
+/** La relance du soir, quand une session planifiee n'a pas ete jouee. */
+export function PlannedMissedSetting({ initialOn }: { initialOn: boolean }) {
+  const t = useTranslations("profile.notifications");
+  return (
+    <ProfileToggle
+      id="planned-missed-label"
+      icon={Moon}
+      label={t("plannedMissed")}
+      onDescription={t("plannedMissedOn")}
+      offDescription={t("off")}
+      initialOn={initialOn}
+      save={(on) => updateProfile({ notify_planned_missed: on })}
+    />
+  );
+}
+
+/** Repetes de tous mes groupes ; chaque groupe se coupe aussi a part. */
+export function RehearsalsSetting({ initialOn }: { initialOn: boolean }) {
+  const t = useTranslations("profile.notifications");
+  return (
+    <ProfileToggle
+      id="rehearsals-label"
+      icon={CalendarCheck}
+      label={t("rehearsals")}
+      onDescription={t("rehearsalsOn")}
+      offDescription={t("off")}
+      initialOn={initialOn}
+      save={(on) => updateProfile({ notify_rehearsals: on })}
     />
   );
 }

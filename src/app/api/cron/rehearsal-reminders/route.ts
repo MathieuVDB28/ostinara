@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendPushNotificationToMultipleUsers, type PushT } from "@/lib/notifications";
+import { rehearsalRecipients } from "@/lib/notifications/rehearsals";
+import { safeTimeZone, toWallTime, wallDaysBetween } from "@/lib/time-zone";
 import { INTL_LOCALE, type Locale } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
@@ -22,14 +24,16 @@ function verifyCronSecret(request: NextRequest): boolean {
 async function sendReminders(
   rehearsals: Array<{
     id: string;
+    band_id: string;
     title: string;
     date: string;
+    time_zone: string | null;
     location: string | null;
     band: unknown;
     participants: unknown;
   }>,
-  type: "rehearsal_reminder" | "rehearsal_today",
-  titleKey: "rehearsalToday" | "rehearsalTomorrow"
+  type: "rehearsal_reminder",
+  titleKey: "rehearsalTomorrow"
 ): Promise<{ sent: number; errors: number }> {
   let sent = 0;
   let errors = 0;
@@ -39,21 +43,26 @@ async function sendReminders(
       rehearsal.participants as { user_id: string; status: string }[]
     ).filter((p) => p.status !== "declined");
 
-    if (participants.length === 0) continue;
+    const recipients = await rehearsalRecipients(rehearsal.band_id, participants.map((p) => p.user_id));
+    if (recipients.length === 0) continue;
 
     const bandName = (rehearsal.band as unknown as { name: string })?.name || null;
     const dateObj = new Date(rehearsal.date);
 
     try {
       await sendPushNotificationToMultipleUsers(
-        participants.map((p) => ({
-          userId: p.user_id,
+        recipients.map((userId) => ({
+          userId,
           payload: (t: PushT, locale: Locale) => ({
             title: t(titleKey),
             body: t("rehearsalReminderBody", {
               title: rehearsal.title,
               band: bandName ?? t("yourBand"),
-              time: dateObj.toLocaleTimeString(INTL_LOCALE[locale], { hour: "2-digit", minute: "2-digit" }),
+              time: dateObj.toLocaleTimeString(INTL_LOCALE[locale], {
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: safeTimeZone(rehearsal.time_zone),
+              }),
               location: rehearsal.location || "none",
             }),
             data: { url: `/setlists/rehearsals/${rehearsal.id}` },
@@ -61,7 +70,7 @@ async function sendReminders(
           notificationType: type,
         }))
       );
-      sent += participants.length;
+      sent += recipients.length;
     } catch (err) {
       console.error(`Error sending ${type}:`, err);
       errors++;
@@ -134,7 +143,6 @@ async function sendPollReminders(now: Date): Promise<{ sent: number; errors: num
   return { sent, errors };
 }
 
-// Runs once daily at ~9h UTC. Sends both "today" and "tomorrow" reminders.
 /**
  * La veille d'un concert (jour de Paris) : tous les membres du groupe sont
  * prevenus. Le cron tourne une fois par jour.
@@ -261,66 +269,36 @@ export async function GET(request: NextRequest) {
   }
 
   const now = new Date();
-  const results = { reminders: 0, today: 0, polls: 0, concerts: 0, tempoGoals: 0, errors: 0 };
+  const results = { reminders: 0, polls: 0, concerts: 0, tempoGoals: 0, errors: 0 };
 
-  // === Today's rehearsals (anything today that hasn't passed yet) ===
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEnd = new Date(now);
-  todayEnd.setHours(23, 59, 59, 999);
-
-  const { data: todayRehearsals } = await supabaseAdmin
+  // Demain se lit dans le fuseau de la repete. Le jour meme, le rappel part
+  // une heure avant (/api/cron/planning).
+  const { data: nextRehearsals, error: rehearsalsError } = await supabaseAdmin
     .from("rehearsals")
     .select(
       `
-      id, title, date, location,
+      id, band_id, title, date, time_zone, location,
       band:bands(name),
       participants:rehearsal_participants(user_id, status)
     `
     )
     .eq("status", "scheduled")
     .gte("date", now.toISOString())
-    .lte("date", todayEnd.toISOString());
-
-  if (todayRehearsals && todayRehearsals.length > 0) {
-    const r = await sendReminders(
-      todayRehearsals,
-      "rehearsal_today",
-      "rehearsalToday"
-    );
-    results.today = r.sent;
-    results.errors += r.errors;
+    .lte("date", new Date(now.getTime() + 49 * 60 * 60 * 1000).toISOString());
+  if (rehearsalsError) {
+    console.error("Error fetching rehearsals to remind:", rehearsalsError);
+    results.errors++;
   }
 
-  // === Tomorrow's rehearsals ===
-  const tomorrowStart = new Date(now);
-  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
-  tomorrowStart.setHours(0, 0, 0, 0);
-  const tomorrowEnd = new Date(tomorrowStart);
-  tomorrowEnd.setHours(23, 59, 59, 999);
+  const inDays = (days: number) =>
+    (nextRehearsals ?? []).filter((rehearsal) => {
+      const zone = safeTimeZone(rehearsal.time_zone);
+      return wallDaysBetween(toWallTime(now, zone), toWallTime(new Date(rehearsal.date), zone)) === days;
+    });
 
-  const { data: tomorrowRehearsals } = await supabaseAdmin
-    .from("rehearsals")
-    .select(
-      `
-      id, title, date, location,
-      band:bands(name),
-      participants:rehearsal_participants(user_id, status)
-    `
-    )
-    .eq("status", "scheduled")
-    .gte("date", tomorrowStart.toISOString())
-    .lte("date", tomorrowEnd.toISOString());
-
-  if (tomorrowRehearsals && tomorrowRehearsals.length > 0) {
-    const r = await sendReminders(
-      tomorrowRehearsals,
-      "rehearsal_reminder",
-      "rehearsalTomorrow"
-    );
-    results.reminders = r.sent;
-    results.errors += r.errors;
-  }
+  const tomorrowResult = await sendReminders(inDays(1), "rehearsal_reminder", "rehearsalTomorrow");
+  results.reminders = tomorrowResult.sent;
+  results.errors += tomorrowResult.errors;
 
   const pollResults = await sendPollReminders(now);
   results.polls = pollResults.sent;

@@ -45,6 +45,7 @@
     "done": "Semaine bouclée. Le prochain plan arrive lundi.",
     "progress": "Progression : {percent} %",
     "work": "Travailler",
-    "reached": "Atteint d'après ton journal"
+    "reached": "Atteint d'après ton journal",
+    "plan": "Planifier"
   }
 }

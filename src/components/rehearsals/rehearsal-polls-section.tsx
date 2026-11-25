@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { deviceTimeZone } from "@/lib/time-zone";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import {
   closeRehearsalPoll,
@@ -133,7 +134,7 @@ export function RehearsalPollsSection({
   const validate = (poll: RehearsalPoll, option: RehearsalPollOption) => {
     setError(poll.id, null);
     startTransition(async () => {
-      const result = await closeRehearsalPoll(poll.id, option.id);
+      const result = await closeRehearsalPoll(poll.id, option.id, deviceTimeZone());
       if (!result.success || !result.rehearsalId) {
         setError(poll.id, result.error ?? tc("genericError"));
         return;

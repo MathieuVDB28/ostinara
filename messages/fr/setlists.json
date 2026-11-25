@@ -103,7 +103,11 @@
     "transferFailed": "Le transfert n'a pas abouti.",
     "offerSeat": "Offrir une place",
     "offerSeatFailed": "L'invitation n'a pas abouti.",
-    "tellRehearsal": "Raconter une répète"
+    "tellRehearsal": "Raconter une répète",
+    "rehearsalNotifs": "Me prévenir pour les répètes",
+    "rehearsalNotifsOn": "Rappels, changements et réponses pour ce groupe",
+    "rehearsalNotifsOff": "Tu ne reçois plus rien sur les répètes de ce groupe",
+    "rehearsalNotifsFailed": "Le réglage n'a pas pu être enregistré"
   },
   "bandCard": {
     "confirmLeave": "Es-tu sûr de vouloir quitter ce groupe ?",

@@ -505,11 +505,22 @@ export async function updateProfile(input: UpdateProfileInput): Promise<{ succes
 
   // Les rappels et le partage des sessions vivent dans profile_private ;
   // le reste dans profiles
-  const { practice_reminders, share_sessions, notify_friends_playing, ...publicFields } = input;
+  const {
+    practice_reminders,
+    share_sessions,
+    notify_friends_playing,
+    notify_planned,
+    notify_planned_missed,
+    notify_rehearsals,
+    ...publicFields
+  } = input;
   const privateFields = {
     ...(practice_reminders !== undefined ? { practice_reminders } : {}),
     ...(share_sessions !== undefined ? { share_sessions } : {}),
     ...(notify_friends_playing !== undefined ? { notify_friends_playing } : {}),
+    ...(notify_planned !== undefined ? { notify_planned } : {}),
+    ...(notify_planned_missed !== undefined ? { notify_planned_missed } : {}),
+    ...(notify_rehearsals !== undefined ? { notify_rehearsals } : {}),
   };
   const [{ error }, { error: privateError }] = await Promise.all([
     Object.keys(publicFields).length > 0

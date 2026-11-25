@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { History, Play, RotateCcw, Users, X } from "lucide-react";
+import { CalendarPlus, History, Play, RotateCcw, Users, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useIntlLocale } from "@/i18n/intl-locale";
 import type { CommonT } from "@/i18n/types";
@@ -44,6 +44,10 @@ interface CarnetViewProps {
   /** Nombre d'elements dans la derniere session montee (0 = aucune). */
   lastSessionCount: number;
   onResumeSession: () => void;
+  /** Le bloc des sessions planifiees, compose par PlayView. */
+  planned: React.ReactNode;
+  onPlanSong: (songId: string) => void;
+  onPlanRoutine: (routine: RoutineWithItems) => void;
 }
 
 /** « 17 h 40 » : les heures et les minutes, sans « 1060 min ». */
@@ -86,6 +90,9 @@ export function CarnetView({
   onDeleteRoutine,
   lastSessionCount,
   onResumeSession,
+  planned,
+  onPlanSong,
+  onPlanRoutine,
 }: CarnetViewProps) {
   const t = useTranslations("play.carnet");
   const tc = useTranslations("common");
@@ -140,6 +147,7 @@ export function CarnetView({
       </div>
 
       <div className="min-w-0 lg:col-start-2 lg:row-start-1">
+        {planned}
         {resume}
 
         {/* Sans session a reprendre : le morceau en cours, et « Demarrer ». */}
@@ -232,7 +240,7 @@ export function CarnetView({
 
       {weeklyPlan && (
         <div className="min-w-0 lg:col-start-2 lg:row-start-2">
-          <WeeklyPlanCard plan={weeklyPlan} onWorkOnSong={onWorkOnSong} />
+          <WeeklyPlanCard plan={weeklyPlan} onWorkOnSong={onWorkOnSong} onPlanSong={onPlanSong} />
         </div>
       )}
 
@@ -286,6 +294,14 @@ export function CarnetView({
                         {t("routineCounts", { songs: routine.song_count, exercises: routine.exercise_count })}
                       </span>
                     </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onPlanRoutine(routine)}
+                    aria-label={t("planRoutine", { name: routine.name })}
+                    className="shrink-0 rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+                  >
+                    <CalendarPlus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                   </button>
                   <button
                     type="button"

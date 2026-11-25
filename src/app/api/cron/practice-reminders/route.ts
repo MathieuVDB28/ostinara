@@ -7,6 +7,7 @@ import {
   pickReminder,
   type ReminderInput,
 } from "@/lib/notifications/practice-reminders";
+import { safeTimeZone, wallDateKey } from "@/lib/time-zone";
 import { fetchAllRows } from "@/lib/supabase/fetch-all";
 import { JAM_SESSION_TTL_MS } from "@/lib/jam-session";
 import { LIVE_SESSION_TTL_MS } from "@/lib/live-session";
@@ -281,10 +282,35 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Une session planifiee aujourd'hui a ses propres rappels : ils remplacent celui-ci.
+  const plannedRows = await fetchAllRows<{ user_id: string; time_zone: string; session: { starts_at: string } }>((from, to) =>
+    supabaseAdmin
+      .from("planned_session_people")
+      .select("user_id, time_zone, session:planned_sessions!inner(starts_at)")
+      .in("user_id", userIds)
+      .eq("rsvp", "accepted")
+      .neq("state", "skipped")
+      .gte("session.starts_at", new Date(now.getTime() - 86_400_000).toISOString())
+      .lte("session.starts_at", new Date(now.getTime() + 86_400_000).toISOString())
+      .order("session_id")
+      .order("user_id")
+      .range(from, to)
+      .overrideTypes<{ user_id: string; time_zone: string; session: { starts_at: string } }[], { merge: false }>()
+  );
+  const plannedToday = new Set(
+    plannedRows
+      .filter((row) => {
+        const zone = safeTimeZone(row.time_zone);
+        return wallDateKey(new Date(row.session.starts_at), zone) === wallDateKey(now, zone);
+      })
+      .map((row) => row.user_id)
+  );
+
   let sent = 0;
   const picked: Record<string, number> = {};
 
   for (const userId of userIds) {
+    if (plannedToday.has(userId)) continue;
     const input: ReminderInput = {
       today,
       weekday,
