@@ -31,5 +31,5 @@ export function blogPostAppHref(slug: string): string {
 
 /** L'URL absolue du site, pour les liens qui sortent de l'app. */
 export function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "https://ostinara.app").replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_APP_URL ?? "https://ostinara.vercel.app").replace(/\/$/, "");
 }

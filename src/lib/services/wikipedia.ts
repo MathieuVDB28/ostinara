@@ -34,8 +34,8 @@ const wikipedia = (lang: WikiLang) => `https://${lang}.wikipedia.org/w/api.php`;
 const WEEK = 604800;
 
 const HEADERS = {
-  'User-Agent': 'Ostinara/1.0 (https://ostinara.app; contact@ostinara.app)',
-  'Api-User-Agent': 'Ostinara/1.0 (https://ostinara.app; contact@ostinara.app)',
+  'User-Agent': 'Ostinara/1.0 (https://ostinara.vercel.app; contact@ostinara.app)',
+  'Api-User-Agent': 'Ostinara/1.0 (https://ostinara.vercel.app; contact@ostinara.app)',
 };
 
 const LANGS: WikiLang[] = ['fr', 'en'];

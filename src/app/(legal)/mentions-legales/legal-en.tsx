@@ -111,7 +111,7 @@ export function MentionsLegalesEn() {
                   <span className="w-40 shrink-0 font-medium text-foreground">
                     URL
                   </span>
-                  <span>https://ostinara.app</span>
+                  <span>https://ostinara.vercel.app</span>
                 </div>
                 <div className="h-px bg-border" />
                 <div className="flex gap-3">
